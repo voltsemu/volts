@@ -1,9 +1,14 @@
 #pragma once
 
-#include "Alias.h"
+#include <Meta/Aliases.h>
+#include <Core/Collections/CthulhuString.h>
+#include <Core/Collections/Map.h>
+#include <Core/Collections/Result.h>
 
 namespace RPCS3X::SFO
 {
+    using namespace Cthulhu;
+
     struct Header
     {
         U32 Magic;
@@ -27,7 +32,7 @@ namespace RPCS3X::SFO
 
         U32 DataLength;
         U32 MaxLength;
-        U32 DataLength;
+        U32 DataOffset;
     };
 
     struct Value
@@ -43,7 +48,7 @@ namespace RPCS3X::SFO
         ~Value();
     };
 
-    struct Error
+    enum class Error : U8
     {
         Ok,
         BadMagic,
@@ -56,6 +61,6 @@ namespace RPCS3X::SFO
         Header Info;
         Map<String, Value> Data;
 
-        static Variant<SFO, Error> Load(const String& Path);
+        static Result<SFO, Error> Load(const String& Path);
     };
 }

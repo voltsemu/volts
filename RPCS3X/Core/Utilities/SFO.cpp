@@ -5,11 +5,11 @@ using namespace RPCS3X::SFO;
 
 Value::~Value()
 {
-    if (Type == String || Type == Array)
+    if (Type == Format::String || Type == Format::Array)
         delete Str;
 }
 
-Variant<SFO, Error> SFO::Load(const String& Path)
+Result<RPCS3X::SFO::SFO, Error> RPCS3X::SFO::SFO::Load(const String& Path)
 {
     Header Stats;
 }
