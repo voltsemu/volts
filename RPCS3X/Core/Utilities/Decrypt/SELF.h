@@ -2,10 +2,13 @@
 
 #include "Utilities/Endian.h"
 
+#include <Core/Traits/IsSame.h>
+
 #include <FileSystem/BufferedFile.h>
 
 namespace RPCS3X
 {
+    // the usual aliases
     using namespace Cthulhu;
     namespace FS = FileSystem;
 
@@ -30,9 +33,11 @@ namespace RPCS3X
         template<typename T>
         struct Header
         {
-            static_assert(T == U32 || T == U64);
+            // always remember the constraints
+            static_assert(Same<T, U32>::Value || Same<T, U64>::Value);
 
-            Big<U32> Magic;
+            // magic file format number
+            U32 Magic;
             U8 Class;
             U8 Data;
             U8 Curver;
@@ -56,9 +61,10 @@ namespace RPCS3X
         template<typename T>
         struct SectionHeader
         {
-            static_assert(T == U32 || T == U64);
+            // constraints
+            static_assert(Same<T, U32>::Value || Same<T, U64>::Value);
 
-            Big<U32> Name;
+            U32 Name;
             Big<U32> Type;
             Big<T> Flags;
             Big<T> Address;
@@ -73,9 +79,10 @@ namespace RPCS3X
         template<typename T>
         struct ProgramHeader
         {
-            static_assert(T == U32 || T == U64);
+            // constraints
+            static_assert(Same<T, U32>::Value || Same<T, U64>::Value);
 
-            Big<U32> Type;
+            U32 Type;
             Big<U32> Offset;
             Big<T> ProgramHeaderOffset;
             Big<T> SectionHeaderOffset;
@@ -89,7 +96,8 @@ namespace RPCS3X
     {
         struct Header
         {
-            Big<U32> Magic;
+            // should always be "\0SCE"
+            U32 Magic;
             Big<U32> Version;
             Big<U16> Flags;
             Big<U16> Type;
@@ -97,7 +105,7 @@ namespace RPCS3X
             Big<U64> HeaderSize;
             Big<U64> DataSize;
 
-            bool Valid() const { return Magic.Get() == 0x53434500; }
+            bool Valid() const { return Magic == 0x53434500; }
         };
     }
 
@@ -118,6 +126,7 @@ namespace RPCS3X
         };
     }
 
+    // A list of the ways decrypting and parsing a self can fail
     enum class Error : U8
     {
         Ok,

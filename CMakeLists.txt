@@ -13,6 +13,7 @@ else()
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 endif()
 
+include_directories(${CMAKE_SOURCE_DIR}/RPCS3X/Core)
 #include external project for grabbing external libs from git
 include(ExternalProject)
 
