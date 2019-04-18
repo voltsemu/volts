@@ -5,18 +5,12 @@
 #include <Core/Collections/Map.h>
 #include <Core/Collections/Result.h>
 
+#include <FileSystem/BufferedFile.h>
+
 namespace RPCS3X::SFO
 {
     using namespace Cthulhu;
-
-    struct Header
-    {
-        U32 Magic;
-        U32 Version;
-        U32 KeyOffset;
-        U32 DataOffset;
-        U32 TotalEntries;
-    };
+    namespace FS = FileSystem;
 
     enum class Format : U16
     {
@@ -25,42 +19,23 @@ namespace RPCS3X::SFO
         Integer = 1024
     };
 
-    struct IndexTableEntry
-    {
-        U16 KeyOffset;
-        Format DataFormat;
-
-        U32 DataLength;
-        U32 MaxLength;
-        U32 DataOffset;
-    };
-
     struct Value
     {
         Format Type;
-
-        union
-        {
-            U64 Num;
-            String* Str;
-        };
-
-        ~Value();
+        Array<U8> Bytes;
     };
 
     enum class Error : U8
     {
         Ok,
+        BadFile,
         BadMagic,
+        BadVersion,
         InvalidKeyOffset,
         InvalidDataOffset,
     };
 
-    struct SFO
-    {
-        Header Info;
-        Map<String, Value> Data;
+    using SFO = Map<String, Value>;
 
-        static Result<SFO, Error> Load(const String& Path);
-    };
+    Result<SFO, Error> Load(FS::BufferedFile& File);
 }
