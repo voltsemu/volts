@@ -13,6 +13,7 @@ else()
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 endif()
 
+#add in source directory
 include_directories(${CMAKE_SOURCE_DIR}/RPCS3X/Core)
 #include external project for grabbing external libs from git
 include(ExternalProject)
@@ -22,20 +23,19 @@ include(ExternalProject)
 #it leaves some of the build paths in a mess but it does work
 #so for the love of god dont touch this
 # - Apache @ 0:32 
-set(EXTERNAL_INSTALL_LOCATION ${CMAKE_BINARY_DIR}/Extern)
 
 ExternalProject_Add(CTULib
 	GIT_REPOSITORY https://github.com/Apache-HB/CTULib.git
-	INSTALL_COMMAND make DESTDIR=${EXTERNAL_INSTALL_LOCATION} install
-	CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=INSTALL_DIR
+	SOURCE_DIR ${COMMON_BASE_PROJECT_DIR}
+	BINARY_DIR ${COMMON_BASE_PROJECT_DIR}/Build
+	STEP_TARGETS Build
+	CMAKE_ARGS -DRELEASE=ON -DCMAKE_INSTALL_PREFIX:PATH=INSTALL_DIR
+	EXCLUDE_FROM_ALL TRUE
 )
 
-install(DIRECTORY ${EXTERNAL_INSTALL_LOCATION}/ DESTINATION "/")
+install(DIRECTORY ${COMMON_BASE_PROJECT_DIR}/ DESTINATION "/")
 
 ExternalProject_Get_Property(CTULib SOURCE_DIR)
 include_directories(${SOURCE_DIR}/Cthulhu)
 
-include_directories(${EXTERNAL_INSTALL_LOCATION}/)
-
 add_dependencies(RPCS3X CTULib)
-target_link_libraries(RPCS3X -L${EXTERNAL_INSTALL_LOCATION}/)

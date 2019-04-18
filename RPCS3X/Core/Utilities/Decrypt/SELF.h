@@ -153,7 +153,6 @@ namespace RPCS3X
 
         AppInfo Info;
 
-
     private:
         FS::BufferedFile File;
     };
