@@ -2,6 +2,8 @@
 
 #include "Utilities/Endian.h"
 
+#include <Core/Collections/Array.h>
+
 #include <Core/Traits/IsSame.h>
 
 #include <FileSystem/BufferedFile.h>
@@ -130,10 +132,9 @@ namespace RPCS3X
     enum class Error : U8
     {
         Ok,
-        Decrypt,
-        BadSCEHeader,
-        BadSELFHeader,
-        BadELFHeader
+        FailedDecrypt,
+        BadMetaData,
+        BadHeaders,
     };
 
     struct AppInfo
@@ -145,15 +146,7 @@ namespace RPCS3X
         U8 Padding[12];
     };
 
-    struct SELFBinary
-    {
-        SELFBinary(FS::BufferedFile File);
+    using SELFBinary = Array<Byte>;
 
-        Error Load();
-
-        AppInfo Info;
-
-    private:
-        FS::BufferedFile File;
-    };
+    Result<SELFBinary, Error> DecryptSELF(FS::BufferedFile& File, Array<U8> Key);
 }
