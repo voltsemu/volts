@@ -61,9 +61,70 @@ namespace RPCS3X
 
         FS::BufferedFile& F;
 
+        SCE::Header SCEHead;
+        SELF::Header SELFHead;
+
+        AppInfo Info;
+
+        ELF::Header<U32> ELF32Head;
+        Array<ELF::SectionHeader<U32>> SHeads32;
+        Array<ELF::ProgramHeader<U32>> PHeads32;
+
+        ELF::Header<U64> ELF64Head;
+        Array<ELF::SectionHeader<U64>> SHeads64;
+        Array<ELF::ProgramHeader<U64>> PHeads64;
+
         bool LoadHeaders(bool ELF32)
         {
-            return true;
+            F.Seek(0);
+            SCEHead = F.Read<SCE::Header>();
+
+            if (!SCEHead.Valid())
+            {
+                return false;
+            }
+
+            SELFHead = F.Read<SELF::Header>();
+
+            F.Seek(SELFHead.InfoOffset.Get());
+            Info = F.Read<AppInfo>();
+
+            F.Seek(SELFHead.ELFOffset.Get());
+
+            if(ELF32)
+            {
+                ELF32Head = F.Read<ELF::Header<U32>>();
+
+                if(ELF32Head.HeaderOffset.Get() == 0 && ELF32Head.ProgramEntries.Get() != 0)
+                {
+                    return false;
+                }
+
+                F.Seek(SELFHead.PHeaderOffset.Get());
+
+                for(U32 I = 0; I < ELF32Head.ProgramEntries.Get(); I++)
+                {
+                    PHeads32.Append(F.Read<ELF::ProgramHeader<U32>>());
+                }
+            }
+            else
+            {
+                ELF64Head = F.Read<ELF::Header<U64>>();
+
+                if(ELF64Head.HeaderOffset.Get() == 0 && ELF64Head.ProgramEntries.Get() != 0)
+                {
+                    return false;
+                }
+
+                F.Seek(SELFHead.PHeaderOffset.Get());
+
+                for (U32 I = 0; I < ELF64Head.ProgramEntries.Get(); I++)
+                {
+                    PHeads64.Append(F.Read<ELF::ProgramHeader<U64>>());
+                }
+            }
+
+            F.Seek(SELFHead.VersionOffset.Get());
         }
 
         bool LoadMetaData(Array<U8>& Key)

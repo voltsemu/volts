@@ -109,6 +109,14 @@ namespace RPCS3X
 
             bool Valid() const { return Magic == 0x53434500; }
         };
+
+        struct VersionInfo
+        {
+            Big<U32> SubHeaderType;
+            Big<U32> Present;
+            Big<U32> Size;
+            U8 Padding[4];
+        };
     }
 
     namespace SELF
@@ -124,7 +132,7 @@ namespace RPCS3X
             Big<U64> VersionOffset;
             Big<U64> ControlOffset;
             Big<U64> ControlSize;
-            U8 Padding[4];
+            U8 Padding[8];
         };
     }
 
