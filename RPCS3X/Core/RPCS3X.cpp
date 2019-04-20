@@ -1,17 +1,17 @@
 ﻿
 #include "RPCS3X.h"
 
+#include "Render/Render.h" 
+#include "Render/Null/Render.h"
+#include <iostream>
 using namespace RPCS3X;
 
 int main()
 {
-	ELF::Header<U64> A;
-	ELF::Header<U32> B;
+    std::cout << "Thing" << std::endl;
+    for (auto& I : RSX::Backends)
+        std::cout << I.Backend->Name() << I.Backend->Description() << std::endl;
 
-	ELF::SectionHeader<U32> C;
-	ELF::SectionHeader<U64> D;
-
-	ELF::ProgramHeader<U32> E;
-	ELF::ProgramHeader<U64> F;
+    Sleep(50000);
 	return 0;
 }
