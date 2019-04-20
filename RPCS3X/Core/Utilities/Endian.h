@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Meta/Macros.h>
 #include <Core/Math/Bytes.h>
 
 namespace RPCS3X
@@ -37,6 +38,7 @@ namespace RPCS3X
         // the stored data
         T Data;
 
+#ifdef PLATFORM_LITTLE_ENDIAN
         // so this is strange, but this gets the data as little endian so it works on x86 which is little endian only
         T Get() const
         {
@@ -53,6 +55,21 @@ namespace RPCS3X
                 return Cthulhu::Math::ByteSwap<T>(Data);
             }
         }
+#else
+        T Get() const
+        {
+            if constexpr (Order == Endian::Little)
+            {
+                return Cthulhu::Math::ByteSwap<T>(Data);
+            }
+            else
+            {
+                return Data;
+            }
+        }
+#endif
+
+        T operator T() const { return Get(); }
     };
 
     // alias for little endian types
