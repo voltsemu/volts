@@ -1,0 +1,12 @@
+cxx_binary(
+	name = 'RPCS3X',
+	headers = subdir_glob([
+		('RPCS3X', '**/*.h'),
+		('RPCS3X/Core', '**/*.h')
+	]),
+	srcs = glob(['RPCS3X/**/*.cpp']),
+	platform_compiler_flags = [
+        ('windows.*', [ '/std:c++17' ]),
+        ('[apple|linux].*', [ '-std=c++17' ])
+    ]
+)

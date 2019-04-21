@@ -1,0 +1,4 @@
+[[dependency]]
+package = "github.com/apache-hb/ctulib"
+version = "*"
+
