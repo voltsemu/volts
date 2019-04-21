@@ -2,6 +2,8 @@
 
 #include "Core/Utilities/Endian.h"
 
+using namespace Cthulhu;
+
 namespace RPCS3X
 {
     namespace SCE

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Render/Render.h"
+#include "Core/Render/Render.h"
 
 namespace RPCS3X::RSX
 {

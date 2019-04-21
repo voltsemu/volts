@@ -15,18 +15,6 @@ namespace RPCS3X::RSX
 
     using Str = Cthulhu::String;
 
-    struct RenderInfo
-    {
-        struct Render* Backend;
-    };
-
-    using RenderBackends = Cthulhu::Array<RenderInfo>;
-
-    static RenderBackends Backends;
-    Empty AddBackend(const RenderInfo Info) { Backends.Append(Info); return {}; }
-
-#   define REGISTER_RENDER(Type) namespace { static auto RR##__LINE__ = AddBackend({ new Type() }); }
-
     struct Render
     {
         // ==================================================
@@ -128,4 +116,15 @@ namespace RPCS3X::RSX
         // get the pretty name of a device
         virtual Str DeviceName(const GPUDeviceID& Device) const = 0;
     };
+
+    using RenderInfo = Render*;
+
+    using RenderBackends = Cthulhu::Array<RenderInfo>;
+
+    static RenderBackends Backends;
+    Empty AddBackend(const RenderInfo Info);
+
+#   define TOKEN_PASTE(X, Y) X##Y
+#   define CAT(X, Y) TOKEN_PASTE(X, Y)
+#   define REGISTER_RENDER(Type) namespace { static auto CAT(RR, __LINE__) = AddBackend(new Type()); }
 }

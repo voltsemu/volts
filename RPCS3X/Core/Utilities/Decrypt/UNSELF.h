@@ -5,7 +5,8 @@
 namespace RPCS3X
 {
     namespace FS = Cthulhu::FileSystem;
-    Array<Byte> DecryptSELF(FS::BufferedFile& File);
+    using SELF = Cthulhu::Array<Cthulhu::Byte>;
+    SELF DecryptSELF(FS::BufferedFile& File);
 }
 
 

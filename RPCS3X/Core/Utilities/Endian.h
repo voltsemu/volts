@@ -69,7 +69,7 @@ namespace RPCS3X
         }
 #endif
 
-        T operator T() const { return Get(); }
+        operator T() const { return Get(); }
     };
 
     // alias for little endian types

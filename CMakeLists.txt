@@ -10,41 +10,66 @@ else()
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 endif()
 
-#add in source directory
-include_directories(${CMAKE_SOURCE_DIR}/RPCS3X/Core)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/RPCS3X)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/RPCS3X/Core)
 
-find_library(CTHULHU CTULib)
 include(ExternalProject)
 
-if(NOT CTHULHU_FOUND)
-	message(STATUS "Cthulhu not found, grabbing from github")
+ExternalProject_Add(ProjectCthulhu
+	GIT_REPOSITORY https://github.com/Apache-HB/CTULib.git
+	PREFIX ${CMAKE_CURRENT_BINARY_DIR}/Cthulhu
+)
 
-	ExternalProject_Add(CTULib
-		GIT_REPOSITORY https://github.com/Apache-HB/CTULib.git
-		PREFIX ${CMAKE_CURRENT_BINARY_DIR}/Cthulhu
-		EXCLUDE_FROM_ALL TRUE
-	)
-endif()
+ExternalProject_Get_Property(ProjectCthulhu INSTALL_DIR)
+add_library(Cthulhu STATIC IMPORTED)
+set_property(TARGET Cthulhu PROPERTY IMPORTED_LOCATION ${INSTALL_DIR}/bin/Cthulhu)
+add_dependencies(Cthulhu ProjectCthulhu)
 
-install(DIRECTORY ${COMMON_BASE_PROJECT_DIR}/ DESTINATION "/")
 
-include_directories(${CMAKE_BINARY_DIR}/Cthulhu)
+file(GLOB_RECURSE RPCS3X_SOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} RPCS3X/Core/*.cpp)
+add_executable(RPCS3X ${RPCS3X_SOURCES})
+target_link_directories(RPCS3X PRIVATE)
+target_link_libraries(RPCS3X PRIVATE Core FileSystem)
+target_link_directories(RPCS3X PRIVATE ${INSTALL_DIR}/src/ProjectCthulhu-build)
+target_include_directories(RPCS3X PRIVATE ${INSTALL_DIR}/src/ProjectCthulhu/Cthulhu)
+#target_include_directories(RPCS3X PRIVATE "/Users/student/Documents/GitHub/RPCS3X/Build/Cthulhu/src/ProjectCthulhu/Cthulhu")
 
-ExternalProject_Get_Property(CTULib SOURCE_DIR)
-include_directories(${SOURCE_DIR}/Cthulhu/src/CTULib-build)
-include_directories(${SOURCE_DIR}/Cthulhu/src/CTULib/Cthulhu)
-include_directories(${SOURCE_DIR}/Cthulhu)
 
-ExternalProject_Get_Property(CTULib BINARY_DIR)
-link_directories(${CMAKE_CURRENT_BINARY_DIR}/Cthulhu)
-link_directories(${BINARY_DIR}/Cthulhu/src/CTULib-build)
+# #add in source directory
+# include_directories(${CMAKE_SOURCE_DIR}/RPCS3X/Core)
 
-#create main executable
-add_executable(RPCS3X RPCS3X/Core/RPCS3X.cpp)
-target_link_libraries(RPCS3X "${CTULib}")
+# find_library(CTHULHU CTULib)
+# include(ExternalProject)
 
-add_dependencies(RPCS3X CTULib)
-target_link_libraries(RPCS3X CthulhuCore CthulhuFileSystem)
+# if(NOT CTHULHU_FOUND)
+# 	message(STATUS "Cthulhu not found, grabbing from github")
+
+# 	ExternalProject_Add(CTULib
+# 		GIT_REPOSITORY https://github.com/Apache-HB/CTULib.git
+# 		PREFIX ${CMAKE_CURRENT_BINARY_DIR}/Cthulhu
+# 		EXCLUDE_FROM_ALL TRUE
+# 	)
+# endif()
+
+# install(DIRECTORY ${COMMON_BASE_PROJECT_DIR}/ DESTINATION "/")
+
+# include_directories(${CMAKE_BINARY_DIR}/Cthulhu)
+
+# ExternalProject_Get_Property(CTULib SOURCE_DIR)
+# include_directories(${SOURCE_DIR}/Cthulhu/src/CTULib-build)
+# include_directories(${SOURCE_DIR}/Cthulhu/src/CTULib/Cthulhu)
+# include_directories(${SOURCE_DIR}/Cthulhu)
+
+# ExternalProject_Get_Property(CTULib BINARY_DIR)
+# link_directories(${CMAKE_CURRENT_BINARY_DIR}/Cthulhu)
+# link_directories(${BINARY_DIR}/Cthulhu/src/CTULib-build)
+
+# #create main executable
+# add_executable(RPCS3X RPCS3X/Core/RPCS3X.cpp)
+# target_link_libraries(RPCS3X "${CTULib}")
+
+# add_dependencies(RPCS3X CTULib)
+# target_link_libraries(RPCS3X CthulhuCore CthulhuFileSystem)
 
 #these are some horrible hacks to get stuff to build
 #it leaves some of the build paths in a mess but it does work
