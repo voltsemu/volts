@@ -22,7 +22,10 @@ namespace RPCS3X
 
     Array<Byte> DecryptSELF(FS::BufferedFile& File)
     {
-        return Array<Byte>();
+        auto SCE = File.Read<SCE::Header>();
+        if(SCE.Magic != "SCE\0"_U32)
+            return Array<Byte>();
+        
     }
 }
 
