@@ -1,9 +1,9 @@
 .vs/*
 .vscode/*
 Build/*
-buckaroo.lock.toml
-buckaroo/github/apache-hb/ctulib.receipt.toml
-buckaroo/github/apache-hb/ctulib/
-buckaroo_macros.bzl
-.buckconfig.d/.buckconfig.buckaroo
+*.bzl
+.buckd/
+buck-out/
+buckaroo/
+.buckconfig.d/
 .buckconfig

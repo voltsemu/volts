@@ -1,11 +1,11 @@
 #pragma once
 
-#include <Meta/Aliases.h>
-#include <Core/Collections/CthulhuString.h>
-#include <Core/Collections/Map.h>
-#include <Core/Collections/Result.h>
+#include <Cthulhu/Meta/Aliases.h>
+#include <Cthulhu/Core/Collections/CthulhuString.h>
+#include <Cthulhu/Core/Collections/Map.h>
+#include <Cthulhu/Core/Collections/Result.h>
 
-#include <FileSystem/BufferedFile.h>
+#include <Cthulhu/FileSystem/BufferedFile.h>
 
 namespace RPCS3X::SFO
 {

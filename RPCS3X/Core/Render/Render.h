@@ -1,8 +1,8 @@
 #pragma once
 
-#include <Meta/Aliases.h>
-#include <Core/Collections/Array.h>
-#include <Core/Collections/CthulhuString.h>
+#include <Cthulhu/Meta/Aliases.h>
+#include <Cthulhu/Core/Collections/Array.h>
+#include <Cthulhu/Core/Collections/CthulhuString.h>
 #include "Types.h"
 
 namespace RPCS3X::RSX
@@ -112,6 +112,7 @@ namespace RPCS3X::RSX
         // get an array of all compatible devices
         virtual GPUDevices CompatibleDevices() const = 0;
 
+        virtual void FreeDevices(GPUDevices Devices) const = 0;
 
         // get the pretty name of a device
         virtual Str DeviceName(const GPUDeviceID& Device) const = 0;

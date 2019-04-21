@@ -1,3 +1,5 @@
+load('//:buckaroo_macros.bzl', 'buckaroo_deps')
+
 cxx_binary(
 	name = 'RPCS3X',
 	headers = subdir_glob([
@@ -8,5 +10,6 @@ cxx_binary(
 	platform_compiler_flags = [
         ('windows.*', [ '/std:c++17' ]),
         ('[apple|linux].*', [ '-std=c++17' ])
-    ]
+    ],
+	deps = buckaroo_deps()
 )

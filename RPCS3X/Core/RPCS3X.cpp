@@ -6,6 +6,8 @@
 #include <iostream>
 using namespace RPCS3X;
 
+REGISTER_RENDER(RPCS3X::RSX::NullRender);
+
 int main()
 {
     std::cout << "Thing" << std::endl;

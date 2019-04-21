@@ -39,9 +39,8 @@ namespace RPCS3X::RSX
 
         virtual void SwitchDevice(GPUDeviceID ID) override {}
         virtual GPUDevices CompatibleDevices() const override { return GPUDevices(); }
+        virtual void FreeDevices(GPUDevices Devices) const override {}
 
         virtual Str DeviceName(const GPUDeviceID& Device) const override { return ""; }
     };
-
-    REGISTER_RENDER(NullRender);
 }
