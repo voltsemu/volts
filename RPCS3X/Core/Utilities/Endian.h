@@ -48,7 +48,7 @@ namespace RPCS3X
                 // if it is we can just return the data as target is little endian as well
                 return Data;
             }
-            // if the data is loaded as bing endian
+            // if the data is loaded as big endian
             else
             {
                 // then we need to byteswap the data so it becomes little endian and is usable by target
