@@ -1,7 +1,7 @@
 #pragma once
 
-#include <Cthulhu/Meta/Macros.h>
-#include <Cthulhu/Core/Math/Bytes.h>
+#include <Meta/Macros.h>
+#include <Core/Math/Bytes.h>
 
 namespace RPCS3X
 {

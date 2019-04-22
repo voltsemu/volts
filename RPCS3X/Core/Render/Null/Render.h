@@ -6,6 +6,7 @@ namespace RPCS3X::RSX
 {
     struct NullRender : public Render
     {
+        virtual ~NullRender() override {}
         virtual void Initialize() override {}
         virtual void Close() override {}
         virtual void Resize(U32 Width, U32 Height) override {}

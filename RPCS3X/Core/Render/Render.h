@@ -1,8 +1,8 @@
 #pragma once
 
-#include <Cthulhu/Meta/Aliases.h>
-#include <Cthulhu/Core/Collections/Array.h>
-#include <Cthulhu/Core/Collections/CthulhuString.h>
+#include <Meta/Aliases.h>
+#include <Core/Collections/Array.h>
+#include <Core/Collections/CthulhuString.h>
 #include "Types.h"
 
 namespace RPCS3X::RSX
@@ -17,6 +17,7 @@ namespace RPCS3X::RSX
 
     struct Render
     {
+        virtual ~Render() {}
         // ==================================================
         //                [ Window Managment ]
         // ==================================================
@@ -112,20 +113,10 @@ namespace RPCS3X::RSX
         // get an array of all compatible devices
         virtual GPUDevices CompatibleDevices() const = 0;
 
+        // free each device from memory once we are done with it
         virtual void FreeDevices(GPUDevices Devices) const = 0;
 
         // get the pretty name of a device
         virtual Str DeviceName(const GPUDeviceID& Device) const = 0;
     };
-
-    using RenderInfo = Render*;
-
-    using RenderBackends = Cthulhu::Array<RenderInfo>;
-
-    static RenderBackends Backends;
-    Empty AddBackend(const RenderInfo Info);
-
-#   define TOKEN_PASTE(X, Y) X##Y
-#   define CAT(X, Y) TOKEN_PASTE(X, Y)
-#   define REGISTER_RENDER(Type) namespace { static auto CAT(RR, __LINE__) = AddBackend(new Type()); }
 }

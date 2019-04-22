@@ -1,12 +1,12 @@
 #pragma once
 
-#include <Cthulhu/FileSystem/BufferedFile.h>
+#include <FileSystem/BufferedFile.h>
 
 namespace RPCS3X
 {
     namespace FS = Cthulhu::FileSystem;
-    using SELF = Cthulhu::Array<Cthulhu::Byte>;
-    SELF DecryptSELF(FS::BufferedFile& File);
+    using ELFBinary = Cthulhu::Array<Cthulhu::Byte>;
+    ELFBinary DecryptSELF(FS::BufferedFile& File);
 }
 
 
