@@ -1,5 +1,7 @@
 #include "SFO.h"
 
+#include "Convert.h"
+
 namespace RPCS3X::SFO
 {
     // this serves as a redirector to a key, value pair stored in the file
@@ -56,7 +58,7 @@ namespace RPCS3X::SFO
 
         // 1179865088ULL is actually "\0PSF" reinterpreted to U32
         // thats the magic that is always at the top of .SFO files
-        if(Stats.Magic != 1179865088ULL)
+        if(Stats.Magic != "\0PSF"_U32)
             return Fail<SFO, Error>(Error::BadMagic);
 
         // while other versions may technically be valid, we do this anyway just to be sure
