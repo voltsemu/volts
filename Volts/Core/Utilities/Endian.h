@@ -3,7 +3,7 @@
 #include <Meta/Macros.h>
 #include <Core/Math/Bytes.h>
 
-namespace RPCS3X
+namespace Volts
 {
     // what endianness does the data we're loading have?
     enum class Endian : Cthulhu::U8
@@ -52,7 +52,7 @@ namespace RPCS3X
             else
             {
                 // then we need to byteswap the data so it becomes little endian and is usable by target
-                return Cthulhu::Math::ByteSwap<T>(Data);
+                return Cthulhu::Math::GenericByteSwap<T>(Data);
             }
         }
 #else

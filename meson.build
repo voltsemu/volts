@@ -1,4 +1,4 @@
-project('RPCS3X', 'cpp', 
+project('Volts', 'cpp', 
     default_options : [ 'cpp_std=c++17' ], 
     version : '0.2.0', 
     license : 'Apache'
@@ -6,18 +6,18 @@ project('RPCS3X', 'cpp',
 
 cthulhu = subproject('Cthulhu')
 
-inc = include_directories('RPCS3X')
+inc = include_directories('Volts')
 
 sources = [
-    'RPCS3X/Core/RPCS3X.cpp',
-    'RPCS3X/Core/Utilities/SFO.cpp',
-    'RPCS3X/Core/Utilities/Decrypt/UNSELF.cpp',
-    'RPCS3X/Core/Utilities/Logger/Logger.cpp',
-    'RPCS3X/Core/Render/Render.cpp',
-    'RPCS3X/Core/Render/Null/Render.cpp'
+    'Volts/Core/Volts.cpp',
+    'Volts/Core/Utilities/SFO.cpp',
+    'Volts/Core/Utilities/Decrypt/UNSELF.cpp',
+    'Volts/Core/Utilities/Logger/Logger.cpp',
+    'Volts/Core/Render/Render.cpp',
+    'Volts/Core/Render/Null/Render.cpp'
 ]
 
-executable('RPCS3X', sources,
+executable('Volts', sources,
     include_directories : [ inc, cthulhu.get_variable('inc') ],
     link_with : [
         cthulhu.get_variable('metalib'),

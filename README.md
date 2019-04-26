@@ -1,4 +1,4 @@
-# RPCS3X
+# Volts
 A PS3 emulator to rival RPCS3
 
 ## Why?

@@ -2,7 +2,7 @@
 
 #include <Meta/Aliases.h>
 
-namespace RPCS3X
+namespace Volts
 {
     constexpr Cthulhu::U16 operator ""_U16(const char* Str, unsigned long)
     {

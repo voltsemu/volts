@@ -2,7 +2,7 @@
 
 #include "Core/Render/Render.h"
 
-namespace RPCS3X::RSX
+namespace Volts::RSX
 {
     struct NullRender : public Render
     {

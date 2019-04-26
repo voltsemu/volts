@@ -3,7 +3,7 @@
 #include <Core/Collections/Array.h>
 #include <Core/Collections/CthulhuString.h>
 
-namespace RPCS3X
+namespace Volts
 {
     using Str = Cthulhu::String;
     using LogChannels = Cthulhu::Array<Str>;

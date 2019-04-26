@@ -1,6 +1,6 @@
 #pragma once
 
-namespace RPCS3X::RSX
+namespace Volts::RSX
 {
     enum class Object
     {

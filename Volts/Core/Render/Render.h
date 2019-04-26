@@ -5,7 +5,7 @@
 #include <Core/Collections/CthulhuString.h>
 #include "Types.h"
 
-namespace RPCS3X::RSX
+namespace Volts::RSX
 {
     using namespace Cthulhu;
     using RenderState = void*;

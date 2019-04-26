@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-namespace RPCS3X
+namespace Volts
 {
     struct Emulator
     {

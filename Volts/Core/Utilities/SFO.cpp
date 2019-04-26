@@ -2,7 +2,7 @@
 
 #include "Convert.h"
 
-namespace RPCS3X::SFO
+namespace Volts::SFO
 {
     // this serves as a redirector to a key, value pair stored in the file
     // we put it here instead of in the header as it is a purley internal data structure
