@@ -1,9 +1,9 @@
+# ignore visual studio and vscode folders
 .vs/*
 .vscode/*
+
+# ignore build output
 Build/*
-*.bzl
-.buckd/
-buck-out/
-buckaroo/
-.buckconfig.d/
-.buckconfig
+
+# ignore msbuild generated files
+"Generated Files/*"
