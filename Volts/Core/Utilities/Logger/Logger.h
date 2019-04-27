@@ -6,10 +6,31 @@
 namespace Volts
 {
     using Str = Cthulhu::String;
-    using LogChannels = Cthulhu::Array<Str>;
-    struct Logger
+
+    enum class Severity : Cthulhu::U8
     {
-        LogChannels Channels;
-        Logger& AddChannel(Str& Channel);
+        Trace = 0,
+        Info = 1,
+        Debug = 2,
+        Warning = 3,
+        Error = 4,
+        Fatal = 5
     };
+
+    struct Log
+    {
+        Severity LogLevel = Severity::Warning;
+
+        void Info(const Str& Message);
+        void Trace(const Str& Message);
+        void Debug(const Str& Message);
+        void Warning(const Str& Message);
+        void Error(const Str& Message);
+        void Fatal(const Str& Message);
+    
+    private:
+        void Write(Severity S, const Str& Message);
+    };
+
+    extern Log Logger;
 }
