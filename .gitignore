@@ -1,9 +1,12 @@
-# ignore visual studio and vscode folders
-.vs/*
+# ignore visual studio
+.vs/
+
+# ignore vscode folder
 .vscode/*
 
 # ignore build output
 Build/*
 
 # ignore msbuild generated files
-"Generated Files/*"
+# has to be a full path for some reason
+Volts/Platform/Windows/Volts/Volts/Generated\ Files/*
