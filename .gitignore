@@ -9,4 +9,7 @@ Build/*
 
 # ignore msbuild generated files
 # has to be a full path for some reason
+# also ignore all the crap visual studio generates
 Volts/Platform/Windows/Volts/Volts/Generated\ Files/*
+Volts/Platform/Windows/Volts/Volts/Debug/
+Volts/Platform/Windows/Volts/Debug/
