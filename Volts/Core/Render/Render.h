@@ -119,4 +119,13 @@ namespace Volts::RSX
         // get the pretty name of a device
         virtual Str DeviceName(const GPUDeviceID& Device) const = 0;
     };
+
+    using Backend = Render*;
+    extern Array<Backend> Backends;
+
+    Empty AddBackend(Backend Back);
+
+#define CAT(A, B) A##B
+
+#define REGISTER_RENDERER(Type) namespace { auto CAT(_, __LINE__) = AddBackend(new Type()); }
 }

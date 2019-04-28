@@ -44,4 +44,6 @@ namespace Volts::RSX
 
         virtual Str DeviceName(const GPUDeviceID& Device) const override { return ""; }
     };
+
+    REGISTER_RENDERER(NullRender);
 }
