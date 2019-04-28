@@ -1,4 +1,4 @@
-project('Volts', ['cpp', 'objcpp'], 
+project('Volts', 'cpp', 
     default_options : [ 'cpp_std=c++17' ], 
     version : '0.2.0', 
     license : 'Apache'
