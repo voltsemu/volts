@@ -30,8 +30,12 @@ if build_machine.system() == 'windows'
             cthulhu.get_variable('corelib'),
             cthulhu.get_variable('fslib')
         ],
+        install_dir : 'Volts/Platform/Windows/Volts/Volts',
         install : true
     )
+
+    # install_data(volt_lib, install_dir : '')
+
 else
     # everywhere else this stuff can be statically linked
     volt_lib = static_library('VoltLib', sources,
