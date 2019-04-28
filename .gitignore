@@ -14,6 +14,7 @@ Volts/Platform/Windows/Volts/Volts/Generated\ Files/*
 Volts/Platform/Windows/Volts/Volts/Debug/
 Volts/Platform/Windows/Volts/Debug/
 
+!Volts/Platform/Windows/*
 # also ignore all packages these can be downloaded using nuget
 Volts/Platform/Windows/Volts/packages/
 

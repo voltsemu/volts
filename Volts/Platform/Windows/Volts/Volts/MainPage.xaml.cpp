@@ -6,6 +6,8 @@
 #include "pch.h"
 #include "MainPage.xaml.h"
 
+#include <../../../../../Volts/Core/Volts.h>
+
 using namespace Volts;
 
 using namespace Platform;

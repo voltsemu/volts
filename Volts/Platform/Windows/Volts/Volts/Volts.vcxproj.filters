@@ -2,10 +2,10 @@
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Common">
-      <UniqueIdentifier>0bdae82e-691f-4eb3-9f4e-e207db6eec10</UniqueIdentifier>
+      <UniqueIdentifier>cdb2e3b9-03f1-4835-a15f-afb526fea4e7</UniqueIdentifier>
     </Filter>
     <Filter Include="Assets">
-      <UniqueIdentifier>08e29266-07e1-42fe-98fa-c107066b9481</UniqueIdentifier>
+      <UniqueIdentifier>51230a62-cbbd-4b0d-a1e9-171eb06f60de</UniqueIdentifier>
       <Extensions>bmp;fbx;gif;jpg;jpeg;tga;tiff;tif;png</Extensions>
     </Filter>
   </ItemGroup>
@@ -50,7 +50,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Volts_TemporaryKey.pfx" />
-    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="MainPage.xaml" />
