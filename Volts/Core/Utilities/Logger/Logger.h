@@ -21,16 +21,19 @@ namespace Volts
     {
         Severity LogLevel = Severity::Warning;
 
-        void Info(const Str& Message);
-        void Trace(const Str& Message);
-        void Debug(const Str& Message);
-        void Warning(const Str& Message);
-        void Error(const Str& Message);
-        void Fatal(const Str& Message);
+        void Info(const Str& Channel, const Str& Message);
+        void Trace(const Str& Channel, const Str& Message);
+        void Debug(const Str& Channel, const Str& Message);
+        void Warning(const Str& Channel, const Str& Message);
+        void Error(const Str& Channel, const Str& Message);
+        void Fatal(const Str& Channel, const Str& Message);
     
     private:
-        void Write(Severity S, const Str& Message);
+        void Write(const Str& Channel, Severity S, const Str& Message);
     };
 
     extern Log Logger;
+
+#   define LOG_INFO(C, Msg) Logger.Info(Msg)
+#   define LOG_TRACE(C, Msg) Logger.Trace(Msg);
 }

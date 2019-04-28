@@ -2,8 +2,5 @@
 
 namespace Volts
 {
-    struct Emulator
-    {
-
-    };
+    int VoltsMain();
 }

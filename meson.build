@@ -1,4 +1,4 @@
-project('Volts', 'cpp', 
+project('Volts', ['cpp', 'objcpp'], 
     default_options : [ 'cpp_std=c++17' ], 
     version : '0.2.0', 
     license : 'Apache'
@@ -17,7 +17,7 @@ sources = [
     'Volts/Core/Render/Null/Render.cpp'
 ]
 
-volt = executable('Volts', sources,
+volt_lib = static_library('VoltLib', sources,
     include_directories : [ inc, cthulhu.get_variable('inc') ],
     link_with : [
         cthulhu.get_variable('metalib'),
@@ -27,3 +27,15 @@ volt = executable('Volts', sources,
     install : true
 )
 
+# put this beyond volt_lib decl so that meson does its thing
+# turns out subdir('path') is basically #include "path"
+if build_machine.system() == 'windows'
+# building on windows
+    subdir('Volts/Platform/Windows')
+elif build_machine.system() == 'darwin'
+# building on mac
+    subdir('Volts/Platform/Apple')
+else
+# if its not mac or windows its going to be some linux flavor
+    subdir('Volts/Platform/Linux')
+endif

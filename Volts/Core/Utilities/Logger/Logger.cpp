@@ -4,15 +4,15 @@ namespace Volts
 {
     namespace
     {
-        static const String TPrefix = "trace: ";
-        static const String IPrefix = "info: ";
-        static const String DPrefix = "debug: ";
-        static const String WPrefix = "warning: ";
-        static const String EPrefix = "error: ";
-        static const String FPrefix = "fatal: ";
+        static const Str TPrefix = "trace: ";
+        static const Str IPrefix = "info: ";
+        static const Str DPrefix = "debug: ";
+        static const Str WPrefix = "warning: ";
+        static const Str EPrefix = "error: ";
+        static const Str FPrefix = "fatal: ";
     }
 
-    const String& Prefix(Severity S)
+    const Str& Prefix(Severity S)
     {
         switch(S)
         {
@@ -26,46 +26,46 @@ namespace Volts
         }
     }
 
-    void Log::Write(Severity S, const Str& Message)
+    void Log::Write(const Str& Channel, Severity S, const Str& Message)
     {
         if(S >= LogLevel)
         {
 #if OS_APPLE || OS_LINUX
-            printf("%s\n", (Prefix + Message).CStr());
+            printf("%s\n", (Prefix(S) + Channel + Str(" ") + Message).CStr());
 #elif OS_WINDOWS
             // do something else
 #endif
         }
     }
 
-    void Log::Trace(const Str& Message)
+    void Log::Trace(const Str& Channel, const Str& Message)
     {
-        Write(Severity::Trace, Message);
+        Write(Channel, Severity::Trace, Message);
     }
 
-    void Log::Info(const Str& Message)
+    void Log::Info(const Str& Channel, const Str& Message)
     {
-        Write(Severity::Info, Message);
+        Write(Channel, Severity::Info, Message);
     }
 
-    void Log::Debug(const Str& Message)
+    void Log::Debug(const Str& Channel, const Str& Message)
     {
-        Write(Severity::Debug, Message);
+        Write(Channel, Severity::Debug, Message);
     }
 
-    void Log::Warning(const Str& Message)
+    void Log::Warning(const Str& Channel, const Str& Message)
     {
-        Write(Severity::Warning, Message);
+        Write(Channel, Severity::Warning, Message);
     }
 
-    void Log::Error(const Str& Message)
+    void Log::Error(const Str& Channel, const Str& Message)
     {
-        Write(Severity::Error, Message);
+        Write(Channel, Severity::Error, Message);
     }
 
-    void Log::Fatal(const Str& Message)
+    void Log::Fatal(const Str& Channel, const Str& Message)
     {
-        Write(Severity::Fatal, Message);
+        Write(Channel, Severity::Fatal, Message);
     }
 
     Log Logger = Log();
