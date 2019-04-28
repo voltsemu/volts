@@ -16,3 +16,10 @@ Volts/Platform/Windows/Volts/Debug/
 
 # also ignore all packages these can be downloaded using nuget
 Volts/Platform/Windows/Volts/packages/
+
+
+# ignore msbuild generated things
+Volts/Platform/Windows/Volts/AppPackages/*
+Volts/Platform/Windows/Volts/Volts/Release/*
+Volts/Platform/Windows/Volts/Volts/x64/*
+Volts/Platform/Windows/Volts/x64/Release/Volts/*
