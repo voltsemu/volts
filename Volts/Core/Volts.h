@@ -1,6 +1,3 @@
 ﻿#pragma once
 
-namespace Volts
-{
-    int VoltsMain();
-}
+extern "C" { int VoltsMain(); }

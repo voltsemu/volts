@@ -2,14 +2,13 @@
 #include "Volts.h"
 #include "Volts/Core/Utilities/Decrypt/UNSELF.h"
 
-namespace Volts
+namespace FS = Cthulhu::FileSystem;
+
+using namespace Volts;
+
+int VoltsMain()
 {
-
-	int VoltsMain()
-	{
-		FS::BufferedFile F = {"./EBOOT.BIN"};
-		UNSELF::DecryptSELF(F);
-		return 0;
-	}
-
+	FS::BufferedFile F = {"./EBOOT.BIN"};
+	UNSELF::DecryptSELF(F);
+	return 0;
 }
