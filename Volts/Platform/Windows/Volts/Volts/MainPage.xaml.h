@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <..\..\..\..\..\Volts\Core\Volts.h>
+
 #include "MainPage.g.h"
 
 namespace Volts
