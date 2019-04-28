@@ -3,7 +3,7 @@
 #include "Volts/Core/Utilities/Decrypt/UNSELF.h"
 using namespace Volts;
 
-int main()
+int VoltsMain()
 {
 	FS::BufferedFile F = {"./EBOOT.BIN"};
 	UNSELF::DecryptSELF(F);

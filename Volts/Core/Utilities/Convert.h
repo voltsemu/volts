@@ -4,17 +4,17 @@
 
 namespace Volts
 {
-    constexpr Cthulhu::U16 operator ""_U16(const char* Str, unsigned long)
+    constexpr Cthulhu::U16 operator ""_U16(const char* Str, size_t)
     {
         return *(Cthulhu::U16*)Str;
     }
 
-    constexpr Cthulhu::U32 operator ""_U32(const char* Str, unsigned long)
+    constexpr Cthulhu::U32 operator ""_U32(const char* Str, size_t)
     {
         return *(Cthulhu::U32*)Str;
     }
 
-    constexpr Cthulhu::U64 operator ""_U64(const char* Str, unsigned long)
+    constexpr Cthulhu::U64 operator ""_U64(const char* Str, size_t)
     { 
         return *(Cthulhu::U64*)Str;
     }

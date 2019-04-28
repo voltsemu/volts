@@ -17,7 +17,7 @@ sources = [
     'Volts/Core/Render/Null/Render.cpp'
 ]
 
-executable('Volts', sources,
+volt = executable('Volts', sources,
     include_directories : [ inc, cthulhu.get_variable('inc') ],
     link_with : [
         cthulhu.get_variable('metalib'),
@@ -26,3 +26,4 @@ executable('Volts', sources,
     ],
     install : true
 )
+
