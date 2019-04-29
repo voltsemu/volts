@@ -9,3 +9,4 @@ namespace Volts
         virtual void WriteLog(const char* Channel, char Severity, const char* Message) = 0;
     };
 }
+

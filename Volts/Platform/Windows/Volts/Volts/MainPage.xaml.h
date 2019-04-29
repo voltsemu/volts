@@ -16,6 +16,6 @@ namespace Volts
 	{
 	public:
 		MainPage();
-
+        void SetTXT(Platform::String^ T) { TXT->Text = T;  }
 	};
 }

@@ -170,8 +170,14 @@
       <CompileAsManaged>false</CompileAsManaged>
     </ClCompile>
     <PreBuildEvent>
-      <Command>
-      </Command>
+      <Command>cd $(SolutionDir)
+cd ..
+cd ..
+cd ..
+cd ..
+cd Build
+ninja
+python copy.py</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

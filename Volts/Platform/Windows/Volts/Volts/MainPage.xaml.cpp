@@ -23,6 +23,16 @@ using namespace Windows::UI::Xaml::Navigation;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
+namespace Volts
+{
+    struct EmulatorWindow
+    {
+        virtual void WriteLog(const char* Channel, char Severity, const char* Message) = 0;
+    };
+}
+
+
+
 struct WEmuWindow : public Volts::EmulatorWindow
 {
     MainPage^ Parent;
@@ -32,7 +42,11 @@ struct WEmuWindow : public Volts::EmulatorWindow
 
     virtual void WriteLog(const char* Channel, char Severity, const char* Message) override
     {
-        //Parent->TXT->Text = "Yeeeeet";
+        std::string s_str = std::string(Message);
+        std::wstring wid_str = std::wstring(s_str.begin(), s_str.end());
+        const wchar_t* w_char = wid_str.c_str();
+        Platform::String^ p_string = ref new Platform::String(w_char);
+        Parent->SetTXT(p_string);
     }
 };
 
