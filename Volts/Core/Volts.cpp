@@ -11,6 +11,6 @@ using namespace Volts;
 int VoltsMain(void* Handle)
 {
 	auto* Win = (EmulatorWindow*)Handle;
-	Handle->WriteLog("Working in volts");
+	Win->WriteLog("Working in volts", 0, "");
 	return 0;
 }

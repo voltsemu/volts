@@ -6,6 +6,7 @@ namespace Volts
 {
     struct EmulatorWindow
     {
+        virtual ~EmulatorWindow() {}
         virtual void WriteLog(const char* Channel, char Severity, const char* Message) = 0;
     };
 }
