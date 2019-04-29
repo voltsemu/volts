@@ -38,14 +38,23 @@ choco install meson git
 git submodule update --init
 ```
 
-
-2. actually building
+5. building core library
 ```sh
 cd Path/To/Volts
 meson Build
 cd Build
-ninja
-./Volts.exe # or find and double click the .exe
+ninja && python copy.py
+cd ..
+```
+
+6. building windows frontend
+```
+open Volts/Platform/Windows/Volts/Volts.sln with visual studio
+```
+
+7. running windows frontend
+```
+build and run that target
 ```
 
 ## Mac

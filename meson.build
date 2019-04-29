@@ -20,6 +20,7 @@ sources = [
 if build_machine.system() == 'windows'
     # just so much funky windows stuff to do
     # since we make a UWP app on windows this needs to be shared
+
     volt_lib = shared_library('VoltLib', sources,
         cpp_args : ['/ZW', '/EHsc', '/Zc:twoPhase-'],
         name_prefix : '',
@@ -30,11 +31,8 @@ if build_machine.system() == 'windows'
             cthulhu.get_variable('corelib'),
             cthulhu.get_variable('fslib')
         ],
-        install_dir : 'Volts/Platform/Windows/Volts/Volts',
         install : true
     )
-
-    # install_data(volt_lib, install_dir : '')
 
 else
     # everywhere else this stuff can be statically linked
@@ -51,12 +49,10 @@ endif
 
 # put this beyond volt_lib decl so that meson does its thing
 # turns out subdir('path') is basically #include "path"
-if build_machine.system() == 'windows'
-# building on windows
-    subdir('Volts/Platform/Windows')
-elif build_machine.system() == 'darwin'
+if build_machine.system() == 'darwin'
 # building on mac
     subdir('Volts/Platform/Apple')
+elif build_machine.system() == 'windows' # stubbed
 else
 # if its not mac or windows its going to be some linux flavor
     subdir('Volts/Platform/Linux')
