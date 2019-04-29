@@ -1,4 +1,4 @@
-project('Volts', 'cpp', 'objcpp', 
+project('Volts', 'cpp', 
     default_options : [ 'cpp_std=c++17' ], 
     version : '0.2.0', 
     license : 'Apache'
@@ -49,10 +49,7 @@ endif
 
 # put this beyond volt_lib decl so that meson does its thing
 # turns out subdir('path') is basically #include "path"
-if build_machine.system() == 'darwin'
-# building on mac
-    subdir('Volts/Platform/Apple')
-elif build_machine.system() == 'windows' # stubbed
+if build_machine.system() == 'darwin' or build_machine.system() == 'windows' # stubbed
 else
 # if its not mac or windows its going to be some linux flavor
     subdir('Volts/Platform/Linux')
