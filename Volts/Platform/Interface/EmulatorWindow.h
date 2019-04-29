@@ -4,13 +4,8 @@
 
 namespace Volts
 {
-#if defined(_WIN32) || defined(_WIN64)
-    public ref class EmulatorWindow
-#else
-    class EmulatorWindow
-#endif
+    struct EmulatorWindow
     {
-    public:
         virtual void WriteLog(const char* Channel, char Severity, const char* Message) = 0;
     };
 }
