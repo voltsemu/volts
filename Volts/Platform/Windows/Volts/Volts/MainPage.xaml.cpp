@@ -32,10 +32,7 @@ ref struct WEmuWindow : Volts::EmulatorWindow
 
     virtual void WriteLog(const char* Channel, char Severity, const char* Message) override
     {
-        std::string s_str = std::string(Channel);
-        std::wstring wid_str = std::wstring(s_str.begin(), s_str.end());
-        const wchar_t* w_char = wid_str.c_str();
-        Parent->TXT->Text = w_char;
+        //Parent->TXT->Text = "Yeeeeet";
     }
 };
 
@@ -44,7 +41,7 @@ MainPage::MainPage()
 	InitializeComponent();
     HMODULE Mod = LoadPackagedLibrary(L"VoltCore.dll", 0);
 
-    using VMain = int(*)();
+    using VMain = int(*)(void*);
 
     VMain Entry = (VMain)GetProcAddress(Mod, "VoltsMain");
 
@@ -56,5 +53,7 @@ MainPage::MainPage()
             TXT->Text = "EntryNull";
     }
 
-    Entry();
+    WEmuWindow^ Emu = ref new WEmuWindow(this);
+
+    Entry((void*)Emu);
 }
