@@ -16,6 +16,7 @@ namespace Volts
 	{
 	public:
 		MainPage();
-        void SetTXT(Platform::String^ T) { TXT->Text = T;  }
 	};
 }
+
+// cd $(SolutionDir)..\..\..\..\Build && ninja && python copy.py

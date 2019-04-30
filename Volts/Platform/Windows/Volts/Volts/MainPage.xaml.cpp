@@ -42,11 +42,6 @@ struct WEmuWindow : public Volts::EmulatorWindow
 
     virtual void WriteLog(const char* Channel, char Severity, const char* Message) override
     {
-        std::string s_str = std::string(Message);
-        std::wstring wid_str = std::wstring(s_str.begin(), s_str.end());
-        const wchar_t* w_char = wid_str.c_str();
-        Platform::String^ p_string = ref new Platform::String(w_char);
-        Parent->SetTXT(p_string);
     }
 };
 
@@ -58,14 +53,6 @@ MainPage::MainPage()
     using VMain = int(*)(void*);
 
     VMain Entry = (VMain)GetProcAddress(Mod, "VoltsMain");
-
-    if (Entry == nullptr)
-    {
-        if (Mod == nullptr)
-            TXT->Text = "Mod&EntryNull";
-        else
-            TXT->Text = "EntryNull";
-    }
 
     WEmuWindow* Emu = new WEmuWindow(this);
 

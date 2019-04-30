@@ -51,6 +51,7 @@
   <ItemGroup>
     <None Include="Volts_TemporaryKey.pfx" />
     <None Include="..\x64\Release\Volts\VoltCore.dll" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="MainPage.xaml" />
