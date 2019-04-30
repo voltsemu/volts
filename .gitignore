@@ -24,4 +24,6 @@ Volts/Platform/Windows/Volts/AppPackages/*
 Volts/Platform/Windows/Volts/Volts/Release/*
 Volts/Platform/Windows/Volts/Volts/x64/*
 Volts/Platform/Windows/Volts/x64/Release/Volts/*
-Volt
+
+# ignore mac xcode stuff
+Volts/Platform/Apple/Volts/Index/*
