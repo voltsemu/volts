@@ -1,7 +1,10 @@
 #include "Logger.h"
 
+#include "Volts/Core/Volts.h"
+
 namespace Volts
 {
+    Level Log::LogLevel = Level::Warning;
     namespace
     {
         static const Str TPrefix = "trace: ";
@@ -12,61 +15,55 @@ namespace Volts
         static const Str FPrefix = "fatal: ";
     }
 
-    const Str& Prefix(Severity S)
+    const Str& Prefix(Level S)
     {
         switch(S)
         {
             default:
-            case Severity::Trace: return TPrefix;
-            case Severity::Info: return IPrefix;
-            case Severity::Debug: return DPrefix;
-            case Severity::Warning: return WPrefix;
-            case Severity::Error: return EPrefix;
-            case Severity::Fatal: return FPrefix;
+            case Level::Trace: return TPrefix;
+            case Level::Info: return IPrefix;
+            case Level::Debug: return DPrefix;
+            case Level::Warning: return WPrefix;
+            case Level::Error: return EPrefix;
+            case Level::Fatal: return FPrefix;
         }
     }
 
-    void Log::Write(const Str& Channel, Severity S, const Str& Message)
+    void Log::Write(const Str& Channel, Level S, const Str& Message)
     {
         if(S >= LogLevel)
         {
-#if OS_APPLE || OS_LINUX
-            printf("%s\n", (Prefix(S) + Channel + Str(" ") + Message).CStr());
-#elif OS_WINDOWS
-            // do something else
-#endif
+            Volts::Window->WriteLog(Channel.CStr(), S, Message.CStr());
         }
     }
 
     void Log::Trace(const Str& Channel, const Str& Message)
     {
-        Write(Channel, Severity::Trace, Message);
+        Write(Channel, Level::Trace, Message);
     }
 
     void Log::Info(const Str& Channel, const Str& Message)
     {
-        Write(Channel, Severity::Info, Message);
+        Write(Channel, Level::Info, Message);
     }
 
     void Log::Debug(const Str& Channel, const Str& Message)
     {
-        Write(Channel, Severity::Debug, Message);
+        Write(Channel, Level::Debug, Message);
     }
 
     void Log::Warning(const Str& Channel, const Str& Message)
     {
-        Write(Channel, Severity::Warning, Message);
+        Write(Channel, Level::Warning, Message);
     }
 
     void Log::Error(const Str& Channel, const Str& Message)
     {
-        Write(Channel, Severity::Error, Message);
+        Write(Channel, Level::Error, Message);
     }
 
     void Log::Fatal(const Str& Channel, const Str& Message)
     {
-        Write(Channel, Severity::Fatal, Message);
+        Write(Channel, Level::Fatal, Message);
     }
-
-    Log Logger = Log();
 }

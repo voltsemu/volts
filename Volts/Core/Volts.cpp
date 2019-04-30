@@ -1,4 +1,6 @@
 ﻿
+#include "Utilities/Logger/Logger.h"
+
 #include "Volts.h"
 #include "Volts/Core/Utilities/Decrypt/UNSELF.h"
 
@@ -8,9 +10,13 @@ namespace FS = Cthulhu::FileSystem;
 
 using namespace Volts;
 
+Volts::EmulatorWindow* Volts::Window = nullptr;
+
 int VoltsMain(void* Handle)
 {
 	auto* Win = (EmulatorWindow*)Handle;
-	Win->WriteLog("Working in volts", 0, "");
+	Volts::Window = Win;
+
+	Log::Error("Main", "Starting...");
 	return 0;
 }

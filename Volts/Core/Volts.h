@@ -8,3 +8,8 @@ extern "C" {
     // ugly void* to stop msvc spazzing out
     int VoltsMain(void* Handle); 
 }
+
+namespace Volts 
+{
+    extern struct EmulatorWindow* Window;
+}

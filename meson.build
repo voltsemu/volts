@@ -36,7 +36,7 @@ if build_machine.system() == 'windows'
 
 else
     # everywhere else this stuff can be statically linked
-    volt_lib = static_library('VoltLib', sources,
+    static_library('VoltLib', sources,
         include_directories : [ inc, cthulhu.get_variable('inc') ],
         link_with : [
             cthulhu.get_variable('metalib'),
@@ -45,12 +45,4 @@ else
         ],
         install : true
     )
-endif
-
-# put this beyond volt_lib decl so that meson does its thing
-# turns out subdir('path') is basically #include "path"
-if build_machine.system() == 'darwin' or build_machine.system() == 'windows' # stubbed
-else
-# if its not mac or windows its going to be some linux flavor
-    subdir('Volts/Platform/Linux')
 endif

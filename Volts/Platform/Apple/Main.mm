@@ -6,7 +6,7 @@
 struct MEmuWindow : Volts::EmulatorWindow
 {
     virtual ~MEmuWindow() override {}
-    virtual void WriteLog(const char* Channel, char Severity, const char* Message) override
+    virtual void WriteLog(const char* Channel, Volts::Level Severity, const char* Message) override
     {
         NSLog(@"%d %s: %s", Severity, Channel, Message);
     }

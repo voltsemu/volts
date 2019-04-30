@@ -4,10 +4,21 @@
 
 namespace Volts
 {
+    enum class Level
+    {
+        Trace,
+        Info,
+        Debug,
+        Warning,
+        Error,
+        Fatal
+    };
+
     struct EmulatorWindow
     {
         virtual ~EmulatorWindow() {}
-        virtual void WriteLog(const char* Channel, char Severity, const char* Message) = 0;
+
+        virtual void WriteLog(const char* Channel, Level Severity, const char* Message) = 0;
     };
 }
 
