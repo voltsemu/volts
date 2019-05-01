@@ -28,7 +28,10 @@
                 VerticalAlignment="Stretch"
                 Stroke="White" />
             <ScrollViewer Grid.Column="2">
-                <StackPanel x:Name="PerformanceMetricDisplay" Orientation="Vertical">
+                <StackPanel
+                    x:Name="PerformanceMetricDisplay"
+                    Margin="2,0,0,0"
+                    Orientation="Vertical">
 
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="CPU Usage" />
