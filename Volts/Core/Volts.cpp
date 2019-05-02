@@ -4,17 +4,17 @@
 #include "Volts.h"
 #include "Volts/Core/Utilities/Decrypt/UNSELF.h"
 
-#include "../Platform/Interface/EmulatorWindow.h"
+#include "../Platform/Interface/Native.h"
 
 namespace FS = Cthulhu::FileSystem;
 
 using namespace Volts;
 
-Volts::EmulatorWindow* Volts::Window = nullptr;
+Volts::Native* Volts::Window = nullptr;
 
 int VoltsMain(void* Handle)
 {
-	auto* Win = (EmulatorWindow*)Handle;
+	auto* Win = (Native*)Handle;
 	Volts::Window = Win;
 
 	Log::Error("Main", "Starting...");

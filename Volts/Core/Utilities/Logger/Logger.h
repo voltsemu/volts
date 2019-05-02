@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Volts/Platform/Interface/EmulatorWindow.h"
+#include "Volts/Platform/Interface/Native.h"
 
 #include <Core/Collections/Array.h>
 #include <Core/Collections/CthulhuString.h>

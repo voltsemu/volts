@@ -1,22 +1,22 @@
 #import "AppDelegate.h"
 
+#import "Interop/External.h"
+
 @interface AppDelegate ()
+
 @end
 
 @implementation AppDelegate
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification {
-    // Insert code here to initialize your application
+    [EmuHandle test];
 }
-
 
 - (void)applicationWillTerminate:(NSNotification *)aNotification {
     // Insert code here to tear down your application
 }
 
-// 1. christ thats a long damn name
-// 2. once all the emulator windows are closed, this means the application exits
-- (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication *)theApplication {
+- (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication *)sender {
     return YES;
 }
 

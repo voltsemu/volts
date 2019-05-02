@@ -7,68 +7,34 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		3F7F8E672278781200974F70 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 3F7F8E662278781200974F70 /* AppDelegate.m */; };
-		3F7F8E6A2278781200974F70 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3F7F8E692278781200974F70 /* ViewController.m */; };
-		3F7F8E6C2278781400974F70 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3F7F8E6B2278781400974F70 /* Assets.xcassets */; };
-		3F7F8E6F2278781400974F70 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3F7F8E6D2278781400974F70 /* Main.storyboard */; };
-		3F7F8E722278781400974F70 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 3F7F8E712278781400974F70 /* main.m */; };
-		3F7F8EA422787FCF00974F70 /* Window.mm in Sources */ = {isa = PBXBuildFile; fileRef = 3F7F8EA322787FCF00974F70 /* Window.mm */; };
+		3F7F8EEF2278C7D300974F70 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 3F7F8EEE2278C7D300974F70 /* AppDelegate.m */; };
+		3F7F8EF22278C7D300974F70 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3F7F8EF12278C7D300974F70 /* ViewController.m */; };
+		3F7F8EF42278C7D400974F70 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3F7F8EF32278C7D400974F70 /* Assets.xcassets */; };
+		3F7F8EF72278C7D400974F70 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3F7F8EF52278C7D400974F70 /* Main.storyboard */; };
+		3F7F8EFA2278C7D400974F70 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 3F7F8EF92278C7D400974F70 /* main.m */; };
+		3F7F8F032278C9C000974F70 /* External.mm in Sources */ = {isa = PBXBuildFile; fileRef = 3F7F8F022278C9C000974F70 /* External.mm */; };
+		3F7F8F08227B199600974F70 /* LogView.m in Sources */ = {isa = PBXBuildFile; fileRef = 3F7F8F07227B199600974F70 /* LogView.m */; };
 /* End PBXBuildFile section */
 
-/* Begin PBXContainerItemProxy section */
-		3F7F8E792278781400974F70 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 3F7F8E5A2278781200974F70 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 3F7F8E612278781200974F70;
-			remoteInfo = Volts;
-		};
-		3F7F8E842278781400974F70 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 3F7F8E5A2278781200974F70 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 3F7F8E612278781200974F70;
-			remoteInfo = Volts;
-		};
-/* End PBXContainerItemProxy section */
-
 /* Begin PBXFileReference section */
-		3F7F8E622278781200974F70 /* Volts.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Volts.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		3F7F8E652278781200974F70 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
-		3F7F8E662278781200974F70 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
-		3F7F8E682278781200974F70 /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
-		3F7F8E692278781200974F70 /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
-		3F7F8E6B2278781400974F70 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		3F7F8E6E2278781400974F70 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
-		3F7F8E702278781400974F70 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		3F7F8E712278781400974F70 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
-		3F7F8E732278781400974F70 /* Volts.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Volts.entitlements; sourceTree = "<group>"; };
-		3F7F8E782278781400974F70 /* VoltsTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VoltsTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		3F7F8E832278781400974F70 /* VoltsUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VoltsUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		3F7F8E9722787AB000974F70 /* libVoltLib.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libVoltLib.a; path = ../../../../Build/libVoltLib.a; sourceTree = "<group>"; };
-		3F7F8E9922787AC800974F70 /* libcore.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcore.a; path = ../../../../Build/subprojects/Cthulhu/libcore.a; sourceTree = "<group>"; };
-		3F7F8E9B22787AD800974F70 /* libfs.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfs.a; path = ../../../../Build/subprojects/Cthulhu/libfs.a; sourceTree = "<group>"; };
-		3F7F8E9C22787AD800974F70 /* libmeta.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmeta.a; path = ../../../../Build/subprojects/Cthulhu/libmeta.a; sourceTree = "<group>"; };
-		3F7F8EA222787FB200974F70 /* Window.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Window.h; sourceTree = "<group>"; };
-		3F7F8EA322787FCF00974F70 /* Window.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = Window.mm; sourceTree = "<group>"; };
+		3F7F8EEA2278C7D300974F70 /* Volts.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Volts.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		3F7F8EED2278C7D300974F70 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		3F7F8EEE2278C7D300974F70 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		3F7F8EF02278C7D300974F70 /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
+		3F7F8EF12278C7D300974F70 /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
+		3F7F8EF32278C7D400974F70 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		3F7F8EF62278C7D400974F70 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		3F7F8EF82278C7D400974F70 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		3F7F8EF92278C7D400974F70 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		3F7F8EFB2278C7D400974F70 /* Volts.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Volts.entitlements; sourceTree = "<group>"; };
+		3F7F8F022278C9C000974F70 /* External.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = External.mm; sourceTree = "<group>"; };
+		3F7F8F052278C9D700974F70 /* External.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = External.h; sourceTree = "<group>"; };
+		3F7F8F06227B199600974F70 /* LogView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LogView.h; sourceTree = "<group>"; };
+		3F7F8F07227B199600974F70 /* LogView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LogView.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		3F7F8E5F2278781200974F70 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		3F7F8E752278781400974F70 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		3F7F8E802278781400974F70 /* Frameworks */ = {
+		3F7F8EE72278C7D300974F70 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -78,58 +44,46 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		3F7F8E592278781200974F70 = {
+		3F7F8EE12278C7D300974F70 = {
 			isa = PBXGroup;
 			children = (
-				3F7F8E642278781200974F70 /* Volts */,
-				3F7F8E632278781200974F70 /* Products */,
-				3F7F8E9622787AB000974F70 /* Frameworks */,
+				3F7F8EEC2278C7D300974F70 /* Volts */,
+				3F7F8EEB2278C7D300974F70 /* Products */,
 			);
 			sourceTree = "<group>";
 		};
-		3F7F8E632278781200974F70 /* Products */ = {
+		3F7F8EEB2278C7D300974F70 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				3F7F8E622278781200974F70 /* Volts.app */,
-				3F7F8E782278781400974F70 /* VoltsTests.xctest */,
-				3F7F8E832278781400974F70 /* VoltsUITests.xctest */,
+				3F7F8EEA2278C7D300974F70 /* Volts.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		3F7F8E642278781200974F70 /* Volts */ = {
+		3F7F8EEC2278C7D300974F70 /* Volts */ = {
 			isa = PBXGroup;
 			children = (
-				3F7F8EA022787F7B00974F70 /* Interop */,
-				3F7F8E652278781200974F70 /* AppDelegate.h */,
-				3F7F8E662278781200974F70 /* AppDelegate.m */,
-				3F7F8E682278781200974F70 /* ViewController.h */,
-				3F7F8E692278781200974F70 /* ViewController.m */,
-				3F7F8E6B2278781400974F70 /* Assets.xcassets */,
-				3F7F8E6D2278781400974F70 /* Main.storyboard */,
-				3F7F8E702278781400974F70 /* Info.plist */,
-				3F7F8E712278781400974F70 /* main.m */,
-				3F7F8E732278781400974F70 /* Volts.entitlements */,
+				3F7F8F012278C9A500974F70 /* Interop */,
+				3F7F8EED2278C7D300974F70 /* AppDelegate.h */,
+				3F7F8EEE2278C7D300974F70 /* AppDelegate.m */,
+				3F7F8EF02278C7D300974F70 /* ViewController.h */,
+				3F7F8EF12278C7D300974F70 /* ViewController.m */,
+				3F7F8EF32278C7D400974F70 /* Assets.xcassets */,
+				3F7F8EF52278C7D400974F70 /* Main.storyboard */,
+				3F7F8EF82278C7D400974F70 /* Info.plist */,
+				3F7F8EF92278C7D400974F70 /* main.m */,
+				3F7F8EFB2278C7D400974F70 /* Volts.entitlements */,
+				3F7F8F06227B199600974F70 /* LogView.h */,
+				3F7F8F07227B199600974F70 /* LogView.m */,
 			);
 			path = Volts;
 			sourceTree = "<group>";
 		};
-		3F7F8E9622787AB000974F70 /* Frameworks */ = {
+		3F7F8F012278C9A500974F70 /* Interop */ = {
 			isa = PBXGroup;
 			children = (
-				3F7F8E9B22787AD800974F70 /* libfs.a */,
-				3F7F8E9C22787AD800974F70 /* libmeta.a */,
-				3F7F8E9922787AC800974F70 /* libcore.a */,
-				3F7F8E9722787AB000974F70 /* libVoltLib.a */,
-			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
-		3F7F8EA022787F7B00974F70 /* Interop */ = {
-			isa = PBXGroup;
-			children = (
-				3F7F8EA222787FB200974F70 /* Window.h */,
-				3F7F8EA322787FCF00974F70 /* Window.mm */,
+				3F7F8F022278C9C000974F70 /* External.mm */,
+				3F7F8F052278C9D700974F70 /* External.h */,
 			);
 			path = Interop;
 			sourceTree = "<group>";
@@ -137,13 +91,13 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		3F7F8E612278781200974F70 /* Volts */ = {
+		3F7F8EE92278C7D300974F70 /* Volts */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 3F7F8E8C2278781400974F70 /* Build configuration list for PBXNativeTarget "Volts" */;
+			buildConfigurationList = 3F7F8EFE2278C7D400974F70 /* Build configuration list for PBXNativeTarget "Volts" */;
 			buildPhases = (
-				3F7F8E5E2278781200974F70 /* Sources */,
-				3F7F8E5F2278781200974F70 /* Frameworks */,
-				3F7F8E602278781200974F70 /* Resources */,
+				3F7F8EE62278C7D300974F70 /* Sources */,
+				3F7F8EE72278C7D300974F70 /* Frameworks */,
+				3F7F8EE82278C7D300974F70 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -151,68 +105,24 @@
 			);
 			name = Volts;
 			productName = Volts;
-			productReference = 3F7F8E622278781200974F70 /* Volts.app */;
+			productReference = 3F7F8EEA2278C7D300974F70 /* Volts.app */;
 			productType = "com.apple.product-type.application";
-		};
-		3F7F8E772278781400974F70 /* VoltsTests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 3F7F8E8F2278781400974F70 /* Build configuration list for PBXNativeTarget "VoltsTests" */;
-			buildPhases = (
-				3F7F8E742278781400974F70 /* Sources */,
-				3F7F8E752278781400974F70 /* Frameworks */,
-				3F7F8E762278781400974F70 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				3F7F8E7A2278781400974F70 /* PBXTargetDependency */,
-			);
-			name = VoltsTests;
-			productName = VoltsTests;
-			productReference = 3F7F8E782278781400974F70 /* VoltsTests.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
-		};
-		3F7F8E822278781400974F70 /* VoltsUITests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 3F7F8E922278781400974F70 /* Build configuration list for PBXNativeTarget "VoltsUITests" */;
-			buildPhases = (
-				3F7F8E7F2278781400974F70 /* Sources */,
-				3F7F8E802278781400974F70 /* Frameworks */,
-				3F7F8E812278781400974F70 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				3F7F8E852278781400974F70 /* PBXTargetDependency */,
-			);
-			name = VoltsUITests;
-			productName = VoltsUITests;
-			productReference = 3F7F8E832278781400974F70 /* VoltsUITests.xctest */;
-			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		3F7F8E5A2278781200974F70 /* Project object */ = {
+		3F7F8EE22278C7D300974F70 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
 				LastUpgradeCheck = 1020;
 				ORGANIZATIONNAME = ApacheHB;
 				TargetAttributes = {
-					3F7F8E612278781200974F70 = {
+					3F7F8EE92278C7D300974F70 = {
 						CreatedOnToolsVersion = 10.2;
-					};
-					3F7F8E772278781400974F70 = {
-						CreatedOnToolsVersion = 10.2;
-						TestTargetID = 3F7F8E612278781200974F70;
-					};
-					3F7F8E822278781400974F70 = {
-						CreatedOnToolsVersion = 10.2;
-						TestTargetID = 3F7F8E612278781200974F70;
 					};
 				};
 			};
-			buildConfigurationList = 3F7F8E5D2278781200974F70 /* Build configuration list for PBXProject "Volts" */;
+			buildConfigurationList = 3F7F8EE52278C7D300974F70 /* Build configuration list for PBXProject "Volts" */;
 			compatibilityVersion = "Xcode 9.3";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -220,90 +130,48 @@
 				en,
 				Base,
 			);
-			mainGroup = 3F7F8E592278781200974F70;
-			productRefGroup = 3F7F8E632278781200974F70 /* Products */;
+			mainGroup = 3F7F8EE12278C7D300974F70;
+			productRefGroup = 3F7F8EEB2278C7D300974F70 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				3F7F8E612278781200974F70 /* Volts */,
-				3F7F8E772278781400974F70 /* VoltsTests */,
-				3F7F8E822278781400974F70 /* VoltsUITests */,
+				3F7F8EE92278C7D300974F70 /* Volts */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		3F7F8E602278781200974F70 /* Resources */ = {
+		3F7F8EE82278C7D300974F70 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3F7F8E6C2278781400974F70 /* Assets.xcassets in Resources */,
-				3F7F8E6F2278781400974F70 /* Main.storyboard in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		3F7F8E762278781400974F70 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		3F7F8E812278781400974F70 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
+				3F7F8EF42278C7D400974F70 /* Assets.xcassets in Resources */,
+				3F7F8EF72278C7D400974F70 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		3F7F8E5E2278781200974F70 /* Sources */ = {
+		3F7F8EE62278C7D300974F70 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3F7F8E6A2278781200974F70 /* ViewController.m in Sources */,
-				3F7F8E722278781400974F70 /* main.m in Sources */,
-				3F7F8E672278781200974F70 /* AppDelegate.m in Sources */,
-				3F7F8EA422787FCF00974F70 /* Window.mm in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		3F7F8E742278781400974F70 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		3F7F8E7F2278781400974F70 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
+				3F7F8F032278C9C000974F70 /* External.mm in Sources */,
+				3F7F8F08227B199600974F70 /* LogView.m in Sources */,
+				3F7F8EF22278C7D300974F70 /* ViewController.m in Sources */,
+				3F7F8EFA2278C7D400974F70 /* main.m in Sources */,
+				3F7F8EEF2278C7D300974F70 /* AppDelegate.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
-/* Begin PBXTargetDependency section */
-		3F7F8E7A2278781400974F70 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 3F7F8E612278781200974F70 /* Volts */;
-			targetProxy = 3F7F8E792278781400974F70 /* PBXContainerItemProxy */;
-		};
-		3F7F8E852278781400974F70 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 3F7F8E612278781200974F70 /* Volts */;
-			targetProxy = 3F7F8E842278781400974F70 /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
-
 /* Begin PBXVariantGroup section */
-		3F7F8E6D2278781400974F70 /* Main.storyboard */ = {
+		3F7F8EF52278C7D400974F70 /* Main.storyboard */ = {
 			isa = PBXVariantGroup;
 			children = (
-				3F7F8E6E2278781400974F70 /* Base */,
+				3F7F8EF62278C7D400974F70 /* Base */,
 			);
 			name = Main.storyboard;
 			sourceTree = "<group>";
@@ -311,7 +179,7 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
-		3F7F8E8A2278781400974F70 /* Debug */ = {
+		3F7F8EFC2278C7D400974F70 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -362,10 +230,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				HEADER_SEARCH_PATHS = (
-					"$SRCROOT../../../**",
-					"$SRCROOT../../../../**",
-				);
+				HEADER_SEARCH_PATHS = "${SRCROOT}/../../../../";
 				MACOSX_DEPLOYMENT_TARGET = 10.14;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -374,7 +239,7 @@
 			};
 			name = Debug;
 		};
-		3F7F8E8B2278781400974F70 /* Release */ = {
+		3F7F8EFD2278C7D400974F70 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -419,10 +284,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				HEADER_SEARCH_PATHS = (
-					"$SRCROOT../../../**",
-					"$SRCROOT../../../../**",
-				);
+				HEADER_SEARCH_PATHS = "${SRCROOT}/../../../../";
 				MACOSX_DEPLOYMENT_TARGET = 10.14;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
@@ -430,164 +292,74 @@
 			};
 			name = Release;
 		};
-		3F7F8E8D2278781400974F70 /* Debug */ = {
+		3F7F8EFF2278C7D400974F70 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Volts/Volts.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				HEADER_SEARCH_PATHS = "${SRCROOT}../../../../";
 				INFOPLIST_FILE = Volts/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				OTHER_LDFLAGS = (
-					"${SRCROOT}/../../../../Build/libVoltLib.a",
-					"${SRCROOT}/../../../../Build/subprojects/Cthulhu/libcore.a",
-					"${SRCROOT}/../../../../Build/subprojects/Cthulhu/libmeta.a",
 					"${SRCROOT}/../../../../Build/subprojects/Cthulhu/libfs.a",
+					"${SRCROOT}/../../../../Build/subprojects/Cthulhu/libmeta.a",
+					"${SRCROOT}/../../../../Build/subprojects/Cthulhu/libcore.a",
+					"${SRCROOT}/../../../../Build/libVoltLib.a",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.apachehb.Volts;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
 		};
-		3F7F8E8E2278781400974F70 /* Release */ = {
+		3F7F8F002278C7D400974F70 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Volts/Volts.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				HEADER_SEARCH_PATHS = "${SRCROOT}../../../../";
 				INFOPLIST_FILE = Volts/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				OTHER_LDFLAGS = (
-					"${SRCROOT}/../../../../Build/libVoltLib.a",
-					"${SRCROOT}/../../../../Build/subprojects/Cthulhu/libcore.a",
-					"${SRCROOT}/../../../../Build/subprojects/Cthulhu/libmeta.a",
 					"${SRCROOT}/../../../../Build/subprojects/Cthulhu/libfs.a",
+					"${SRCROOT}/../../../../Build/subprojects/Cthulhu/libmeta.a",
+					"${SRCROOT}/../../../../Build/subprojects/Cthulhu/libcore.a",
+					"${SRCROOT}/../../../../Build/libVoltLib.a",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.apachehb.Volts;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-			};
-			name = Release;
-		};
-		3F7F8E902278781400974F70 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				COMBINE_HIDPI_IMAGES = YES;
-				INFOPLIST_FILE = VoltsTests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-					"@loader_path/../Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.apachehb.VoltsTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Volts.app/Contents/MacOS/Volts";
-			};
-			name = Debug;
-		};
-		3F7F8E912278781400974F70 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				COMBINE_HIDPI_IMAGES = YES;
-				INFOPLIST_FILE = VoltsTests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-					"@loader_path/../Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.apachehb.VoltsTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Volts.app/Contents/MacOS/Volts";
-			};
-			name = Release;
-		};
-		3F7F8E932278781400974F70 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				COMBINE_HIDPI_IMAGES = YES;
-				INFOPLIST_FILE = VoltsUITests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-					"@loader_path/../Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.apachehb.VoltsUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				TEST_TARGET_NAME = Volts;
-			};
-			name = Debug;
-		};
-		3F7F8E942278781400974F70 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				COMBINE_HIDPI_IMAGES = YES;
-				INFOPLIST_FILE = VoltsUITests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-					"@loader_path/../Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.apachehb.VoltsUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				TEST_TARGET_NAME = Volts;
 			};
 			name = Release;
 		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		3F7F8E5D2278781200974F70 /* Build configuration list for PBXProject "Volts" */ = {
+		3F7F8EE52278C7D300974F70 /* Build configuration list for PBXProject "Volts" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				3F7F8E8A2278781400974F70 /* Debug */,
-				3F7F8E8B2278781400974F70 /* Release */,
+				3F7F8EFC2278C7D400974F70 /* Debug */,
+				3F7F8EFD2278C7D400974F70 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		3F7F8E8C2278781400974F70 /* Build configuration list for PBXNativeTarget "Volts" */ = {
+		3F7F8EFE2278C7D400974F70 /* Build configuration list for PBXNativeTarget "Volts" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				3F7F8E8D2278781400974F70 /* Debug */,
-				3F7F8E8E2278781400974F70 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		3F7F8E8F2278781400974F70 /* Build configuration list for PBXNativeTarget "VoltsTests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				3F7F8E902278781400974F70 /* Debug */,
-				3F7F8E912278781400974F70 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		3F7F8E922278781400974F70 /* Build configuration list for PBXNativeTarget "VoltsUITests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				3F7F8E932278781400974F70 /* Debug */,
-				3F7F8E942278781400974F70 /* Release */,
+				3F7F8EFF2278C7D400974F70 /* Debug */,
+				3F7F8F002278C7D400974F70 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
-	rootObject = 3F7F8E5A2278781200974F70 /* Project object */;
+	rootObject = 3F7F8EE22278C7D300974F70 /* Project object */;
 }
