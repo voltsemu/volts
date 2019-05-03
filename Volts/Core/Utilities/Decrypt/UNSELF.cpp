@@ -198,6 +198,74 @@ namespace Volts
         };
     };
 
+    namespace UNSELF
+    {
+        // decryption context for a SELF file
+        struct Context
+        {
+            Context(FS::BufferedFile* F) : File(F) {}
+            FS::BufferedFile* File;
+            // true when the SELF file contains a 32 bit ELF file
+            bool Is32Bit;
+            
+            SCE::Header SCEHead;
+            SELF::Header SELFHead;
+            AppInfo Info;
+
+            union
+            {
+                ELF::BigHeader<U32> ELFHead32;
+                ELF::BigHeader<U64> ELFHead64;
+            };
+        };
+    }
+
+
+    // parse the headers of a SELF file
+    bool ParseHeaders(UNSELF::Context* Ctx)
+    {
+        FS::BufferedFile* File = Ctx->File;
+        // seek to the front of the file and read the SCE header
+        File->Seek(0);
+        Ctx->SCEHead = File->Read<SCE::Header>();
+        
+        // check the magic just to make sure we're parsing a SELF file
+        if(Ctx->SCEHead.Magic != "SCE\0"_U32)
+        {
+            LOG_ERROR("UNSELF", "Invalid SCE header");
+            return false;
+        }
+
+        // read in the SELF header which is right after the SCE header
+        Ctx->SELFHead = File->Read<SELF::Header>();
+
+        // seek to the app info offset and read it
+        File->Seek(Ctx->SELFHead.InfoOffset);
+        Ctx->Info = File->Read<AppInfo>();
+
+        File->Seek(Ctx->SELFHead.ELFOffset);
+        const auto Small = File->Read<ELF::SmallHeader>();
+
+        if(Small.Magic != 0x7F454C46)
+        {
+            LOG_ERROR("UNSELF", "Invalid ELF header inside SELF");
+            return false;
+        }
+
+        if(Small.Class == 1)
+        {
+            Ctx->Is32Bit = true;
+            Ctx->ELFHead32 = File->Read<ELF::BigHeader<U32>>();
+        }
+        else
+        {
+            Ctx->Is32Bit = false;
+            Ctx->ELFHead64 = File->Read<ELF::BigHeader<U64>>();
+        }
+
+        return true;
+    }
+
     struct Decryptor
     {
         Decryptor(FS::BufferedFile& F)
@@ -248,7 +316,7 @@ namespace Volts
 
             if(SCE.Magic != "SCE\0"_U32)
             {
-                LOG_INFO("UNSELF", "SCE Header magic isnt valid");
+                LOG_ERROR("UNSELF", "Invalid SCE Header magic");
                 return false;
             }
 
@@ -575,7 +643,15 @@ namespace Volts
         // file format reference from https://www.psdevwiki.com/ps3/SELF_File_Format_and_Decryption#Extracting_an_ELF
         ELF::Binary DecryptSELF(FS::BufferedFile& File)
         {
-            Decryptor Decrypt(File);
+            Context CTX = &File;
+
+            if(!ParseHeaders(&CTX))
+            {
+                return {};
+            }
+
+            return {};
+            /*Decryptor Decrypt(File);
 
             if(!Decrypt.LoadHeaders())
             {
@@ -587,7 +663,7 @@ namespace Volts
                 return {};
             }
 
-            return Decrypt.DecryptData();
+            return Decrypt.DecryptData();*/
         }
     }
 }
