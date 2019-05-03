@@ -35,8 +35,8 @@ if build_machine.system() == 'windows'
     )
 
 else
-    # everywhere else this stuff can be statically linked
-    static_library('VoltLib', sources,
+    # everywhere else this stuff can be made an executable
+    executable('Volt', sources,
         include_directories : [ inc, cthulhu.get_variable('inc') ],
         link_with : [
             cthulhu.get_variable('metalib'),

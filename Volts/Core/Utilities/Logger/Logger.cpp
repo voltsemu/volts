@@ -1,46 +1,51 @@
 #include "Logger.h"
 
-#include "Volts/Core/Volts.h"
-
 namespace Volts
 {
-    Level Log::LogLevel = Level::Warning;
+    Level LogLevel = Level::Warning;
 
-    void Log::Write(const Str& Channel, Level S, const Str& Message)
+    void PrintPrefix(Level S)
     {
-        if(S >= LogLevel)
+        switch(S)
         {
-            Volts::Window->WriteLog(Channel.CStr(), S, Message.CStr());
+        case Level::Trace:
+            printf("trace: ");
+            break;
+        case Level::Info:
+            printf("info: ");
+            break;
+        case Level::Debug:
+            printf("debug: ");
+            break;
+        case Level::Warning:
+            printf("warning: ");
+            break;
+        case Level::Error:
+            printf("error: ");
+            break;
+        case Level::Fatal:
+            printf("fatal: ");
+            break;
+        default:
+            printf("other: ");
+            break;
         }
     }
 
-    void Log::Trace(const Str& Channel, const Str& Message)
+    void Write(const char* Channel, Level S, const char* Message, ...)
     {
-        Write(Channel, Level::Trace, Message);
-    }
+        va_list Args;
+        va_start(Args, Message);
+        
+        if(S >= LogLevel)
+        {
+            PrintPrefix(S);
+        
+            printf("[%s] ", Channel);
+            printf(Message, Args);
+            printf("\n");
+        }
 
-    void Log::Info(const Str& Channel, const Str& Message)
-    {
-        Write(Channel, Level::Info, Message);
-    }
-
-    void Log::Debug(const Str& Channel, const Str& Message)
-    {
-        Write(Channel, Level::Debug, Message);
-    }
-
-    void Log::Warning(const Str& Channel, const Str& Message)
-    {
-        Write(Channel, Level::Warning, Message);
-    }
-
-    void Log::Error(const Str& Channel, const Str& Message)
-    {
-        Write(Channel, Level::Error, Message);
-    }
-
-    void Log::Fatal(const Str& Channel, const Str& Message)
-    {
-        Write(Channel, Level::Fatal, Message);
+        va_end(Args);
     }
 }
