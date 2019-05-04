@@ -18,7 +18,7 @@ namespace Volts
 
     namespace UNSELF
     {
-        ELF::Binary DecryptSELF(FS::BufferedFile& File);
+        ELF::Binary DecryptSELF(FS::BufferedFile& File, U8* Key);
     }
 }
 

@@ -41,7 +41,7 @@ namespace Volts
     {
         struct Header
         {
-            U64 Type;
+            Big<U64> Type;
             Big<U64> InfoOffset;
             Big<U64> ELFOffset;
             Big<U64> ProgramHeaderOffset;
@@ -198,72 +198,40 @@ namespace Volts
         };
     };
 
-    namespace UNSELF
+    namespace MetaData
     {
-        // decryption context for a SELF file
-        struct Context
+        struct Header
         {
-            Context(FS::BufferedFile* F) : File(F) {}
-            FS::BufferedFile* File;
-            // true when the SELF file contains a 32 bit ELF file
-            bool Is32Bit;
-            
-            SCE::Header SCEHead;
-            SELF::Header SELFHead;
-            AppInfo Info;
-
-            union
-            {
-                ELF::BigHeader<U32> ELFHead32;
-                ELF::BigHeader<U64> ELFHead64;
-            };
+            Big<U64> SignatureLength;
+            U8 Padding1[4];
+            Big<U32> SectionCount;
+            Big<U32> KeyCount;
+            Big<U32> HeaderSize;
+            U8 Padding2[8];
         };
-    }
 
-
-    // parse the headers of a SELF file
-    bool ParseHeaders(UNSELF::Context* Ctx)
-    {
-        FS::BufferedFile* File = Ctx->File;
-        // seek to the front of the file and read the SCE header
-        File->Seek(0);
-        Ctx->SCEHead = File->Read<SCE::Header>();
-        
-        // check the magic just to make sure we're parsing a SELF file
-        if(Ctx->SCEHead.Magic != "SCE\0"_U32)
+        struct Section
         {
-            LOG_ERROR("UNSELF", "Invalid SCE header");
-            return false;
-        }
+            Big<U64> Offset;
+            Big<U64> Size;
+            Big<U32> Type;
+            Big<U32> ProgramIndex;
+            Big<U32> Hashed;
+            Big<U32> SHA1Index;
+            Big<U32> Encrypted;
+            Big<U32> KeyIndex;
+            Big<U32> IVIndex;
+            Big<U32> Compressed;
+        };
 
-        // read in the SELF header which is right after the SCE header
-        Ctx->SELFHead = File->Read<SELF::Header>();
-
-        // seek to the app info offset and read it
-        File->Seek(Ctx->SELFHead.InfoOffset);
-        Ctx->Info = File->Read<AppInfo>();
-
-        File->Seek(Ctx->SELFHead.ELFOffset);
-        const auto Small = File->Read<ELF::SmallHeader>();
-
-        if(Small.Magic != 0x7F454C46)
+        struct Info
         {
-            LOG_ERROR("UNSELF", "Invalid ELF header inside SELF");
-            return false;
-        }
+            U8 Key[16];
+            U8 KeyPadding[16];
 
-        if(Small.Class == 1)
-        {
-            Ctx->Is32Bit = true;
-            Ctx->ELFHead32 = File->Read<ELF::BigHeader<U32>>();
-        }
-        else
-        {
-            Ctx->Is32Bit = false;
-            Ctx->ELFHead64 = File->Read<ELF::BigHeader<U64>>();
-        }
-
-        return true;
+            U8 IV[16];
+            U8 IVPadding[16];
+        };
     }
 
     struct Decryptor
@@ -296,7 +264,7 @@ namespace Volts
             // we need some, but not all of it
             auto SCE = File.Read<SCE::Header>();
 
-            LOGF_INFO("UNSELF",
+            LOGF_DEBUG("UNSELF",
                 "SCE::Header{"
                 "Magic = %u, "
                 "HeaderVersion = %u, "
@@ -327,7 +295,7 @@ namespace Volts
         {
             SELFHead = File.Read<SELF::Header>();
             
-            LOGF_INFO("UNSELF",
+            LOGF_DEBUG("UNSELF",
                 "SELF::Header{"
                 "Type = %llu, "
                 "AppInfoOffset = %llu, "
@@ -338,7 +306,7 @@ namespace Volts
                 "VersionOffset = %llu, "
                 "ControlInfoOffset = %llu, "
                 "ControlLength = %llu}",
-                SELFHead.Type,
+                SELFHead.Type.Get(),
                 SELFHead.InfoOffset.Get(),
                 SELFHead.ELFOffset.Get(),
                 SELFHead.ProgramHeaderOffset.Get(),
@@ -378,7 +346,7 @@ namespace Volts
 
             auto Small = File.Read<ELF::SmallHeader>();
 
-            LOGF_INFO("UNSELF",
+            LOGF_DEBUG("UNSELF",
                 "ELF::SmallHeader{"
                 "Magic = %u, "
                 "Class = %u, "
@@ -403,14 +371,14 @@ namespace Volts
             if(Small.Class == 1)
             {
                 Is32 = true;
-                LOG_INFO("UNSELF", "ELF Header is 32 bit");
+                LOG_DEBUG("UNSELF", "ELF Header is 32 bit");
                 // is 32 bit
                 ELFHead32 = File.Read<ELF::BigHeader<U32>>();
             }
             else
             {
                 Is32 = false;
-                LOG_INFO("UNSELF", "ELF Header is 64 bit");
+                LOG_DEBUG("UNSELF", "ELF Header is 64 bit");
                 // must be 64 bit otherwise
                 ELFHead64 = File.Read<ELF::BigHeader<U64>>();
             }
@@ -505,13 +473,9 @@ namespace Volts
         void LoadVersionInfo()
         {
             File.Seek(SELFHead.VersionOffset);
-            LOGF_INFO("UNSELF",
-                "Seeked to %llu",
-                SELFHead.VersionOffset.Get()
-            );
             SCEVer = File.Read<decltype(SCEVer)>();
 
-            LOGF_INFO("UNSELF",
+            LOGF_DEBUG("UNSELF",
                 "SCE::VersionInfo{"
                 "SubType = %u, "
                 "Present = %u, "
@@ -537,9 +501,7 @@ namespace Volts
         }
 
         ControlInfo ReadControlInfo()
-        {
-            LOG_INFO("UNSELF", "Loading Control Info");
-            
+        {            
             ControlInfo CTRL;
             CTRL.Type = Math::ByteSwap(File.Read<U32>());
             CTRL.Size = Math::ByteSwap(File.Read<U32>());
@@ -547,30 +509,26 @@ namespace Volts
 
             if(CTRL.Type == 1)
             {   
-                LOG_INFO("UNSELF", "Type 1 Control");
                 CTRL.ControlFlags = File.Read<decltype(CTRL.ControlFlags)>();
             }
             else if(CTRL.Type == 2)
             {
                 if(CTRL.Size == 48)
                 {
-                    LOG_INFO("UNSELF", "Type 2, Size 48 Digest");
                     CTRL.ELFDigest30 = File.Read<decltype(CTRL.ELFDigest30)>();
                 }
                 else if(CTRL.Size == 64)
                 {
-                    LOG_INFO("UNSELF", "Type 2, Size 64 Digest");
                     CTRL.ELFDigest40 = File.Read<decltype(CTRL.ELFDigest40)>();
                 }
             }
             else if(CTRL.Type == 3)
             {
-                LOG_INFO("UNSELF", "NPDRM Control Info");
                 CTRL.NPDRMInfo = File.Read<decltype(CTRL.NPDRMInfo)>();
             }
             else
             {
-                LOGF_INFO("UNSELF", "Invalid Control Type of %u", CTRL.Type);
+                LOGF_ERROR("UNSELF", "Invalid Control Type of %u", CTRL.Type);
             }
 
             return CTRL;
@@ -593,8 +551,12 @@ namespace Volts
             return true;
         }
 
-        bool LoadData() 
+        bool LoadData(U8* Key) 
         {
+            // read in the encrypted metadata info
+            File.Seek(SCEHead.MetadataOffset + sizeof(SCE::Header));
+            auto MetaInfo = File.Read<MetaData::Info>();
+
             return true;
         }
 
@@ -641,29 +603,21 @@ namespace Volts
     namespace UNSELF
     {
         // file format reference from https://www.psdevwiki.com/ps3/SELF_File_Format_and_Decryption#Extracting_an_ELF
-        ELF::Binary DecryptSELF(FS::BufferedFile& File)
+        ELF::Binary DecryptSELF(FS::BufferedFile& File, U8* Key)
         {
-            Context CTX = &File;
-
-            if(!ParseHeaders(&CTX))
-            {
-                return {};
-            }
-
-            return {};
-            /*Decryptor Decrypt(File);
+            Decryptor Decrypt(File);
 
             if(!Decrypt.LoadHeaders())
             {
                 return {};
             }
 
-            if(!Decrypt.LoadData())
+            if(!Decrypt.LoadData(Key))
             {
                 return {};
             }
 
-            return Decrypt.DecryptData();*/
+            return Decrypt.DecryptData();
         }
     }
 }

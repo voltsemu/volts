@@ -12,5 +12,5 @@ int main(int argc, const char** argv)
 {
 	Volts::LogLevel = Level::Trace;
 	FS::BufferedFile Boot(argv[1]);
-	UNSELF::DecryptSELF(Boot);
+	UNSELF::DecryptSELF(Boot, nullptr);
 }
