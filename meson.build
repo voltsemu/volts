@@ -19,12 +19,8 @@ sources = [
 
 if build_machine.system() == 'windows'
     # just so much funky windows stuff to do
-    # since we make a UWP app on windows this needs to be shared
 
-    volt_lib = shared_library('VoltLib', sources,
-        cpp_args : ['/ZW', '/EHsc', '/Zc:twoPhase-'],
-        name_prefix : '',
-        name_suffix : 'dll',
+    executable('Volt', sources,
         include_directories : [ inc, cthulhu.get_variable('inc') ],
         link_with : [
             cthulhu.get_variable('metalib'),
@@ -35,8 +31,8 @@ if build_machine.system() == 'windows'
     )
 
 else
-    # everywhere else this stuff can be made an executable
-    executable('Volt', sources,
+    # everywhere else this stuff can be statically linked
+    static_library('VoltLib', sources,
         include_directories : [ inc, cthulhu.get_variable('inc') ],
         link_with : [
             cthulhu.get_variable('metalib'),

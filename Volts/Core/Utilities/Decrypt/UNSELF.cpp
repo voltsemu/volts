@@ -52,6 +52,18 @@ namespace Volts
             Big<U64> ControlLength;
             U8 Padding[8];
         };
+
+        struct Key
+        {
+            U64 Version;
+            U16 Revision;
+            U32 Type;
+            U8 ERK[32];
+            U8 RIV[16];
+            U8 Public[40];
+            U8 Private[21];
+            U32 CurveType;
+        };
     }
 
     namespace ELF
@@ -137,6 +149,18 @@ namespace Volts
             Big<T> EntrySize;
         };
     }
+
+    enum class KeyType : U32
+    {
+        Level0 = 1,
+        Level1 = 2,
+        Level2 = 3,
+        App = 4,
+        DiskImage = 5,
+        Loader = 6,
+        Other = 7,
+        NPDRM = 8,
+    };
 
     struct AppInfo
     {
@@ -255,10 +279,46 @@ namespace Volts
         }
 
     public:
+        ControlInfo ReadControlInfo()
+        {            
+            ControlInfo CTRL;
+            CTRL.Type = Math::ByteSwap(File.Read<U32>());
+            CTRL.Size = Math::ByteSwap(File.Read<U32>());
+            CTRL.HasNext = Math::ByteSwap(File.Read<U64>());
 
-        bool LoadSCE()
+            if(CTRL.Type == 1)
+            {   
+                CTRL.ControlFlags = File.Read<decltype(CTRL.ControlFlags)>();
+            }
+            else if(CTRL.Type == 2)
+            {
+                if(CTRL.Size == 48)
+                {
+                    CTRL.ELFDigest30 = File.Read<decltype(CTRL.ELFDigest30)>();
+                }
+                else if(CTRL.Size == 64)
+                {
+                    CTRL.ELFDigest40 = File.Read<decltype(CTRL.ELFDigest40)>();
+                }
+            }
+            else if(CTRL.Type == 3)
+            {
+                CTRL.NPDRMInfo = File.Read<decltype(CTRL.NPDRMInfo)>();
+            }
+            else
+            {
+                LOGF_ERROR("UNSELF", "Invalid Control Type of %u", CTRL.Type);
+            }
+
+            return CTRL;
+        }
+
+        bool LoadHeaders() 
         {
+            // seek to the front of the file so we start at the sce header
             File.Seek(0);
+
+
             // Read in the SCE header
             // this is essentially metadata the ps3 uses internally
             // we need some, but not all of it
@@ -266,14 +326,12 @@ namespace Volts
 
             LOGF_DEBUG("UNSELF",
                 "SCE::Header{"
-                "Magic = %u, "
                 "HeaderVersion = %u, "
                 "KeyType = %u, "
                 "FileCategory = %u, "
                 "MetadataOffset = %u, "
                 "HeaderLength = %llu, "
                 "DataLength = %llu}",
-                SCE.Magic,
                 SCE.HeaderVersion.Get(),
                 SCE.KeyType.Get(),
                 SCE.FileCategory.Get(),
@@ -282,17 +340,14 @@ namespace Volts
                 SCE.DataLength.Get()
             );
 
+            // check the SCE magic
             if(SCE.Magic != "SCE\0"_U32)
             {
                 LOG_ERROR("UNSELF", "Invalid SCE Header magic");
                 return false;
             }
 
-            return true;
-        }
-
-        bool LoadSELF()
-        {
+            // read in the self header
             SELFHead = File.Read<SELF::Header>();
             
             LOGF_DEBUG("UNSELF",
@@ -317,11 +372,8 @@ namespace Volts
                 SELFHead.ControlLength.Get()
             );
 
-            return true;
-        }
 
-        bool LoadAppInfo()
-        {
+            // seek to the app info and read it in
             File.Seek(SELFHead.InfoOffset);
             Info = File.Read<AppInfo>();
 
@@ -336,25 +388,18 @@ namespace Volts
                 Info.Type.Get(),
                 Info.Version.Get()
             );
-
-            return true;
-        }
-
-        bool LoadELF()
-        {
+            
+            // read in a small elf header so we know how the rest of the header is formatted
             File.Seek(SELFHead.ELFOffset);
-
             auto Small = File.Read<ELF::SmallHeader>();
 
             LOGF_DEBUG("UNSELF",
                 "ELF::SmallHeader{"
-                "Magic = %u, "
                 "Class = %u, "
                 "Endian = %u, "
                 "Version = %u, "
                 "ABI = %u, "
                 "ABIVersion = %u}",
-                Small.Magic.Get(),
                 Small.Class,
                 Small.Endianness,
                 Small.Version,
@@ -362,6 +407,7 @@ namespace Volts
                 Small.ABIVersion
             );
 
+            // check the magic of the ELF small header
             if(Small.Magic != 0x7F454C46)
             {
                 LOG_ERROR("UNSELF", "ELF Header had incorrect magic");
@@ -383,12 +429,7 @@ namespace Volts
                 ELFHead64 = File.Read<ELF::BigHeader<U64>>();
             }
 
-            return true;
-        }
-
-        // load program and section headers
-        bool LoadSubHeaders()
-        {
+            // seek to the start of the program headers
             File.Seek(SELFHead.ProgramHeaderOffset);
 
             if(Is32)
@@ -452,26 +493,7 @@ namespace Volts
                     SHeaders64->Append(File.Read<ELF::SectionHeader<U64>>());
                 }
             }
-
-            return true;
-        }
-
-        bool LoadSectionInfoHeaders()
-        {
-            File.Seek(SELFHead.SectionInfoOffset);
-
-            const U32 InfoCount = (Is32 ? ELFHead32.PHCount : ELFHead64.PHCount);
-
-            for(U32 I = 0; I < InfoCount; I++)
-            {
-                SInfoArray.Append(File.Read<SectionInfo>());
-            }
-
-            return true;
-        }
-
-        void LoadVersionInfo()
-        {
+            
             File.Seek(SELFHead.VersionOffset);
             SCEVer = File.Read<decltype(SCEVer)>();
 
@@ -485,10 +507,8 @@ namespace Volts
                 SCEVer.Present.Get(),
                 SCEVer.Size.Get()
             );
-        }
-
-        void LoadControlInfo()
-        {
+            
+            // read control info
             File.Seek(SELFHead.ControlOffset);
 
             U32 I = 0;
@@ -498,55 +518,15 @@ namespace Volts
                 CInfoArray.Append(CInfo);
                 I += CInfo.Size;
             }
-        }
 
-        ControlInfo ReadControlInfo()
-        {            
-            ControlInfo CTRL;
-            CTRL.Type = Math::ByteSwap(File.Read<U32>());
-            CTRL.Size = Math::ByteSwap(File.Read<U32>());
-            CTRL.HasNext = Math::ByteSwap(File.Read<U64>());
+            // read in the section info headers
+            File.Seek(SELFHead.SectionInfoOffset);
+            const U32 InfoCount = (Is32 ? ELFHead32.PHCount : ELFHead64.PHCount);
 
-            if(CTRL.Type == 1)
-            {   
-                CTRL.ControlFlags = File.Read<decltype(CTRL.ControlFlags)>();
-            }
-            else if(CTRL.Type == 2)
+            for(U32 I = 0; I < InfoCount; I++)
             {
-                if(CTRL.Size == 48)
-                {
-                    CTRL.ELFDigest30 = File.Read<decltype(CTRL.ELFDigest30)>();
-                }
-                else if(CTRL.Size == 64)
-                {
-                    CTRL.ELFDigest40 = File.Read<decltype(CTRL.ELFDigest40)>();
-                }
+                SInfoArray.Append(File.Read<SectionInfo>());
             }
-            else if(CTRL.Type == 3)
-            {
-                CTRL.NPDRMInfo = File.Read<decltype(CTRL.NPDRMInfo)>();
-            }
-            else
-            {
-                LOGF_ERROR("UNSELF", "Invalid Control Type of %u", CTRL.Type);
-            }
-
-            return CTRL;
-        }
-
-        bool LoadHeaders() 
-        {
-            LoadSCE();
-            LoadSELF();
-
-            LoadAppInfo();
-            
-            LoadELF();
-            LoadSubHeaders();
-            
-            LoadVersionInfo();
-            LoadControlInfo();
-            LoadSectionInfoHeaders();
 
             return true;
         }
@@ -556,6 +536,8 @@ namespace Volts
             // read in the encrypted metadata info
             File.Seek(SCEHead.MetadataOffset + sizeof(SCE::Header));
             auto MetaInfo = File.Read<MetaData::Info>();
+
+            auto MetaHeaders = File.ReadN<MetaData::Header>();
 
             return true;
         }
