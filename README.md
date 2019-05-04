@@ -4,6 +4,9 @@ A PS3 emulator kinda like RPCS3
 ## Why?
 RPCS3s code is a bit too noodly for my taste, thought i'd give it a shot myself.
 
+# How to play a game
+well it isnt working yet but legally dump the game to begin with.
+
 # Building
 
 ## Windows
@@ -61,4 +64,11 @@ build and run that target
 soon
 
 ## Linux
-soon
+```sh
+pip install meson
+git submodule update --init
+meson Build
+cd Build
+ninja
+./Volt 
+```
