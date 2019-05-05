@@ -4,6 +4,7 @@
 
 #include "Core/Utilities/Endian.h"
 #include "Core/Utilities/Convert.h"
+#include "Keys.h"
 
 using namespace Cthulhu;
 
@@ -51,18 +52,6 @@ namespace Volts
             Big<U64> ControlOffset;
             Big<U64> ControlLength;
             U8 Padding[8];
-        };
-
-        struct Key
-        {
-            U64 Version;
-            U16 Revision;
-            U32 Type;
-            U8 ERK[32];
-            U8 RIV[16];
-            U8 Public[40];
-            U8 Private[21];
-            U32 CurveType;
         };
     }
 
@@ -150,23 +139,11 @@ namespace Volts
         };
     }
 
-    enum class KeyType : U32
-    {
-        Level0 = 1,
-        Level1 = 2,
-        Level2 = 3,
-        App = 4,
-        DiskImage = 5,
-        Loader = 6,
-        Other = 7,
-        NPDRM = 8,
-    };
-
     struct AppInfo
     {
         Big<U64> AuthID;
         Big<U32> VendorID;
-        Big<U32> Type;
+        Big<KeyType> Type;
         Big<U32> Version;
         U8 Padding[12];
     };
@@ -537,7 +514,13 @@ namespace Volts
             File.Seek(SCEHead.MetadataOffset + sizeof(SCE::Header));
             auto MetaInfo = File.Read<MetaData::Info>();
 
-            auto MetaHeaders = File.ReadN<MetaData::Header>();
+            // check the debug flag
+            if((SCEHead.KeyType & 0x8000) != 0x8000)
+            {
+                //TODO: all of this
+            }
+
+            //auto MetaHeaders = File.ReadN<MetaData::Header>();
 
             return true;
         }

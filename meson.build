@@ -13,6 +13,7 @@ sources = [
     'Volts/Core/Utilities/SFO.cpp',
     'Volts/Core/Utilities/Decrypt/UNSELF.cpp',
     'Volts/Core/Utilities/Logger/Logger.cpp',
+    'Volts/Core/Utilities/Decrypt/Keys.cpp',
     'Volts/Core/Render/Render.cpp',
     'Volts/Core/Render/Null/Render.cpp'
 ]

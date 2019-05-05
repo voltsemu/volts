@@ -13,7 +13,7 @@ namespace Volts
         // x86 and arm are little endian
         Little,
     };
-
+    
     // Justification:
     //  - Q: Why have an entire class to represent a big or little endian value?
     //  - A: Due to the way the emulator is designed, many types are constructed through Memory::Copy.
@@ -60,7 +60,7 @@ namespace Volts
         {
             if constexpr (Order == Endian::Little)
             {
-                return Cthulhu::Math::ByteSwap<T>(Data);
+                return Cthulhu::Math::GenericByteSwap<T>(Data);
             }
             else
             {
