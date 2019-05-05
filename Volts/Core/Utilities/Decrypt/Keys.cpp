@@ -1,4 +1,5 @@
 #include "Keys.h"
+#include "Core/Memory/Memory.h"
 
 namespace Volts
 {
@@ -219,5 +220,18 @@ namespace Volts
             default:
                 return {};
         }
+    }
+
+    U8* GlobalKey = nullptr;
+
+    void SetKey(U8* Key)
+    {
+        delete GlobalKey;
+        GlobalKey = Memory::Duplicate(Key, sizeof(Key));
+    }
+
+    U8* GetKey()
+    {
+        return GlobalKey;
     }
 }

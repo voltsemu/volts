@@ -10,8 +10,8 @@ namespace Volts
     enum class Level 
     {
         Trace,
-        Info,
         Debug,
+        Info,
         Warning,
         Error,
         Fatal,
@@ -21,7 +21,7 @@ namespace Volts
 
     void PrintPrefix(Level);
 
-#define LOGF(C, L, M, ...) { if(L >= LogLevel) { PrintPrefix(L); printf("[%s] ", C); printf(M "\n", __VA_ARGS__); } }
+#define LOGF(C, L, M, ...) { if(L >= LogLevel) { PrintPrefix(L); printf("[" #C "] " M "\n", __VA_ARGS__); } }
 
 #define LOGF_TRACE(C, M, ...) LOGF(C, Level::Trace, M, __VA_ARGS__)
 #define LOGF_INFO(C, M, ...) LOGF(C, Level::Info, M, __VA_ARGS__)
@@ -30,7 +30,7 @@ namespace Volts
 #define LOGF_ERROR(C, M, ...) LOGF(C, Level::Error, M, __VA_ARGS__)
 #define LOGF_FATAL(C, M, ...) LOGF(C, Level::Fatal, M, __VA_ARGS__)
 
-#define LOG(C, L, M) { if(L >= LogLevel) { PrintPrefix(L); printf("[%s] ", C); printf(M "\n"); } }
+#define LOG(C, L, M) { if(L >= LogLevel) { PrintPrefix(L); printf("[" #C "] " M "\n"); } }
 
 #define LOG_TRACE(C, M) LOG(C, Level::Trace, M)
 #define LOG_INFO(C, M) LOG(C, Level::Info, M)

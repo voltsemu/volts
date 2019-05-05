@@ -5,6 +5,7 @@
 #include "Core/Utilities/Endian.h"
 #include "Core/Utilities/Convert.h"
 #include "Keys.h"
+#include "AES/aes.h"
 
 using namespace Cthulhu;
 
@@ -284,7 +285,7 @@ namespace Volts
             }
             else
             {
-                LOGF_ERROR("UNSELF", "Invalid Control Type of %u", CTRL.Type);
+                LOGF_ERROR(UNSELF, "Invalid Control Type of %u", CTRL.Type);
             }
 
             return CTRL;
@@ -299,9 +300,9 @@ namespace Volts
             // Read in the SCE header
             // this is essentially metadata the ps3 uses internally
             // we need some, but not all of it
-            auto SCE = File.Read<SCE::Header>();
+            SCEHead = File.Read<SCE::Header>();
 
-            LOGF_DEBUG("UNSELF",
+            LOGF_DEBUG(UNSELF,
                 "SCE::Header{"
                 "HeaderVersion = %u, "
                 "KeyType = %u, "
@@ -309,25 +310,25 @@ namespace Volts
                 "MetadataOffset = %u, "
                 "HeaderLength = %llu, "
                 "DataLength = %llu}",
-                SCE.HeaderVersion.Get(),
-                SCE.KeyType.Get(),
-                SCE.FileCategory.Get(),
-                SCE.MetadataOffset.Get(),
-                SCE.HeaderLength.Get(),
-                SCE.DataLength.Get()
+                SCEHead.HeaderVersion.Get(),
+                SCEHead.KeyType.Get(),
+                SCEHead.FileCategory.Get(),
+                SCEHead.MetadataOffset.Get(),
+                SCEHead.HeaderLength.Get(),
+                SCEHead.DataLength.Get()
             );
 
             // check the SCE magic
-            if(SCE.Magic != "SCE\0"_U32)
+            if(SCEHead.Magic != "SCE\0"_U32)
             {
-                LOG_ERROR("UNSELF", "Invalid SCE Header magic");
+                LOG_ERROR(UNSELF, "Invalid SCE Header magic");
                 return false;
             }
 
             // read in the self header
             SELFHead = File.Read<SELF::Header>();
             
-            LOGF_DEBUG("UNSELF",
+            LOGF_DEBUG(UNSELF,
                 "SELF::Header{"
                 "Type = %llu, "
                 "AppInfoOffset = %llu, "
@@ -354,7 +355,7 @@ namespace Volts
             File.Seek(SELFHead.InfoOffset);
             Info = File.Read<AppInfo>();
 
-            LOGF_INFO("UNSELF",
+            LOGF_DEBUG(UNSELF,
                 "AppInfo{"
                 "AuthID = %llu, "
                 "VendorID = %u, "
@@ -370,7 +371,7 @@ namespace Volts
             File.Seek(SELFHead.ELFOffset);
             auto Small = File.Read<ELF::SmallHeader>();
 
-            LOGF_DEBUG("UNSELF",
+            LOGF_DEBUG(UNSELF,
                 "ELF::SmallHeader{"
                 "Class = %u, "
                 "Endian = %u, "
@@ -387,21 +388,21 @@ namespace Volts
             // check the magic of the ELF small header
             if(Small.Magic != 0x7F454C46)
             {
-                LOG_ERROR("UNSELF", "ELF Header had incorrect magic");
+                LOG_ERROR(UNSELF, "ELF Header had incorrect magic");
                 return false;
             }
 
             if(Small.Class == 1)
             {
                 Is32 = true;
-                LOG_DEBUG("UNSELF", "ELF Header is 32 bit");
+                LOG_DEBUG(UNSELF, "ELF Header is 32 bit");
                 // is 32 bit
                 ELFHead32 = File.Read<ELF::BigHeader<U32>>();
             }
             else
             {
                 Is32 = false;
-                LOG_DEBUG("UNSELF", "ELF Header is 64 bit");
+                LOG_DEBUG(UNSELF, "ELF Header is 64 bit");
                 // must be 64 bit otherwise
                 ELFHead64 = File.Read<ELF::BigHeader<U64>>();
             }
@@ -416,7 +417,7 @@ namespace Volts
 
                 if(ELFHead32.PHOffset == 0 && ELFHead32.PHCount)
                 {
-                    LOG_ERROR("UNSELF", "ELF Program header offset is 0");
+                    LOG_ERROR(UNSELF, "ELF Program header offset is 0");
                     return false;
                 }
 
@@ -429,7 +430,7 @@ namespace Volts
 
                 if(ELFHead32.SHOffset == 0 && ELFHead32.SHCount)
                 {
-                    LOG_ERROR("UNSELF", "ELF Section header offset is 0");
+                    LOG_ERROR(UNSELF, "ELF Section header offset is 0");
                     return false;
                 }
 
@@ -446,7 +447,7 @@ namespace Volts
 
                 if(ELFHead64.PHOffset == 0 && ELFHead64.PHCount)
                 {
-                    LOG_ERROR("UNSELF", "ELF Program header offset is 0");
+                    LOG_ERROR(UNSELF, "ELF Program header offset is 0");
                     return false;
                 }
 
@@ -459,7 +460,7 @@ namespace Volts
 
                 if(ELFHead64.SHOffset == 0 && ELFHead64.SHCount)
                 {
-                    LOG_ERROR("UNSELF", "ELF Section header offset is 0");
+                    LOG_ERROR(UNSELF, "ELF Section header offset is 0");
                     return false;
                 }
 
@@ -474,7 +475,7 @@ namespace Volts
             File.Seek(SELFHead.VersionOffset);
             SCEVer = File.Read<decltype(SCEVer)>();
 
-            LOGF_DEBUG("UNSELF",
+            LOGF_DEBUG(UNSELF,
                 "SCE::VersionInfo{"
                 "SubType = %u, "
                 "Present = %u, "
@@ -508,26 +509,171 @@ namespace Volts
             return true;
         }
 
-        bool LoadData(U8* Key) 
+    private:
+        bool KeyFromRAP(U8* ID, U8* Key)
         {
-            // read in the encrypted metadata info
-            File.Seek(SCEHead.MetadataOffset + sizeof(SCE::Header));
-            auto MetaInfo = File.Read<MetaData::Info>();
+            U8 RAPKey[16] = {};
+            // TODO: this needs a whole ton of other things before it will work properly
+            return false;
+        }
 
-            // check the debug flag
-            if((SCEHead.KeyType & 0x8000) != 0x8000)
+        bool DecryptNPDRM(U8* Metadata, U32 Len)
+        {
+            ControlInfo* Control = nullptr;
+            U8 Key[16];
+            U8 IV[16];
+
+            for(U32 I = 0; I < CInfoArray.Len(); I++)
             {
-                //TODO: all of this
+                if(CInfoArray[I].Type == 3)
+                {
+                    Control = &CInfoArray[I];
+                    break;
+                }
             }
 
-            //auto MetaHeaders = File.ReadN<MetaData::Header>();
+            if(!Control)
+            {
+                LOG_DEBUG(UNSELF, "NPDRM ControlInfo not found");
+                return true;
+            }
+
+            if(Control->NPDRMInfo.LicenseVersion == 1)
+            {
+                LOG_ERROR(UNSELF, "Cannot decrypt network NPDRM license");
+                return false;
+            }
+            else if(Control->NPDRMInfo.LicenseVersion == 2)
+            {
+                // TODO: support these things
+                LOG_ERROR(UNSELF, "Local Licenses not supported yet");
+            }
+            else if(Control->NPDRMInfo.LicenseVersion == 3)
+            {
+                if(GetKey() != nullptr)
+                    Memory::Copy<U8>(GetKey(), Key, 16);
+                else
+                    Memory::Copy<U8>(Keys::FreeKlic, Key, 16);
+            }
+
+            aes_context AES;
+
+            aes_setkey_dec(&AES, Keys::Klic, 128);
+            aes_crypt_ecb(&AES, AES_DECRYPT, Key, Key);
+
+            Memory::Zero<U8>(IV, 16);
+
+            aes_setkey_dec(&AES, Key, 128);
+            aes_crypt_cbc(&AES, AES_DECRYPT, Len, IV, Metadata, Metadata);
+        
+            return true;
+        }
+    public:
+
+        bool LoadData(U8* Key) 
+        {
+            LOG_DEBUG(UNSELF, "Loading data...");
+            const U32 HeaderSize = SCEHead.HeaderLength - (sizeof(SCE::Header) + SCEHead.MetadataOffset + sizeof(MetaData::Info));
+            U8* Headers = new U8[HeaderSize];
+
+            File.Seek(SCEHead.MetadataOffset + sizeof(SCE::Header));
+            MetaInfo = File.Read<MetaData::Info>();
+
+            File.ReadN(Headers, HeaderSize);
+
+            LOG_DEBUG(UNSELF, "Read in headers");
+
+            SELF::Key SKey = GetSELFKey(Info.Type, SCEHead.KeyType, Info.Version);
+
+            if(Key)
+                SetKey(Key);
+
+            U8 MetaKey[32];
+            U8 MetaIV[16];
+            Memory::Copy<U8>(SKey.ERK, MetaKey, 32);
+            Memory::Copy<U8>(SKey.RIV, MetaIV, 16);
+
+            aes_context AES;
+
+            if((SCEHead.KeyType & 0x8000) != 0x8000)
+            {
+                LOG_DEBUG(USNELF, "Isnt a debug SELF");
+
+                if(!DecryptNPDRM((U8*)&MetaInfo, sizeof(MetaData::Info)))
+                    return false;
+
+                aes_setkey_dec(&AES, MetaKey, 256);
+                aes_crypt_cbc(&AES, AES_DECRYPT, sizeof(MetaData::Info), MetaIV, (U8*)&MetaInfo, (U8*)&MetaInfo);
+            }
+
+            if((MetaInfo.KeyPadding[0] | MetaInfo.IVPadding[0]) != 0)
+            {
+                LOG_ERROR(UNSELF, "Failed to decrypt metadata info");
+                return false;
+            }
+
+            size_t Offset = 0;
+            U8 Stream[16];
+
+            aes_setkey_enc(&AES, MetaInfo.Key, 128);
+            aes_crypt_ctr(&AES, HeaderSize, &Offset, MetaInfo.IV, Stream, Headers, Headers);
+
+            MetaHead = *(MetaData::Header*)Headers;
+
+            for(U32 I = 0; I < MetaHead.SectionCount; I++)
+            {
+                MetaSections.Append(*(MetaData::Section*)(Headers + sizeof(MetaData::Header) + sizeof(MetaData::Section) * I));
+            }
+
+            //KeyLength = MetaHead.KeyCount * 16;
+            KeyData = Headers;
 
             return true;
         }
 
         ELF::Binary DecryptData() 
         { 
-            return {}; 
+            aes_context AES;
+
+            U32 BufferLength = MetaHead.KeyCount * 16;
+
+            for(auto& Section : MetaSections)
+                if(Section.Encrypted == 3)
+                    if((Section.KeyIndex <= MetaHead.KeyCount - 1) && (Section.IVIndex <= MetaHead.KeyCount))
+                        BufferLength += Section.Size;
+            
+            U8* Buffer = new U8[BufferLength];
+
+            size_t Offset = 0;
+
+            for(const auto& Section : MetaSections)
+            {
+                if((Section.Encrypted == 3) && (Section.KeyIndex <= MetaHead.KeyCount - 1) && (Section.IVIndex <= MetaHead.KeyCount))
+                {
+                    U8 Stream[16];
+                    U8 Key[16];
+                    U8 IV[16];
+
+                    Memory::Copy<U8>(KeyData + (Section.KeyIndex * 16), Key, 16);
+                    Memory::Copy<U8>(KeyData + (Section.IVIndex * 16), IV, 16);
+
+                    File.Seek(Section.Offset);
+                    
+                    U8* Data = new U8[Section.Size];
+                    File.ReadN(Data, Section.Size);
+
+                    Memory::Zero<U8>(Stream, 16);
+
+                    aes_setkey_enc(&AES, Key, 128);
+                    aes_crypt_ctr(&AES, Section.Size, &Offset, IV, Stream, Data, Data);
+
+                    Memory::Copy<U8>(Buffer + Offset, Data, Section.Size);
+
+                    Offset += Section.Size;
+                }
+            }
+
+            return {};
         }
 
         bool Is32;
@@ -563,6 +709,13 @@ namespace Volts
                 Array<ELF::ProgramHeader<U64>>* PHeaders64;
             };
         };
+
+        MetaData::Header MetaHead;
+        MetaData::Info MetaInfo;
+        Array<MetaData::Section> MetaSections;
+
+        //U32 KeyLength;
+        U8* KeyData;
     };
 
     namespace UNSELF
