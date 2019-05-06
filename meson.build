@@ -8,24 +8,22 @@ cthulhu = subproject('Cthulhu')
 
 inc = include_directories('Volts')
 
-sources = [
-    'Volts/Core/Volts.cpp',
-    'Volts/Core/Utilities/SFO.cpp',
-    'Volts/Core/Utilities/Decrypt/UNSELF.cpp',
-    'Volts/Core/Utilities/Logger/Logger.cpp',
-    'Volts/Core/Utilities/Decrypt/Keys.cpp',
-    'Volts/Core/Utilities/Decrypt/AES/aes.cpp',
-    'Volts/Core/Render/Render.cpp',
-    'Volts/Core/Render/Null/Render.cpp'
+libs = [
+    cthulhu.get_variable('metalib'),
+    cthulhu.get_variable('corelib'),
+    cthulhu.get_variable('fslib')
 ]
 
-executable('Volt', sources,
+subdir('Volts/PS3')
+
+volts_sources = [
+    'Volts/Core/Logger/Logger.cpp',
+    'Volts/Volts.cpp'
+]
+
+executable('Volt', volts_sources,
     include_directories : [ inc, cthulhu.get_variable('inc') ],
-    link_with : [
-        cthulhu.get_variable('metalib'),
-        cthulhu.get_variable('corelib'),
-        cthulhu.get_variable('fslib')
-    ],
+    link_with : libs,
     install : true
 )
 

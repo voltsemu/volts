@@ -7,7 +7,7 @@
 
 #include <FileSystem/BufferedFile.h>
 
-namespace Volts::SFO
+namespace Volts::PS3::SFO
 {
     using namespace Cthulhu;
     namespace FS = FileSystem;

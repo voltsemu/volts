@@ -1,15 +1,15 @@
 #include "UNSELF.h"
 
-#include "Core/Utilities/Logger/Logger.h"
+#include "Core/Logger/Logger.h"
 
-#include "Core/Utilities/Endian.h"
-#include "Core/Utilities/Convert.h"
+#include "PS3/Util/Endian.h"
+#include "PS3/Util/Convert.h"
 #include "Keys.h"
 #include "AES/aes.h"
 
 using namespace Cthulhu;
 
-namespace Volts
+namespace Volts::PS3
 {
     // SELF files are big, complicated files that were designed to not be easy to decrypt
     // this code is going to reflect the many stages required to bypass all of sonys security
@@ -623,7 +623,7 @@ namespace Volts
             return true;
         }
 
-        ELF::Binary DecryptData() 
+        PS3::ELF::Binary DecryptData() 
         { 
             LOG_DEBUG(UNSELF, "Decrypting data...");
             aes_context AES;
@@ -715,7 +715,7 @@ namespace Volts
     namespace UNSELF
     {
         // file format reference from https://www.psdevwiki.com/ps3/SELF_File_Format_and_Decryption#Extracting_an_ELF
-        ELF::Binary DecryptSELF(FS::BufferedFile& File, U8* Key)
+        PS3::ELF::Binary DecryptSELF(FS::BufferedFile& File, U8* Key)
         {
             Decryptor Decrypt(File);
 

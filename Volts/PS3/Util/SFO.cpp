@@ -2,7 +2,7 @@
 
 #include "Convert.h"
 
-namespace Volts::SFO
+namespace Volts::PS3::SFO
 {
     // this serves as a redirector to a key, value pair stored in the file
     // we put it here instead of in the header as it is a purley internal data structure
@@ -25,7 +25,6 @@ namespace Volts::SFO
         U32 DataOffset;
     };
 
-    // this is also internal
     // this represents the header of a file
     struct Header
     {

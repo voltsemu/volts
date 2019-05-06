@@ -2,7 +2,7 @@
 
 #include "Meta/Aliases.h"
 
-namespace Volts
+namespace Volts::PS3
 {
     using namespace Cthulhu;
 

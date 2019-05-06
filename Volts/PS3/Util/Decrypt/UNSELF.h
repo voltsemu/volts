@@ -2,7 +2,7 @@
 
 #include <FileSystem/BufferedFile.h>
 
-namespace Volts
+namespace Volts::PS3
 {
     namespace FS = Cthulhu::FileSystem;
     using namespace Cthulhu;
