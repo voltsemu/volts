@@ -205,11 +205,12 @@ namespace Volts
         struct Header
         {
             Big<U64> SignatureLength;
-            U8 Padding1[4];
+            U32 Padding1;
             Big<U32> SectionCount;
             Big<U32> KeyCount;
             Big<U32> HeaderSize;
-            U8 Padding2[8];
+            U32 Padding2;
+            U32 Padding3;
         };
 
         struct Section
@@ -512,7 +513,7 @@ namespace Volts
     private:
         bool KeyFromRAP(U8* ID, U8* Key)
         {
-            U8 RAPKey[16] = {};
+            //U8 RAPKey[16] = {};
             // TODO: this needs a whole ton of other things before it will work properly
             return false;
         }
@@ -547,6 +548,7 @@ namespace Volts
             {
                 // TODO: support these things
                 LOG_ERROR(UNSELF, "Local Licenses not supported yet");
+                return false;
             }
             else if(Control->NPDRMInfo.LicenseVersion == 3)
             {
@@ -573,73 +575,49 @@ namespace Volts
         bool LoadData(U8* Key) 
         {
             LOG_DEBUG(UNSELF, "Loading data...");
-            const U32 HeaderSize = SCEHead.HeaderLength - (sizeof(SCE::Header) + SCEHead.MetadataOffset + sizeof(MetaData::Info));
-            U8* Headers = new U8[HeaderSize];
-
+            
             File.Seek(SCEHead.MetadataOffset + sizeof(SCE::Header));
-            MetaInfo = File.Read<MetaData::Info>();
-
-            File.ReadN(Headers, HeaderSize);
-
-            LOG_DEBUG(UNSELF, "Read in headers");
-
-            SELF::Key SKey = GetSELFKey(Info.Type, SCEHead.KeyType, Info.Version);
-
-            if(Key)
-                SetKey(Key);
-
-            U8 MetaKey[32];
-            U8 MetaIV[16];
-            Memory::Copy<U8>(SKey.ERK, MetaKey, 32);
-            Memory::Copy<U8>(SKey.RIV, MetaIV, 16);
-
+            auto MetaInfo = File.Read<MetaData::Info>();
+            
             aes_context AES;
+            
+            SELF::Key MetaKey = GetSELFKey(Info.Type, SCEHead.KeyType, Info.Version);
 
             if((SCEHead.KeyType & 0x8000) != 0x8000)
             {
+                // isnt a debug self, stuff is encrypted
+                LOG_DEBUG(UNSELF, "Decrypting NPDRM layer...");
                 if(!DecryptNPDRM((U8*)&MetaInfo, sizeof(MetaData::Info)))
                     return false;
 
-                LOG_DEBUG(UNSELF, "Decrypted NPDRM");
-
-                aes_setkey_dec(&AES, MetaKey, 256);
-                aes_crypt_cbc(&AES, AES_DECRYPT, sizeof(MetaData::Info), MetaIV, (U8*)&MetaInfo, (U8*)&MetaInfo);
+                aes_setkey_dec(&AES, MetaKey.ERK, 256);
+                aes_crypt_cbc(&AES, AES_DECRYPT, sizeof(MetaData::Info), MetaKey.RIV, (U8*)&MetaInfo, (U8*)&MetaInfo);
             }
 
-            if((MetaInfo.KeyPadding[0] | MetaInfo.IVPadding[0]) != 0)
+            if(MetaInfo.IVPadding[0] | MetaInfo.KeyPadding[0])
             {
-                LOG_ERROR(UNSELF, "Failed to decrypt metadata info");
+                LOG_ERROR(UNSELF, "Failed to decrypt MetaData Info");
                 return false;
             }
 
+            const U32 HSize = SCEHead.HeaderLength - (sizeof(SCE::Header) + SCEHead.MetadataOffset + sizeof(MetaData::Info));
+            U8* Headers = new U8[HSize+1];
+
+            File.Seek(SCEHead.MetadataOffset + sizeof(SCE::Header) + sizeof(MetaData::Info));
+            File.ReadN(Headers, HSize);
+
             size_t Offset = 0;
             U8 Stream[16];
-
             aes_setkey_enc(&AES, MetaInfo.Key, 128);
-            aes_crypt_ctr(&AES, HeaderSize, &Offset, MetaInfo.IV, Stream, Headers, Headers);
+            aes_crypt_ctr(&AES, HSize, &Offset, MetaInfo.IV, Stream, Headers, Headers);
 
-            Memory::Copy<U8>(Headers, (U8*)&MetaHead, sizeof(MetaData::Header));
-
-            LOG_DEBUG(UNSELF, "Finished header decryption");
-
-            LOGF_DEBUG(UNSELF,
-                "MetaData::Header{"
-                "SignatureLength = %llu, "
-                "SectionCount = %u, "
-                "KeyCount = %u, "
-                "HeaderSize = %u}",
-                MetaHead.SignatureLength.Get(),
-                MetaHead.SectionCount.Get(),
-                MetaHead.KeyCount.Get(),
-                MetaHead.HeaderSize.Get()
-            );
+            MetaData::Header MetaHead = *(MetaData::Header*)Headers;
 
             for(U32 I = 0; I < MetaHead.SectionCount; I++)
             {
-                MetaSections.Append(*(MetaData::Section*)(Headers + sizeof(MetaData::Header) + sizeof(MetaData::Section) * I));
+                MetaSections.Append(*(MetaData::Section*)(Headers + sizeof(MetaData::Section) * I));
             }
 
-            //KeyLength = MetaHead.KeyCount * 16;
             KeyData = Headers;
 
             return true;
@@ -726,7 +704,7 @@ namespace Volts
             };
         };
 
-        MetaData::Header MetaHead = {};
+        MetaData::Header MetaHead;
         MetaData::Info MetaInfo;
         Array<MetaData::Section> MetaSections;
 
