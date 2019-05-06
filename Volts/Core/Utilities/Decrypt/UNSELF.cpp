@@ -597,10 +597,10 @@ namespace Volts
 
             if((SCEHead.KeyType & 0x8000) != 0x8000)
             {
-                LOG_DEBUG(USNELF, "Isnt a debug SELF");
-
                 if(!DecryptNPDRM((U8*)&MetaInfo, sizeof(MetaData::Info)))
                     return false;
+
+                LOG_DEBUG(UNSELF, "Decrypted NPDRM");
 
                 aes_setkey_dec(&AES, MetaKey, 256);
                 aes_crypt_cbc(&AES, AES_DECRYPT, sizeof(MetaData::Info), MetaIV, (U8*)&MetaInfo, (U8*)&MetaInfo);
@@ -618,7 +618,21 @@ namespace Volts
             aes_setkey_enc(&AES, MetaInfo.Key, 128);
             aes_crypt_ctr(&AES, HeaderSize, &Offset, MetaInfo.IV, Stream, Headers, Headers);
 
-            MetaHead = *(MetaData::Header*)Headers;
+            Memory::Copy<U8>(Headers, (U8*)&MetaHead, sizeof(MetaData::Header));
+
+            LOG_DEBUG(UNSELF, "Finished header decryption");
+
+            LOGF_DEBUG(UNSELF,
+                "MetaData::Header{"
+                "SignatureLength = %llu, "
+                "SectionCount = %u, "
+                "KeyCount = %u, "
+                "HeaderSize = %u}",
+                MetaHead.SignatureLength.Get(),
+                MetaHead.SectionCount.Get(),
+                MetaHead.KeyCount.Get(),
+                MetaHead.HeaderSize.Get()
+            );
 
             for(U32 I = 0; I < MetaHead.SectionCount; I++)
             {
@@ -633,6 +647,7 @@ namespace Volts
 
         ELF::Binary DecryptData() 
         { 
+            LOG_DEBUG(UNSELF, "Decrypting data...");
             aes_context AES;
 
             U32 BufferLength = MetaHead.KeyCount * 16;
@@ -650,6 +665,7 @@ namespace Volts
             {
                 if((Section.Encrypted == 3) && (Section.KeyIndex <= MetaHead.KeyCount - 1) && (Section.IVIndex <= MetaHead.KeyCount))
                 {
+                    LOG_DEBUG(UNSELF, "Decrypting Section");
                     U8 Stream[16];
                     U8 Key[16];
                     U8 IV[16];
@@ -710,7 +726,7 @@ namespace Volts
             };
         };
 
-        MetaData::Header MetaHead;
+        MetaData::Header MetaHead = {};
         MetaData::Info MetaInfo;
         Array<MetaData::Section> MetaSections;
 
