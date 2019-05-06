@@ -6,23 +6,28 @@ project('Volts', 'cpp',
 
 cthulhu = subproject('Cthulhu')
 
-inc = include_directories('Volts')
-
 libs = [
     cthulhu.get_variable('metalib'),
     cthulhu.get_variable('corelib'),
     cthulhu.get_variable('fslib')
 ]
 
-subdir('Volts/PS3')
-
-volts_sources = [
+sources = [
     'Volts/Core/Logger/Logger.cpp',
-    'Volts/Volts.cpp'
+    'Volts/Volts.cpp',
 ]
 
-executable('Volt', volts_sources,
-    include_directories : [ inc, cthulhu.get_variable('inc') ],
+incs = [
+    include_directories('Volts'),
+    include_directories('Volts/PS3'),
+    cthulhu.get_variable('inc')
+]
+
+subdir('Volts/PS3')
+
+
+executable('Volt', sources,
+    include_directories : incs,
     link_with : libs,
     install : true
 )
