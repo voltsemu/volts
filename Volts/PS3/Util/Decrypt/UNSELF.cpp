@@ -256,16 +256,24 @@ namespace Volts::PS3
                 delete PHeaders64;
                 delete SHeaders64;
             }
+
+            delete[] KeyData;
         }
 
     public:
         ControlInfo ReadControlInfo()
-        {            
+        {           
+            // read into a ControlInfo header 
             ControlInfo CTRL;
-            CTRL.Type = Math::ByteSwap(File.Read<U32>());
-            CTRL.Size = Math::ByteSwap(File.Read<U32>());
-            CTRL.HasNext = Math::ByteSwap(File.Read<U64>());
+            
+            // as this structure has to be read in 2 parts we read in
+            // the initial data seperatley so we dont over read
+            CTRL.Type = File.Read<Big<U32>>();
+            CTRL.Size = File.Read<Big<U32>>();
+            CTRL.HasNext = File.Read<Big<U32>>();
 
+            // next we have to check what kind of info this header has
+            // then read in the relevant sort of data
             if(CTRL.Type == 1)
             {   
                 CTRL.ControlFlags = File.Read<decltype(CTRL.ControlFlags)>();
@@ -328,6 +336,9 @@ namespace Volts::PS3
                 return false;
             }
 
+            // as this is an ELF header it is actually comprised of 2
+            // seperate headers glued together, this allows up to parse more effectivley
+            // if the ELFs "class" is 1 then it is a 32 bit ELF binary
             if(Small.Class == 1)
             {
                 Is32 = true;
@@ -344,6 +355,7 @@ namespace Volts::PS3
             // seek to the start of the program headers
             File.Seek(SELFHead.ProgramHeaderOffset);
 
+            // if the elf file is 32 bit
             if(Is32)
             {
                 // load program headers and then section headers
@@ -631,7 +643,6 @@ namespace Volts::PS3
         MetaData::Info MetaInfo;
         Array<MetaData::Section> MetaSections;
 
-        //U32 KeyLength;
         U8* KeyData;
     };
 

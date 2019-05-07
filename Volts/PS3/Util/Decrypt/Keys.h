@@ -4,8 +4,11 @@
 
 namespace Volts::PS3
 {
+    // what type of key we're respresenting
     enum class KeyType : Cthulhu::U32
     {
+        // these are all generally internal types used by the ps3
+        // to be frank i dont know what each one means exactly
         Level0 = 1,
         Level1 = 2,
         Level2 = 3,
@@ -18,6 +21,7 @@ namespace Volts::PS3
 
     namespace SELF
     {
+        // represents a decryption key with relevant data
         struct Key
         {
             Cthulhu::U64 Version;
