@@ -14,7 +14,7 @@ namespace Volts::PS3
     namespace UNSELF
     {
         // decrypt SELF file (EBOOT.BIN)
-        Cthulhu::Option<ELF::Binary> DecryptSELF(FS::BufferedFile& File, Cthulhu::U8* Key);
+        Cthulhu::Option<ELF::Binary> DecryptSELF(FS::BufferedFile& File, Cthulhu::U8* Key = nullptr);
     }
 }
 

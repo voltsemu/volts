@@ -1,48 +1,52 @@
 #include "SFO.h"
 
 #include "Convert.h"
+#include "Endian.h"
 
 namespace Volts::PS3::SFO
 {
     using namespace Cthulhu;
-    // this serves as a redirector to a key, value pair stored in the file
+    
+    // unlike the rest of the ps3s data structures this data is stored in little endian
+    
+    // this serves as a redirector to a (key, value) pair stored in the file
     // we put it here instead of in the header as it is a purley internal data structure
     // not used anywhere outside this function 
     struct IndexTableEntry
     {
         // relative key offset from the asbolute key table offset
-        U16 KeyOffset;
+        Little<U16> KeyOffset;
 
         // the format of the data type
-        Format Format;
+        Little<Format> Format;
 
         // the actual length of the data
-        U32 DataLength;
+        Little<U32> DataLength;
 
         // the maximum length of the data
-        U32 MaxLength;
+        Little<U32> MaxLength;
 
         //the offset of the data from the absolute data table offset
-        U32 DataOffset;
+        Little<U32> DataOffset;
     };
 
     // this represents the header of a file
     struct Header
     {
         // magic number for .SFO
-        U32 Magic;
+        Little<U32> Magic;
 
         // sfo version number
-        U32 Version;
+        Little<U32> Version;
 
         // absolute offset of the key table
-        U32 KeyOffset;
+        Little<U32> KeyOffset;
 
         // absolute offset of the data table
-        U32 DataOffset;
+        Little<U32> DataOffset;
 
         // the total number of entries
-        U32 TotalEntries;
+        Little<U32> TotalEntries;
     };
 
     Option<SFO> Load(FS::BufferedFile& File)
@@ -56,8 +60,7 @@ namespace Volts::PS3::SFO
         // as well as magic numbers and version numbers
         const auto Stats = File.Read<Header>();
 
-        // 1179865088ULL is actually "\0PSF" reinterpreted to U32
-        // thats the magic that is always at the top of .SFO files
+        // make sure the magic is valid
         if(Stats.Magic != "\0PSF"_U32)
             return None<SFO>();
 
@@ -106,10 +109,7 @@ namespace Volts::PS3::SFO
             File.Seek(Dist);
         }
 
-        // we're done with the file we can close it
-        File.Close();
-
-        // and the parsing is done, we can return the object
+        // once the parsing is finished we can return the data
         return Some(Object);
     }
 }

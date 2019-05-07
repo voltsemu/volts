@@ -2,7 +2,7 @@
 The other PS3 emulator
 
 ## Why?
-Because I felt like it .
+Because I felt like it.
 
 # How to play a game
 soon
@@ -10,7 +10,7 @@ soon
 # Building
 
 ## Windows
-This has to be done in an `x64 developer command prompt` 
+This has to be done in an `x64 Native Tools Command Promp for VS 20xx` 
 It will not work in any other command prompt.
 This is a fault with meson rather than the volts codebase.
 ```sh

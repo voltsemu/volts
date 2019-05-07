@@ -62,12 +62,14 @@ namespace Volts
         // otherwise we're running on big endian arch so we compile this function
         T Get() const
         {
+            // if the data is loaded as little and we're on big endian we need to convert it to big
             if constexpr (TOrder == Endian::Little)
             {
                 return Cthulhu::Math::GenericByteSwap<T>(Data);
             }
             else
             {
+                // otherwise we can just return the data
                 return Data;
             }
         }

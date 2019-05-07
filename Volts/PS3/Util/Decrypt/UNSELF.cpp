@@ -298,27 +298,10 @@ namespace Volts::PS3
             // seek to the front of the file so we start at the sce header
             File.Seek(0);
 
-
             // Read in the SCE header
             // this is essentially metadata the ps3 uses internally
             // we need some, but not all of it
             SCEHead = File.Read<SCE::Header>();
-
-            LOGF_DEBUG(UNSELF,
-                "SCE::Header{"
-                "HeaderVersion = %u, "
-                "KeyType = %u, "
-                "FileCategory = %u, "
-                "MetadataOffset = %u, "
-                "HeaderLength = %llu, "
-                "DataLength = %llu}",
-                SCEHead.HeaderVersion.Get(),
-                SCEHead.KeyType.Get(),
-                SCEHead.FileCategory.Get(),
-                SCEHead.MetadataOffset.Get(),
-                SCEHead.HeaderLength.Get(),
-                SCEHead.DataLength.Get()
-            );
 
             // check the SCE magic
             if(SCEHead.Magic != "SCE\0"_U32)
@@ -330,62 +313,13 @@ namespace Volts::PS3
             // read in the self header
             SELFHead = File.Read<SELF::Header>();
             
-            LOGF_DEBUG(UNSELF,
-                "SELF::Header{"
-                "Type = %llu, "
-                "AppInfoOffset = %llu, "
-                "ELFOffset = %llu, "
-                "PHeadOffset = %llu, "
-                "SHeadOffset = %llu, "
-                "SInfoOffset = %llu, "
-                "VersionOffset = %llu, "
-                "ControlInfoOffset = %llu, "
-                "ControlLength = %llu}",
-                SELFHead.Type.Get(),
-                SELFHead.InfoOffset.Get(),
-                SELFHead.ELFOffset.Get(),
-                SELFHead.ProgramHeaderOffset.Get(),
-                SELFHead.SectionHeaderOffset.Get(),
-                SELFHead.SectionInfoOffset.Get(),
-                SELFHead.VersionOffset.Get(),
-                SELFHead.ControlOffset.Get(),
-                SELFHead.ControlLength.Get()
-            );
-
-
             // seek to the app info and read it in
             File.Seek(SELFHead.InfoOffset);
             Info = File.Read<AppInfo>();
 
-            LOGF_DEBUG(UNSELF,
-                "AppInfo{"
-                "AuthID = %llu, "
-                "VendorID = %u, "
-                "Type = %u, "
-                "Version = %u}",
-                Info.AuthID.Get(),
-                Info.VendorID.Get(),
-                Info.Type.Get(),
-                Info.Version.Get()
-            );
-            
             // read in a small elf header so we know how the rest of the header is formatted
             File.Seek(SELFHead.ELFOffset);
             auto Small = File.Read<ELF::SmallHeader>();
-
-            LOGF_DEBUG(UNSELF,
-                "ELF::SmallHeader{"
-                "Class = %u, "
-                "Endian = %u, "
-                "Version = %u, "
-                "ABI = %u, "
-                "ABIVersion = %u}",
-                Small.Class,
-                Small.Endianness,
-                Small.Version,
-                Small.ABI,
-                Small.ABIVersion
-            );
 
             // check the magic of the ELF small header
             if(Small.Magic != 0x7F454C46)
@@ -474,17 +408,6 @@ namespace Volts::PS3
             
             File.Seek(SELFHead.VersionOffset);
             SCEVer = File.Read<decltype(SCEVer)>();
-
-            LOGF_DEBUG(UNSELF,
-                "SCE::VersionInfo{"
-                "SubType = %u, "
-                "Present = %u, "
-                "Size = %u"
-                "}",
-                SCEVer.SubType.Get(),
-                SCEVer.Present.Get(),
-                SCEVer.Size.Get()
-            );
             
             // read control info
             File.Seek(SELFHead.ControlOffset);
@@ -517,7 +440,7 @@ namespace Volts::PS3
             return false;
         }
 
-        bool DecryptNPDRM(U8* Metadata, U32 Len)
+        bool DecryptNPDRM(U8* Metadata, U32 Len, U8* MetaKey = nullptr)
         {
             ControlInfo* Control = nullptr;
             U8 Key[16];
@@ -550,8 +473,8 @@ namespace Volts::PS3
             }
             else if(Control->NPDRMInfo.LicenseVersion == 3)
             {
-                if(GetKey() != nullptr)
-                    Memory::Copy<U8>(GetKey(), Key, 16);
+                if(MetaKey != nullptr)
+                    Memory::Copy<U8>(MetaKey, Key, 16);
                 else
                     Memory::Copy<U8>(Keys::FreeKlic, Key, 16);
             }
@@ -582,7 +505,7 @@ namespace Volts::PS3
             if((SCEHead.KeyType & 0x8000) != 0x8000)
             {
                 // isnt a debug self, stuff is encrypted
-                if(!DecryptNPDRM((U8*)&MetaInfo, sizeof(MetaData::Info)))
+                if(!DecryptNPDRM((U8*)&MetaInfo, sizeof(MetaData::Info), Key))
                     return false;
 
                 aes_setkey_dec(&AES, MetaKey.ERK, 256);

@@ -1,4 +1,6 @@
 #include "Logger.h"
+#include <Core/Collections/Array.h>
+#include <Core/Collections/CthulhuString.h>
 
 namespace Volts
 {
@@ -30,22 +32,5 @@ namespace Volts
             printf("other: ");
             break;
         }
-    }
-
-    void Write(const char* Channel, Level S, const char* Message, ...)
-    {
-        va_list Args;
-        va_start(Args, Message);
-        
-        if(S >= LogLevel)
-        {
-            PrintPrefix(S);
-        
-            printf("[%s] ", Channel);
-            printf(Message, Args);
-            printf("\n");
-        }
-
-        va_end(Args);
     }
 }

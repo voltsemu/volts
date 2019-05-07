@@ -3,6 +3,8 @@
 
 namespace Volts::PS3
 {
+    using namespace Cthulhu;
+
     namespace
     {
         // lots of wonderful hard coded keys that the ps3 uses to decrypt stuff
@@ -220,18 +222,5 @@ namespace Volts::PS3
             default:
                 return {};
         }
-    }
-
-    U8* GlobalKey = nullptr;
-
-    void SetKey(U8* Key)
-    {
-        delete GlobalKey;
-        GlobalKey = Memory::Duplicate(Key, sizeof(Key));
-    }
-
-    U8* GetKey()
-    {
-        return GlobalKey;
     }
 }
