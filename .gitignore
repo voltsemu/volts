@@ -7,23 +7,3 @@
 # ignore build output
 Build/*
 
-# ignore msbuild generated files
-# has to be a full path for some reason
-# also ignore all the crap visual studio generates
-Volts/Platform/Windows/Volts/Volts/Generated\ Files/*
-Volts/Platform/Windows/Volts/Volts/Debug/
-Volts/Platform/Windows/Volts/Debug/
-
-!Volts/Platform/Windows/*
-# also ignore all packages these can be downloaded using nuget
-Volts/Platform/Windows/Volts/packages/
-
-
-# ignore msbuild generated things
-Volts/Platform/Windows/Volts/AppPackages/*
-Volts/Platform/Windows/Volts/Volts/Release/*
-Volts/Platform/Windows/Volts/Volts/x64/*
-Volts/Platform/Windows/Volts/x64/Release/Volts/*
-
-# ignore mac xcode stuff
-Volts/Platform/Apple/Volts/Index/*

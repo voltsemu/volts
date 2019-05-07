@@ -24,12 +24,12 @@ namespace Volts
     //
 
     /**
-     * @brief 
+     * @brief Represents a value in either endian byte ordering
      * 
      * @tparam T The type to store in the value
-     * @tparam Order the order of the bytes copied into the value
+     * @tparam TOrder the order of the bytes copied into the value
      */
-    template<typename T, Endian Order>
+    template<typename T, Endian TOrder>
     struct Value
     {
         // always check the constraints
@@ -38,12 +38,13 @@ namespace Volts
         // the stored data
         T Data;
 
+        // compile this function if we're running on a little endian platform
 #ifdef PLATFORM_LITTLE_ENDIAN
         // so this is strange, but this gets the data as little endian so it works on x86 which is little endian only
         T Get() const
         {
             // check if this value is loaded as Little endian Data
-            if constexpr(Order == Endian::Little) 
+            if constexpr(TOrder == Endian::Little) 
             {
                 // if it is we can just return the data as target is little endian as well
                 return Data;
@@ -52,13 +53,16 @@ namespace Volts
             else
             {
                 // then we need to byteswap the data so it becomes little endian and is usable by target
+                // we use GenericByteSwap over ByteSwap type overloads as this class
+                // needs to support enums as well as generic types
                 return Cthulhu::Math::GenericByteSwap<T>(Data);
             }
         }
 #else
+        // otherwise we're running on big endian arch so we compile this function
         T Get() const
         {
-            if constexpr (Order == Endian::Little)
+            if constexpr (TOrder == Endian::Little)
             {
                 return Cthulhu::Math::GenericByteSwap<T>(Data);
             }
@@ -68,15 +72,15 @@ namespace Volts
             }
         }
 #endif
-
+        // typecast implicity so we dont have to type .Get() everytime we need the real value
         operator T() const { return Get(); }
     };
 
-    // alias for little endian types
+    // alias for values loaded in as little endian
     template<typename T>
     using Little = Value<T, Endian::Little>;
 
-    // alias for big endian types
+    // alias for values loaded in as big endian
     template<typename T>
     using Big = Value<T, Endian::Big>;
 }

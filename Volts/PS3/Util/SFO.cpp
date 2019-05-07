@@ -4,6 +4,7 @@
 
 namespace Volts::PS3::SFO
 {
+    using namespace Cthulhu;
     // this serves as a redirector to a key, value pair stored in the file
     // we put it here instead of in the header as it is a purley internal data structure
     // not used anywhere outside this function 
@@ -44,11 +45,11 @@ namespace Volts::PS3::SFO
         U32 TotalEntries;
     };
 
-    Result<SFO, Error> Load(FS::BufferedFile& File)
+    Option<SFO> Load(FS::BufferedFile& File)
     {
         //make sure the file is valid so we dont segfault
         if(!File.Valid())
-            return Fail<SFO, Error>(Error::BadFile);
+            return None<SFO>();
         
         // read the first sizeof(Header) bytes into a Header
         // this contains some basic metadata about the file structure
@@ -58,11 +59,11 @@ namespace Volts::PS3::SFO
         // 1179865088ULL is actually "\0PSF" reinterpreted to U32
         // thats the magic that is always at the top of .SFO files
         if(Stats.Magic != "\0PSF"_U32)
-            return Fail<SFO, Error>(Error::BadMagic);
+            return None<SFO>();
 
         // while other versions may technically be valid, we do this anyway just to be sure
         if(Stats.Version != 0x101)
-            return Fail<SFO, Error>(Error::BadVersion);
+            return None<SFO>();
 
         // create the object
         SFO Object;
@@ -109,6 +110,6 @@ namespace Volts::PS3::SFO
         File.Close();
 
         // and the parsing is done, we can return the object
-        return Pass<SFO, Error>(Object);
+        return Some(Object);
     }
 }

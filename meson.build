@@ -26,7 +26,7 @@ incs = [
 subdir('Volts/PS3')
 
 
-executable('Volt', sources,
+executable('volt', sources,
     include_directories : incs,
     link_with : libs,
     install : true

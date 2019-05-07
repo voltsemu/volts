@@ -11,6 +11,7 @@ using namespace Cthulhu;
 
 namespace Volts::PS3
 {
+    using namespace Cthulhu;
     // SELF files are big, complicated files that were designed to not be easy to decrypt
     // this code is going to reflect the many stages required to bypass all of sonys security
     namespace SCE
@@ -396,14 +397,12 @@ namespace Volts::PS3
             if(Small.Class == 1)
             {
                 Is32 = true;
-                LOG_DEBUG(UNSELF, "ELF Header is 32 bit");
                 // is 32 bit
                 ELFHead32 = File.Read<ELF::BigHeader<U32>>();
             }
             else
             {
                 Is32 = false;
-                LOG_DEBUG(UNSELF, "ELF Header is 64 bit");
                 // must be 64 bit otherwise
                 ELFHead64 = File.Read<ELF::BigHeader<U64>>();
             }
@@ -535,7 +534,6 @@ namespace Volts::PS3
 
             if(!Control)
             {
-                LOG_DEBUG(UNSELF, "NPDRM ControlInfo not found");
                 return true;
             }
 
@@ -573,9 +571,7 @@ namespace Volts::PS3
     public:
 
         bool LoadData(U8* Key) 
-        {
-            LOG_DEBUG(UNSELF, "Loading data...");
-            
+        {            
             File.Seek(SCEHead.MetadataOffset + sizeof(SCE::Header));
             auto MetaInfo = File.Read<MetaData::Info>();
             
@@ -586,7 +582,6 @@ namespace Volts::PS3
             if((SCEHead.KeyType & 0x8000) != 0x8000)
             {
                 // isnt a debug self, stuff is encrypted
-                LOG_DEBUG(UNSELF, "Decrypting NPDRM layer...");
                 if(!DecryptNPDRM((U8*)&MetaInfo, sizeof(MetaData::Info)))
                     return false;
 
@@ -623,9 +618,8 @@ namespace Volts::PS3
             return true;
         }
 
-        PS3::ELF::Binary DecryptData() 
+        void DecryptData() 
         { 
-            LOG_DEBUG(UNSELF, "Decrypting data...");
             aes_context AES;
 
             U32 BufferLength = MetaHead.KeyCount * 16;
@@ -641,9 +635,12 @@ namespace Volts::PS3
 
             for(const auto& Section : MetaSections)
             {
-                if((Section.Encrypted == 3) && (Section.KeyIndex <= MetaHead.KeyCount - 1) && (Section.IVIndex <= MetaHead.KeyCount))
+                if(
+                    (Section.Encrypted == 3) && 
+                    (Section.KeyIndex <= MetaHead.KeyCount - 1) && 
+                    (Section.IVIndex <= MetaHead.KeyCount)
+                )
                 {
-                    LOG_DEBUG(UNSELF, "Decrypting Section");
                     U8 Stream[16];
                     U8 Key[16];
                     U8 IV[16];
@@ -666,7 +663,10 @@ namespace Volts::PS3
                     Offset += Section.Size;
                 }
             }
+        }
 
+        ELF::Binary CreateBinary()
+        {
             return {};
         }
 
@@ -715,21 +715,23 @@ namespace Volts::PS3
     namespace UNSELF
     {
         // file format reference from https://www.psdevwiki.com/ps3/SELF_File_Format_and_Decryption#Extracting_an_ELF
-        PS3::ELF::Binary DecryptSELF(FS::BufferedFile& File, U8* Key)
+        Option<ELF::Binary> DecryptSELF(FS::BufferedFile& File, U8* Key)
         {
             Decryptor Decrypt(File);
 
             if(!Decrypt.LoadHeaders())
             {
-                return {};
+                return None<ELF::Binary>();
             }
 
             if(!Decrypt.LoadData(Key))
             {
-                return {};
+                return None<ELF::Binary>();
             }
 
-            return Decrypt.DecryptData();
+            Decrypt.DecryptData();
+
+            return Some(Decrypt.CreateBinary());
         }
     }
 }

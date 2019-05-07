@@ -10,7 +10,16 @@ soon
 # Building
 
 ## Windows
-soon
+This has to be done in an `x64 developer command prompt` 
+It will not work in any other command prompt.
+This is a fault with meson rather than the volts codebase.
+```sh
+git submodule update --init
+meson Build
+cd Build
+ninja 
+volt.exe
+```
 
 ## Mac
 ```sh
@@ -18,7 +27,7 @@ git submodule update --init
 meson Build
 cd Build
 ninja
-./Volts
+./volt
 ```
 
 ## Linux
@@ -27,5 +36,5 @@ git submodule update --init
 meson Build
 cd Build
 ninja
-./Volt 
+./volt 
 ```
