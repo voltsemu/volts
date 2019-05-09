@@ -14,6 +14,7 @@ libs = [
 
 sources = [
     'Volts/Core/Logger/Logger.cpp',
+    'Volts/Core/SIMD/SIMD.cpp',
     'Volts/Volts.cpp',
 ]
 
@@ -25,10 +26,10 @@ incs = [
 
 subdir('Volts/PS3')
 
-
 executable('volt', sources,
     include_directories : incs,
     link_with : libs,
-    install : true
+    install : true,
+    dependencies : dependency('zlib')
 )
 

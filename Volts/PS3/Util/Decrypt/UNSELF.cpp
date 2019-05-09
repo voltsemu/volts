@@ -2,10 +2,11 @@
 
 #include "Core/Logger/Logger.h"
 
-#include "PS3/Util/Endian.h"
 #include "PS3/Util/Convert.h"
 #include "Keys.h"
 #include "AES/aes.h"
+
+#include <zlib.h>
 
 using namespace Cthulhu;
 
@@ -40,6 +41,94 @@ namespace Volts::PS3
         };
     }
 
+    namespace ELF
+    {
+        struct SmallHeader
+        {
+            Big<Cthulhu::U32> Magic;
+            Cthulhu::U8 Class;
+            Cthulhu::U8 Endianness;
+            Cthulhu::U8 Version;
+            Cthulhu::U8 ABI;
+            Cthulhu::U8 ABIVersion;
+            Cthulhu::U8 Padding[7];
+        };
+
+        template<typename T>
+        struct BigHeader
+        {
+            Big<Cthulhu::U16> Type;
+            Big<Cthulhu::U16> Machine;
+            Big<Cthulhu::U32> Version;
+            
+            Big<T> Entry;
+            Big<T> PHOffset;
+            Big<T> SHOffset;
+            
+            Big<Cthulhu::U32> Flags;
+            Big<Cthulhu::U16> HeaderSize;
+            
+            Big<Cthulhu::U16> PHEntrySize;
+            Big<Cthulhu::U16> PHCount;
+            
+            Big<Cthulhu::U16> SHEntrySize;
+            Big<Cthulhu::U16> SHCount;
+            Big<Cthulhu::U16> StringTableIndex;
+        };
+
+        template<typename T>
+        struct ProgramHeader {};
+
+        template<> 
+        struct ProgramHeader<Cthulhu::U32> 
+        {
+            Big<Cthulhu::U32> Type;
+            Big<Cthulhu::U32> Flags;
+
+            Big<Cthulhu::U32> Offset;
+            Big<Cthulhu::U32> VirtualAddress;
+            Big<Cthulhu::U32> PhysicalAddress;
+            Big<Cthulhu::U32> FileSize;
+            Big<Cthulhu::U32> MemorySize;
+
+            Big<Cthulhu::U32> Align;
+        };
+
+        template<> 
+        struct ProgramHeader<Cthulhu::U64> 
+        {
+            Big<Cthulhu::U32> Type;
+
+            Big<Cthulhu::U32> Offset;
+            Big<Cthulhu::U32> VirtualAddress;
+            Big<Cthulhu::U32> PhysicalAddress;
+            Big<Cthulhu::U32> FileSize;
+            Big<Cthulhu::U32> MemorySize;
+            
+            Big<Cthulhu::U32> Flags;
+            Big<Cthulhu::U32> Align;
+        };
+
+        template<typename T>
+        struct SectionHeader
+        {
+            Big<Cthulhu::U32> NameOffset;
+            Big<Cthulhu::U32> Type;
+
+            Big<T> Flags;
+            Big<T> VirtualAddress;
+            Big<T> Offset;
+            Big<T> Size;
+
+            Big<Cthulhu::U32> Link;
+            Big<Cthulhu::U32> Info;
+
+            Big<T> Align;
+            Big<T> EntrySize;
+        };
+    }
+
+
     namespace SELF
     {
         struct Header
@@ -54,90 +143,6 @@ namespace Volts::PS3
             Big<U64> ControlOffset;
             Big<U64> ControlLength;
             U8 Padding[8];
-        };
-    }
-
-    namespace ELF
-    {
-        struct SmallHeader
-        {
-            Big<U32> Magic;
-            U8 Class;
-            U8 Endianness;
-            U8 Version;
-            U8 ABI;
-            U8 ABIVersion;
-            U8 Padding[7];
-        };
-
-        template<typename T>
-        struct BigHeader
-        {
-            Big<U16> Type;
-            Big<U16> Machine;
-            Big<U32> Version;
-            
-            Big<T> Entry;
-            Big<T> PHOffset;
-            Big<T> SHOffset;
-            
-            Big<U32> Flags;
-            Big<U16> HeaderSize;
-            
-            Big<U16> PHEntrySize;
-            Big<U16> PHCount;
-            
-            Big<U16> SHEntrySize;
-            Big<U16> SHCount;
-        };
-
-        template<typename T>
-        struct ProgramHeader {};
-
-        template<> struct ProgramHeader<U32> 
-        {
-            Big<U32> Type;
-            Big<U32> Flags;
-
-            Big<U32> Offset;
-            Big<U32> VirtualAddress;
-            Big<U32> PhysicalAddress;
-            Big<U32> FileSize;
-            Big<U32> MemorySize;
-
-            Big<U32> Align;
-        };
-
-        template<> struct ProgramHeader<U64> 
-        {
-            Big<U32> Type;
-
-            Big<U32> Offset;
-            Big<U32> VirtualAddress;
-            Big<U32> PhysicalAddress;
-            Big<U32> FileSize;
-            Big<U32> MemorySize;
-            
-            Big<U32> Flags;
-            Big<U32> Align;
-        };
-
-        template<typename T>
-        struct SectionHeader
-        {
-            Big<U32> NameOffset;
-            Big<U32> Type;
-
-            Big<T> Flags;
-            Big<T> VirtualAddress;
-            Big<T> Offset;
-            Big<T> Size;
-
-            Big<U32> Link;
-            Big<U32> Info;
-
-            Big<T> Align;
-            Big<T> EntrySize;
         };
     }
 
@@ -220,8 +225,8 @@ namespace Volts::PS3
             Big<U64> Size;
             Big<U32> Type;
             Big<U32> ProgramIndex;
-            Big<U32> Hashed;
-            Big<U32> SHA1Index;
+            Big<U32> HashAlgo;
+            Big<U32> HashIndex;
             Big<U32> Encrypted;
             Big<U32> KeyIndex;
             Big<U32> IVIndex;
@@ -257,7 +262,7 @@ namespace Volts::PS3
                 delete SHeaders64;
             }
 
-            delete[] KeyData;
+            //delete[] KeyData;
         }
 
     public:
@@ -267,10 +272,10 @@ namespace Volts::PS3
             ControlInfo CTRL;
             
             // as this structure has to be read in 2 parts we read in
-            // the initial data seperatley so we dont over read
+            // the initial data seperatley so we dont read too many bytes
             CTRL.Type = File.Read<Big<U32>>();
             CTRL.Size = File.Read<Big<U32>>();
-            CTRL.HasNext = File.Read<Big<U32>>();
+            CTRL.HasNext = File.Read<Big<U64>>();
 
             // next we have to check what kind of info this header has
             // then read in the relevant sort of data
@@ -531,7 +536,7 @@ namespace Volts::PS3
             }
 
             const U32 HSize = SCEHead.HeaderLength - (sizeof(SCE::Header) + SCEHead.MetadataOffset + sizeof(MetaData::Info));
-            U8* Headers = new U8[HSize+1];
+            U8* Headers = new U8[HSize];
 
             File.Seek(SCEHead.MetadataOffset + sizeof(SCE::Header) + sizeof(MetaData::Info));
             File.ReadN(Headers, HSize);
@@ -557,16 +562,19 @@ namespace Volts::PS3
         { 
             aes_context AES;
 
-            U32 BufferLength = MetaHead.KeyCount * 16;
+            BufferLength = MetaHead.KeyCount * 16;
 
             for(auto& Section : MetaSections)
                 if(Section.Encrypted == 3)
                     if((Section.KeyIndex <= MetaHead.KeyCount - 1) && (Section.IVIndex <= MetaHead.KeyCount))
                         BufferLength += Section.Size;
             
-            U8* Buffer = new U8[BufferLength];
+            DataBuffer = new U8[BufferLength];
 
             size_t Offset = 0;
+            
+            U8 Key[16];
+            U8 IV[16];
 
             for(const auto& Section : MetaSections)
             {
@@ -576,12 +584,9 @@ namespace Volts::PS3
                     (Section.IVIndex <= MetaHead.KeyCount)
                 )
                 {
-                    U8 Stream[16];
-                    U8 Key[16];
-                    U8 IV[16];
-
-                    Memory::Copy<U8>(KeyData + (Section.KeyIndex * 16), Key, 16);
-                    Memory::Copy<U8>(KeyData + (Section.IVIndex * 16), IV, 16);
+                    U8 Stream[16] = {};
+                    Memory::Copy<U8>(KeyData + Section.KeyIndex * 16, Key, 16);
+                    Memory::Copy<U8>(KeyData + Section.IVIndex * 16, IV, 16);
 
                     File.Seek(Section.Offset);
                     
@@ -593,7 +598,7 @@ namespace Volts::PS3
                     aes_setkey_enc(&AES, Key, 128);
                     aes_crypt_ctr(&AES, Section.Size, &Offset, IV, Stream, Data, Data);
 
-                    Memory::Copy<U8>(Buffer + Offset, Data, Section.Size);
+                    Memory::Copy<U8>(DataBuffer + Offset, Data, Section.Size);
 
                     Offset += Section.Size;
                 }
@@ -602,7 +607,26 @@ namespace Volts::PS3
 
         ELF::Binary CreateBinary()
         {
-            return {};
+            ELF::Binary Binary;
+
+            //U32 Offset = 0;
+            
+            for(const auto& Sect : MetaSections)
+            {
+                LOG_DEBUG(UNSELF, "-----------------");
+                LOGF_DEBUG(UNSELF, "Offset = %llu", Sect.Offset.Get());
+                LOGF_DEBUG(UNSELF, "Size = %llu", Sect.Size.Get());
+                LOGF_DEBUG(UNSELF, "Type = %u", Sect.Type.Get());
+                LOGF_DEBUG(UNSELF, "ProgramIndex = %u", Sect.ProgramIndex.Get());
+                LOGF_DEBUG(UNSELF, "HashAlgo = %u", Sect.HashAlgo.Get());
+                LOGF_DEBUG(UNSELF, "HashIndex = %u", Sect.HashIndex.Get());
+                LOGF_DEBUG(UNSELF, "Encrypted = %u", Sect.Encrypted.Get());
+                LOGF_DEBUG(UNSELF, "KeyIndex = %u", Sect.KeyIndex.Get());
+                LOGF_DEBUG(UNSELF, "IVIndex = %u", Sect.IVIndex.Get());
+                LOGF_DEBUG(UNSELF, "Compressed = %u", Sect.Compressed.Get());
+            }
+
+            return Binary;
         }
 
         bool Is32;
@@ -643,6 +667,9 @@ namespace Volts::PS3
         MetaData::Info MetaInfo;
         Array<MetaData::Section> MetaSections;
 
+        U8* DataBuffer;
+
+        U32 BufferLength;
         U8* KeyData;
     };
 
@@ -665,6 +692,10 @@ namespace Volts::PS3
 
             Decrypt.DecryptData();
 
+            //printf("Test\n");
+            //Decrypt.Test();
+
+            //return None<ELF::Binary>();
             return Some(Decrypt.CreateBinary());
         }
     }
