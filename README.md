@@ -31,9 +31,20 @@ ninja
 ```
 
 ## Linux
+
+Assuming an entirley fresh install of 64 bit Ubuntu 18.04.2 LTS.
 ```sh
+# Basic packages needed
+sudo apt install git python3 python3-pip ninja-build clang cmake pkg-config zlib1g-dev
+pip3 install --user meson
+
+# Grab other stuff from github
 git submodule update --init
-meson Build
+
+# pip wont put meson on the path by default so we have to specifiy the full path
+# meson will also use g++ by default, but g++ doesnt support c++17 as much as clang
+# so we use clang instead
+env CXX=clang++ ~/.local/bin/meson Build
 cd Build
 ninja
 ./volt 
