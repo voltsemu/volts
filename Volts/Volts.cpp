@@ -11,7 +11,6 @@ using namespace Volts;
 int main(int argc, const char** argv)
 {
 	LogLevel = Level::Trace;
-	setbuf(__stdoutp, nullptr);
 	FS::BufferedFile F{argv[1]};
 	auto Data = UNSELF::DecryptSELF(F);
 	printf("Here\n");
