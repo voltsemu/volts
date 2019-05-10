@@ -550,7 +550,7 @@ namespace Volts::PS3
 
             for(U32 I = 0; I < MetaHead.SectionCount; I++)
             {
-                MetaSections.Append(*(MetaData::Section*)(Headers + sizeof(MetaData::Section) * I));
+                MetaSections.Append(*(MetaData::Section*)(Headers + sizeof(MetaData::Header) + sizeof(MetaData::Section) * I));
             }
 
             KeyData = Headers;
