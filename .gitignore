@@ -7,3 +7,5 @@
 # ignore build output
 Build/*
 
+subprojects/packagecache/*
+subprojects/zlib-1.2.11
