@@ -531,6 +531,8 @@ namespace Volts::PS3
                 MetaSections.Append(*(MetaData::Section*)(Headers + sizeof(MetaData::Header) + sizeof(MetaData::Section) * I));
             }
 
+            U32 DataKeysSize = MetaHead.KeyCount * 16;
+
             KeyData = Headers;
 
             return true;
@@ -541,12 +543,14 @@ namespace Volts::PS3
             aes_context AES;
 
             BufferLength = MetaHead.KeyCount * 16;
+            LOGF_DEBUG(UNSELF, "BufferLength = %u", BufferLength);
 
             for(auto& Section : MetaSections)
                 if(Section.Encrypted == 3)
                     if((Section.KeyIndex <= MetaHead.KeyCount - 1) && (Section.IVIndex <= MetaHead.KeyCount))
                         BufferLength += Section.Size;
             
+            LOGF_DEBUG(UNSELF, "BufferLength = %u", BufferLength);
             DataBuffer = new U8[BufferLength];
 
             size_t Offset = 0;
@@ -598,7 +602,7 @@ namespace Volts::PS3
 
             U32 Offset = 0;
 
-            for(auto& Sect : Sections)
+            for(auto Sect : Sections)
             {
                 if(Sect.Type == 2)
                 {
@@ -618,7 +622,7 @@ namespace Volts::PS3
                     {
                         Bin.Seek(Programs[Sect.ProgramIndex].Offset);
                         LOGF_DEBUG(UNSELF, "Size = %llu", Sect.Size.Get());
-                        Bin.Write(DataBuffer + Offset, Programs[Sect.ProgramIndex].FileSize);
+                        Bin.Write(DataBuffer + Offset, Sect.Size);
                     }
 
                     Offset += Sect.Size;
@@ -629,7 +633,7 @@ namespace Volts::PS3
             {
                 Bin.Seek(Head->SHOffset);
 
-                for(auto&& Head : Sections)
+                for(auto Head : Sections)
                 {
                     Bin.Write(&Head);
                 }
