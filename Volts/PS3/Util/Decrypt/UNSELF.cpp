@@ -262,7 +262,8 @@ namespace Volts::PS3
                 delete SHeaders64;
             }
 
-            //delete[] KeyData;
+            delete[] KeyData;
+            delete[] DataBuffer;
         }
 
     public:
@@ -332,7 +333,7 @@ namespace Volts::PS3
 
             // read in a small elf header so we know how the rest of the header is formatted
             File.Seek(SELFHead.ELFOffset);
-            auto Small = File.Read<ELF::SmallHeader>();
+            Small = File.Read<ELF::SmallHeader>();
 
             // check the magic of the ELF small header
             if(Small.Magic != 0x7F454C46)
@@ -366,24 +367,12 @@ namespace Volts::PS3
                 // load program headers and then section headers
                 PHeaders32 = new Array<ELF::ProgramHeader<U32>>();
 
-                if(ELFHead32.PHOffset == 0 && ELFHead32.PHCount)
-                {
-                    LOG_ERROR(UNSELF, "ELF Program header offset is 0");
-                    return false;
-                }
-
                 for(U32 I = 0; I < ELFHead32.PHCount; I++)
                 {
                     PHeaders32->Append(File.Read<ELF::ProgramHeader<U32>>());
                 }
 
                 SHeaders32 = new Array<ELF::SectionHeader<U32>>();
-
-                if(ELFHead32.SHOffset == 0 && ELFHead32.SHCount)
-                {
-                    LOG_ERROR(UNSELF, "ELF Section header offset is 0");
-                    return false;
-                }
 
                 File.Seek(SELFHead.SectionHeaderOffset);
 
@@ -396,24 +385,12 @@ namespace Volts::PS3
             {
                 PHeaders64 = new Array<ELF::ProgramHeader<U64>>();
 
-                if(ELFHead64.PHOffset == 0 && ELFHead64.PHCount)
-                {
-                    LOG_ERROR(UNSELF, "ELF Program header offset is 0");
-                    return false;
-                }
-
                 for(U32 I = 0; I < ELFHead64.PHCount; I++)
                 {
                     PHeaders64->Append(File.Read<ELF::ProgramHeader<U64>>());
                 }
 
                 SHeaders64 = new Array<ELF::SectionHeader<U64>>();
-
-                if(ELFHead64.SHOffset == 0 && ELFHead64.SHCount)
-                {
-                    LOG_ERROR(UNSELF, "ELF Section header offset is 0");
-                    return false;
-                }
 
                 File.Seek(SELFHead.SectionHeaderOffset);
 
@@ -423,6 +400,7 @@ namespace Volts::PS3
                 }
             }
             
+            // read in the version header
             File.Seek(SELFHead.VersionOffset);
             SCEVer = File.Read<decltype(SCEVer)>();
             
@@ -605,28 +583,69 @@ namespace Volts::PS3
             }
         }
 
-        ELF::Binary CreateBinary()
+    private:
+        template<typename THeader, typename TProgram, typename TSection>
+        ELF::Binary CreateBinary(THeader* Head, TProgram& Programs, TSection& Sections)
         {
-            ELF::Binary Binary;
+            ELF::Binary Bin = {128};
+            Bin.Write(&Small);
+            Bin.Write(Head);
 
-            //U32 Offset = 0;
-            
-            for(const auto& Sect : MetaSections)
+            for(auto Program : Programs)
             {
-                LOG_DEBUG(UNSELF, "-----------------");
-                LOGF_DEBUG(UNSELF, "Offset = %llu", Sect.Offset.Get());
-                LOGF_DEBUG(UNSELF, "Size = %llu", Sect.Size.Get());
-                LOGF_DEBUG(UNSELF, "Type = %u", Sect.Type.Get());
-                LOGF_DEBUG(UNSELF, "ProgramIndex = %u", Sect.ProgramIndex.Get());
-                LOGF_DEBUG(UNSELF, "HashAlgo = %u", Sect.HashAlgo.Get());
-                LOGF_DEBUG(UNSELF, "HashIndex = %u", Sect.HashIndex.Get());
-                LOGF_DEBUG(UNSELF, "Encrypted = %u", Sect.Encrypted.Get());
-                LOGF_DEBUG(UNSELF, "KeyIndex = %u", Sect.KeyIndex.Get());
-                LOGF_DEBUG(UNSELF, "IVIndex = %u", Sect.IVIndex.Get());
-                LOGF_DEBUG(UNSELF, "Compressed = %u", Sect.Compressed.Get());
+                Bin.Write(&Program);
             }
 
-            return Binary;
+            U32 Offset = 0;
+
+            for(auto& Sect : Sections)
+            {
+                if(Sect.Type == 2)
+                {
+                    if(Sect.Compressed == 2)
+                    {
+                        const U32 Size = Programs[Sect.ProgramIndex].FileSize;
+                        Byte* ZBuffer = new Byte[Size];
+
+                        uLongf ZLength = static_cast<uLongf>(Size);
+
+                        uncompress(ZBuffer, &ZLength, DataBuffer + Offset, BufferLength);
+
+                        Bin.Seek(Programs[Sect.ProgramIndex].Offset);
+                        Bin.Write(ZBuffer, Size);
+                    }
+                    else
+                    {
+                        Bin.Seek(Programs[Sect.ProgramIndex].Offset);
+                        LOGF_DEBUG(UNSELF, "Size = %llu", Sect.Size.Get());
+                        Bin.Write(DataBuffer + Offset, Programs[Sect.ProgramIndex].FileSize);
+                    }
+
+                    Offset += Sect.Size;
+                }
+            }
+
+            if(SELFHead.SectionHeaderOffset != 0)
+            {
+                Bin.Seek(Head->SHOffset);
+
+                for(auto&& Head : Sections)
+                {
+                    Bin.Write(&Head);
+                }
+            }
+
+            return Bin;
+        }
+
+    public:
+
+        ELF::Binary ToBinary()
+        {
+            if(Is32)
+                return CreateBinary(&ELFHead32, *PHeaders32, MetaSections);
+            else
+                return CreateBinary(&ELFHead64, *PHeaders64, MetaSections);
         }
 
         bool Is32;
@@ -641,6 +660,8 @@ namespace Volts::PS3
         Array<ControlInfo> CInfoArray;
 
         SCE::VersionInfo SCEVer;
+
+        ELF::SmallHeader Small;
 
         union
         {
@@ -692,11 +713,7 @@ namespace Volts::PS3
 
             Decrypt.DecryptData();
 
-            //printf("Test\n");
-            //Decrypt.Test();
-
-            //return None<ELF::Binary>();
-            return Some(Decrypt.CreateBinary());
+            return Some(Decrypt.ToBinary());
         }
     }
 }

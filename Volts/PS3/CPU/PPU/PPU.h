@@ -8,7 +8,7 @@ namespace Volts::PS3
     {
         virtual ~PPU() {}
 
-        virtual void Run() = 0;
+        virtual void Run(Cthulhu::Byte* Entry) = 0;
 
         Cthulhu::U64 GPR[32];
         Cthulhu::F64 FPR[32];

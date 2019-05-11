@@ -2,6 +2,7 @@
 
 #include <FileSystem/BufferedFile.h>
 #include "PS3/Util/Endian.h"
+#include "Core/Memory/Binary.h"
 
 namespace Volts::PS3
 {
@@ -15,6 +16,8 @@ namespace Volts::PS3
 
     namespace ELF
     {
+        using Binary = Cthulhu::Binary;
+#if 0
         struct Section
         {
             Cthulhu::U64 Length;
@@ -27,7 +30,11 @@ namespace Volts::PS3
             Cthulhu::U64 Entry;
 
             Cthulhu::Array<Section> Sections;
+
+            Cthulhu::U64 Length;
+            Cthulhu::Byte* RawData;
         };
+#endif
     }
 
     namespace UNSELF
