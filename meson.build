@@ -11,8 +11,7 @@ zlib = subproject('zlib')
 libs = [
     cthulhu.get_variable('metalib'),
     cthulhu.get_variable('corelib'),
-    cthulhu.get_variable('fslib'),
-    zlib.get_variable('zlib')
+    cthulhu.get_variable('fslib')
 ]
 
 sources = [
@@ -24,8 +23,7 @@ sources = [
 incs = [
     include_directories('Volts'),
     include_directories('Volts/PS3'),
-    cthulhu.get_variable('inc'),
-    zlib.get_variable('incdir')
+    cthulhu.get_variable('inc')
 ]
 
 subdir('Volts/PS3')
@@ -33,6 +31,7 @@ subdir('Volts/PS3')
 executable('volt', sources,
     include_directories : incs,
     link_with : libs,
-    install : true
+    install : true,
+    dependencies : zlib.get_variable('zlib_dep')
 )
 
