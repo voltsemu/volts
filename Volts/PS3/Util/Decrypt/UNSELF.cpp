@@ -262,7 +262,7 @@ namespace Volts::PS3
                 delete SHeaders64;
             }
 
-            delete[] KeyData;
+            delete[] KeyBuffer;
             delete[] DataBuffer;
         }
 
@@ -524,16 +524,16 @@ namespace Volts::PS3
             aes_setkey_enc(&AES, MetaInfo.Key, 128);
             aes_crypt_ctr(&AES, HSize, &Offset, MetaInfo.IV, Stream, Headers, Headers);
 
-            MetaData::Header MetaHead = *(MetaData::Header*)Headers;
+            MetaHead = *(MetaData::Header*)Headers;
 
             for(U32 I = 0; I < MetaHead.SectionCount; I++)
             {
                 MetaSections.Append(*(MetaData::Section*)(Headers + sizeof(MetaData::Header) + sizeof(MetaData::Section) * I));
             }
 
-            U32 DataKeysSize = MetaHead.KeyCount * 16;
-
-            KeyData = Headers;
+            KeyLength = MetaHead.KeyCount * 16;
+            KeyBuffer = new Byte[KeyLength];
+            Memory::Copy<Byte>((Byte*)(Headers + sizeof(MetaData::Header) + MetaHead.SectionCount * sizeof(MetaData::Section)), (Byte*)KeyBuffer, KeyLength);
 
             return true;
         }
@@ -567,8 +567,8 @@ namespace Volts::PS3
                 )
                 {
                     U8 Stream[16] = {};
-                    Memory::Copy<U8>(KeyData + Section.KeyIndex * 16, Key, 16);
-                    Memory::Copy<U8>(KeyData + Section.IVIndex * 16, IV, 16);
+                    Memory::Copy<U8>(KeyBuffer + Section.KeyIndex * 16, Key, 16);
+                    Memory::Copy<U8>(KeyBuffer + Section.IVIndex * 16, IV, 16);
 
                     File.Seek(Section.Offset);
                     
@@ -580,7 +580,7 @@ namespace Volts::PS3
                     aes_setkey_enc(&AES, Key, 128);
                     aes_crypt_ctr(&AES, Section.Size, &Offset, IV, Stream, Data, Data);
 
-                    Memory::Copy<U8>(DataBuffer + Offset, Data, Section.Size);
+                    Memory::Copy<U8>(Data, DataBuffer + Offset, Section.Size);
 
                     Offset += Section.Size;
                 }
@@ -624,7 +624,7 @@ namespace Volts::PS3
                         LOGF_DEBUG(UNSELF, "Size = %llu", Sect.Size.Get());
                         Bin.Write(DataBuffer + Offset, Sect.Size);
                     }
-
+                    LOG_DEBUG(UNSELF, "Wrote");
                     Offset += Sect.Size;
                 }
             }
@@ -692,10 +692,11 @@ namespace Volts::PS3
         MetaData::Info MetaInfo;
         Array<MetaData::Section> MetaSections;
 
-        U8* DataBuffer;
+        U32 KeyLength;
+        Byte* KeyBuffer;
 
         U32 BufferLength;
-        U8* KeyData;
+        Byte* DataBuffer;
     };
 
     namespace UNSELF
