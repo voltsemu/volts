@@ -6,6 +6,6 @@ namespace Volts::PS3
 {
     void PPUInterpreter::Run(Cthulhu::Byte* Entry)
     {
-        printf("%lx\n", Entry[0]);
+        printf("%hhx\n", Entry[0]);
     }
 }

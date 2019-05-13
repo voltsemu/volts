@@ -1,3 +1,6 @@
 [submodule "subprojects/Cthulhu"]
 	path = subprojects/Cthulhu
 	url = https://github.com/Apache-HB/CTULib
+[submodule "subprojects/zlib"]
+	path = subprojects/zlib
+	url = https://github.com/Apache-HB/zlib.git
