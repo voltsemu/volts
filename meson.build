@@ -28,10 +28,23 @@ incs = [
 
 subdir('Volts/PS3')
 
+args = []
+
+# disable run time type id and exceptions in the hope of generating smaller code
+# i know you dont pay for features you dont use but this also stops people
+# from trying to use either feature at all so people dont """accidentally""" 
+# use these slow features for convenience sake
+if meson.get_compiler('cpp').get_id() == 'msvc'
+    args += ['/GR-', '/EHsc-']
+else
+    args += ['-fno-rtti', '-fno-exceptions']
+endif
+
 executable('volt', sources,
     include_directories : incs,
     link_with : libs,
     install : true,
+    cpp_args : args,
     dependencies : zlib.get_variable('zlib_dep')
 )
 

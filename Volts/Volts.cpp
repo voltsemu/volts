@@ -13,5 +13,8 @@ int main(int argc, const char** argv)
 	LogLevel = Level::Trace;
 	FS::BufferedFile F{argv[1]};
 	auto Data = UNSELF::DecryptSELF(F);
-	printf("Here\n");
+	auto* File = fopen("Output.elf", "wb+");
+	auto Bin = Data.Get();
+	fwrite(Bin.GetData(), sizeof(Cthulhu::Byte), Bin.GetLength(), File);
+	fclose(File);
 }

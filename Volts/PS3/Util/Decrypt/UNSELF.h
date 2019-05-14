@@ -17,24 +17,6 @@ namespace Volts::PS3
     namespace ELF
     {
         using Binary = Cthulhu::Binary;
-#if 0
-        struct Section
-        {
-            Cthulhu::U64 Length;
-            Cthulhu::Byte* Data;
-        };
-
-        struct Binary
-        {
-            Width BitWidth;
-            Cthulhu::U64 Entry;
-
-            Cthulhu::Array<Section> Sections;
-
-            Cthulhu::U64 Length;
-            Cthulhu::Byte* RawData;
-        };
-#endif
     }
 
     namespace UNSELF

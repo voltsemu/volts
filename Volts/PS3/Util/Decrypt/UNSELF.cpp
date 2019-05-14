@@ -542,16 +542,15 @@ namespace Volts::PS3
         { 
             aes_context AES;
 
-            BufferLength = MetaHead.KeyCount * 16;
-            LOGF_DEBUG(UNSELF, "BufferLength = %u", BufferLength);
+            DataLength = 0;
 
             for(auto& Section : MetaSections)
                 if(Section.Encrypted == 3)
                     if((Section.KeyIndex <= MetaHead.KeyCount - 1) && (Section.IVIndex <= MetaHead.KeyCount))
-                        BufferLength += Section.Size;
+                        DataLength += Section.Size;
             
-            LOGF_DEBUG(UNSELF, "BufferLength = %u", BufferLength);
-            DataBuffer = new U8[BufferLength];
+            LOGF_DEBUG(UNSELF, "BufferLength = %u", DataLength);
+            DataBuffer = new U8[DataLength];
 
             size_t Offset = 0;
             
@@ -560,6 +559,7 @@ namespace Volts::PS3
 
             for(const auto& Section : MetaSections)
             {
+                size_t NCOffset = 0;
                 if(
                     (Section.Encrypted == 3) && 
                     (Section.KeyIndex <= MetaHead.KeyCount - 1) && 
@@ -578,7 +578,7 @@ namespace Volts::PS3
                     Memory::Zero<U8>(Stream, 16);
 
                     aes_setkey_enc(&AES, Key, 128);
-                    aes_crypt_ctr(&AES, Section.Size, &Offset, IV, Stream, Data, Data);
+                    aes_crypt_ctr(&AES, Section.Size, &NCOffset, IV, Stream, Data, Data);
 
                     Memory::Copy<U8>(Data, DataBuffer + Offset, Section.Size);
 
@@ -613,7 +613,7 @@ namespace Volts::PS3
 
                         uLongf ZLength = static_cast<uLongf>(Size);
 
-                        uncompress(ZBuffer, &ZLength, DataBuffer + Offset, BufferLength);
+                        uncompress(ZBuffer, &ZLength, DataBuffer + Offset, DataLength);
 
                         Bin.Seek(Programs[Sect.ProgramIndex].Offset);
                         Bin.Write(ZBuffer, Size);
@@ -621,10 +621,9 @@ namespace Volts::PS3
                     else
                     {
                         Bin.Seek(Programs[Sect.ProgramIndex].Offset);
-                        LOGF_DEBUG(UNSELF, "Size = %llu", Sect.Size.Get());
                         Bin.Write(DataBuffer + Offset, Sect.Size);
                     }
-                    LOG_DEBUG(UNSELF, "Wrote");
+
                     Offset += Sect.Size;
                 }
             }
@@ -695,7 +694,7 @@ namespace Volts::PS3
         U32 KeyLength;
         Byte* KeyBuffer;
 
-        U32 BufferLength;
+        U32 DataLength;
         Byte* DataBuffer;
     };
 
