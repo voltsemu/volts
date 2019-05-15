@@ -35,7 +35,7 @@ args = []
 # from trying to use either feature at all so people dont """accidentally""" 
 # use these slow features for convenience sake
 if meson.get_compiler('cpp').get_id() == 'msvc'
-    args += ['/GR-', '/EHsc-']
+    args += ['/GR-']
 else
     args += ['-fno-rtti', '-fno-exceptions']
 endif

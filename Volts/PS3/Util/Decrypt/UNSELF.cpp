@@ -549,7 +549,6 @@ namespace Volts::PS3
                     if((Section.KeyIndex <= MetaHead.KeyCount - 1) && (Section.IVIndex <= MetaHead.KeyCount))
                         DataLength += Section.Size;
             
-            LOGF_DEBUG(UNSELF, "BufferLength = %u", DataLength);
             DataBuffer = new U8[DataLength];
 
             size_t Offset = 0;
