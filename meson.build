@@ -35,16 +35,25 @@ args = []
 # from trying to use either feature at all so people dont """accidentally""" 
 # use these slow features for convenience sake
 if meson.get_compiler('cpp').get_id() == 'msvc'
-    args += ['/GR-']
+    args += ['/GR-', '/ZW', '/Zc:twoPhase-']
 else
     args += ['-fno-rtti', '-fno-exceptions']
 endif
 
-executable('volt', sources,
-    include_directories : incs,
-    link_with : libs,
-    install : true,
-    cpp_args : args,
-    dependencies : zlib.get_variable('zlib_dep')
-)
-
+if build_machine.system() == 'windows'
+    static_library('volt', sources,
+        include_directories : incs,
+        link_with : libs,
+        install : true,
+        cpp_args : args,
+        dependencies : zlib.get_variable('zlib_dep')
+    )
+else
+    executable('volt', sources,
+        include_directories : incs,
+        link_with : libs,
+        install : true,
+        cpp_args : args,
+        dependencies : zlib.get_variable('zlib_dep')
+    )
+endif
