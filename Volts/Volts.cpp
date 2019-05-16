@@ -1,20 +1,34 @@
 ﻿
 #include "Volts.h"
 
-#include "PS3/Util/Decrypt/UNSELF.h"
+#include "Core/Collections/Array.h"
 #include "Core/Logger/Logger.h"
 
-using namespace Volts::PS3;
 using namespace Volts;
+
+Cthulhu::Array<Volts::Emulator*> Emulators = {};
+
+Cthulhu::Empty Volts::AddEmulator(Volts::Emulator* Emu)
+{
+	Emulators.Append(Emu);
+	return {};
+}
+
+const char* Volts::Stub()
+{
+	return "Yeet";
+}
+
+#if !OS_WINDOWS
 
 // entry point, nothing here yet as right now we're just testing very basic partss
 int main(int argc, const char** argv)
 {
 	LogLevel = Level::Trace;
-	FS::BufferedFile F{argv[1]};
-	auto Data = UNSELF::DecryptSELF(F);
-	auto* File = fopen("Output.elf", "wb+");
-	auto Bin = Data.Get();
-	fwrite(Bin.GetData(), sizeof(Cthulhu::Byte), Bin.GetLength(), File);
-	fclose(File);
+
+	auto* Emu = Emulators[0];
+
+	Emu->Run();
 }
+
+#endif
