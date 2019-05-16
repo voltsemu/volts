@@ -2,7 +2,6 @@
 #include "Volts.h"
 
 #include "Core/Collections/Array.h"
-#include "Core/Logger/Logger.h"
 
 using namespace Volts;
 
@@ -25,10 +24,6 @@ const char* Volts::Stub()
 int main(int argc, const char** argv)
 {
 	LogLevel = Level::Trace;
-
-	auto* Emu = Emulators[0];
-
-	Emu->Run();
 }
 
 #endif
