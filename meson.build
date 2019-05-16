@@ -67,7 +67,7 @@ elif build_machine.system() == 'darwin'
     xproj = join_paths(meson.source_root(), 'Volts/Platform/Darwin/Volts/Volts.xcodeproj')
     
     run_target('xcode',
-        command : ['xcodebuild', '-project', xproj, '-s']
+        command : ['xcodebuild', '-project', xproj, '-scheme', 'Volts', '-configuration', 'Release', '-s']
     )
 
 else
