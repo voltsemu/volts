@@ -10,3 +10,5 @@ Build/*
 x64/
 Generated Files/
 *.pfx
+
+*.DS_STORE
