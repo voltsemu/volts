@@ -51,7 +51,7 @@ This is a fault with meson rather than the volts codebase.
 git submodule update --init
 meson Build
 cd Build
-ninja 
+ninja msbuild
 volt.exe
 ```
 
@@ -64,7 +64,7 @@ As of May 9, 2019 supported MacOS versions are
 git submodule update --init
 meson Build
 cd Build
-ninja
+ninja xcode
 ./volt
 ```
 
