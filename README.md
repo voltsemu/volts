@@ -49,7 +49,7 @@ Assuming an entirley fresh install of linux
 
 ```sh
 # Basic packages needed
-sudo apt install git python3 python3-pip ninja-build clang cmake pkg-config zlib1g-dev
+sudo apt install git python3 python3-pip ninja-build clang llvm
 pip3 install --user meson
 
 # Grab other stuff from github
