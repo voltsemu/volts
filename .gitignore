@@ -7,8 +7,11 @@
 # ignore build output
 Build/*
 
+# ignore msbuild files
 x64/
 Generated Files/
 *.pfx
 
+# ignore xcode files
 *.DS_STORE
+Volts/Platform/Darwin/Volts/build
