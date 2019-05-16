@@ -4,6 +4,34 @@ Yet another PS3 emulator
 ## Why?
 Thought a complex project might be a good use of my time
 
+# Coding style
+
+We have an official code formatting style used throughout the codebase. As well as this we also have a coding style.
+
+## Code formatting
+
+4 space indents, not tabs, not 2 or 3 or 8 space indents.
+
+all variables, classes, functions and templates must be in `PascalCase`. all template parameters must be prefixed with `T`.
+
+Nested classes are outright banned, do not use them. ever.
+
+All macros must be in `SCREAMING_SNAKE_CASE` they must also not pollute the function with variable names. be sure to surround each macro with `{}` if needed.
+
+## Code style
+
+code that produces warnings on any platform must be fixed to make the build completley quiet.
+
+Performance is top priority, if something is not running at a satisfactory level optimize it.
+
+External modules should not be added with gay abandon, if it is reasonable to implement the library within Volts do that instead of trying to get package managers to play nice.
+
+Everything must be within the `Volts` namespace to avoid global namespace pollution.
+
+Document any code that is even slightly ambiguous, if it isnt understandable in code review it must be fixed before it is pushed to master.
+
+If it is a choice between OOP and procedural code, make procedural code.
+
 # How to play a game
 soon
 
