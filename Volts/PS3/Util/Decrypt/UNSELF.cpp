@@ -1,6 +1,7 @@
 #include "UNSELF.h"
 
 #include "Core/Logger/Logger.h"
+#include "Core/Macros.h"
 
 #include "PS3/Util/Convert.h"
 #include "Keys.h"
@@ -32,6 +33,8 @@ namespace Volts::PS3
             Big<U64> DataLength;
         };
 
+        static_assert(sizeof(SCE::Header) == 32);
+
         struct VersionInfo
         {
             Big<U32> SubType;
@@ -39,13 +42,15 @@ namespace Volts::PS3
             Big<U32> Size;
             U8 Padding[4];
         };
+
+        static_assert(sizeof(VersionInfo) == 16);
     }
 
     namespace ELF
     {
         struct SmallHeader
         {
-            Big<Cthulhu::U32> Magic;
+            Cthulhu::U32 Magic;
             Cthulhu::U8 Class;
             Cthulhu::U8 Endianness;
             Cthulhu::U8 Version;
@@ -53,6 +58,8 @@ namespace Volts::PS3
             Cthulhu::U8 ABIVersion;
             Cthulhu::U8 Padding[7];
         };
+
+        static_assert(sizeof(SmallHeader) == 16);
 
         template<typename T>
         struct BigHeader
@@ -76,6 +83,9 @@ namespace Volts::PS3
             Big<Cthulhu::U16> StringTableIndex;
         };
 
+        static_assert(sizeof(BigHeader<U32>) == 52 - sizeof(SmallHeader));
+        static_assert(sizeof(BigHeader<U64>) == 64 - sizeof(SmallHeader));
+
         template<typename T>
         struct ProgramHeader {};
 
@@ -94,8 +104,10 @@ namespace Volts::PS3
             Big<Cthulhu::U32> Align;
         };
 
+        static_assert(sizeof(ProgramHeader<U32>) == 32);
+
         template<> 
-        struct ProgramHeader<Cthulhu::U64> 
+        PACKED_STRUCT(ProgramHeader<Cthulhu::U64>,
         {
             Big<Cthulhu::U32> Type;
 
@@ -107,7 +119,9 @@ namespace Volts::PS3
             
             Big<Cthulhu::U32> Flags;
             Big<Cthulhu::U64> Align;
-        };
+        });
+
+        static_assert(sizeof(ProgramHeader<U64>) == 56);
 
         template<typename T>
         struct SectionHeader
@@ -126,6 +140,10 @@ namespace Volts::PS3
             Big<T> Align;
             Big<T> EntrySize;
         };
+
+        static_assert(sizeof(SectionHeader<U32>) == 40);
+        static_assert(sizeof(SectionHeader<U64>) == 64);
+
     }
 
 
@@ -144,6 +162,8 @@ namespace Volts::PS3
             Big<U64> ControlLength;
             U8 Padding[8];
         };
+
+        static_assert(sizeof(SELF::Header) == 80);
     }
 
     struct AppInfo
@@ -155,6 +175,8 @@ namespace Volts::PS3
         U8 Padding[12];
     };
 
+    static_assert(sizeof(AppInfo) == 32);
+
     struct SectionInfo
     {
         Big<U64> Offset;
@@ -163,6 +185,8 @@ namespace Volts::PS3
         U8 Padding[8]; // should always be 0
         Big<U32> Encrypted; // 1 if encrypted, 2 if unecrypted
     };
+
+    static_assert(sizeof(SectionInfo) == 32);
 
     struct ControlInfo
     {
@@ -178,6 +202,8 @@ namespace Volts::PS3
                 U8 Padding[28];
             } ControlFlags;
 
+            static_assert(sizeof(ControlFlags) == 32);
+
             struct
             {
                 U8 Constant[20];
@@ -185,15 +211,19 @@ namespace Volts::PS3
                 Big<U64> RequiredSystemVersion;
             } ELFDigest40;
 
+            static_assert(sizeof(ELFDigest40) == 48);
+
             struct
             {
                 U8 ConstantOrDigest[20];
                 U8 Padding[12];
             } ELFDigest30;
 
+            static_assert(sizeof(ELFDigest30) == 32);
+
             struct
             {
-                Big<U32> Magic;
+                U32 Magic;
                 Big<U32> LicenseVersion;
                 Big<U32> DRMType;
                 Big<U32> AppType;
@@ -203,6 +233,8 @@ namespace Volts::PS3
                 U8 XORDigest[16];
                 U8 Padding[16];
             } NPDRMInfo;
+
+            static_assert(sizeof(NPDRMInfo) == 128);
         };
     };
 
@@ -211,13 +243,14 @@ namespace Volts::PS3
         struct Header
         {
             Big<U64> SignatureLength;
-            U32 Padding1;
+            U8 Padding1[4];
             Big<U32> SectionCount;
             Big<U32> KeyCount;
             Big<U32> HeaderSize;
-            U32 Padding2;
-            U32 Padding3;
+            U8 Padding2[8];
         };
+
+        static_assert(sizeof(Header) == 32);
 
         struct Section
         {
@@ -233,6 +266,8 @@ namespace Volts::PS3
             Big<U32> Compressed;
         };
 
+        static_assert(sizeof(Section) == 48);
+
         struct Info
         {
             U8 Key[16];
@@ -241,6 +276,8 @@ namespace Volts::PS3
             U8 IV[16];
             U8 IVPadding[16];
         };
+
+        static_assert(sizeof(Info) == 64);
     }
 
     struct Decryptor
@@ -598,7 +635,7 @@ namespace Volts::PS3
 
             for(auto Program : Programs)
             {
-                LOG_DEBUG(UNSELF, "---------------------------------");
+                /*LOG_DEBUG(UNSELF, "---------------------------------");
                 LOGF_DEBUG(UNSELF, "Type = %u", Program.Type.Get());
                 LOGF_DEBUG(UNSELF, "Offset = %llu", Program.Offset.Get());
                 LOGF_DEBUG(UNSELF, "VAddr = %llu", Program.VirtualAddress.Get());
@@ -606,7 +643,7 @@ namespace Volts::PS3
                 LOGF_DEBUG(UNSELF, "FSize = %llu", Program.FileSize.Get());
                 LOGF_DEBUG(UNSELF, "MSize = %llu", Program.MemorySize.Get());
                 LOGF_DEBUG(UNSELF, "Flags = %u", Program.Flags.Get());
-                LOGF_DEBUG(UNSELF, "Align = %llu", Program.Align.Get());
+                LOGF_DEBUG(UNSELF, "Align = %llu", Program.Align.Get());*/
                 Bin.Write(&Program);
             }
 
