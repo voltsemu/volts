@@ -99,14 +99,14 @@ namespace Volts::PS3
         {
             Big<Cthulhu::U32> Type;
 
-            Big<Cthulhu::U32> Offset;
-            Big<Cthulhu::U32> VirtualAddress;
-            Big<Cthulhu::U32> PhysicalAddress;
-            Big<Cthulhu::U32> FileSize;
-            Big<Cthulhu::U32> MemorySize;
+            Big<Cthulhu::U64> Offset;
+            Big<Cthulhu::U64> VirtualAddress;
+            Big<Cthulhu::U64> PhysicalAddress;
+            Big<Cthulhu::U64> FileSize;
+            Big<Cthulhu::U64> MemorySize;
             
             Big<Cthulhu::U32> Flags;
-            Big<Cthulhu::U32> Align;
+            Big<Cthulhu::U64> Align;
         };
 
         template<typename T>
@@ -360,6 +360,8 @@ namespace Volts::PS3
 
             // seek to the start of the program headers
             File.Seek(SELFHead.ProgramHeaderOffset);
+            LOGF_DEBUG(UNSELF, "PHOffset = %llu", SELFHead.ProgramHeaderOffset.Get());
+
 
             // if the elf file is 32 bit
             if(Is32)
@@ -596,6 +598,15 @@ namespace Volts::PS3
 
             for(auto Program : Programs)
             {
+                LOG_DEBUG(UNSELF, "---------------------------------");
+                LOGF_DEBUG(UNSELF, "Type = %u", Program.Type.Get());
+                LOGF_DEBUG(UNSELF, "Offset = %llu", Program.Offset.Get());
+                LOGF_DEBUG(UNSELF, "VAddr = %llu", Program.VirtualAddress.Get());
+                LOGF_DEBUG(UNSELF, "PAddr = %llu", Program.PhysicalAddress.Get());
+                LOGF_DEBUG(UNSELF, "FSize = %llu", Program.FileSize.Get());
+                LOGF_DEBUG(UNSELF, "MSize = %llu", Program.MemorySize.Get());
+                LOGF_DEBUG(UNSELF, "Flags = %u", Program.Flags.Get());
+                LOGF_DEBUG(UNSELF, "Align = %llu", Program.Align.Get());
                 Bin.Write(&Program);
             }
 
