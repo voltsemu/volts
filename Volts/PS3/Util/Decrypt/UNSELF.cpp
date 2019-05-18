@@ -572,14 +572,25 @@ namespace Volts::PS3
             aes_setkey_enc(&AES, MetaInfo.Key, 128);
             aes_crypt_ctr(&AES, HSize, &Offset, MetaInfo.IV, Stream, Headers, Headers);
 
-            MetaHead = *(MetaData::Header*)Headers;
+            auto MetaHead = *(MetaData::Header*)Headers;
+
+            MetaKeyCount = MetaHead.KeyCount;
+
+            DataLength = 0;
 
             for(U32 I = 0; I < MetaHead.SectionCount; I++)
             {
-                MetaSections.Append(*(MetaData::Section*)(Headers + sizeof(MetaData::Header) + sizeof(MetaData::Section) * I));
+                auto Section = *(MetaData::Section*)(Headers + sizeof(MetaData::Header) + sizeof(MetaData::Section) * I);
+
+                if(Section.Encrypted == 3 && (Section.KeyIndex <= MetaHead.KeyCount - 1) && (Section.IVIndex <= MetaHead.KeyCount))
+                    DataLength += Section.Size;
+
+                MetaSections.Append(Section);
             }
 
-            KeyLength = MetaHead.KeyCount * 16;
+            DataBuffer = new U8[DataLength];
+
+            KeyLength = MetaKeyCount * 16;
             KeyBuffer = new Byte[KeyLength];
             Memory::Copy<Byte>((Byte*)(Headers + sizeof(MetaData::Header) + MetaHead.SectionCount * sizeof(MetaData::Section)), (Byte*)KeyBuffer, KeyLength);
 
@@ -590,44 +601,34 @@ namespace Volts::PS3
         { 
             aes_context AES;
 
-            DataLength = 0;
-
-            for(auto& Section : MetaSections)
-                if(Section.Encrypted == 3)
-                    if((Section.KeyIndex <= MetaHead.KeyCount - 1) && (Section.IVIndex <= MetaHead.KeyCount))
-                        DataLength += Section.Size;
-            
-            DataBuffer = new U8[DataLength];
-
             size_t Offset = 0;
             
-            U8 Key[16];
-            U8 IV[16];
+            Byte Key[16];
+            Byte IV[16];
 
             for(const auto& Section : MetaSections)
             {
-                size_t NCOffset = 0;
                 if(
                     (Section.Encrypted == 3) && 
-                    (Section.KeyIndex <= MetaHead.KeyCount - 1) && 
-                    (Section.IVIndex <= MetaHead.KeyCount)
+                    (Section.KeyIndex <= MetaKeyCount - 1) && 
+                    (Section.IVIndex <= MetaKeyCount)
                 )
                 {
-                    U8 Stream[16] = {};
-                    Memory::Copy<U8>(KeyBuffer + Section.KeyIndex * 16, Key, 16);
-                    Memory::Copy<U8>(KeyBuffer + Section.IVIndex * 16, IV, 16);
+                    size_t NCOffset = 0;
+
+                    Byte Stream[16] = {};
+                    Memory::Copy<Byte>(KeyBuffer + Section.KeyIndex * 16, Key, 16);
+                    Memory::Copy<Byte>(KeyBuffer + Section.IVIndex * 16, IV, 16);
 
                     File.Seek(Section.Offset);
                     
-                    U8* Data = new U8[Section.Size];
+                    Byte* Data = new Byte[Section.Size];
                     File.ReadN(Data, Section.Size);
-
-                    Memory::Zero<U8>(Stream, 16);
 
                     aes_setkey_enc(&AES, Key, 128);
                     aes_crypt_ctr(&AES, Section.Size, &NCOffset, IV, Stream, Data, Data);
 
-                    Memory::Copy<U8>(Data, DataBuffer + Offset, Section.Size);
+                    Memory::Copy<Byte>(Data, DataBuffer + Offset, Section.Size);
 
                     Offset += Section.Size;
                 }
@@ -644,18 +645,9 @@ namespace Volts::PS3
 
             for(auto Program : Programs)
             {
-                /*LOG_DEBUG(UNSELF, "---------------------------------");
-                LOGF_DEBUG(UNSELF, "Type = %u", Program.Type.Get());
-                LOGF_DEBUG(UNSELF, "Offset = %llu", Program.Offset.Get());
-                LOGF_DEBUG(UNSELF, "VAddr = %llu", Program.VirtualAddress.Get());
-                LOGF_DEBUG(UNSELF, "PAddr = %llu", Program.PhysicalAddress.Get());
-                LOGF_DEBUG(UNSELF, "FSize = %llu", Program.FileSize.Get());
-                LOGF_DEBUG(UNSELF, "MSize = %llu", Program.MemorySize.Get());
-                LOGF_DEBUG(UNSELF, "Flags = %u", Program.Flags.Get());
-                LOGF_DEBUG(UNSELF, "Align = %llu", Program.Align.Get());*/
                 Bin.Write(&Program);
             }
-
+#if 0
             U32 Offset = 0;
 
             for(auto Sect : Sections)
@@ -693,7 +685,7 @@ namespace Volts::PS3
                     Bin.Write(&Head);
                 }
             }
-
+#endif
             return Bin;
         }
 
@@ -743,7 +735,7 @@ namespace Volts::PS3
             };
         };
 
-        MetaData::Header MetaHead;
+        U32 MetaKeyCount;
         MetaData::Info MetaInfo;
         Array<MetaData::Section> MetaSections;
 
