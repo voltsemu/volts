@@ -7,12 +7,6 @@
 namespace Volts::PS3
 {
     namespace FS = Cthulhu::FileSystem;
-    
-    enum class Width : Cthulhu::U8
-    {
-        B32,
-        B64,
-    };
 
     namespace ELF
     {
