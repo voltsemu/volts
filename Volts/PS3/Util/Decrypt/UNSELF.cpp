@@ -366,7 +366,11 @@ namespace Volts::PS3
             
             // seek to the app info and read it in
             File.Seek(SELFHead.InfoOffset);
-            Info = File.Read<AppInfo>();
+            auto Info = File.Read<AppInfo>();
+
+            // we only need these two variables so we only store these 2
+            InfoType = Info.Type;
+            InfoVersion = Info.Version;
 
             // read in a small elf header so we know how the rest of the header is formatted
             File.Seek(SELFHead.ELFOffset);
@@ -393,21 +397,35 @@ namespace Volts::PS3
                 Is32 = false;
                 // must be 64 bit otherwise
                 ELFHead64 = File.Read<ELF::BigHeader<U64>>();
+
+
+                LOGF_DEBUG(UNSELF, "Type = %u", ELFHead64.Type.Get());
+                LOGF_DEBUG(UNSELF, "Machine = %u", ELFHead64.Machine.Get());
+                LOGF_DEBUG(UNSELF, "Version = %u", ELFHead64.Version.Get());
+                LOGF_DEBUG(UNSELF, "Entry = %llu", ELFHead64.Entry.Get());
+                LOGF_DEBUG(UNSELF, "POff = %llu", ELFHead64.PHOffset.Get());
+                LOGF_DEBUG(UNSELF, "SOff = %llu", ELFHead64.SHOffset.Get());
             }
 
             // seek to the start of the program headers
             File.Seek(SELFHead.ProgramHeaderOffset);
             LOGF_DEBUG(UNSELF, "PHOffset = %llu", SELFHead.ProgramHeaderOffset.Get());
 
+            // the amount of program headers we need to read in, this is used later but is set here
+            // to avoid pointless branching
+            U32 PHCount;
 
             // if the elf file is 32 bit
             if(Is32)
             {
+                // set the amount of program headers if we're using 32 bit arch
+                PHCount = ELFHead32.PHCount;
+                
                 // load program headers and then section headers
                 PHeaders32 = new Array<ELF::ProgramHeader<U32>>();
 
                 // read in each program header, they're packed next to each other so no seeking is needed
-                for(U32 I = 0; I < ELFHead32.PHCount; I++)
+                for(U32 I = 0; I < PHCount; I++)
                 {
                     PHeaders32->Append(File.Read<ELF::ProgramHeader<U32>>());
                 }
@@ -426,9 +444,11 @@ namespace Volts::PS3
             }
             else 
             {
+                PHCount = ELFHead64.PHCount;
+
                 PHeaders64 = new Array<ELF::ProgramHeader<U64>>();
 
-                for(U32 I = 0; I < ELFHead64.PHCount; I++)
+                for(U32 I = 0; I < PHCount; I++)
                 {
                     PHeaders64->Append(File.Read<ELF::ProgramHeader<U64>>());
                 }
@@ -464,11 +484,8 @@ namespace Volts::PS3
             // read in the section info headers
             File.Seek(SELFHead.SectionInfoOffset);
 
-            // we need to use the correct program header count so check if we're reading in a 32 or 64 bit
-            const U32 InfoCount = (Is32 ? ELFHead32.PHCount : ELFHead64.PHCount);
-
             // read in each section info, these are packed together so no need to seek each time
-            for(U32 I = 0; I < InfoCount; I++)
+            for(U32 I = 0; I < PHCount; I++)
             {
                 SInfoArray.Append(File.Read<SectionInfo>());
             }
@@ -543,7 +560,7 @@ namespace Volts::PS3
             
             aes_context AES;
             
-            SELF::Key MetaKey = GetSELFKey(Info.Type, SCEHead.KeyType, Info.Version);
+            SELF::Key MetaKey = GetSELFKey(InfoType, SCEHead.KeyType, InfoVersion);
 
             if((SCEHead.KeyType & 0x8000) != 0x8000)
             {
@@ -627,23 +644,22 @@ namespace Volts::PS3
                 Memory::Copy<Byte>(Data, DataBuffer + Offset, Section.Size);
 
                 Offset += Section.Size;
-            
             }
         }
 
     private:
         template<typename THeader, typename TProgram, typename TSection>
-        ELF::Binary CreateBinary(THeader* Head, TProgram& Programs, TSection& Sections)
+        ELF::Binary CreateBinary(THeader Head, TProgram& Programs, TSection& Sections)
         {
             ELF::Binary Bin = {128};
             Bin.Write(&Small);
-            Bin.Write(Head);
+            Bin.Write(&Head);
 
             for(auto Program : Programs)
             {
                 Bin.Write(&Program);
             }
-#if 0
+//#if 0
             U32 Offset = 0;
 
             for(auto Sect : Sections)
@@ -652,6 +668,7 @@ namespace Volts::PS3
                 {
                     if(Sect.Compressed == 2)
                     {
+                        LOG_DEBUG(UNSELF, "Compressed");
                         const U32 Size = Programs[Sect.ProgramIndex].FileSize;
                         Byte* ZBuffer = new Byte[Size];
 
@@ -664,6 +681,8 @@ namespace Volts::PS3
                     }
                     else
                     {
+                        LOG_DEBUG(UNSELF, "Not compressed");
+                        LOGF_DEBUG(UNSELF, "Offset = %llu", Programs[Sect.ProgramIndex].Offset);
                         Bin.Seek(Programs[Sect.ProgramIndex].Offset);
                         Bin.Write(DataBuffer + Offset, Sect.Size);
                     }
@@ -674,14 +693,15 @@ namespace Volts::PS3
 
             if(SELFHead.SectionHeaderOffset != 0)
             {
-                Bin.Seek(Head->SHOffset);
+                Bin.Seek(Head.SHOffset);
+                LOGF_DEBUG(UNSELF, "SHOff = %llu", Head.SHOffset);
 
-                for(auto Head : Sections)
+                for(auto SHead : Sections)
                 {
-                    Bin.Write(&Head);
+                    Bin.Write(&SHead);
                 }
             }
-#endif
+//#endif
             return Bin;
         }
 
@@ -690,9 +710,9 @@ namespace Volts::PS3
         ELF::Binary ToBinary()
         {
             if(Is32)
-                return CreateBinary(&ELFHead32, *PHeaders32, MetaSections);
+                return CreateBinary(ELFHead32, *PHeaders32, MetaSections);
             else
-                return CreateBinary(&ELFHead64, *PHeaders64, MetaSections);
+                return CreateBinary(ELFHead64, *PHeaders64, MetaSections);
         }
 
         bool Is32;
@@ -701,7 +721,8 @@ namespace Volts::PS3
 
         SCE::Header SCEHead;
         SELF::Header SELFHead;
-        AppInfo Info;
+        KeyType InfoType;
+        U32 InfoVersion;
 
         Array<SectionInfo> SInfoArray;
         Array<ControlInfo> CInfoArray;
