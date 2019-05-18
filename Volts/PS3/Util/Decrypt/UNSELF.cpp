@@ -119,7 +119,7 @@ namespace Volts::PS3
             
             Big<Cthulhu::U32> Flags;
             Big<Cthulhu::U64> Align;
-        });
+        })
 
         static_assert(sizeof(ProgramHeader<U64>) == 56);
 
@@ -373,7 +373,7 @@ namespace Volts::PS3
             Small = File.Read<ELF::SmallHeader>();
 
             // check the magic of the ELF small header
-            if(Small.Magic != 0x7F454C46)
+            if(Small.Magic != "\177ELF"_U32)
             {
                 LOG_ERROR(UNSELF, "ELF Header had incorrect magic");
                 return false;
@@ -406,15 +406,19 @@ namespace Volts::PS3
                 // load program headers and then section headers
                 PHeaders32 = new Array<ELF::ProgramHeader<U32>>();
 
+                // read in each program header, they're packed next to each other so no seeking is needed
                 for(U32 I = 0; I < ELFHead32.PHCount; I++)
                 {
                     PHeaders32->Append(File.Read<ELF::ProgramHeader<U32>>());
                 }
 
+                // create the section header array
                 SHeaders32 = new Array<ELF::SectionHeader<U32>>();
 
+                // the section headers are not next to the program headers, so we need to seek to them
                 File.Seek(SELFHead.SectionHeaderOffset);
 
+                // now read in each section header, these are also packed so they can be read in without seeking
                 for(U32 I = 0; I < ELFHead32.SHCount; I++)
                 {
                     SHeaders32->Append(File.Read<ELF::SectionHeader<U32>>());
@@ -446,18 +450,24 @@ namespace Volts::PS3
             // read control info
             File.Seek(SELFHead.ControlOffset);
 
+            // only read in while I is less than the total length of all control info headers
             U32 I = 0;
             while(I < SELFHead.ControlLength)
             {
+                // read in a single control header
                 auto CInfo = ReadControlInfo();
                 CInfoArray.Append(CInfo);
+                // add the length of the object to I so we know how much size we have left
                 I += CInfo.Size;
             }
 
             // read in the section info headers
             File.Seek(SELFHead.SectionInfoOffset);
+
+            // we need to use the correct program header count so check if we're reading in a 32 or 64 bit
             const U32 InfoCount = (Is32 ? ELFHead32.PHCount : ELFHead64.PHCount);
 
+            // read in each section info, these are packed together so no need to seek each time
             for(U32 I = 0; I < InfoCount; I++)
             {
                 SInfoArray.Append(File.Read<SectionInfo>());
@@ -469,7 +479,6 @@ namespace Volts::PS3
     private:
         bool KeyFromRAP(U8* ID, U8* Key)
         {
-            //U8 RAPKey[16] = {};
             // TODO: this needs a whole ton of other things before it will work properly
             return false;
         }

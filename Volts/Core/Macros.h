@@ -10,9 +10,14 @@
 #define CAT(A, B) CAT_INNER(A, B)
 
 #if CC_MSVC
-#   define PACKED_STRUCT(Name, Fields)  _Pragma pack(push, 1) \
+// use some funny msvc specific macros to change byte padding to 1 then declare the struct
+#   define PACKED_STRUCT(Name, Fields)  __pragma(pack(push, 1)) \
                                         struct Name Fields; \
-                                        _Pragma pack(pop)
-#else
+                                        __pragma(pack(pop))
+#elif CC_CLANG
 #   define PACKED_STRUCT(Name, Fields) struct __attribute__((packed)) Name Fields;
+#elif CC_GCC
+#   define PACKED_STRUCT(Name, Fields)  _Pragma pack(1) \
+                                        struct Name Fields; \
+                                        _Pragma pack()
 #endif
