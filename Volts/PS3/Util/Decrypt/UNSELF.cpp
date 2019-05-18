@@ -562,17 +562,17 @@ namespace Volts::PS3
             }
 
             const U32 HSize = SCEHead.HeaderLength - (sizeof(SCE::Header) + SCEHead.MetadataOffset + sizeof(MetaData::Info));
-            U8* Headers = new U8[HSize];
+            Byte* Headers = new Byte[HSize];
 
             File.Seek(SCEHead.MetadataOffset + sizeof(SCE::Header) + sizeof(MetaData::Info));
             File.ReadN(Headers, HSize);
 
             size_t Offset = 0;
-            U8 Stream[16];
+            Byte Stream[16];
             aes_setkey_enc(&AES, MetaInfo.Key, 128);
             aes_crypt_ctr(&AES, HSize, &Offset, MetaInfo.IV, Stream, Headers, Headers);
 
-            auto MetaHead = *(MetaData::Header*)Headers;
+            const auto MetaHead = *(MetaData::Header*)Headers;
 
             MetaKeyCount = MetaHead.KeyCount;
 
@@ -580,12 +580,14 @@ namespace Volts::PS3
 
             for(U32 I = 0; I < MetaHead.SectionCount; I++)
             {
-                auto Section = *(MetaData::Section*)(Headers + sizeof(MetaData::Header) + sizeof(MetaData::Section) * I);
+                const auto Section = *(MetaData::Section*)(Headers + sizeof(MetaData::Header) + sizeof(MetaData::Section) * I);
 
+                // check if this section is even important, if it isnt then we dont need to append it or proccess it
                 if(Section.Encrypted == 3 && (Section.KeyIndex <= MetaHead.KeyCount - 1) && (Section.IVIndex <= MetaHead.KeyCount))
+                {
                     DataLength += Section.Size;
-
-                MetaSections.Append(Section);
+                    MetaSections.Append(Section);
+                }
             }
 
             DataBuffer = new U8[DataLength];
@@ -608,30 +610,24 @@ namespace Volts::PS3
 
             for(const auto& Section : MetaSections)
             {
-                if(
-                    (Section.Encrypted == 3) && 
-                    (Section.KeyIndex <= MetaKeyCount - 1) && 
-                    (Section.IVIndex <= MetaKeyCount)
-                )
-                {
-                    size_t NCOffset = 0;
+                size_t NCOffset = 0;
 
-                    Byte Stream[16] = {};
-                    Memory::Copy<Byte>(KeyBuffer + Section.KeyIndex * 16, Key, 16);
-                    Memory::Copy<Byte>(KeyBuffer + Section.IVIndex * 16, IV, 16);
+                Byte Stream[16] = {};
+                Memory::Copy<Byte>(KeyBuffer + Section.KeyIndex * 16, Key, 16);
+                Memory::Copy<Byte>(KeyBuffer + Section.IVIndex * 16, IV, 16);
 
-                    File.Seek(Section.Offset);
-                    
-                    Byte* Data = new Byte[Section.Size];
-                    File.ReadN(Data, Section.Size);
+                File.Seek(Section.Offset);
+                
+                Byte* Data = new Byte[Section.Size];
+                File.ReadN(Data, Section.Size);
 
-                    aes_setkey_enc(&AES, Key, 128);
-                    aes_crypt_ctr(&AES, Section.Size, &NCOffset, IV, Stream, Data, Data);
+                aes_setkey_enc(&AES, Key, 128);
+                aes_crypt_ctr(&AES, Section.Size, &NCOffset, IV, Stream, Data, Data);
 
-                    Memory::Copy<Byte>(Data, DataBuffer + Offset, Section.Size);
+                Memory::Copy<Byte>(Data, DataBuffer + Offset, Section.Size);
 
-                    Offset += Section.Size;
-                }
+                Offset += Section.Size;
+            
             }
         }
 
