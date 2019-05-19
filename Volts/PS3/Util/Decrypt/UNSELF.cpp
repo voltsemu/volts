@@ -601,6 +601,7 @@ namespace Volts::PS3
             LOGF_DEBUG(UNSELF, "MetaSectionCount = %u", MetaHead.SectionCount.Get());
 
             MetaKeyCount = MetaHead.KeyCount;
+            MetaSectionCount = MetaHead.SectionCount;
 
             DataLength = 0;
 
@@ -682,10 +683,10 @@ namespace Volts::PS3
                 {
                     LOGF_DEBUG(UNSELF, "ProgramIndex = %u", Sect.ProgramIndex.Get());
                     LOGF_DEBUG(UNSELF, "Offset = %llu", Programs[Sect.ProgramIndex].Offset.Get());
+                    LOGF_DEBUG(UNSELF, "Size = %llu", Sect.Size.Get());
 
                     if(Sect.Compressed == 2)
                     {
-                        LOG_DEBUG(UNSELF, "Compressed");
                         const U32 Size = Programs[Sect.ProgramIndex].FileSize;
                         Byte* ZBuffer = new Byte[Size];
 
@@ -695,14 +696,23 @@ namespace Volts::PS3
 
                         LOGF_DEBUG(UNSELF, "COffset = %llu", Programs[Sect.ProgramIndex].Offset.Get());
                         Bin.Seek(Programs[Sect.ProgramIndex].Offset);
+                        LOGF_DEBUG(UNSELF, "Position = %u", Bin.Depth());
                         Bin.Write(ZBuffer, Size);
+                        LOGF_DEBUG(UNSELF, "Position After = %u", Bin.Depth());
                     }
                     else
                     {
-                        LOG_DEBUG(UNSELF, "Not compressed");
                         LOGF_DEBUG(UNSELF, "NCOffset = %llu", Programs[Sect.ProgramIndex].Offset.Get());
                         Bin.Seek(Programs[Sect.ProgramIndex].Offset);
+                        LOGF_DEBUG(UNSELF, "Position = %u", Bin.Depth());
                         Bin.Write(DataBuffer + Offset, Sect.Size);
+                        //LOGF_DEBUG(UNSELF, "Position After = %u", Bin.Depth());
+                    }
+
+                    if(Bin.GetData()[0] != '\177')
+                    {
+                        LOG_ERROR(UNSELF, "Did a bad");
+                        LOG_ERROR(UNSELF, "---------");
                     }
                     Offset += Sect.Size;
                 }
@@ -775,6 +785,7 @@ namespace Volts::PS3
         };
 
         U32 MetaKeyCount;
+        U32 MetaSectionCount;
         MetaData::Info MetaInfo;
         Array<MetaData::Section> MetaSections;
 
