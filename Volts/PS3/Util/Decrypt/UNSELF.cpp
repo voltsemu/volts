@@ -93,7 +93,6 @@ namespace Volts::PS3
         struct ProgramHeader<Cthulhu::U32> 
         {
             Big<Cthulhu::U32> Type;
-            Big<Cthulhu::U32> Flags;
 
             Big<Cthulhu::U32> Offset;
             Big<Cthulhu::U32> VirtualAddress;
@@ -101,6 +100,7 @@ namespace Volts::PS3
             Big<Cthulhu::U32> FileSize;
             Big<Cthulhu::U32> MemorySize;
 
+            Big<Cthulhu::U32> Flags;
             Big<Cthulhu::U32> Align;
         };
 
@@ -110,6 +110,7 @@ namespace Volts::PS3
         PACKED_STRUCT(ProgramHeader<Cthulhu::U64>,
         {
             Big<Cthulhu::U32> Type;
+            Big<Cthulhu::U32> Flags;
 
             Big<Cthulhu::U64> Offset;
             Big<Cthulhu::U64> VirtualAddress;
@@ -117,7 +118,6 @@ namespace Volts::PS3
             Big<Cthulhu::U64> FileSize;
             Big<Cthulhu::U64> MemorySize;
             
-            Big<Cthulhu::U32> Flags;
             Big<Cthulhu::U64> Align;
         })
 
@@ -399,17 +399,19 @@ namespace Volts::PS3
                 ELFHead64 = File.Read<ELF::BigHeader<U64>>();
 
 
-                LOGF_DEBUG(UNSELF, "Type = %u", ELFHead64.Type.Get());
-                LOGF_DEBUG(UNSELF, "Machine = %u", ELFHead64.Machine.Get());
-                LOGF_DEBUG(UNSELF, "Version = %u", ELFHead64.Version.Get());
-                LOGF_DEBUG(UNSELF, "Entry = %llu", ELFHead64.Entry.Get());
-                LOGF_DEBUG(UNSELF, "POff = %llu", ELFHead64.PHOffset.Get());
-                LOGF_DEBUG(UNSELF, "SOff = %llu", ELFHead64.SHOffset.Get());
+                //LOGF_DEBUG(UNSELF, "Type = %u", ELFHead64.Type.Get());
+                //LOGF_DEBUG(UNSELF, "Machine = %u", ELFHead64.Machine.Get());
+                //LOGF_DEBUG(UNSELF, "Version = %u", ELFHead64.Version.Get());
+                //LOGF_DEBUG(UNSELF, "Entry = %llu", ELFHead64.Entry.Get());
+                //LOGF_DEBUG(UNSELF, "POff = %llu", ELFHead64.PHOffset.Get());
+                //LOGF_DEBUG(UNSELF, "SOff = %llu", ELFHead64.SHOffset.Get());
             }
 
             // seek to the start of the program headers
-            File.Seek(SELFHead.ProgramHeaderOffset);
-            LOGF_DEBUG(UNSELF, "PHOffset = %llu", SELFHead.ProgramHeaderOffset.Get());
+            //File.Seek(SELFHead.ProgramHeaderOffset);
+            //LOGF_DEBUG(UNSELF, "PHOffset = %llu", SELFHead.ProgramHeaderOffset.Get());
+
+            LOGF_DEBUG(UNSELF, "Depth = %u", File.CurrentDepth());
 
             // the amount of program headers we need to read in, this is used later but is set here
             // to avoid pointless branching
@@ -450,7 +452,11 @@ namespace Volts::PS3
 
                 for(U32 I = 0; I < PHCount; I++)
                 {
-                    PHeaders64->Append(File.Read<ELF::ProgramHeader<U64>>());
+                    auto PHead = File.Read<ELF::ProgramHeader<U64>>();
+
+                    LOGF_DEBUG(UNSELF, "%u = %llu", I, PHead.Offset.Get());
+
+                    PHeaders64->Append(PHead);
                 }
 
                 SHeaders64 = new Array<ELF::SectionHeader<U64>>();
@@ -590,6 +596,9 @@ namespace Volts::PS3
             aes_crypt_ctr(&AES, HSize, &Offset, MetaInfo.IV, Stream, Headers, Headers);
 
             const auto MetaHead = *(MetaData::Header*)Headers;
+            Headers += sizeof(MetaData::Header);
+
+            LOGF_DEBUG(UNSELF, "MetaSectionCount = %u", MetaHead.SectionCount.Get());
 
             MetaKeyCount = MetaHead.KeyCount;
 
@@ -597,21 +606,20 @@ namespace Volts::PS3
 
             for(U32 I = 0; I < MetaHead.SectionCount; I++)
             {
-                const auto Section = *(MetaData::Section*)(Headers + sizeof(MetaData::Header) + sizeof(MetaData::Section) * I);
+                const auto Section = *(MetaData::Section*)(Headers + sizeof(MetaData::Section) * I);
 
                 // check if this section is even important, if it isnt then we dont need to append it or proccess it
                 if(Section.Encrypted == 3 && (Section.KeyIndex <= MetaHead.KeyCount - 1) && (Section.IVIndex <= MetaHead.KeyCount))
-                {
                     DataLength += Section.Size;
-                    MetaSections.Append(Section);
-                }
+
+                MetaSections.Append(Section);
             }
 
             DataBuffer = new U8[DataLength];
 
             KeyLength = MetaKeyCount * 16;
             KeyBuffer = new Byte[KeyLength];
-            Memory::Copy<Byte>((Byte*)(Headers + sizeof(MetaData::Header) + MetaHead.SectionCount * sizeof(MetaData::Section)), (Byte*)KeyBuffer, KeyLength);
+            Memory::Copy<Byte>((Headers + sizeof(MetaData::Header) + MetaHead.SectionCount * sizeof(MetaData::Section)), KeyBuffer, KeyLength);
 
             return true;
         }
@@ -627,45 +635,54 @@ namespace Volts::PS3
 
             for(const auto& Section : MetaSections)
             {
-                size_t NCOffset = 0;
+                if(Section.Encrypted == 3 && (Section.KeyIndex <= MetaKeyCount - 1) && (Section.IVIndex <= MetaKeyCount))
+                {
+                    size_t NCOffset = 0;
 
-                Byte Stream[16] = {};
-                Memory::Copy<Byte>(KeyBuffer + Section.KeyIndex * 16, Key, 16);
-                Memory::Copy<Byte>(KeyBuffer + Section.IVIndex * 16, IV, 16);
+                    Byte Stream[16] = {};
+                    Memory::Copy<Byte>(KeyBuffer + Section.KeyIndex * 16, Key, 16);
+                    Memory::Copy<Byte>(KeyBuffer + Section.IVIndex * 16, IV, 16);
 
-                File.Seek(Section.Offset);
-                
-                Byte* Data = new Byte[Section.Size];
-                File.ReadN(Data, Section.Size);
+                    File.Seek(Section.Offset);
+                    
+                    Byte* Data = new Byte[Section.Size];
+                    File.ReadN(Data, Section.Size);
 
-                aes_setkey_enc(&AES, Key, 128);
-                aes_crypt_ctr(&AES, Section.Size, &NCOffset, IV, Stream, Data, Data);
+                    aes_setkey_enc(&AES, Key, 128);
+                    aes_crypt_ctr(&AES, Section.Size, &NCOffset, IV, Stream, Data, Data);
 
-                Memory::Copy<Byte>(Data, DataBuffer + Offset, Section.Size);
+                    Memory::Copy<Byte>(Data, DataBuffer + Offset, Section.Size);
 
-                Offset += Section.Size;
+                    Offset += Section.Size;
+                }
             }
         }
 
     private:
-        template<typename THeader, typename TProgram, typename TSection>
-        ELF::Binary CreateBinary(THeader Head, TProgram& Programs, TSection& Sections)
+        template<typename THeader, typename TProgram, typename TSection, typename TOffset>
+        ELF::Binary CreateBinary(THeader Head, TProgram& Programs, TSection& Sections, TOffset SHOffset)
         {
             ELF::Binary Bin = {128};
+
+            // write out the ELF header
             Bin.Write(&Small);
             Bin.Write(&Head);
 
+            // write out the program sections 
             for(auto Program : Programs)
             {
                 Bin.Write(&Program);
             }
-//#if 0
+
             U32 Offset = 0;
 
-            for(auto Sect : Sections)
+            for(auto Sect : MetaSections)
             {
                 if(Sect.Type == 2)
                 {
+                    LOGF_DEBUG(UNSELF, "ProgramIndex = %u", Sect.ProgramIndex.Get());
+                    LOGF_DEBUG(UNSELF, "Offset = %llu", Programs[Sect.ProgramIndex].Offset.Get());
+
                     if(Sect.Compressed == 2)
                     {
                         LOG_DEBUG(UNSELF, "Compressed");
@@ -676,32 +693,31 @@ namespace Volts::PS3
 
                         uncompress(ZBuffer, &ZLength, DataBuffer + Offset, DataLength);
 
+                        LOGF_DEBUG(UNSELF, "COffset = %llu", Programs[Sect.ProgramIndex].Offset.Get());
                         Bin.Seek(Programs[Sect.ProgramIndex].Offset);
                         Bin.Write(ZBuffer, Size);
                     }
                     else
                     {
                         LOG_DEBUG(UNSELF, "Not compressed");
-                        LOGF_DEBUG(UNSELF, "Offset = %llu", Programs[Sect.ProgramIndex].Offset);
+                        LOGF_DEBUG(UNSELF, "NCOffset = %llu", Programs[Sect.ProgramIndex].Offset.Get());
                         Bin.Seek(Programs[Sect.ProgramIndex].Offset);
                         Bin.Write(DataBuffer + Offset, Sect.Size);
                     }
-
                     Offset += Sect.Size;
                 }
             }
 
             if(SELFHead.SectionHeaderOffset != 0)
             {
-                Bin.Seek(Head.SHOffset);
-                LOGF_DEBUG(UNSELF, "SHOff = %llu", Head.SHOffset);
+                Bin.Seek(SHOffset);
 
                 for(auto SHead : Sections)
                 {
                     Bin.Write(&SHead);
                 }
             }
-//#endif
+
             return Bin;
         }
 
@@ -709,10 +725,16 @@ namespace Volts::PS3
 
         ELF::Binary ToBinary()
         {
+            U32 Idx = 0;
+            for(auto PHead : *PHeaders64)
+            {
+                LOGF_DEBUG(UNSELF, "%u = %llu", Idx++, PHead.Offset.Get());
+            }
+
             if(Is32)
-                return CreateBinary(ELFHead32, *PHeaders32, MetaSections);
+                ; //return CreateBinary(ELFHead32, *PHeaders32, *SHeaders32, ELFHead32.SHOffset.Get());
             else
-                return CreateBinary(ELFHead64, *PHeaders64, MetaSections);
+                return CreateBinary(ELFHead64, *PHeaders64, *SHeaders64, ELFHead64.SHOffset.Get());
         }
 
         bool Is32;
