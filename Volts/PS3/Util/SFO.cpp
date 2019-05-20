@@ -1,7 +1,7 @@
 #include "SFO.h"
 
-#include "Convert.h"
-#include "Endian.h"
+#include "Core/Convert.h"
+#include "Core/Endian.h"
 
 namespace Volts::PS3::SFO
 {

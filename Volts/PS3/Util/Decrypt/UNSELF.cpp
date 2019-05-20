@@ -3,14 +3,318 @@
 #include "Core/Logger/Logger.h"
 #include "Core/Macros.h"
 
-#include "PS3/Util/Convert.h"
+#include "Core/Convert.h"
 #include "Keys.h"
 #include "AES/aes.h"
 
 #include <zlib.h>
 
-using namespace Cthulhu;
 
+// SELF files have massive, somewhat overly complex headers that need parsing
+// SELFs are usually called EBOOT.bin and contain the entire game executable
+// this table is the header layout byte by byte as i understand it
+// this is based on the ps3 dev wiki, rpcs3's self parser and the parser
+// made by fail0verflow before sony forced them to take the source down
+//
+// Bytes 0..32 SCE::Header
+//  0..4   Magic 
+//      - always "SCE\0" or 4539219ULL
+//
+//  5..8   HeaderVersion 
+//      - 2 = PS3 game
+//      - 3 = PSVita game
+//
+//  9..10  KeyType
+//      - we only care about this if its 0x8000
+//        if its 0x8000 the self file is a debug file
+//        if its a debug file nothing is encrypted
+//
+//  11..12 FileCategory
+//      - 1 = SELF file, signed-elf. we need to decrypt this
+//      - 2 = signed-revoke-list used by the ps3 hypervisor, we dont care about this
+//      - 3 = signed-package are firmware packages used to update the ps3, we dont care about these
+//      - 4 = secutiry-policy-profile used for internal ps3 files, 
+//            we dont really need to care about this
+//
+//  13..16 MetadataStart
+//      - the offset of the start of the metadata headers
+//        this offset is relative to the end of the SCE::Header end byte
+//        so the real offset is MetaDataStart + sizeof(SCE::Header)
+//
+//  17..24 MetadataEnd
+//      - the offset of the last byte of the metadata headers
+//        this can be used to calculate the length of the headers
+//        with Size = MetadataEnd - sizeof(SCE::Header) - MetadataStart - sizeof(MetaData::Info)
+//
+//  25..32 DataLength
+//      - This is the length of the data inside the file
+//
+// Bytes 33..112
+//  33..40 Type
+//      - Should always be 3
+//
+//  41..48 InfoOffset
+//      - the absolute offset of the AppInfo struct
+//
+//  49..56 ELFOffset
+//      - the absolute offset of the ELF header
+//
+// TODO the rest of these fields
+//
+
+
+namespace Volts::PS3
+{
+    using namespace Cthulhu;
+
+    namespace SCE
+    {
+        struct Header
+        {
+            U32 Magic;
+            Big<U32> Version;
+            Big<U16> Type; //
+            Big<U16> Category;
+            Big<U32> MetadataStart; //
+            Big<U64> MetadataEnd; //
+            Big<U64> Size;
+        };
+
+        static_assert(sizeof(Header) == 32);
+    }
+
+    namespace SELF
+    {
+        struct Header
+        {
+            Big<U64> Type;
+            Big<U64> AInfoOffset;
+            Big<U64> ELFOffset;
+            Big<U64> PHeaderOffset;
+            Big<U64> SHeaderOffset;
+            Big<U64> SInfoOffset;
+            Big<U64> VersionOffset;
+            Big<U64> ControlOffset;
+            Big<U64> ControlLength;
+            Byte Padding[8];
+        };
+
+        static_assert(sizeof(Header) == 80);
+
+        struct Section
+        {
+            U32 Offset;
+            U32 Size;
+            U32 Compressed;
+            U32 SizeUncompressed;
+            U32 ELFOffset;
+        };
+    }
+
+    struct AppInfo
+    {
+        Big<U64> AuthID;
+        Big<U32> VendorID;
+        Big<U32> Type;
+        Big<U64> Version;
+        Byte Padding[8];
+    };
+
+    static_assert(sizeof(AppInfo) == 32);
+
+    namespace ELF
+    {
+        struct SmallHeader
+        {
+            U32 Magic;
+            U8 Class;
+            U8 Endian;
+            U8 Version;
+            U8 ABI;
+            U8 ABIVersion;
+            Byte Padding[7];
+        };
+
+        static_assert(sizeof(SmallHeader) == 16);
+
+        template<typename T>
+        struct BigHeader
+        {
+            Big<U16> Type;
+            Big<U16> Machine;
+            Big<U32> Version;
+
+            Big<T> Entry;
+            Big<T> PHOffset;
+            Big<T> SHOffset;
+
+            Big<U32> Flags;
+            Big<U16> HeaderSize;
+
+            Big<U16> PHEntrySize;
+            Big<U16> PHCount;
+
+            Big<U16> SHEntrySize;
+            Big<U16> SHCount;
+
+            Big<U16> StringIndex;
+        };
+
+        static_assert(sizeof(BigHeader<U32>) == 52 - sizeof(SmallHeader));
+        static_assert(sizeof(BigHeader<U64>) == 64 - sizeof(SmallHeader));
+    }
+
+    struct SELFDecryptor
+    {
+        // file stream to read from
+        FileSystem::BufferedFile& File;
+        
+        SELFDecryptor(FileSystem::BufferedFile& F)
+            : File(F)
+        {}
+
+        ~SELFDecryptor()
+        {
+
+        }
+
+        // if the structure is not relevant to generating the ELF file
+        // at the end we dont need to store the whole struct
+        // so we just store the variables we need to save space and to reduce the amount of variables 
+        // flying around
+
+        // SCE::Header
+        U16 SCEFlags;
+        U32 MetadataStart;
+        U32 MetadataEnd;
+
+        // AppInfo
+        U32 SELFType;
+        U64 SELFVersion;
+
+        // Other
+        bool Arch64;
+
+
+        // stuff that needs to be serialized into an ELF file
+
+        // ELF header
+        ELF::SmallHeader SmallELF;
+        union
+        {
+            ELF::BigHeader<U32> BigELF32;
+            ELF::BigHeader<U64> BigELF64;
+        };
+
+        bool ReadHeaders()
+        {
+            // seek to the front of the file and read in the SCE header
+            File.Seek(0);
+            auto SCEHeader = File.Read<SCE::Header>();
+
+            if(SCEHeader.Magic != "SCE\0"_U32)
+            {
+                LOG_ERROR(UNSELF, "Invalid SCE magic");
+                return false;
+            }
+
+            // save the data we need from the header
+            SCEFlags = SCEHeader.Type;
+            MetadataStart = SCEHeader.MetadataStart;
+            MetadataEnd = SCEHeader.MetadataEnd;
+
+            // the SELF header is after the SCE header, so we read this in as well
+            auto SELFHeader = File.Read<SELF::Header>();
+
+            // read in the app info
+            auto AInfo = File.Read<AppInfo>();
+
+            // save the data we need
+            SELFType = AInfo.Type;
+            SELFVersion = AInfo.Version;
+
+            // find the ELF header
+            File.Seek(SELFHeader.ELFOffset);
+            SmallELF = File.Read<ELF::SmallHeader>();
+
+            if(SmallELF.Magic != "\177ELF"_U32)
+            {
+                LOG_ERROR(UNSELF, "Invalid ELF magic");
+                return false;
+            }
+
+            // check if this is a 32 or 64 bit executable
+            Arch64 = SmallELF.Class == 2;
+
+            U32 PHCount;
+
+            if(Arch64)
+            {
+                BigELF64 = File.Read<ELF::BigHeader<U64>>();
+                PHCount = BigELF64.PHCount;
+                File.Seek(BigELF64.PHOffset);
+            }
+            else
+            {
+                BigELF32 = File.Read<ELF::BigHeader<U32>>();
+                PHCount = BigELF32.PHCount;
+                File.Seek(BigELF32.PHOffset);
+            }
+
+            Array<SELF::Section> Sections;
+
+            U32 SectionCount = 0;
+
+            for(U32 I = 0; I < PHCount; I++)
+            {
+                auto Sect = File.Read<SELF::Section>();
+                if(Sect.Compressed)
+                    SectionCount++;
+
+                Sections.Append(Sect);
+            }
+
+            U32 I = 0;
+            U32 J = 0;
+            U32 SELFOffset = SCEHeader.MetadataEnd;
+            U32 ELFOffset = 0;
+
+            while(ELFOffset < SCEHeader.Size) 
+            {
+                if(I == SectionCount)
+                {
+
+                }
+                else if(SELFOffset == Sections[I].Offset)
+                {
+                    I++;
+                }
+                else
+                {
+
+                }
+                J++;
+            }
+
+            return true;
+        }
+    };
+
+    namespace UNSELF
+    {
+        Cthulhu::Option<ELF::Binary> DecryptSELF(Cthulhu::FileSystem::BufferedFile& File, Byte* Key)
+        {
+            SELFDecryptor Decrypt(File);
+
+            if(!Decrypt.ReadHeaders())
+            {
+                return None<ELF::Binary>();
+            }
+        }
+    }
+}
+
+#if 0
 namespace Volts::PS3
 {
     using namespace Cthulhu;
@@ -28,8 +332,8 @@ namespace Volts::PS3
 
             Big<U16> KeyType;
             Big<U16> FileCategory;
-            Big<U32> MetadataOffset;
-            Big<U64> HeaderLength;
+            Big<U32> MetadataStart;
+            Big<U64> MetadataEnd;
             Big<U64> DataLength;
         };
 
@@ -164,6 +468,15 @@ namespace Volts::PS3
         };
 
         static_assert(sizeof(SELF::Header) == 80);
+
+        struct Section
+        {
+            Big<U64> Offset;
+            Big<U64> Size;
+            Big<U32> Compressed;
+            Byte Padding[8];
+            Big<U32> Encrypted;
+        };
     }
 
     struct AppInfo
@@ -450,6 +763,8 @@ namespace Volts::PS3
 
                 PHeaders64 = new Array<ELF::ProgramHeader<U64>>();
 
+                LOGF_DEBUG(UNSELF, "PCount = %u", PHCount);
+
                 for(U32 I = 0; I < PHCount; I++)
                 {
                     auto PHead = File.Read<ELF::ProgramHeader<U64>>();
@@ -561,7 +876,7 @@ namespace Volts::PS3
 
         bool LoadData(U8* Key) 
         {            
-            File.Seek(SCEHead.MetadataOffset + sizeof(SCE::Header));
+            File.Seek(SCEHead.MetadataStart + sizeof(SCE::Header));
             auto MetaInfo = File.Read<MetaData::Info>();
             
             aes_context AES;
@@ -584,10 +899,10 @@ namespace Volts::PS3
                 return false;
             }
 
-            const U32 HSize = SCEHead.HeaderLength - (sizeof(SCE::Header) + SCEHead.MetadataOffset + sizeof(MetaData::Info));
+            const U32 HSize = SCEHead.MetadataEnd - (sizeof(SCE::Header) + SCEHead.MetadataStart + sizeof(MetaData::Info));
             Byte* Headers = new Byte[HSize];
 
-            File.Seek(SCEHead.MetadataOffset + sizeof(SCE::Header) + sizeof(MetaData::Info));
+            File.Seek(SCEHead.MetadataStart + sizeof(SCE::Header) + sizeof(MetaData::Info));
             File.ReadN(Headers, HSize);
 
             size_t Offset = 0;
@@ -629,17 +944,17 @@ namespace Volts::PS3
             aes_context AES;
 
             size_t Offset = 0;
-            
-            Byte Key[16];
-            Byte IV[16];
 
             for(const auto& Section : MetaSections)
             {
+                size_t NCOffset = 0;
+            
+                Byte Key[16];
+                Byte IV[16];
+
                 if(Section.Encrypted == 3 && (Section.KeyIndex <= MetaKeyCount - 1) && (Section.IVIndex <= MetaKeyCount))
                 {
-                    size_t NCOffset = 0;
-
-                    Byte Stream[16] = {};
+                    Byte Stream[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
                     Memory::Copy<Byte>(KeyBuffer + Section.KeyIndex * 16, Key, 16);
                     Memory::Copy<Byte>(KeyBuffer + Section.IVIndex * 16, IV, 16);
 
@@ -648,10 +963,14 @@ namespace Volts::PS3
                     Byte* Data = new Byte[Section.Size];
                     File.ReadN(Data, Section.Size);
 
+                    LOGF_DEBUG(UNSELF, "Encrypt %u %u %u", Data[0], Data[1], Data[2]);
+
                     aes_setkey_enc(&AES, Key, 128);
                     aes_crypt_ctr(&AES, Section.Size, &NCOffset, IV, Stream, Data, Data);
 
                     Memory::Copy<Byte>(Data, DataBuffer + Offset, Section.Size);
+
+                    LOGF_DEBUG(UNSELF, "Decrypt %u %u %u", (DataBuffer + Offset)[0], (DataBuffer + Offset)[1], (DataBuffer + Offset)[2]);
 
                     Offset += Section.Size;
                 }
@@ -680,6 +999,7 @@ namespace Volts::PS3
             {
                 if(Sect.Type == 2)
                 {
+                    Bin.Seek(Programs[Sect.ProgramIndex].Offset);
                     LOGF_DEBUG(UNSELF, "ProgramIndex = %u", Sect.ProgramIndex.Get());
                     LOGF_DEBUG(UNSELF, "Offset = %llu", Programs[Sect.ProgramIndex].Offset.Get());
 
@@ -694,16 +1014,15 @@ namespace Volts::PS3
                         uncompress(ZBuffer, &ZLength, DataBuffer + Offset, DataLength);
 
                         LOGF_DEBUG(UNSELF, "COffset = %llu", Programs[Sect.ProgramIndex].Offset.Get());
-                        Bin.Seek(Programs[Sect.ProgramIndex].Offset);
-                        Bin.Write(ZBuffer, Size);
+                        //WriteUnder(Bin, ZBuffer, Size);
                     }
                     else
                     {
                         LOG_DEBUG(UNSELF, "Not compressed");
                         LOGF_DEBUG(UNSELF, "NCOffset = %llu", Programs[Sect.ProgramIndex].Offset.Get());
-                        Bin.Seek(Programs[Sect.ProgramIndex].Offset);
-                        Bin.Write(DataBuffer + Offset, Sect.Size);
+                        //WriteUnder(Bin, DataBuffer + Offset, Sect.Size);
                     }
+                    
                     Offset += Sect.Size;
                 }
             }
@@ -719,6 +1038,28 @@ namespace Volts::PS3
             }
 
             return Bin;
+        }
+
+        // write data to the file but dont overwrite existing data
+        void WriteUnder(ELF::Binary& Bin, Byte* Data, U64 Size)
+        {
+            const U64 Overlap = Math::Min<U64>(Bin.GetLength() - Bin.Depth(), Size);
+
+            Byte* Temp = Memory::Duplicate(Bin.TakeData(), Bin.GetLength() + Size);
+            Memory::Copy(Data, Temp + Bin.Depth(), Overlap);
+
+            Bin.Write(Temp + Overlap, Size);
+#if 0
+            Byte* Temp = Bin.TakeData();
+            U64 BinLength = PrePos;
+            U64 Pos = Bin.Depth();
+
+            Byte* NewData = Memory::Duplicate(Temp, BinLength);
+            Bin.Write(Data, Size);
+            U64 Actual = Bin.Depth();
+            Bin.Seek(Pos);
+            Bin.Write(NewData, BinLength);
+#endif
         }
 
     public:
@@ -809,3 +1150,4 @@ namespace Volts::PS3
     }
 }
 
+#endif
