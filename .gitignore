@@ -18,3 +18,4 @@ Volts/Platform/Darwin/Volts/build
 Index/
 *.xcbkptlist
 *.xcuserstate
+*.elf
