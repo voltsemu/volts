@@ -26,7 +26,7 @@ const char* Volts::Stub()
 int main(int argc, const char** argv)
 {
 	LogLevel = Level::Trace;
-	auto F = FS::BufferedFile{argv[1]};
+	auto F = Cthulhu::FileSystem::BufferedFile{argv[1]};
 	auto A = UNSELF::DecryptSELF(F);
 	FILE* O = fopen("output.elf", "wb");
 	fwrite(A.Get().GetData(), sizeof(Cthulhu::Byte), A.Get().GetLength(), O);
