@@ -100,15 +100,6 @@ namespace Volts::PS3
         };
 
         static_assert(sizeof(Header) == 80);
-
-        struct Section
-        {
-            U32 Offset;
-            U32 Size;
-            U32 Compressed;
-            U32 SizeUncompressed;
-            U32 ELFOffset;
-        };
     }
 
     struct AppInfo
@@ -162,6 +153,62 @@ namespace Volts::PS3
 
         static_assert(sizeof(BigHeader<U32>) == 52 - sizeof(SmallHeader));
         static_assert(sizeof(BigHeader<U64>) == 64 - sizeof(SmallHeader));
+    
+        template<typename T>
+        struct SectionHeader 
+        {
+            Big<U32> StringOffset;
+            Big<U32> Type;
+            
+            Big<T> Flags;
+            Big<T> VirtualAddress;
+            Big<T> Offset;
+            Big<T> Size;
+
+            Big<U32> Link;
+            Big<U32> Info;
+
+            Big<T> Align;
+            Big<T> EntrySize;
+        };
+
+        static_assert(sizeof(SectionHeader<U32>) == 40);
+        static_assert(sizeof(SectionHeader<U64>) == 64);
+
+        template<typename T>
+        struct ProgramHeader {};
+
+        template<>
+        PACKED_STRUCT(ProgramHeader<U32>, {
+            Big<U32> Type;
+
+            Big<U32> Offset;
+            Big<U32> VirtualAddress;
+            Big<U32> PhysicalAddress;
+            Big<U32> FileSize;
+            Big<U32> MemorySize;
+            Big<U32> Flags;
+
+            Big<U32> Align;
+        });
+
+        static_assert(sizeof(ProgramHeader<U32>) == 32);
+
+        template<>
+        PACKED_STRUCT(ProgramHeader<U64>, {
+            Big<U32> Type;
+            
+            Big<U32> Flags;
+            Big<U64> Offset;
+            Big<U64> VirtualAddress;
+            Big<U64> PhysicalAddress;
+            Big<U64> FileSize;
+            Big<U64> MemorySize;
+
+            Big<U64> Align;
+        });
+
+        static_assert(sizeof(ProgramHeader<U64>) == 56);
     }
 
     struct SELFDecryptor
@@ -206,11 +253,32 @@ namespace Volts::PS3
             ELF::BigHeader<U64> BigELF64;
         };
 
+        union
+        {
+            ELF::SectionHeader<U32>* Section32Headers;
+            ELF::SectionHeader<U64>* Section64Headers;
+        };
+
+        union
+        {
+            ELF::ProgramHeader<U32>* Program32Headers;
+            ELF::ProgramHeader<U64>* Program64Headers;
+        };
+
         bool ReadHeaders()
         {
             // seek to the front of the file and read in the SCE header
             File.Seek(0);
             auto SCEHeader = File.Read<SCE::Header>();
+
+            LOG_DEBUG(UNSELF, "---------------------");
+            LOGF_DEBUG(SCE::Header, "Magic = %u", SCEHeader.Magic);
+            LOGF_DEBUG(SCE::Header, "Version = %u", SCEHeader.Version.Get());
+            LOGF_DEBUG(SCE::Header, "Type = %u", SCEHeader.Type.Get());
+            LOGF_DEBUG(SCE::Header, "Category = %u", SCEHeader.Category.Get());
+            LOGF_DEBUG(SCE::Header, "MetadataStart = %u", SCEHeader.MetadataStart.Get());
+            LOGF_DEBUG(SCE::Header, "MetadataEnd = %llu", SCEHeader.MetadataEnd.Get());
+            LOGF_DEBUG(SCE::Header, "Size = %llu", SCEHeader.Size.Get());
 
             if(SCEHeader.Magic != "SCE\0"_U32)
             {
@@ -225,9 +293,29 @@ namespace Volts::PS3
 
             // the SELF header is after the SCE header, so we read this in as well
             auto SELFHeader = File.Read<SELF::Header>();
+            
+            LOG_DEBUG(UNSELF, "---------------------");
+            LOGF_DEBUG(SELF::Header, "Type = %llu", SELFHeader.Type.Get());
+            LOGF_DEBUG(SELF::Header, "AInfoOffsett = %llu", SELFHeader.AInfoOffset.Get());
+            LOGF_DEBUG(SELF::Header, "ELFOffset = %llu", SELFHeader.ELFOffset.Get());
+            LOGF_DEBUG(SELF::Header, "PHeaderOffset = %llu", SELFHeader.PHeaderOffset.Get());
+            LOGF_DEBUG(SELF::Header, "SHeaderOffset = %llu", SELFHeader.SHeaderOffset.Get());
+            LOGF_DEBUG(SELF::Header, "SInfoOffset = %llu", SELFHeader.SInfoOffset.Get());
+            LOGF_DEBUG(SELF::Header, "VersionOffset = %llu", SELFHeader.VersionOffset.Get());
+            LOGF_DEBUG(SELF::Header, "ControlOffset = %llu", SELFHeader.ControlOffset.Get());
+            LOGF_DEBUG(SELF::Header, "ControlLength = %llu", SELFHeader.ControlLength.Get());
+            LOGF_DEBUG(SELF::Header, "Padding = %llu", *(U64*)SELFHeader.Padding);
 
             // read in the app info
+            File.Seek(SELFHeader.AInfoOffset);
             auto AInfo = File.Read<AppInfo>();
+
+            LOG_DEBUG(UNSELF, "---------------------");
+            LOGF_DEBUG(AppInfo, "AuthID = %llu", AInfo.AuthID.Get());
+            LOGF_DEBUG(AppInfo, "VendorID = %u", AInfo.VendorID.Get());
+            LOGF_DEBUG(AppInfo, "Type = %u", AInfo.Type.Get());
+            LOGF_DEBUG(AppInfo, "Version = %llu", AInfo.Version.Get());
+            LOGF_DEBUG(AppInfo, "Padding = %llu", *(U64*)AInfo.Padding);
 
             // save the data we need
             SELFType = AInfo.Type;
@@ -236,6 +324,23 @@ namespace Volts::PS3
             // find the ELF header
             File.Seek(SELFHeader.ELFOffset);
             SmallELF = File.Read<ELF::SmallHeader>();
+
+            LOG_DEBUG(UNSELF, "---------------------");
+            LOGF_DEBUG(ELF::SmallHeader, "Magic = %u", SmallELF.Magic);
+            LOGF_DEBUG(ELF::SmallHeader, "Class = %u", SmallELF.Class);
+            LOGF_DEBUG(ELF::SmallHeader, "Endian = %u", SmallELF.Endian);
+            LOGF_DEBUG(ELF::SmallHeader, "Version = %u", SmallELF.Version);
+            LOGF_DEBUG(ELF::SmallHeader, "ABI = %u", SmallELF.ABI);
+            LOGF_DEBUG(ELF::SmallHeader, "ABIVersion = %u", SmallELF.ABIVersion);
+            LOGF_DEBUG(ELF::SmallHeader, "Padding = [%u|%u|%u|%u|%u|%u|%u]", 
+                SmallELF.Padding[0], 
+                SmallELF.Padding[1], 
+                SmallELF.Padding[2], 
+                SmallELF.Padding[3], 
+                SmallELF.Padding[4], 
+                SmallELF.Padding[5], 
+                SmallELF.Padding[6]
+            );
 
             if(SmallELF.Magic != "\177ELF"_U32)
             {
@@ -246,54 +351,90 @@ namespace Volts::PS3
             // check if this is a 32 or 64 bit executable
             Arch64 = SmallELF.Class == 2;
 
-            U32 PHCount;
+            LOG_DEBUG(UNSELF, "---------------------");
 
+            // 64 bit elf headers are a different size from 32 bit elf headers
+            // so we need to read in the correct size
             if(Arch64)
             {
+                LOG_DEBUG(ELF, "64 bit ELF file");
                 BigELF64 = File.Read<ELF::BigHeader<U64>>();
-                PHCount = BigELF64.PHCount;
-                File.Seek(BigELF64.PHOffset);
+                
+                LOGF_DEBUG(ELF::BigHeader<U64>, "Type = %u", BigELF64.Type.Get());
+                LOGF_DEBUG(ELF::BigHeader<U64>, "Machine = %u", BigELF64.Machine.Get());
+                LOGF_DEBUG(ELF::BigHeader<U64>, "Version = %u", BigELF64.Version.Get());
+                LOGF_DEBUG(ELF::BigHeader<U64>, "Entry = %llu", BigELF64.Entry.Get());
+                LOGF_DEBUG(ELF::BigHeader<U64>, "PHOffset = %llu", BigELF64.PHOffset.Get());
+                LOGF_DEBUG(ELF::BigHeader<U64>, "SHOffset = %llu", BigELF64.SHOffset.Get());
+                LOGF_DEBUG(ELF::BigHeader<U64>, "Flags = %u", BigELF64.Flags.Get());
+                LOGF_DEBUG(ELF::BigHeader<U64>, "HeaderSize = %u", BigELF64.HeaderSize.Get());
+                LOGF_DEBUG(ELF::BigHeader<U64>, "PHEntrySize = %u", BigELF64.PHEntrySize.Get());
+                LOGF_DEBUG(ELF::BigHeader<U64>, "PHCount = %u", BigELF64.PHCount.Get());
+                LOGF_DEBUG(ELF::BigHeader<U64>, "SHEntrySize = %u", BigELF64.SHEntrySize.Get());
+                LOGF_DEBUG(ELF::BigHeader<U64>, "SHCount = %u", BigELF64.SHCount.Get());
+                LOGF_DEBUG(ELF::BigHeader<U64>, "StringIndex = %u", BigELF64.StringIndex.Get());
             }
             else
             {
+                LOG_DEBUG(ELF, "32 bit ELF file");
                 BigELF32 = File.Read<ELF::BigHeader<U32>>();
-                PHCount = BigELF32.PHCount;
-                File.Seek(BigELF32.PHOffset);
+
+                LOGF_DEBUG(ELF::BigHeader<U32>, "Type = %u", BigELF32.Type.Get());
+                LOGF_DEBUG(ELF::BigHeader<U32>, "Machine = %u", BigELF32.Machine.Get());
+                LOGF_DEBUG(ELF::BigHeader<U32>, "Version = %u", BigELF32.Version.Get());
+                LOGF_DEBUG(ELF::BigHeader<U32>, "Entry = %u", BigELF32.Entry.Get());
+                LOGF_DEBUG(ELF::BigHeader<U32>, "PHOffset = %u", BigELF32.PHOffset.Get());
+                LOGF_DEBUG(ELF::BigHeader<U32>, "SHOffset = %u", BigELF32.SHOffset.Get());
+                LOGF_DEBUG(ELF::BigHeader<U32>, "Flags = %u", BigELF32.Flags.Get());
+                LOGF_DEBUG(ELF::BigHeader<U32>, "HeaderSize = %u", BigELF32.HeaderSize.Get());
+                LOGF_DEBUG(ELF::BigHeader<U32>, "PHEntrySize = %u", BigELF32.PHEntrySize.Get());
+                LOGF_DEBUG(ELF::BigHeader<U32>, "PHCount = %u", BigELF32.PHCount.Get());
+                LOGF_DEBUG(ELF::BigHeader<U32>, "SHEntrySize = %u", BigELF32.SHEntrySize.Get());
+                LOGF_DEBUG(ELF::BigHeader<U32>, "SHCount = %u", BigELF32.SHCount.Get());
+                LOGF_DEBUG(ELF::BigHeader<U32>, "StringIndex = %u", BigELF32.StringIndex.Get());
             }
 
-            Array<SELF::Section> Sections;
-
-            U32 SectionCount = 0;
-
-            for(U32 I = 0; I < PHCount; I++)
+            if(Arch64)
             {
-                auto Sect = File.Read<SELF::Section>();
-                if(Sect.Compressed)
-                    SectionCount++;
+                File.Seek(SELFHeader.SHeaderOffset);
+                Section64Headers = new ELF::SectionHeader<U64>[BigELF64.SHCount];
+                for(U32 I = 0; I < BigELF64.SHCount; I++)
+                {
+                    auto Sect = File.Read<ELF::SectionHeader<U64>>();
+                    LOGF_DEBUG(UNSELF, "%u ---------------------", I);
+                    LOGF_DEBUG(ELF::SectionHeader<U64>, "StringOffset = %u", Sect.StringOffset.Get());
+                    LOGF_DEBUG(ELF::SectionHeader<U64>, "Type = %u", Sect.Type.Get());
+                    LOGF_DEBUG(ELF::SectionHeader<U64>, "Flags = %llu", Sect.Flags.Get());
+                    LOGF_DEBUG(ELF::SectionHeader<U64>, "VirtualAddress = %llu", Sect.VirtualAddress.Get());
+                    LOGF_DEBUG(ELF::SectionHeader<U64>, "Offset = %llu", Sect.Offset.Get());
+                    LOGF_DEBUG(ELF::SectionHeader<U64>, "Size = %llu", Sect.Size.Get());
+                    LOGF_DEBUG(ELF::SectionHeader<U64>, "Link = %u", Sect.Link.Get());
+                    LOGF_DEBUG(ELF::SectionHeader<U64>, "Info = %u", Sect.Info.Get());
+                    LOGF_DEBUG(ELF::SectionHeader<U64>, "Align = %llu", Sect.Align.Get());
+                    LOGF_DEBUG(ELF::SectionHeader<U64>, "EntrySize = %llu", Sect.EntrySize.Get());
+                    Section64Headers[I] = Sect;
+                }
 
-                Sections.Append(Sect);
+                File.Seek(SELFHeader.PHeaderOffset);
+                Program64Headers = new ELF::ProgramHeader<U64>[BigELF64.PHCount];
+                for(U32 I = 0; I < BigELF64.PHCount; I++)
+                {
+                    auto Sect = File.Read<ELF::ProgramHeader<U64>>();
+                    LOGF_DEBUG(UNSELF, "%u ---------------------", I);
+                    LOGF_DEBUG(ELF::ProgramHeader<U64>, "Type = %u", Sect.Type.Get());
+                    LOGF_DEBUG(ELF::ProgramHeader<U64>, "Flags = %u", Sect.Flags.Get());
+                    LOGF_DEBUG(ELF::ProgramHeader<U64>, "Offset = %llu", Sect.Offset.Get());
+                    LOGF_DEBUG(ELF::ProgramHeader<U64>, "VirtualAddress = %llu", Sect.VirtualAddress.Get());
+                    LOGF_DEBUG(ELF::ProgramHeader<U64>, "PhysicalAddress = %llu", Sect.PhysicalAddress.Get());
+                    LOGF_DEBUG(ELF::ProgramHeader<U64>, "FileSize = %llu", Sect.FileSize.Get());
+                    LOGF_DEBUG(ELF::ProgramHeader<U64>, "MemorySize = %llu", Sect.MemorySize.Get());
+                    LOGF_DEBUG(ELF::ProgramHeader<U64>, "Align = %llu", Sect.Align.Get());
+                    Section64Headers[I] = Sect;
+                }
             }
-
-            U32 I = 0;
-            U32 J = 0;
-            U32 SELFOffset = SCEHeader.MetadataEnd;
-            U32 ELFOffset = 0;
-
-            while(ELFOffset < SCEHeader.Size) 
+            else
             {
-                if(I == SectionCount)
-                {
-
-                }
-                else if(SELFOffset == Sections[I].Offset)
-                {
-                    I++;
-                }
-                else
-                {
-
-                }
-                J++;
+                
             }
 
             return true;
@@ -310,6 +451,8 @@ namespace Volts::PS3
             {
                 return None<ELF::Binary>();
             }
+
+            return Some(ELF::Binary{128});
         }
     }
 }

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Volts/Config.h"
+
 namespace Volts
 {
     // how bad is the thing we logged?
@@ -34,7 +36,13 @@ namespace Volts
 
 #define LOGF_TRACE(C, M, ...) LOGF(C, Level::Trace, M, __VA_ARGS__)
 #define LOGF_INFO(C, M, ...) LOGF(C, Level::Info, M, __VA_ARGS__)
-#define LOGF_DEBUG(C, M, ...) LOGF(C, Level::Debug, M, __VA_ARGS__)
+
+#if VDEBUG
+#   define LOGF_DEBUG(C, M, ...) LOGF(C, Level::Debug, M, __VA_ARGS__)
+#else
+#   define LOGF_DEBUG(C, M, ...)
+#endif
+
 #define LOGF_WARNING(C, M, ...) LOGF(C, Level::Warning, M, __VA_ARGS__)
 #define LOGF_ERROR(C, M, ...) LOGF(C, Level::Error, M, __VA_ARGS__)
 #define LOGF_FATAL(C, M, ...) LOGF(C, Level::Fatal, M, __VA_ARGS__)
@@ -44,7 +52,13 @@ namespace Volts
 
 #define LOG_TRACE(C, M) LOG(C, Level::Trace, M)
 #define LOG_INFO(C, M) LOG(C, Level::Info, M)
-#define LOG_DEBUG(C, M) LOG(C, Level::Debug, M)
+
+#if VDEBUG
+#   define LOG_DEBUG(C, M) LOG(C, Level::Debug, M)
+#else
+#   define LOG_DEBUG(C, M)
+#endif
+
 #define LOG_WARNING(C, M) LOG(C, Level::Warning, M)
 #define LOG_ERROR(C, M) LOG(C, Level::Error, M)
 #define LOG_FATAL(C, M) LOG(C, Level::Fatal, M)
