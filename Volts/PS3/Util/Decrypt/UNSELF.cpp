@@ -67,6 +67,8 @@ namespace Volts::PS3
 {
     using namespace Cthulhu;
 
+    using Pad = Byte;
+
     namespace SCE
     {
         struct Header
@@ -96,10 +98,59 @@ namespace Volts::PS3
             Big<U64> VersionOffset;
             Big<U64> ControlOffset;
             Big<U64> ControlLength;
-            Byte Padding[8];
+            Pad Padding[8];
         };
 
         static_assert(sizeof(Header) == 80);
+
+        struct ControlInfo
+        {
+            U32 Type;
+            U32 Size;
+            U64 Next;
+            union
+            {
+                struct
+                {
+                    Big<U32> ControlFlag;
+                    Pad Padding[28];
+                } ControlFlags;
+
+                static_assert(sizeof(ControlFlags) == 32);
+
+                struct 
+                {
+                    U8 Constant[20];
+                    U8 ELFDigest[20];
+                    Big<U64> RequiredSystemVersion;
+                } ELFDigest40;
+
+                static_assert(sizeof(ELFDigest40) == 48);
+
+                struct
+                {
+                    U8 ConstOrDigest[20];
+                    Pad Padding[12];
+                } ELFDigest30;
+
+                static_assert(sizeof(ELFDigest30) == 32);
+
+                struct
+                {
+                    U32 Magic; // always "NPD\0"
+                    Big<U32> Version;
+                    Big<U32> DRMType;
+                    Big<U32> AppType;
+                    Byte ContentID[48];
+                    Byte Digest[16];
+                    Byte INVDigest[16];
+                    Byte XORDigest[16];
+                    Pad Padding[16];
+                } NPDRMInfo;
+
+                static_assert(sizeof(NPDRMInfo) == 128);
+            };
+        };
     }
 
     struct AppInfo
@@ -108,7 +159,7 @@ namespace Volts::PS3
         Big<U32> VendorID;
         Big<U32> Type;
         Big<U64> Version;
-        Byte Padding[8];
+        Pad Padding[8];
     };
 
     static_assert(sizeof(AppInfo) == 32);
@@ -123,7 +174,7 @@ namespace Volts::PS3
             U8 Version;
             U8 ABI;
             U8 ABIVersion;
-            Byte Padding[7];
+            Pad Padding[7];
         };
 
         static_assert(sizeof(SmallHeader) == 16);
@@ -211,11 +262,58 @@ namespace Volts::PS3
         static_assert(sizeof(ProgramHeader<U64>) == 56);
     }
 
-    struct SELFDecryptor
+    namespace MetaData
+    {
+        struct Info
+        {
+            Byte Key[16];
+            Pad KeyPad[16];
+            
+            Byte IV[16];
+            Pad IVPad[16];
+        };
+
+        static_assert(sizeof(Info) == 64);
+
+        struct Header
+        {
+            Big<U64> SignatureLength;
+            Big<U32> AlgorithmType; // always 1 (ECSDA)
+            Big<U32> SectionCount;
+            Big<U32> KeyCount;
+            Big<U32> HeaderSize;
+            Pad Padding[8];
+        };
+
+        static_assert(sizeof(Header) == 32);
+
+        struct Section
+        {
+            Big<U64> Offset;
+            Big<U64> Size;
+            Big<U32> Type; // 1 = SectionHeader, 2 = ProgramHeader, 3 = SCEVersion
+            Big<U32> Index;
+            Big<U32> HashAlgo; // 2 = SHA1_HMAC, 3 = SHA1
+            Big<U32> HashIndex;
+            Big<U32> Encrypted; // 3 = yes, 1 = no
+            
+            // these may be Limits<U32>::Max()
+            // but only when Encrypted != 3
+            // so big numbers in here are not something to worry about
+            Big<U32> KeyIndex; 
+            Big<U32> IVIndex;
+
+            Big<U32> Compressed; // 2 = yes, 1 = no
+        };
+
+        static_assert(sizeof(Section) == 48);
+    }
+
+    class SELFDecryptor
     {
         // file stream to read from
         FileSystem::BufferedFile& File;
-        
+    public:
         SELFDecryptor(FileSystem::BufferedFile& F)
             : File(F)
         {}
@@ -225,6 +323,7 @@ namespace Volts::PS3
 
         }
 
+    private:
         // if the structure is not relevant to generating the ELF file
         // at the end we dont need to store the whole struct
         // so we just store the variables we need to save space and to reduce the amount of variables 
@@ -239,8 +338,12 @@ namespace Volts::PS3
         U32 SELFType;
         U64 SELFVersion;
 
+        Array<SELF::ControlInfo> Controls;
+        Array<MetaData::Section> MetaSections;
         // Other
         bool Arch64;
+        Byte* Headers;
+        U32 DataBufferLength = 0;
 
 
         // stuff that needs to be serialized into an ELF file
@@ -265,6 +368,45 @@ namespace Volts::PS3
             ELF::ProgramHeader<U64>* Program64Headers;
         };
 
+        SELF::ControlInfo ReadControlInfo()
+        {
+            static U32 I = 0;
+            SELF::ControlInfo Info;
+
+            Info.Type = File.Read<Big<U32>>();
+            Info.Size = File.Read<Big<U32>>();
+            Info.Next = File.Read<Big<U64>>();
+
+            LOGF_DEBUG(SELF::ControlInfo, "%u -------------------", I++);
+            LOGF_DEBUG(SELF::ControlInfo, "Type = %u", Info.Type);
+            LOGF_DEBUG(SELF::ControlInfo, "Size = %u", Info.Size);
+            LOGF_DEBUG(SELF::ControlInfo, "Next = %llu", Info.Next);
+
+            if(Info.Type == 1)
+            {
+                Info.ControlFlags = File.Read<decltype(SELF::ControlInfo::ControlFlags)>();
+            }
+            else if(Info.Type == 2 && Info.Size == 48)
+            {
+                Info.ELFDigest40 = File.Read<decltype(SELF::ControlInfo::ELFDigest40)>();
+            }
+            else if(Info.Type == 2 && Info.Size == 64)
+            {
+                Info.ELFDigest30 = File.Read<decltype(SELF::ControlInfo::ELFDigest30)>();
+            }
+            else if(Info.Type == 3)
+            {
+                Info.NPDRMInfo = File.Read<decltype(SELF::ControlInfo::NPDRMInfo)>();
+            }
+            else
+            {
+                LOGF_ERROR(UNSELF, "Invalid control type of %u", Info.Type);
+            }
+
+            return Info;
+        }
+
+    public:
         bool ReadHeaders()
         {
             // seek to the front of the file and read in the SCE header
@@ -429,15 +571,271 @@ namespace Volts::PS3
                     LOGF_DEBUG(ELF::ProgramHeader<U64>, "FileSize = %llu", Sect.FileSize.Get());
                     LOGF_DEBUG(ELF::ProgramHeader<U64>, "MemorySize = %llu", Sect.MemorySize.Get());
                     LOGF_DEBUG(ELF::ProgramHeader<U64>, "Align = %llu", Sect.Align.Get());
-                    Section64Headers[I] = Sect;
+                    Program64Headers[I] = Sect;
                 }
             }
             else
             {
-                
+                File.Seek(SELFHeader.SHeaderOffset);
+                Section32Headers = new ELF::SectionHeader<U32>[BigELF32.SHCount];
+                for(U32 I = 0; I < BigELF32.SHCount; I++)
+                {
+                    auto Sect = File.Read<ELF::SectionHeader<U32>>();
+
+                    Section32Headers[I] = Sect;
+                }
+
+                File.Seek(SELFHeader.PHeaderOffset);
+                Program32Headers = new ELF::ProgramHeader<U32>[BigELF32.PHCount];
+                for(U32 I = 0; I < BigELF32.PHCount; I++)
+                {
+                    auto Sect = File.Read<ELF::ProgramHeader<U32>>();
+
+                    Program32Headers[I] = Sect;
+                }
+            }
+
+            File.Seek(SELFHeader.ControlOffset);
+            
+            // read in each control info
+            U32 I = 0;
+            while(I < SELFHeader.ControlLength)
+            {
+                auto Info = ReadControlInfo();
+                I += Info.Size;
+                Controls.Append(Info);
             }
 
             return true;
+        }
+
+    private:
+        bool DecryptNPDRM(Byte* Metadata, U32 Len, Byte* MetaKey)
+        {
+            Byte Key[16];
+            Byte IV[16];
+            SELF::ControlInfo* Control = nullptr;
+
+            for(U32 I = 0; I < Controls.Len(); I++)
+            {
+                if(Controls[I].Type == 3)
+                {
+                    Control = &Controls[I];
+                    break;
+                }
+            }
+
+            if(!Control)
+            {
+                return true;
+            }
+
+            if(Control->NPDRMInfo.Version == 1)
+            {
+                LOG_ERROR(UNSELF, "Cannot decrypt network license");
+                return false;
+            }
+            else if(Control->NPDRMInfo.Version == 2)
+            {
+                //TODO: support local licenses
+                LOG_ERROR(UNSELF, "Local licenses are not supported yet");
+                return false;
+            }
+            else if(Control->NPDRMInfo.Version == 3)
+            {
+                if(MetaKey)
+                    Memory::Copy<Byte>(Keys::FreeKlic, Key, 16);
+                else
+                    Memory::Copy<Byte>(MetaKey, Key, 16);
+            }
+
+            aes_context AES;
+
+            aes_setkey_dec(&AES, Key, 128);
+            aes_crypt_cbc(&AES, AES_DECRYPT, Len, IV, Metadata, Metadata);
+
+            return true;
+        }
+
+    public:
+        bool ReadMetadata(Byte* Key)
+        {
+            File.Seek(MetadataStart + sizeof(SCE::Header));
+            auto MetaInfo = File.Read<MetaData::Info>();
+
+            for(Byte B : MetaInfo.IV)
+            {
+                printf("%u ", B);
+            }
+            printf("\n");
+
+            for(Byte B : MetaInfo.IVPad)
+            {
+                printf("%u ", B);
+            }
+            printf("\n");
+
+            for(Byte B : MetaInfo.Key)
+            {
+                printf("%u ", B);
+            }
+            printf("\n");
+
+            for(Byte B : MetaInfo.KeyPad)
+            {
+                printf("%u ", B);
+            }
+            printf("\n\n");
+
+            aes_context AES;
+            SELF::Key MetaKey = GetSELFKey(static_cast<KeyType>(SELFType), SCEFlags, SELFVersion);
+
+            if((SCEFlags & 0x8000) != 0x8000)
+            {
+                if(!DecryptNPDRM((Byte*)&MetaInfo, sizeof(MetaData::Info), Key))
+                    return false;
+
+                aes_setkey_dec(&AES, MetaKey.ERK, 256);
+                aes_crypt_cbc(&AES, AES_DECRYPT, sizeof(MetaData::Info), MetaKey.RIV, (Byte*)&MetaInfo, (Byte*)&MetaInfo);
+            }
+
+            for(Byte B : MetaInfo.IV)
+            {
+                printf("%u ", B);
+            }
+            printf("\n");
+
+            for(Byte B : MetaInfo.IVPad)
+            {
+                printf("%u ", B);
+            }
+            printf("\n");
+
+            for(Byte B : MetaInfo.Key)
+            {
+                printf("%u ", B);
+            }
+            printf("\n");
+
+            for(Byte B : MetaInfo.KeyPad)
+            {
+                printf("%u ", B);
+            }
+            printf("\n");
+
+            for(U32 I = 0; I < sizeof(MetaInfo.Key); I++)
+            {
+                if(MetaInfo.KeyPad[I] | MetaInfo.IVPad[0])
+                {
+                    LOG_ERROR(UNSELF, "Failed to decrypt metadata info");
+                    return false;
+                }
+            }
+
+            const U32 HeaderSize = MetadataEnd - sizeof(SCE::Header) - MetadataStart - sizeof(MetaData::Info);
+            Headers = new Byte[HeaderSize];
+            File.ReadN(Headers, HeaderSize);
+
+            size_t Offset = 0;
+            Byte Stream[16];
+            aes_setkey_enc(&AES, MetaInfo.Key, 128);
+            aes_crypt_ctr(&AES, HeaderSize, &Offset, MetaInfo.IV, Stream, Headers, Headers);
+
+            const auto MetaHead = *(MetaData::Header*)Headers;
+            Headers += sizeof(MetaData::Header);
+
+            LOGF_DEBUG(MetaData::Header, "SignatureLength = %llu", MetaHead.SignatureLength.Get());
+            LOGF_DEBUG(MetaData::Header, "AlgorithmType = %u", MetaHead.AlgorithmType.Get());
+            LOGF_DEBUG(MetaData::Header, "SectionCount = %u", MetaHead.SectionCount.Get());
+            LOGF_DEBUG(MetaData::Header, "KeyCount = %u", MetaHead.KeyCount.Get());
+            LOGF_DEBUG(MetaData::Header, "HeaderSize = %u", MetaHead.HeaderSize.Get());
+            LOGF_DEBUG(MetaData::Header, "Padding = [%u|%u|%u|%u|%u|%u|%u|%u]", 
+                MetaHead.Padding[0], 
+                MetaHead.Padding[1], 
+                MetaHead.Padding[2], 
+                MetaHead.Padding[3], 
+                MetaHead.Padding[4], 
+                MetaHead.Padding[5], 
+                MetaHead.Padding[6], 
+                MetaHead.Padding[7]
+            );
+
+            DataBufferLength = MetaHead.KeyCount * 16;
+
+            for(U32 I = 0; I < MetaHead.SectionCount; I++)
+            {
+                auto Section = *(MetaData::Section*)(Headers + sizeof(MetaData::Section) * I);
+                
+                LOGF_DEBUG(UNSELF, "%u -------------------------", I);
+                LOGF_DEBUG(MetaData::Section, "Offset = %llu", Section.Offset.Get());
+                LOGF_DEBUG(MetaData::Section, "Size = %llu", Section.Size.Get());
+                LOGF_DEBUG(MetaData::Section, "Type = %u", Section.Type.Get());
+                LOGF_DEBUG(MetaData::Section, "Index = %u", Section.Index.Get());
+                LOGF_DEBUG(MetaData::Section, "HashAlgo = %u", Section.HashAlgo.Get());
+                LOGF_DEBUG(MetaData::Section, "HashIndex = %u", Section.HashIndex.Get());
+                LOGF_DEBUG(MetaData::Section, "Encrypted = %u", Section.Encrypted.Get());
+                LOGF_DEBUG(MetaData::Section, "KeyIndex = %u", Section.KeyIndex.Get());
+                LOGF_DEBUG(MetaData::Section, "IVIndex = %u", Section.IVIndex.Get());
+                LOGF_DEBUG(MetaData::Section, "Compressed = %u", Section.Compressed.Get());
+                
+                if(Section.Encrypted == 3)
+                    DataBufferLength += Section.Size;
+
+                MetaSections.Append(Section);
+            }
+
+            Headers += MetaHead.SectionCount * sizeof(MetaData::Section);
+
+            return true;
+        }
+
+        void DecryptData()
+        {
+            aes_context AES;
+
+            U32 BufferOffset = 0;
+
+            Byte* DataBuffer = new Byte[DataBufferLength];
+            Byte* Keys = Headers;
+
+            for(auto Section : MetaSections)
+            {
+                Byte Key[16];
+                Byte IV[16];
+                Byte Stream[16];
+                size_t Offset = 0;
+
+                if(Section.Encrypted == 3)
+                {  
+                    Memory::Copy(Keys + Section.KeyIndex * 16, Key, 16);
+                    Memory::Copy(Keys + Section.IVIndex * 16, IV, 16);
+
+                    Byte* Buffer = new Byte[Section.Size];
+
+                    File.Seek(Section.Offset);
+                    File.ReadN(Buffer, Section.Size);
+
+                    Memory::Zero(Stream, 16);
+
+                    aes_setkey_enc(&AES, Key, 128);
+                    aes_crypt_ctr(&AES, Section.Size, &Offset, IV, Stream, Buffer, Buffer);
+            
+                    Memory::Copy(Buffer, DataBuffer + BufferOffset, Section.Size);
+
+                    BufferOffset += Section.Size;
+                }
+            }
+        }
+
+        template<typename TSections, typename THeader, typename TPrograms>
+        ELF::Binary CreateELF(THeader* Header, TSections* Sections, TPrograms* Programs)
+        {
+            ELF::Binary Bin = {128};
+
+            Bin.Write(&SmallELF);
+            Bin.Write(Header);
+
+            return Bin;
         }
     };
 
@@ -452,7 +850,14 @@ namespace Volts::PS3
                 return None<ELF::Binary>();
             }
 
-            return Some(ELF::Binary{128});
+            if(!Decrypt.ReadMetadata(Key))
+            {
+                return None<ELF::Binary>();
+            }
+
+            Decrypt.DecryptData();
+
+            return Some(Decrypt.CreateELF());
         }
     }
 }
