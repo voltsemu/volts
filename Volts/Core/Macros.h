@@ -21,3 +21,5 @@
                                         struct Name Fields; \
                                         _Pragma pack()
 #endif
+
+#define VSCRIPT(...) namespace { static auto CAT(__, __LINE__) = [] { []__VA_ARGS__(); return true; }(); }
