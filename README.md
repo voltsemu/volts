@@ -18,6 +18,8 @@ Nested classes are outright banned, do not use them. ever.
 
 All macros must be in `SCREAMING_SNAKE_CASE` they must also not pollute the function with variable names. be sure to surround each macro with `{}` if needed.
 
+All enums must be `enum class` enums instead of `typedef enum` enums.
+
 ## Code style
 
 code that produces warnings on any platform must be fixed to make the build completley quiet.
