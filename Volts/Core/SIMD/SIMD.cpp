@@ -4,10 +4,11 @@
 namespace Volts
 {
     using namespace Cthulhu;
-    Instruction ISA;
 
+    Instruction ISA;
+    
     VSCRIPT({
-        I32 Registers[4] = {};
+        CPUFlag Registers[4] = {};
 
         CPUID(1, Registers);
 

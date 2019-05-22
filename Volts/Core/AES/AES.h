@@ -20,9 +20,12 @@ namespace Volts
         void SetKeyEnc(const Cthulhu::Byte* Key, KeySize Size);
         void SetKeyDec(const Cthulhu::Byte* Key, KeySize Size);
 
-        void EncryptCBC(Cthulhu::U32 Length, Cthulhu::Byte IV[16], const Cthulhu::Byte* Input, Cthulhu::Byte* Output);
-        void DecryptCBC(Cthulhu::U32 Length, Cthulhu::Byte IV[16], const Cthulhu::Byte* Input, Cthulhu::Byte* Output);
+        void EncryptECB(const Cthulhu::Byte Input[16], Cthulhu::Byte Output[16]) const;
+        void DecryptECB(const Cthulhu::Byte Input[16], Cthulhu::Byte Output[16]) const;
 
-        void CryptCTR(Cthulhu::U32 Length, Cthulhu::U32* Offset, const Cthulhu::Byte* Input, Cthulhu::Byte* Output);
+        void EncryptCBC(Cthulhu::U32 Length, Cthulhu::Byte IV[16], const Cthulhu::Byte* Input, Cthulhu::Byte* Output) const;
+        void DecryptCBC(Cthulhu::U32 Length, Cthulhu::Byte IV[16], const Cthulhu::Byte* Input, Cthulhu::Byte* Output) const;
+
+        void CryptCTR(Cthulhu::U32 Length, Cthulhu::U32* Offset, const Cthulhu::Byte* Input, Cthulhu::Byte* Output) const;
     };
 }

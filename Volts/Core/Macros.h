@@ -22,15 +22,24 @@
                                         _Pragma pack()
 #endif
 
-#define VSCRIPT(...) namespace { static auto CAT(__, __LINE__) = [&] { [&]__VA_ARGS__(); return true; }(); }
+#if CC_CLANG
+#   define VSCRIPT(...) namespace { __attribute__((constructor)) static void CAT(__, __LINE__)() { __VA_ARGS__ } }
+#else
+#   define VSCRIPT(...) namespace { static auto CAT(__, __LINE__) = [&] { [&]__VA_ARGS__(); return true; }(); }
+#endif
 
+namespace Volts
+{
 #if OS_WINDOWS
 #   include <intrin.h>
+using CPUFlag = Cthulhu::I32;
 #   define CPUID(I, R) __cpuid(R, I)
 #else
 #   include <cpuid.h>
-#   define CPUID(I, R) __get_cpuid(I, R[0], R[1], R[2], R[3])
+using CPUFlag = Cthulhu::U32;
+#   define CPUID(I, R) __get_cpuid(I, &R[0], &R[1], &R[2], &R[3])
 #endif
+}
 
 #define MMX_FLAG 0x00800000
 #define SSE_FLAG 0x02000000

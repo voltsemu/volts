@@ -28,27 +28,27 @@ namespace Volts
         SHA     = (1 << 17), //
     };
 
-    Instruction operator|(const Instruction L, const Instruction R)
+    inline Instruction operator|(const Instruction L, const Instruction R)
     {
         return static_cast<Instruction>(static_cast<Cthulhu::U64>(L) | static_cast<Cthulhu::U64>(R));
     }
 
-    Instruction& operator|=(Instruction& L, const Instruction R)
+    inline Instruction& operator|=(Instruction& L, const Instruction R)
     {
         return L = L | R;
     }
 
-    Instruction operator&(const Instruction L, const Instruction R)
+    inline Instruction operator&(const Instruction L, const Instruction R)
     {
         return static_cast<Instruction>(static_cast<Cthulhu::U64>(L) & static_cast<Cthulhu::U64>(R));
     }
 
-    Instruction& operator&=(Instruction& L, const Instruction R)
+    inline Instruction& operator&=(Instruction& L, const Instruction R)
     {
         return L = L & R;
     }
 
-    bool operator!(Instruction I)
+    inline bool operator!(Instruction I)
     {
         return *reinterpret_cast<Cthulhu::U64*>(&I) == 0;
     }

@@ -388,7 +388,6 @@ namespace Volts::PS3
 
         SELF::ControlInfo ReadControlInfo()
         {
-            static U32 I = 0;
             SELF::ControlInfo Info;
 
             Info.Type = File.Read<Big<U32>>();
