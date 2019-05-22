@@ -36,9 +36,9 @@ args = []
 # from trying to use either feature at all so people dont """accidentally""" 
 # use these slow features for convenience sake
 if meson.get_compiler('cpp').get_id() == 'msvc'
-    args += ['/GR-']
+    args += ['/GR-', '/arch:AVX2']
 else
-    args += ['-fno-rtti', '-fno-exceptions']
+    args += ['-fno-rtti', '-fno-exceptions', '-march=native']
 endif
 
 executable('volt', sources,

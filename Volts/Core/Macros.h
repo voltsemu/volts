@@ -28,18 +28,21 @@
 #   define VSCRIPT(...) namespace { static auto CAT(__, __LINE__) = [&] { [&]__VA_ARGS__(); return true; }(); }
 #endif
 
-namespace Volts
-{
 #if OS_WINDOWS
 #   include <intrin.h>
-using CPUFlag = Cthulhu::I32;
+namespace Volts
+{
+    using CPUFlag = Cthulhu::I32;
+}
 #   define CPUID(I, R) __cpuid(R, I)
 #else
 #   include <cpuid.h>
-using CPUFlag = Cthulhu::U32;
+namespace Volts
+{
+    using CPUFlag = Cthulhu::U32;
+}
 #   define CPUID(I, R) __get_cpuid(I, &R[0], &R[1], &R[2], &R[3])
 #endif
-}
 
 #define MMX_FLAG 0x00800000
 #define SSE_FLAG 0x02000000
@@ -59,3 +62,9 @@ using CPUFlag = Cthulhu::U32;
 #define AVX_FLAG 0x10000000
 #define AVX2_FLAG 0x00000020
 #define SSE4A_FLAG 0x00000040
+
+#if CC_MSVC || CC_INTEL
+#   define VINLINE __forceinline
+#else
+#   define VINLINE __attribute__((always_inline))
+#endif

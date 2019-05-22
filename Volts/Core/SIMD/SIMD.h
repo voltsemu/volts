@@ -1,8 +1,7 @@
 #pragma once
 
 #include "Meta/Aliases.h"
-#include <xmmintrin.h>
-#include <emmintrin.h>
+#include "Core/Macros.h"
 
 namespace Volts
 {
@@ -54,20 +53,4 @@ namespace Volts
     }
 
     Instruction SupportedInstructions();
-
-    struct Vec128
-    {
-        Vec128(__m128 D) : Data(D) {}
-        Vec128(__m128i D) : IData(D) {}
-        Vec128(__m128d D) : DData(D) {}
-        
-        union
-        {
-            __m128 Data;
-            __m128i IData;
-            __m128d DData;
-        };
-
-        Vec128 operator^(const Vec128 Other) const;
-    };
 }

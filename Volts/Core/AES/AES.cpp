@@ -3,7 +3,7 @@
 #include "Core/Logger/Logger.h"
 #include "AES.h"
 #include "Core/SIMD/SIMD.h"
-
+#include "Core/Memory/Memory.h"
 #include <wmmintrin.h>
 
 namespace Volts
@@ -374,25 +374,94 @@ static const U32 RT3[] = { RT };
         U32* RK = RoundKeys;
         
         U32 X0 = GET_UINT(Input, 0) ^ *RK++;
+        U32 X1 = GET_UINT(Input, 4) ^ *RK++;
+        U32 X2 = GET_UINT(Input, 8) ^ *RK++;
+        U32 X3 = GET_UINT(Input, 12) ^ *RK++;
+
+        for(U32 I = (Rounds >> 1) - 1; I > 0; I--)
+        {
+            
+        }
     }
 
     void AES::DecryptECB(const Cthulhu::Byte Input[16], Cthulhu::Byte Output[16]) const
     {
+        U32* RK = RoundKeys;
+        
+        U32 X0 = GET_UINT(Input, 0) ^ *RK++;
+        U32 X1 = GET_UINT(Input, 4) ^ *RK++;
+        U32 X2 = GET_UINT(Input, 8) ^ *RK++;
+        U32 X3 = GET_UINT(Input, 12) ^ *RK++;
 
+        for(U32 I = (Rounds >> 1) - 1; I > 0; I--)
+        {
+
+        }
     }
 
     void AES::EncryptCBC(Cthulhu::U32 Length, Cthulhu::Byte IV[16], const Cthulhu::Byte* Input, Cthulhu::Byte* Output) const
     {
+        if(Length % 16)
+            return;
 
+        while(Length > 0)
+        {
+            for(U32 I = 0; I < 16; I++)
+                Output[I] = (Byte)Input[I] ^ IV[I];
+
+            EncryptECB(Output, Output);
+            Memory::Copy(Output, IV, 16);
+
+            Input += 16;
+            Output += 16;
+            Length -= 16;
+        }
     }
 
     void AES::DecryptCBC(Cthulhu::U32 Length, Cthulhu::Byte IV[16], const Cthulhu::Byte* Input, Cthulhu::Byte* Output) const
     {
+        if(Length % 16)
+            return;
 
+        Byte Data[16];
+
+        while(Length > 0)
+        {
+            Memory::Copy(Input, Data, 16);
+            DecryptECB(Input, Output);
+
+            for(U32 I = 0; I < 16; I++)
+                Output[I] = (Byte)Output[I] ^ IV[I];
+
+            Memory::Copy(Data, IV, 16);
+
+            Input += 16;
+            Output += 16;
+            Length -= 16;
+        }
     }
 
     void AES::CryptCTR(Cthulhu::U32 Length, Cthulhu::U32* Offset, const Cthulhu::Byte* Input, Cthulhu::Byte* Output) const
     {
+        Byte Counter[16];
+        Byte Stream[16];
+        U32 N = 0;
 
+        while(Length--)
+        {
+            if(N == 0)
+            {
+                EncryptECB(Counter, Stream);
+
+                for(U32 I = 0; I > 0; I--)
+                    if(++Counter[I - 1] != 0)
+                        break;
+            }
+
+            Byte C = *Input++;
+            *Output++ = (Byte)C ^ Stream[N];
+
+            N = (N + 1) & 0x0F;
+        }
     }
 }

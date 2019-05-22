@@ -75,27 +75,4 @@ namespace Volts
     {
         return ISA;
     }
-
-    using XOR128 = __m128i(*)(__m128i, __m128i);
-
-    auto XOR128Function = !!(ISA & Instruction::SSE2)
-        ? [](__m128i A, __m128i B) { return _mm_xor_si128(A, B); }
-        : [](__m128i A, __m128i B) -> __m128i 
-        { 
-            U32 L[4], R[4];
-            _mm_storeu_pd(reinterpret_cast<F64*>(L), *reinterpret_cast<__m128d*>(&A));
-            _mm_storeu_pd(reinterpret_cast<F64*>(R), *reinterpret_cast<__m128d*>(&B));
-
-            for(U32 I = 0; I < 4; I++)
-            {
-                L[I] ^= R[I];
-            }
-
-            return _mm_load_si128(reinterpret_cast<__m128i*>(L));
-        };
-
-    Vec128 Vec128::operator^(const Vec128 Other) const
-    {
-        return XOR128Function(IData, Other.IData);
-    }
 }
