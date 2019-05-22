@@ -30,6 +30,7 @@
  */
 
 #include "aes.h"
+#include <stdio.h>
 
 /*
  * 32-bit integer manipulation macros (little endian)
@@ -462,7 +463,6 @@ int aes_setkey_enc( aes_context *ctx, const unsigned char *key, unsigned int key
     {
         GET_UINT32_LE( RK[i], key, i << 2 );
     }
-
     switch( ctx->nr )
     {
         case 10:

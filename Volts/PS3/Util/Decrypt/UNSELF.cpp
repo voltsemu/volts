@@ -6,6 +6,7 @@
 #include "Core/Convert.h"
 #include "Keys.h"
 #include "AES/aes.h"
+#include "Core/AES/AES.h"
 
 #include <zlib.h>
 
@@ -600,6 +601,8 @@ namespace Volts::PS3
             size_t Offset = 0;
             Byte Stream[16];
             aes_setkey_enc(&AES, MetaInfo.Key, 128);
+            using Aes = Volts::AES;
+            Aes().SetKeyEnc(MetaInfo.Key, KeySize::S128);
             aes_crypt_ctr(&AES, HeaderSize, &Offset, MetaInfo.IV, Stream, Headers, Headers);
 
             DataKeys = Headers;

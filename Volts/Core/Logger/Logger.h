@@ -1,5 +1,6 @@
 #pragma once
 
+#include <stdio.h>
 #include "Volts/Config.h"
 
 namespace Volts
@@ -38,7 +39,7 @@ namespace Volts
 #define LOGF_INFO(C, M, ...) LOGF(C, Level::Info, M, __VA_ARGS__)
 
 #if VDEBUG
-#   define LOGF_DEBUG(C, M, ...) LOGF(C, Level::Debug, M, __VA_ARGS__)
+#   define LOGF_DEBUG(C, M, ...) { PrintPrefix(Level::Debug); printf("[" #C "] " M "\n", __VA_ARGS__); }
 #else
 #   define LOGF_DEBUG(C, M, ...)
 #endif
@@ -54,7 +55,7 @@ namespace Volts
 #define LOG_INFO(C, M) LOG(C, Level::Info, M)
 
 #if VDEBUG
-#   define LOG_DEBUG(C, M) LOG(C, Level::Debug, M)
+#   define LOG_DEBUG(C, M) { PrintPrefix(Level::Debug); printf("[" #C "] " M "\n"); }
 #else
 #   define LOG_DEBUG(C, M)
 #endif

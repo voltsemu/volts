@@ -22,4 +22,31 @@
                                         _Pragma pack()
 #endif
 
-#define VSCRIPT(...) namespace { static auto CAT(__, __LINE__) = [] { []__VA_ARGS__(); return true; }(); }
+#define VSCRIPT(...) namespace { static auto CAT(__, __LINE__) = [&] { [&]__VA_ARGS__(); return true; }(); }
+
+#if OS_WINDOWS
+#   include <intrin.h>
+#   define CPUID(I, R) __cpuid(R, I)
+#else
+#   include <cpuid.h>
+#   define CPUID(I, R) __get_cpuid(I, R[0], R[1], R[2], R[3])
+#endif
+
+#define MMX_FLAG 0x00800000
+#define SSE_FLAG 0x02000000
+#define SSE2_FLAG 0x04000000
+#define SSE3_FLAG 0x00000001
+#define SSSE3_FLAG 0x00000200
+#define AES_FLAG 0x02000000
+#define TSX_FLAG 0x800
+#define HLE_FLAG 0x10
+#define SHA_FLAG 0x20000000
+#define RTM_FLAG 0x00000800
+#define TSC_FLAG 0x00000010
+#define VAES_FLAG 0x00000200
+#define AVX512_FLAG 0x00010000
+#define SSE41_FLAG 0x00080000
+#define SSE42_FLAG 0x00100000
+#define AVX_FLAG 0x10000000
+#define AVX2_FLAG 0x00000020
+#define SSE4A_FLAG 0x00000040
