@@ -34,6 +34,8 @@ Document any code that is even slightly ambiguous, if it isnt understandable in 
 
 If it is a choice between OOP and procedural code, make procedural code.
 
+exceptions are banned, no exceptions at all. ever.
+
 # How to play a game
 soon
 

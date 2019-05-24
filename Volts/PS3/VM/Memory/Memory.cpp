@@ -19,11 +19,11 @@ namespace Volts::PS3
     void InitGlobalMemory()
     {
 #if OS_WINDOWS
-        GlobalMemory = (Cthulhu::Byte*)VirtualAlloc(nullptr, GlobalMemorySize, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+        GlobalMemory = (Cthulhu::Byte*)VirtualAlloc(nullptr, GlobalMemorySize, MEM_COMMIT, PAGE_NONE);
         // this zeros memory for us
 #else
-        GlobalMemory = mmap(nullptr, GlobalMemorySize, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_PRIVATE, -1, 0);
-        Memory::Zero(GlobalMemory, GlobalMemorySize);
+        GlobalMemory = (Cthulhu::Byte*)mmap(nullptr, GlobalMemorySize, PROT_NONE, MAP_PRIVATE, -1, 0);
+        Cthulhu::Memory::Zero(GlobalMemory, GlobalMemorySize);
         // zero the memory
 #endif
     }
