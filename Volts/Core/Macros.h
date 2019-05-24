@@ -68,3 +68,9 @@ namespace Volts
 #else
 #   define VINLINE __attribute__((always_inline))
 #endif
+
+namespace Volts
+{
+    // signifies padding in a structure
+    using Pad = Cthulhu::Byte;
+}
