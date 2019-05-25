@@ -18,6 +18,7 @@ sources = [
     'Volts/Core/Logger/Logger.cpp',
     'Volts/Core/SIMD/SIMD.cpp',
     'Volts/Core/AES/AES.cpp',
+    'Volts/Core/Files/TAR.cpp',
     'Volts/Volts.cpp',
 ]
 
