@@ -46,7 +46,7 @@ namespace Volts::PS3::PUP
             delete[] Hashes;
         }
 
-        Cthulhu::Option<Cthulhu::Binary> GetFile(Cthulhu::U32 ID);
+        Cthulhu::Binary GetFile(Cthulhu::U32 ID);
 
         bool Parse();
     private:

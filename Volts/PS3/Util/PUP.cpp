@@ -42,7 +42,7 @@ namespace Volts::PS3::PUP
         return true;
     }
 
-    Cthulhu::Option<Cthulhu::Binary> Format::GetFile(U32 ID)
+    Cthulhu::Binary Format::GetFile(U32 ID)
     {
         for(U32 I = 0; I < FileCount; I++)
         {
@@ -57,10 +57,10 @@ namespace Volts::PS3::PUP
                 Bin.Write(Buffer, Files[I].Length);
                 delete[] Buffer;
 
-                return Some(Bin);
+                return Bin;
             }
         }
 
-        return None<Cthulhu::Binary>();
+        return {};
     }
 }
