@@ -9,14 +9,14 @@ namespace Volts::TAR
 
     struct Format
     {
-        Format(FS::BufferedFile F)
-            : File(F)
-        {}
+        Format(FS::BufferedFile& F);
+
+        Format(Cthulhu::Binary& B);
 
         Cthulhu::Array<Cthulhu::String> Filenames();
 
-        Cthulhu::Binary GetFile(Cthulhu::String& Name);
+        Cthulhu::Binary GetFile(const Cthulhu::String& Name);
     private:
-        FS::BufferedFile File;
+        Cthulhu::Binary Bin;
     };
 }

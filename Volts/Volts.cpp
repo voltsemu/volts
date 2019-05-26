@@ -19,7 +19,10 @@ int main(int argc, const char** argv)
 	if(A.Parse())
 	{
 		auto U = A.GetFile(PUP::UpdateFiles);
-
+		for(auto& Str : U.Filenames())
+		{
+			printf("%s\n", Str.CStr());
+		}
 		
 	}
 	//auto A = UNSELF::DecryptSELF(F);
