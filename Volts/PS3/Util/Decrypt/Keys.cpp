@@ -133,6 +133,7 @@ namespace Volts::PS3
         };
     }
 
+    // get the correct key if it exists
     SELF::Key Level1Key(U64 Version)
     {
         constexpr auto Length = sizeof(Level1Keys) / sizeof(SELF::Key);
@@ -199,6 +200,7 @@ namespace Volts::PS3
         return {};
     }
 
+    // get the correct key if it exists otherwise return nothing
     SELF::Key GetSELFKey(KeyType Type, U16 Revision, U64 Version)
     {
         switch(Type)

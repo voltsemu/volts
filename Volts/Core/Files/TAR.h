@@ -16,6 +16,8 @@ namespace Volts::TAR
         Cthulhu::Array<Cthulhu::String> Filenames();
 
         Cthulhu::Binary GetFile(const Cthulhu::String& Name);
+
+        bool Parse();
     private:
         Cthulhu::Binary Bin;
     };

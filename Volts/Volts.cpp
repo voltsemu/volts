@@ -3,6 +3,7 @@
 
 #include "PS3/Util/Decrypt/UNSELF.h"
 #include "PS3/Util/PUP.h"
+#include "Core/Files/TAR.h"
 #include "Core/SIMD/SIMD.h"
 
 using namespace Volts;
@@ -19,7 +20,7 @@ int main(int argc, const char** argv)
 	if(A.Parse())
 	{
 		auto U = A.GetFile(PUP::UpdateFiles);
-		for(auto& Str : U.Filenames())
+		for(auto& Str : TAR::Format(U).Filenames())
 		{
 			printf("%s\n", Str.CStr());
 		}

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Meta/Aliases.h"
-#include "Meta/Macros.h"
 
 #if OS_WINDOWS
 #   include <intrin.h>
