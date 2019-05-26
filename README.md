@@ -1,47 +1,42 @@
 # Volts
-Yet another PS3 emulator
+Yet another emulator
 
 ## Why?
 Thought a complex project might be a good use of my time
 
 # Coding style
 
-We have an official code formatting style used throughout the codebase. As well as this we also have a coding style.
+its important to have a consisten style througout the codebase to improve readability.
 
 ## Code formatting
-
-4 space indents, not tabs, not 2 or 3 or 8 space indents.
-
-all variables, classes, functions and templates must be in `PascalCase`. all template parameters must be prefixed with `T`.
-
-Nested classes are outright banned, do not use them. ever.
-
-All macros must be in `SCREAMING_SNAKE_CASE` they must also not pollute the function with variable names. be sure to surround each macro with `{}` if needed.
-
-All enums must be `enum class` enums instead of `typedef enum` enums.
+1. 4 space indents, not tabs, not 2 or 3 or 8 space indents.
+2. all variables, classes, functions and templates must be in `PascalCase`. 
+3. all template parameters must be prefixed with `T`.
+4. All macros must be in `SCREAMING_SNAKE_CASE` they must also not pollute the function with variable names. be sure to surround each macro with `{}` if needed.
+5. All enums must be `enum class` enums instead of `typedef enum` enums.
+6. prefix all macros with `V`.
 
 ## Code style
+1. Code that produces warnings on any platform must be fixed to make the build completley quiet.
+2. Performance is top priority, if something is not running at a satisfactory level optimize it.
+3. External modules should not be added with gay abandon, if it is reasonable to implement the library within Volts do that instead of trying to get package managers to play nice.
+4. Everything must be within the `Volts` namespace to avoid global namespace pollution.
+5. Document any code that is even slightly ambiguous, if it isnt understandable in code review it must be fixed before it is pushed to master.
+6. If it is a choice between OOP and procedural code, make procedural code.
+7. Nested classes are outright banned, do not use them. ever.
 
-code that produces warnings on any platform must be fixed to make the build completley quiet.
-
-Performance is top priority, if something is not running at a satisfactory level optimize it.
-
-External modules should not be added with gay abandon, if it is reasonable to implement the library within Volts do that instead of trying to get package managers to play nice.
-
-Everything must be within the `Volts` namespace to avoid global namespace pollution.
-
-Document any code that is even slightly ambiguous, if it isnt understandable in code review it must be fixed before it is pushed to master.
-
-If it is a choice between OOP and procedural code, make procedural code.
-
-exceptions are banned, no exceptions at all. ever.
+### Banned things
+1. exceptions are banned, no exceptions at all. ever.
+2. do not use RTTI or `dynamic_cast` ever, virtual functions should also be kept to a bare minimum.
+3. `thread_local` is banned.
 
 # How to play a game
 soon
 
 # Building
 
-Even if a specific linux distro, windows version or macosx version is not explicity supported does not mean it will not work. If you manage to boot the emulator as well as a game on your system please provide a pull request to update the system compatibility list.
+Even if a specific linux distro, windows version or macosx version is not explicity supported does not mean it will not work. 
+If you manage to boot the emulator as well as a game on your system please provide a pull request to update the system compatibility list.
 
 ## Windows
 

@@ -19,7 +19,7 @@ int main(int argc, const char** argv)
 	if(A.Parse())
 	{
 		auto U = A.GetFile(PUP::UpdateFiles);
-
+		
 		
 	}
 	//auto A = UNSELF::DecryptSELF(F);

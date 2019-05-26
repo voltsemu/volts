@@ -1,3 +1,4 @@
+# add all the sources needed
 sources += [
     'Volts/PS3/Util/SFO.cpp',
     'Volts/PS3/Util/Decrypt/UNSELF.cpp',
@@ -11,4 +12,5 @@ sources += [
     'Volts/PS3/VM/Interpreter/PPUInterpreter.cpp',
 ]
 
+# add this directory
 incs += include_directories('../')

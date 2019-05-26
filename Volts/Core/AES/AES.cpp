@@ -263,6 +263,16 @@ static const U32 RT3[] = { RT };
 
 #undef RT
 
+    void Cipher(Cthulhu::Byte* Data, Cthulhu::Byte* Key)
+    {
+
+    }
+
+    void DeCipher(Cthulhu::Byte* Data, Cthulhu::Byte* Key)
+    {
+        
+    }
+
     static const U32 RCON[] = { 1, 2, 4, 8, 16, 32, 64, 128, 27, 54 };
 
 #   define GET_UINT(B, I) (((U32)(B)[I]) | ((U32)(B)[(I) + 1] << 8) | ((U32)(B)[(I) + 2] << 16) | ((U32)(B)[(I) + 3] << 24))

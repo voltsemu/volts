@@ -4,16 +4,20 @@ project('Volts', 'cpp',
     license : 'Apache'
 )
 
+# get cthulhu for the standard library
 cthulhu = subproject('Cthulhu')
 
+# get zlib for decompressing files
 zlib = subproject('zlib')
 
+# get all the needed cthulhu projects
 libs = [
     cthulhu.get_variable('metalib'),
     cthulhu.get_variable('corelib'),
     cthulhu.get_variable('fslib')
 ]
 
+# get the very basic core sources
 sources = [
     'Volts/Core/Logger/Logger.cpp',
     'Volts/Core/SIMD/SIMD.cpp',
@@ -28,6 +32,7 @@ incs = [
     cthulhu.get_variable('inc')
 ]
 
+# include the ps3 project
 subdir('Volts/PS3')
 
 args = []

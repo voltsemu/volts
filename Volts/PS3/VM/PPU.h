@@ -3,12 +3,10 @@
 #include "Meta/Aliases.h"
 #include "Core/Math/Bytes.h"
 #include "Core/Endian.h"
-#include <xmmintrin.h>
+#include "VM.h"
 
 namespace Volts::PS3
 {
-    using Vec128 = __m128;
-
     struct PPU
     {
         Cthulhu::U64 GPR[32] = {}; // general purpous registers 
