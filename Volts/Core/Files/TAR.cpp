@@ -6,16 +6,6 @@ namespace Volts::TAR
 {
     using namespace Cthulhu;
 
-    Format::Format(FS::BufferedFile& File)
-    {
-
-    }
-
-    Format::Format(Binary& B)
-    {
-
-    }
-
     struct Header
     {
         C8 Name[100];
@@ -30,9 +20,32 @@ namespace Volts::TAR
         Byte Padding3[12];
     };
 
+    I32 OctToDec(I32 Oct)
+    {
+        I32 Dec = 0;
+        U32 Rem;
+        U32 I = 0;
+
+        while(Oct != 0)
+        {
+            Rem = Oct % 10;
+            Oct /= 10;
+            Dec += Rem * Math::Pow(8U, I);
+            I++;
+        }
+
+        return Dec;
+    }
+
+    Format::Format(FS::BufferedFile& F)
+        : File(F)
+    {
+        
+    }
+
     Array<String> Format::Filenames()
     {
-        return {};
+        auto Head = File.Read<Header>();
     }
 
     Binary Format::GetFile(const String& Name)
