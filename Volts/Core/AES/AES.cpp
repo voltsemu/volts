@@ -263,14 +263,19 @@ static const U32 RT3[] = { RT };
 
 #undef RT
 
+    void AddRoundKey(U8 Round, Byte* State, const U8* Key)
+    {
+        
+    }
+
     void Cipher(Cthulhu::Byte* Data, Cthulhu::Byte* Key)
     {
-
+        U8 Round = 0;
     }
 
     void DeCipher(Cthulhu::Byte* Data, Cthulhu::Byte* Key)
     {
-        
+        U8 Round = 0;
     }
 
     static const U32 RCON[] = { 1, 2, 4, 8, 16, 32, 64, 128, 27, 54 };
@@ -405,7 +410,7 @@ static const U32 RT3[] = { RT };
 
         for(U32 I = (Rounds >> 1) - 1; I > 0; I--)
         {
-
+            
         }
     }
 

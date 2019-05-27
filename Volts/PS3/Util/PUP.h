@@ -14,9 +14,9 @@ namespace Volts::PS3::PUP
     
     struct FileTable
     {
-        Little<Cthulhu::U64> ID;
-        Little<Cthulhu::U64> Offset;
-        Little<Cthulhu::U64> Length;
+        Big<Cthulhu::U64> ID;
+        Big<Cthulhu::U64> Offset;
+        Big<Cthulhu::U64> Length;
         Pad Padding[8];
     };
 
@@ -24,7 +24,7 @@ namespace Volts::PS3::PUP
 
     struct HashTable
     {
-        Little<Cthulhu::U64> ID;
+        Big<Cthulhu::U64> ID;
         Cthulhu::Byte Hash[20];
         Pad Padding[4];
     };
