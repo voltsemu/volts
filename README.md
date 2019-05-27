@@ -2,11 +2,11 @@
 Yet another emulator
 
 ## Why?
-Thought a complex project might be a good use of my time
+So there can be another competing standard.
 
 # Coding style
 
-its important to have a consisten style througout the codebase to improve readability.
+It's important to have a consistent style througout the codebase to improve readability.
 
 ## Code formatting
 1. 4 space indents, not tabs, not 2 or 3 or 8 space indents.
@@ -23,12 +23,12 @@ its important to have a consisten style througout the codebase to improve readab
 4. Everything must be within the `Volts` namespace to avoid global namespace pollution.
 5. Document any code that is even slightly ambiguous, if it isnt understandable in code review it must be fixed before it is pushed to master.
 6. If it is a choice between OOP and procedural code, make procedural code.
-7. Nested classes are outright banned, do not use them. ever.
 
 ### Banned things
 1. exceptions are banned, no exceptions at all. ever.
 2. do not use RTTI or `dynamic_cast` ever, virtual functions should also be kept to a bare minimum.
 3. `thread_local` is banned.
+4. Nested classes are banned.
 
 # How to play a game
 soon

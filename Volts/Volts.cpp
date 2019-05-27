@@ -20,13 +20,9 @@ int main(int argc, const char** argv)
 	if(A.Parse())
 	{
 		auto U = A.GetFile(PUP::UpdateFiles);
+        LOGF_DEBUG(TAR, "Bin = %u %u %u %u %u", U.GetData()[0], U.GetData()[1], U.GetData()[2], U.GetData()[3], U.GetData()[4]);
 
-		TAR::Format(U).GetFile("A");
-		//for(auto& Str : TAR::Format(U).Filenames())
-		//{
-		//	printf("%s\n", Str.CStr());
-		//}
-		
+		TAR::Format(&U).GetFile("BDIT_FIRMWARE_PACKAGE.pkg");
 	}
 	//auto A = UNSELF::DecryptSELF(F);
 	//FILE* O = fopen("output.elf", "wb");

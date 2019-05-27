@@ -730,6 +730,141 @@ namespace Volts::PS3
         }
     };
 
+    struct FirmwareDecryptor 
+    {
+        FirmwareDecryptor(Binary* B)
+            : Bin(B)
+        {}
+
+        bool LoadHeader()
+        {
+            auto SCE = Bin->Read<SCE::Header>();
+
+            if(SCE.Magic != "SCE\0"_U32)
+            {
+                LOG_ERROR(FIRMWARE, "Invalid SCE Magic");
+                return false;
+            }
+
+            HeaderSize = SCE.MetadataEnd - sizeof(SCE::Header) - SCE.MetadataStart - sizeof(MetaData::Info);
+            MetaOffset = SCE.MetadataStart;
+            Flags = SCE.Type;
+
+            return true;
+        }
+
+        bool LoadMetadata()
+        {
+            Byte Info[sizeof(MetaData::Info)];
+            Byte* Headers = new Byte[HeaderSize];
+
+            Bin->Seek(MetaOffset);
+            Bin->ReadN(Info, sizeof(MetaData::Info));
+
+            Bin->ReadN(Headers, HeaderSize);
+
+            Byte Key[32];
+            Byte IV[16];
+
+            Memory::Copy(Keys::SCEPKGERK, Key, 32);
+            Memory::Copy(Keys::SCEPKGRIV, IV, 16);
+
+            aes_context AES;
+
+            if((Flags & 0x8000) != 0x8000)
+            {
+                aes_setkey_dec(&AES, Key, 256);
+                aes_crypt_cbc(&AES, AES_DECRYPT, sizeof(MetaData::Info), IV, Info, Info);
+            }
+
+            auto MetaInfo = *(MetaData::Info*)Info;
+
+            if(MetaInfo.IVPad[0] | MetaInfo.KeyPad[0])
+            {
+                LOG_ERROR(FIRMWARE, "Failed to decrypt Firmware");
+                return false;
+            }
+
+            size_t Offset = 0;
+            Byte Stream[16];
+
+            aes_setkey_enc(&AES, MetaInfo.Key, 128);
+            aes_crypt_ctr(&AES, HeaderSize, &Offset, MetaInfo.IV, Stream, Headers, Headers);
+
+            auto MetaHead = *(MetaData::Header*)Headers;
+
+            SectionCount = MetaHead.SectionCount;
+
+            Sections = new MetaData::Section[SectionCount];
+
+            BufferLenth = 0;
+
+            for(U32 I = 0; I < SectionCount; I++)
+            {
+                auto Sect = *(MetaData::Section*)(Headers + sizeof(MetaData::Header) + sizeof(MetaData::Section) * I);
+
+                BufferLength += Sect.Size;
+
+                Sections[I] = Sect;
+            }
+
+            KeyLength = MetaHead.KeyCount * 16;
+            Keys = new Byte[KeyLength];
+            Memory::Copy(Headers, Keys + sizeof(MetaData::Header) + SectionCount * sizeof(MetaData::Section), KeyLength);
+
+            return true;
+        }
+
+        void DecryptData()
+        {
+            Buffer = new Byte[BufferLength];
+
+            U32 BufferOffset = 0;
+            aes_context AES;
+
+            for(U32 I = 0; I < SectionCount; I++)
+            {
+                if(Sections[I].Encrypted == 3)
+                {
+                    size_t Offset = 0;
+                    Byte Stream[16];
+                    Byte Key[16];
+                    Byte IV[16];
+
+                    Memory::Copy(Keys + Sections[I].KeyOffset, Key, 16);
+                }
+                else
+                {
+                    Bin->Seek(Sections[I].Offset);
+                    Bin->ReadN(Buffer + BufferOffset, Sections[I].DataSize);
+                }
+
+                BufferOffset += Sections[I].DataSize;
+            }
+        }
+
+        Array<ELF::Binary> MakeELF() 
+        {
+            return {};
+        }
+
+    private:
+        U64 HeaderSize;
+        U64 MetaOffset;
+        U16 Flags;
+
+        MetaData::Section* Sections;
+        U32 SectionCount;
+
+        U32 KeyLength;
+        Byte* Keys;
+
+        U32 BufferLength;
+        Byte* Buffer;
+
+        Binary* Bin;
+    };
+
     namespace UNSELF
     {
         Cthulhu::Option<ELF::Binary> DecryptSELF(Cthulhu::FileSystem::BufferedFile& File, Byte* Key)
@@ -749,6 +884,25 @@ namespace Volts::PS3
             Decrypt.DecryptData();
 
             return Some(Decrypt.MakeELF());
+        }
+
+        Cthulhu::Array<ELF::Binary> DecryptFirmware(Cthulhu::Binary& Bin)
+        {
+            FirmwareDecryptor Decrypt(&Bin);
+
+            if(!Decrypt.LoadHeader())
+            {
+                return {};
+            }
+
+            if(!Decrypt.LoadMetadata())
+            {
+                return {};
+            }
+
+            Decrypt.DecryptData();
+
+            return Decrypt.MakeELF();
         }
     }
 }

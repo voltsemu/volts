@@ -3,25 +3,24 @@
 #include "Core/Macros.h"
 #include "Core/Logger/Logger.h"
 
+#include <Core/Memory/Binary.h>
+
 namespace Volts::TAR
 {
     using namespace Cthulhu;
 
-    Format::Format(Binary& B)
+    Format::Format(Binary* B)
         : Bin(B)
     {}
 
-    struct Header
+    PACKED_STRUCT(Header,
     {
         C8 Name[100];
-        U64 Mode;
-        U64 OwnerID;
-        U64 GroupID;
+        Pad Padding[24];
         Byte Size[12];
         Byte Time[12];
         Byte Checksum[8];
         U8 Link;
-        U8 Type;
         Byte LinkName[100];
         Byte Magic[6];
         U16 Version;
@@ -30,7 +29,13 @@ namespace Volts::TAR
         U64 Major;
         U64 Minor;
         Byte Prefix[155];
-    };
+        // this technically shouldnt be here, but it fixes some bugs so here it stays until
+        // i can figure out how to fix it properly
+        // TODO: fixme
+        Pad Padding2[12];
+    })
+
+    int i = sizeof(Header);
 
     static_assert(sizeof(Header) == 512);
 
@@ -53,25 +58,41 @@ namespace Volts::TAR
 
     Array<String> Format::Filenames()
     {
-        auto Head = File.Read<Header>();
+        //auto Head = Bin.Read<Header>();
+
+        return {};
     }
 
     constexpr Byte TARMagic[] = {'u', 's', 't', 'a', 'r', '\0'};
 
     Binary Format::GetFile(const String& Name)
     {
-        auto Head = Bin.Read<Header>();
-        LOGF_DEBUG(TAR, "Magic = %u %u %u %u %u %u", Head.Magic[0], Head.Magic[1], Head.Magic[2], Head.Magic[3], Head.Magic[4], Head.Magic[5]);
-        //while(Memory::Compare<Byte>(Head.Magic, TARMagic, 6) != 0)
+        auto Head = Bin->Read<Header>();
+
+        if(Memory::Compare<Byte>(Head.Magic, TARMagic, sizeof(TARMagic)) != 0)
         {
-            
+            LOG_ERROR(TAR, "Invalid TAR Magic");
+            return {};
+        }
+                
+        I32 Size = OctToDec(Utils::ParseInt(Head.Size));
+
+        C8* HeaderName = Head.Name;
+        // TODO: modify the cthulhu functions to use C8 not char
+        if(CString::Compare((char*)HeaderName, Name.CStr()) != 0)
+        {
+            Bin->Seek(Bin->Depth() + Size);
+            return GetFile(Name);
         }
 
-        return {};
-    }
+        Binary Out;
 
-    bool Format::Parse()
-    {
-        return true;
+        Byte* Data = new Byte[Size+1];
+        Bin->ReadN(Data, Size);
+        Out.Write(Data, Size+1);
+        delete[] Data;
+        Out.Seek(0);
+
+        return Out;
     }
 }

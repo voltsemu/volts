@@ -44,21 +44,19 @@ namespace Volts::PS3::PUP
 
     Cthulhu::Binary Format::GetFile(U32 ID)
     {
-        LOGF_DEBUG(FIRMWARE, "ID = %u", ID);
         for(U32 I = 0; I < FileCount; I++)
         {
-            LOGF_DEBUG(FIRMWARE, "%u ID = %llu", I, Files[I].ID.Get());
             if(Files[I].ID == ID)
             {
                 Binary Bin;
 
-                LOGF_DEBUG(FIRMWARE, "Offset = %llu, Length = %llu", Files[I].Offset.Get(), Files[I].Length.Get());
-                
                 // TODO: cleanup, probalby modify cthulhu to do this
                 File.Seek(Files[I].Offset);
                 Byte* Buffer = new Byte[Files[I].Length];
                 File.ReadN(Buffer, Files[I].Length);
                 Bin.Write(Buffer, Files[I].Length);
+                Bin.Seek(0);
+
                 delete[] Buffer;
 
                 return Bin;

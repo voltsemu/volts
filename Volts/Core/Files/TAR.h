@@ -10,7 +10,7 @@ namespace Volts::TAR
 
     struct Format
     {
-        Format(Cthulhu::Binary& B);
+        Format(Cthulhu::Binary* B);
 
         Cthulhu::Array<Cthulhu::String> Filenames();
 
@@ -18,7 +18,6 @@ namespace Volts::TAR
 
         bool Parse();
     private:
-        Cthulhu::Binary Bin;
-        Cthulhu::Map<Cthulhu::String, Cthulhu::U64> Offsets; // map of file name to offset in binary
+        Cthulhu::Binary* Bin;
     };
 }
