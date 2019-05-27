@@ -20,10 +20,12 @@ int main(int argc, const char** argv)
 	if(A.Parse())
 	{
 		auto U = A.GetFile(PUP::UpdateFiles);
-		for(auto& Str : TAR::Format(U).Filenames())
-		{
-			printf("%s\n", Str.CStr());
-		}
+
+		TAR::Format(U).GetFile("A");
+		//for(auto& Str : TAR::Format(U).Filenames())
+		//{
+		//	printf("%s\n", Str.CStr());
+		//}
 		
 	}
 	//auto A = UNSELF::DecryptSELF(F);

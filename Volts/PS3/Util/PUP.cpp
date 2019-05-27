@@ -7,12 +7,12 @@ namespace Volts::PS3::PUP
     
     struct Header
     {
-        Little<U64> Magic;
-        Little<U64> PackageVersion;
-        Little<U64> ImageVersion;
-        Little<U64> FileCount;
-        Little<U64> HeaderLength;
-        Little<U64> FileLength;
+        Big<U64> Magic;
+        Big<U64> PackageVersion;
+        Big<U64> ImageVersion;
+        Big<U64> FileCount;
+        Big<U64> HeaderLength;
+        Big<U64> FileLength;
     };
 
     static_assert(sizeof(Header) == 48);
@@ -24,7 +24,7 @@ namespace Volts::PS3::PUP
         File.Seek(0);
         auto Head = File.Read<Header>();
 
-        if(Head.Magic != "SCEUF\0\0\0"_U64)
+        if(Head.Magic.Data != "SCEUF\0\0\0"_U64)
         {
             LOG_ERROR(FIRMWARE, "Invalid PUP magic");
             return false;
@@ -44,11 +44,15 @@ namespace Volts::PS3::PUP
 
     Cthulhu::Binary Format::GetFile(U32 ID)
     {
+        LOGF_DEBUG(FIRMWARE, "ID = %u", ID);
         for(U32 I = 0; I < FileCount; I++)
         {
+            LOGF_DEBUG(FIRMWARE, "%u ID = %llu", I, Files[I].ID.Get());
             if(Files[I].ID == ID)
             {
                 Binary Bin;
+
+                LOGF_DEBUG(FIRMWARE, "Offset = %llu, Length = %llu", Files[I].Offset.Get(), Files[I].Length.Get());
                 
                 // TODO: cleanup, probalby modify cthulhu to do this
                 File.Seek(Files[I].Offset);
