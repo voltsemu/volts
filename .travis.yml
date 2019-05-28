@@ -24,5 +24,4 @@ matrix:
         - meson Build
       script: "ninja -C Build/"
 git:
-  depth: 0
   submodules: true
