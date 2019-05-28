@@ -37,12 +37,13 @@ matrix:
             - ninja
             - pip
       install:
-        - pip install meson
+        - python -m pip install meson
         - meson Build
       script: "ninja -C Build"
 
 before_install:
   - eval "${MATRIX_EVAL}"
+
 git:
   depth: 1
   submodules: true
