@@ -1,0 +1,28 @@
+language: cpp
+matrix:
+  include:
+    - os: osx
+      osx_image: xcode10.2
+      addons:
+        homebrew:
+          packages:
+            - ninja
+            - meson
+            - python3
+      install: "meson Build"
+      script: "ninja -C Build/"
+
+    - os: linux
+      addons:
+        apt:
+          packages:
+            - ninja
+            - python3
+            - python3-pip
+      install:
+        - pip install meson
+        - meson Build
+      script: "ninja -C Build/"
+git:
+  depth: 0
+  submodules: true
