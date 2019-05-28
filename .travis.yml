@@ -35,9 +35,9 @@ matrix:
         choco:
           packages:
             - ninja
-            - python
+            - pip
       install:
-        - python -m pip install meson
+        - pip install meson
         - meson Build
       script: "ninja -C Build"
 
