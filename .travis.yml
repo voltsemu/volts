@@ -15,11 +15,14 @@ matrix:
     - os: linux
       addons:
         apt:
+          sources:
+            - ubuntu-toolchain-r-test
           packages:
             - ninja-build
             - python3
             - python3-pip
             - python3-setuptools
+            - g++-7
       env:
         - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
       install:
@@ -37,5 +40,9 @@ matrix:
         - python -m pip install meson
         - meson Build
       script: "ninja -C Build"
+
+before_install:
+  - eval "${MATRIX_EVAL}"
 git:
+  depth: 1
   submodules: true
