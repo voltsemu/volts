@@ -22,10 +22,11 @@ int main(int argc, const char** argv)
 		auto U = A.GetFile(PUP::UpdateFiles);
         LOGF_DEBUG(TAR, "Bin = %u %u %u %u %u", U.GetData()[0], U.GetData()[1], U.GetData()[2], U.GetData()[3], U.GetData()[4]);
 
-		TAR::Format(&U).GetFile("BDIT_FIRMWARE_PACKAGE.pkg");
+		TAR::Format TARFile(&U);
+		for(auto& Name : TARFile.Filenames())
+		{
+			LOGF_DEBUG(A, "%s", Name.CStr());
+			auto Data = TARFile.GetFile(Name);
+		}
 	}
-	//auto A = UNSELF::DecryptSELF(F);
-	//FILE* O = fopen("output.elf", "wb");
-	//fwrite(A.Get().GetData(), sizeof(Cthulhu::Byte), A.Get().GetLength(), O);
-	//fclose(O);
 }

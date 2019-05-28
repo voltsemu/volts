@@ -11,7 +11,9 @@ namespace Volts::TAR
 
     Format::Format(Binary* B)
         : Bin(B)
-    {}
+    {
+        InitialOffset = Bin->Depth();
+    }
 
     PACKED_STRUCT(Header,
     {
@@ -56,16 +58,41 @@ namespace Volts::TAR
         return Dec;
     }
 
-    Array<String> Format::Filenames()
-    {
-        //auto Head = Bin.Read<Header>();
-
-        return {};
-    }
-
     constexpr Byte TARMagic[] = {'u', 's', 't', 'a', 'r', '\0'};
 
+    Array<String> Format::Filenames()
+    {
+        U32 Depth = Bin->Depth();
+        Array<String> Names;
+
+        while(true) 
+        {
+            auto Head = Bin->Read<Header>();
+            Names.Append(Head.Name);
+            if(Memory::Compare<Byte>(Head.Magic, TARMagic, sizeof(TARMagic)) != 0)
+            {
+                Bin->Seek(Depth);
+                break;
+            }
+
+            I32 Size = OctToDec(Utils::ParseInt(Head.Size));
+            Bin->Seek(Bin->Depth() + Size);
+        }
+
+        Bin->Seek(Depth);
+        return Names;
+    }
+
     Binary Format::GetFile(const String& Name)
+    {
+        U32 Depth = Bin->Depth();
+        auto Ret = FindFile(Name);
+        Bin->Seek(Depth);
+
+        return Ret;
+    }
+
+    Binary Format::FindFile(const String& Name)
     {
         auto Head = Bin->Read<Header>();
 

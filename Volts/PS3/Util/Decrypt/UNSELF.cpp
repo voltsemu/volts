@@ -732,6 +732,23 @@ namespace Volts::PS3
 
     struct FirmwareDecryptor 
     {
+    private:
+        U64 HeaderSize;
+        U64 MetaOffset;
+        U16 Flags;
+
+        MetaData::Section* Sections;
+        U32 SectionCount;
+
+        U32 KeyLength;
+        Byte* Keys;
+
+        U32 BufferLength;
+        Byte* Buffer;
+
+        Binary* Bin;
+    
+    public:
         FirmwareDecryptor(Binary* B)
             : Bin(B)
         {}
@@ -797,7 +814,7 @@ namespace Volts::PS3
 
             Sections = new MetaData::Section[SectionCount];
 
-            BufferLenth = 0;
+            BufferLength = 0;
 
             for(U32 I = 0; I < SectionCount; I++)
             {
@@ -827,42 +844,103 @@ namespace Volts::PS3
                 if(Sections[I].Encrypted == 3)
                 {
                     size_t Offset = 0;
-                    Byte Stream[16];
+                    Byte Stream[16] = {};
                     Byte Key[16];
                     Byte IV[16];
 
-                    Memory::Copy(Keys + Sections[I].KeyOffset, Key, 16);
+                    Memory::Copy(Keys + Sections[I].KeyIndex * 16, Key, 16);
+                    Memory::Copy(Keys + Sections[I].IVIndex * 16, IV, 16);
+
+                    Byte* Temp = new Byte[Sections[I].Size];
+
+                    Bin->Seek(Sections[I].Offset);
+                    Bin->ReadN(Temp, Sections[I].Size);
+
+                    aes_setkey_enc(&AES, Key, 128);
+                    aes_crypt_ctr(&AES, Sections[I].Size, &Offset, IV, Stream, Temp, Temp);
+
+                    Memory::Copy(Temp, Buffer + BufferOffset, Sections[I].Size);
+
+                    delete[] Temp;
                 }
                 else
                 {
                     Bin->Seek(Sections[I].Offset);
-                    Bin->ReadN(Buffer + BufferOffset, Sections[I].DataSize);
+                    Bin->ReadN(Buffer + BufferOffset, Sections[I].Size);
                 }
 
-                BufferOffset += Sections[I].DataSize;
+                BufferOffset += Sections[I].Size;
             }
         }
 
         Array<ELF::Binary> MakeELF() 
         {
-            return {};
+            Array<ELF::Binary> Arr;
+
+            U32 Offset = 0;
+
+            for(U32 I = 0; I < SectionCount; I++)
+            {
+                bool Valid = true;
+
+                ELF::Binary Out;
+
+                if(Sections[I].Compressed == 2)
+                {
+                    Byte Temp[32 * 1024];
+                    z_stream Stream;
+                    Stream.zalloc = Z_NULL;
+                    Stream.zfree = Z_NULL;
+                    Stream.opaque = Z_NULL;
+                    Stream.avail_in = Sections[I].Size;
+                    Stream.avail_out = 32 * 1024;
+                    Stream.next_in = Buffer + Offset;
+                    Stream.next_out = Temp;
+                    int Ret = inflateInit(&Stream);
+
+                    while(Stream.avail_in)
+                    {
+                        Ret = inflate(&Stream, Z_NO_FLUSH);
+
+                        if(Ret == Z_STREAM_END)
+                            break;
+
+                        if(Ret != Z_OK)
+                            Valid = false;
+
+                        if(!Stream.avail_out)
+                        {
+                            Out.Write(Temp, 32 * 1024);
+                            Stream.next_out = Temp;
+                            Stream.avail_out = 32 * 1024;
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+
+                    int Res = inflate(&Stream, Z_FINISH);
+
+                    if(Res != Z_STREAM_END)
+                        Valid = false;
+
+                    Out.Write(Temp, 32 * 1024 - Stream.avail_out);
+                    inflateEnd(&Stream);
+                }
+                else
+                {
+                    Out.Write(Buffer + Offset, Sections[I].Size);
+                }
+
+                Offset += Sections[I].Size;
+
+                if(Valid)
+                    Arr.Append(Out);
+            }
+
+            return Arr;
         }
-
-    private:
-        U64 HeaderSize;
-        U64 MetaOffset;
-        U16 Flags;
-
-        MetaData::Section* Sections;
-        U32 SectionCount;
-
-        U32 KeyLength;
-        Byte* Keys;
-
-        U32 BufferLength;
-        Byte* Buffer;
-
-        Binary* Bin;
     };
 
     namespace UNSELF

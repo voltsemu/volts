@@ -52,7 +52,9 @@ namespace Volts::PS3::PUP
 
                 // TODO: cleanup, probalby modify cthulhu to do this
                 File.Seek(Files[I].Offset);
+
                 Byte* Buffer = new Byte[Files[I].Length];
+                
                 File.ReadN(Buffer, Files[I].Length);
                 Bin.Write(Buffer, Files[I].Length);
                 Bin.Seek(0);
