@@ -20,8 +20,20 @@ matrix:
             - python3
             - python3-pip
       install:
-        - pip install meson
+        - pip3 install meson
         - meson Build
       script: "ninja -C Build/"
+
+    - os: windows
+      addons:
+        choco:
+          packages:
+            - ninja
+            - python
+      install:
+        - python -m pip install -U pip
+        - pip install meson
+        - meson Build
+      script: "ninja -C Build"
 git:
   submodules: true
