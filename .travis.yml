@@ -21,6 +21,7 @@ matrix:
             - python3-pip
       install:
         - pip3 install meson
+        - python3-setuptools
         - meson Build
       script: "ninja -C Build/"
 
