@@ -32,7 +32,6 @@ matrix:
             - ninja
             - python
       install:
-        - python -m pip install -U pip
         - pip install meson
         - meson Build
       script: "ninja -C Build"
