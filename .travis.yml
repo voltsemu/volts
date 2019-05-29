@@ -31,14 +31,11 @@ matrix:
       script: "ninja -C Build/"
 
     - os: windows
-      addons:
-        choco:
-          packages:
-            - ninja
       python: "3.7"
       before_install:
         - choco install python3
         - export PATH="/c/Python37:/c/Python37/Scripts:$PATH"
+        - choco install ninja
       install:
         - python -m pip install meson
         - meson Build
