@@ -96,8 +96,9 @@ namespace Volts::TAR
     {
         auto Head = Bin->Read<Header>();
 
-        if(Memory::Compare<Byte>(Head.Magic, TARMagic, sizeof(TARMagic)) != 0)
+        if(Memory::Compare<Byte>(Head.Magic, TARMagic, sizeof(TARMagic) - 1) != 0)
         {
+            LOGF_ERROR(FIRMWARE, "%c %c %c %c %c %u", Head.Magic[0], Head.Magic[1], Head.Magic[2], Head.Magic[3], Head.Magic[4], Head.Magic[5], Head.Magic[6]);
             LOG_ERROR(TAR, "Invalid TAR Magic");
             return {};
         }
