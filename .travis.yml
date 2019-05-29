@@ -1,4 +1,7 @@
+# this is all written in C++ for now
 language: cpp
+
+# contain every
 matrix:
   include:
     - os: osx
@@ -23,27 +26,38 @@ matrix:
             - python3-pip
             - python3-setuptools
             - g++-7
-      env:
-        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+      before_install:
+        - export CC=gcc-7
+        - export CXX=g++-7
       install:
         - pip3 install meson
         - meson Build
       script: "ninja -C Build/"
 
+    # windows build
     - os: windows
+      # we need python 3.7
       python: "3.7"
       before_install:
+        # so we go and install python 3
         - choco install python3
+        # then we fix the path because it doesnt do that by itself
         - export PATH="/c/Python37:/c/Python37/Scripts:$PATH"
+        # then we install ninja build 
         - choco install ninja
       install:
+        # then we upgrade pip so we dont get warnings 
+        # this will be removed once the choco package is updated
+        - python -m pip install --upgrade pip
+        # then we install meson to use ninja
         - python -m pip install meson
+        # then we create the build files
         - meson Build
+        # then we finally build the thing
       script: "ninja -C Build"
 
-before_install:
-  - eval "${MATRIX_EVAL}"
-
 git:
+  # we dont need a ton of depth
   depth: 1
+  # but we do need the submodules
   submodules: true
