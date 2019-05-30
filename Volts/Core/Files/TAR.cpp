@@ -69,7 +69,7 @@ namespace Volts::TAR
         {
             auto Head = Bin->Read<Header>();
             Names.Append(Head.Name);
-            if(Memory::Compare<Byte>(Head.Magic, TARMagic, sizeof(TARMagic)) != 0)
+            if(Memory::Compare<Byte>(Head.Magic, TARMagic, sizeof(TARMagic) - 1) != 0)
             {
                 Bin->Seek(Depth);
                 break;
