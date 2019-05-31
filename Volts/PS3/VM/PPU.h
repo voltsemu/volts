@@ -32,6 +32,8 @@ namespace Volts::PS3
         Cthulhu::U32 StackAddress = 0U;
 
         virtual void Init() = 0;
+
+        virtual ~PPU() {}
     };
 
     // instruction format reference taken from 

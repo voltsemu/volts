@@ -12,13 +12,18 @@ namespace Volts
         static constexpr T Zero = (T)0;
         static constexpr T Mask = (~Zero >> (BitMax - TSize));
         static constexpr T Max = ~Zero;
-        constexpr DataMask()
+        constexpr T DataMask()
         {
             return (Mask >> (Max - TSize)) << TStart;
         }
 
         static_assert(TSize - 1 < Max, "TSize is too small");
-        static_assert(Cthulhu::IsSigned<T>::Value || Cthulhu::IsUnsigned<T>::Value, "T must be signed or unsigned");
+        static_assert(
+            Cthulhu::IsSigned<T>::Value ||
+            Cthulhu::IsUnsigned<T>::Value ||
+            Cthulhu::Same<T, bool>::Value,
+            "T must be signed, unsigned or a bool"
+        );
 
         T Data;
 
@@ -32,17 +37,10 @@ namespace Volts
 
         operator T() const { return Get(); }
 
-        explicit operator bool() const 
-        {
-            return Get() & Max;
-        }
-
         auto& operator=(T Value)
         {
-            Data = (Data & ~DataMask() | ((Value & Mask) << TStart));
+            Data = ((Data & ~DataMask()) | ((Value & Mask) << TStart));
             return *this;
         }
-
-        auto
     };
 }

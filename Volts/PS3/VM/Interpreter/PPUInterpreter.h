@@ -7,5 +7,7 @@ namespace Volts::PS3
     struct PPUInterpreter : public PPU
     {
         virtual void Init() override;
+
+        virtual ~PPUInterpreter() override {}
     };
 }

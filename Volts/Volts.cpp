@@ -14,10 +14,10 @@ using namespace Cthulhu;
 int main(int argc, const char** argv)
 {
 	LogLevel = Level::Trace;
-	Cthulhu::FileSystem::BufferedFile F = String(argv[1]);
-	PUP::Format A(&F);
+	//Cthulhu::FileSystem::BufferedFile F = String(argv[1]);
+	//PUP::Format A(&F);
 
-	if(A.Parse())
+	/*if(A.Parse())
 	{
 		auto U = A.GetFile(PUP::UpdateFiles);
         LOGF_DEBUG(TAR, "Bin = %u %u %u %u %u", U.GetData()[0], U.GetData()[1], U.GetData()[2], U.GetData()[3], U.GetData()[4]);
@@ -28,5 +28,5 @@ int main(int argc, const char** argv)
 			LOGF_DEBUG(A, "%s", Name.CStr());
 			auto Data = TARFile.GetFile(Name);
 		}
-	}
+	}*/
 }
