@@ -56,8 +56,19 @@ namespace Volts::PS3
         BitField<Cthulhu::U32, 6, 5> RT;
         BitField<Cthulhu::U32, 11, 5> RA;
         BitField<Cthulhu::U32, 16, 15> D;
+        BitField<Cthulhu::U32, 16, 15> SI;
+        BitField<Cthulhu::U32, 16, 15> UI;
+
+        BitField<Cthulhu::U32, 16, 14> DS;
+        BitField<Cthulhu::U32, 30, 1> XO;
 
         BitField<bool, 30, 1> AA;
         BitField<bool, 31, 1> LK;
+    };
+
+    struct PPUInstructionInfo
+    {
+        Cthulhu::U8 SubOP;
+        void(*Instruction)(PPU&, PPUInstruction);
     };
 }
