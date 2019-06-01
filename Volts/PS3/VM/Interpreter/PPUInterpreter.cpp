@@ -18,11 +18,11 @@ namespace Volts::PS3
         AddResult(T L, T R, bool B)
             : AddResult(L, R)
         {
-            AddResult R(Result, B);
-            Result = R.Result;
-            Carry |= R.Carry;
-            Zero = R.Zero;
-            Sign = R.Sign;
+            AddResult Res(Result, B);
+            Result = Res.Result;
+            Carry |= Res.Carry;
+            Zero = Res.Zero;
+            Sign = Res.Sign;
         }
 
         static AddResult<T> Flags(T L, T R)
