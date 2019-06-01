@@ -1,10 +1,11 @@
 #include "PPUInterpreter.h"
+#include "Core/Logger/Logger.h"
 
 namespace Volts::PS3
 {
     void STUB(PPU& Thread, PPUInstruction Inst)
     {
-        LOGF_ERROR(PPU, "Invalid/Unrecognized OPCode: %u", Inst.OPCode);
+        LOGF_ERROR(PPU, "Invalid/Unrecognized OPCode: %u", Inst.OPCode.Get());
     }
 
     void TDI(PPU& Thread, PPUInstruction Inst)
