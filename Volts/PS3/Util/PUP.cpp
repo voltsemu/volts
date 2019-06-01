@@ -4,7 +4,7 @@
 namespace Volts::PS3::PUP
 {
     using namespace Cthulhu;
-    
+
     struct Header
     {
         Big<U64> Magic;
@@ -54,7 +54,7 @@ namespace Volts::PS3::PUP
                 File.Seek(Files[I].Offset);
 
                 Byte* Buffer = new Byte[Files[I].Length];
-                
+
                 File.ReadN(Buffer, Files[I].Length);
                 Bin.Write(Buffer, Files[I].Length);
                 Bin.Seek(0);

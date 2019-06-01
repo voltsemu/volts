@@ -18,10 +18,10 @@
 // made by fail0verflow before sony forced them to take the source down
 //
 // Bytes 0..32 SCE::Header
-//  0..4   Magic 
+//  0..4   Magic
 //      - always "SCE\0" or 4539219ULL
 //
-//  5..8   HeaderVersion 
+//  5..8   HeaderVersion
 //      - 2 = PS3 game
 //      - 3 = PSVita game
 //
@@ -34,7 +34,7 @@
 //      - 1 = SELF file, signed-elf. we need to decrypt this
 //      - 2 = signed-revoke-list used by the ps3 hypervisor, we dont care about this
 //      - 3 = signed-package are firmware packages used to update the ps3, we dont care about these
-//      - 4 = secutiry-policy-profile used for internal ps3 files, 
+//      - 4 = secutiry-policy-profile used for internal ps3 files,
 //            we dont really need to care about this
 //
 //  13..16 MetadataStart
@@ -119,7 +119,7 @@ namespace Volts::PS3
 
                 static_assert(sizeof(ControlFlags) == 32);
 
-                struct 
+                struct
                 {
                     U8 Constant[20];
                     U8 ELFDigest[20];
@@ -205,13 +205,13 @@ namespace Volts::PS3
 
         static_assert(sizeof(BigHeader<U32>) == 52 - sizeof(SmallHeader));
         static_assert(sizeof(BigHeader<U64>) == 64 - sizeof(SmallHeader));
-    
+
         template<typename T>
-        struct SectionHeader 
+        struct SectionHeader
         {
             Big<U32> StringOffset;
             Big<U32> Type;
-            
+
             Big<T> Flags;
             Big<T> VirtualAddress;
             Big<T> Offset;
@@ -249,7 +249,7 @@ namespace Volts::PS3
         template<>
         PACKED_STRUCT(ProgramHeader<U64>, {
             Big<U32> Type;
-            
+
             Big<U32> Flags;
             Big<U64> Offset;
             Big<U64> VirtualAddress;
@@ -269,7 +269,7 @@ namespace Volts::PS3
         {
             Byte Key[16];
             Pad KeyPad[16];
-            
+
             Byte IV[16];
             Pad IVPad[16];
         };
@@ -297,11 +297,11 @@ namespace Volts::PS3
             Big<U32> HashAlgo; // 2 = SHA1_HMAC, 3 = SHA1
             Big<U32> HashIndex;
             Big<U32> Encrypted; // 3 = yes, 1 = no
-            
+
             // these may be Limits<U32>::Max()
             // but only when Encrypted != 3
             // so big numbers in here are not something to worry about
-            Big<U32> KeyIndex; 
+            Big<U32> KeyIndex;
             Big<U32> IVIndex;
 
             Big<U32> Compressed; // 2 = yes, 1 = no
@@ -339,7 +339,7 @@ namespace Volts::PS3
     private:
         // if the structure is not relevant to generating the ELF file
         // at the end we dont need to store the whole struct
-        // so we just store the variables we need to save space and to reduce the amount of variables 
+        // so we just store the variables we need to save space and to reduce the amount of variables
         // flying around
 
         // SCE::Header
@@ -438,11 +438,11 @@ namespace Volts::PS3
 
             // the SELF header is after the SCE header, so we read this in as well
             auto SELFHeader = File.Read<SELF::Header>();
-            
+
             // read in the app info
             File.Seek(SELFHeader.AInfoOffset);
             auto AInfo = File.Read<AppInfo>();
-        
+
             // save the data we need
             SELFType = AInfo.Type;
             SELFVersion = AInfo.Version;
@@ -505,7 +505,7 @@ namespace Volts::PS3
             }
 
             File.Seek(SELFHeader.ControlOffset);
-            
+
             // read in each control info
             U32 I = 0;
             while(I < SELFHeader.ControlLength)
@@ -614,7 +614,7 @@ namespace Volts::PS3
             for(U32 I = 0; I < MetaHead.SectionCount; I++)
             {
                 auto Section = *(MetaData::Section*)(DataKeys + sizeof(MetaData::Section) * I);
-                
+
                 if(Section.Encrypted == 3)
                     DataBufferLength += Section.Size;
 
@@ -642,7 +642,7 @@ namespace Volts::PS3
                 size_t Offset = 0;
 
                 if(Section.Encrypted == 3)
-                {  
+                {
                     Memory::Copy(DataKeys + Section.KeyIndex * 16, Key, 16);
                     Memory::Copy(DataKeys + Section.IVIndex * 16, IV, 16);
 
@@ -655,7 +655,7 @@ namespace Volts::PS3
 
                     aes_setkey_enc(&AES, Key, 128);
                     aes_crypt_ctr(&AES, Section.Size, &Offset, IV, Stream, Buffer, Buffer);
-            
+
                     Memory::Copy(Buffer, DataBuffer + BufferOffset, Section.Size);
 
                     BufferOffset += Section.Size;
@@ -697,7 +697,7 @@ namespace Volts::PS3
                         uLongf ZSize = static_cast<uLongf>(FileSize);
 
                         uncompress(DBuffer, &ZSize, ZBuffer + Offset, DataBufferLength);
-                        Bin.Write(DBuffer, FileSize); 
+                        Bin.Write(DBuffer, FileSize);
 
                         delete[] DBuffer;
                         delete[] ZBuffer;
@@ -713,13 +713,14 @@ namespace Volts::PS3
 
             Bin.Seek(Header->SHOffset);
             for(U32 I = 0; I < Header->SHCount; I++)
-            {                
+            {
                 Bin.Write(&Sections[I]);
             }
 
+            Bin.Seek(0);
             return Bin;
         }
-    
+
     public:
         ELF::Binary MakeELF()
         {
@@ -730,7 +731,7 @@ namespace Volts::PS3
         }
     };
 
-    struct FirmwareDecryptor 
+    struct FirmwareDecryptor
     {
     private:
         U64 HeaderSize;
@@ -747,7 +748,7 @@ namespace Volts::PS3
         Byte* Buffer;
 
         Binary* Bin;
-    
+
     public:
         FirmwareDecryptor(Binary* B)
             : Bin(B)
@@ -873,7 +874,7 @@ namespace Volts::PS3
             }
         }
 
-        Array<ELF::Binary> MakeELF() 
+        Array<ELF::Binary> MakeELF()
         {
             Array<ELF::Binary> Arr;
 

@@ -9,9 +9,9 @@
 #include "Core/Logger/Logger.h"
 
 namespace Volts::PS3::PUP
-{   
+{
     namespace FS = Cthulhu::FileSystem;
-    
+
     struct FileTable
     {
         Big<Cthulhu::U64> ID;

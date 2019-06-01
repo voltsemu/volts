@@ -18,6 +18,7 @@ int main(int argc, const char** argv)
 	auto U = UNSELF::DecryptSELF(F);
 
 	FILE* File = fopen("out.elf", "w");
+	U.Get().Seek(0);
 	fwrite(U.Get().GetData(), sizeof(Byte), U.Get().GetLength(), File);
 	fclose(File); 
 }

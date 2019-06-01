@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Meta/Aliases.h"
+#include <Core/Collections/CthulhuString.h>
+#include <Core/Memory/Binary.h>
 #include "Core/Math/Bytes.h"
 #include "Core/Endian.h"
 #include "Core/BitField.h"
@@ -10,9 +12,9 @@ namespace Volts::PS3
 {
     struct PPU
     {
-        Cthulhu::U64 GPR[32] = {}; // general purpous registers 
+        Cthulhu::U64 GPR[32] = {}; // general purpous registers
         Cthulhu::F64 FPR[32] = {}; // floating point registers
-        Vec128 VPR[32] = {}; // vector registers 
+        Vec128 VPR[32] = {}; // vector registers
 
         bool CR[32] = {}; // condition register, but unpacked
 
@@ -31,12 +33,14 @@ namespace Volts::PS3
         Cthulhu::U32 StackSize = 0U;
         Cthulhu::U32 StackAddress = 0U;
 
-        virtual void Init() = 0;
-
         virtual ~PPU() {}
+
+        virtual void Run(Cthulhu::Binary& Bin) = 0;
+        virtual Cthulhu::String Name() const = 0;
+        virtual Cthulhu::String Description() const = 0;
     };
 
-    // instruction format reference taken from 
+    // instruction format reference taken from
     // http://math-atlas.sourceforge.net/devel/assembly/ppc_isa.pdf
     union PPUInstruction
     {
@@ -64,11 +68,5 @@ namespace Volts::PS3
 
         BitField<bool, 30, 1> AA;
         BitField<bool, 31, 1> LK;
-    };
-
-    struct PPUInstructionInfo
-    {
-        Cthulhu::U8 SubOP;
-        void(*Instruction)(PPU&, PPUInstruction);
     };
 }
