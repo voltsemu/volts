@@ -669,7 +669,6 @@ namespace Volts::PS3
         ELF::Binary WriteELF(THeader* Header, TSections* Sections, TPrograms* Programs)
         {
             ELF::Binary Bin = {128};
-
             Bin.Write(&SmallELF);
             Bin.Write(Header);
 
