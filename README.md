@@ -4,13 +4,17 @@ Yet another emulator
 ## Why?
 So there can be another competing standard.
 
+## Media
+![Discord Shield](https://discordapp.com/api/guilds/578380242888949760/widget.png?style=shield)
+[![Build Status](https://travis-ci.org/Apache-HB/CTULib.svg?branch=master)](https://travis-ci.org/Apache-HB/CTULib)
+
 # Coding style
 
 It's important to have a consistent style througout the codebase to improve readability.
 
 ## Code formatting
 1. 4 space indents, not tabs, not 2 or 3 or 8 space indents.
-2. all variables, classes, functions and templates must be in `PascalCase`. 
+2. all variables, classes, functions and templates must be in `PascalCase`.
 3. all template parameters must be prefixed with `T`.
 4. All macros must be in `SCREAMING_SNAKE_CASE` they must also not pollute the function with variable names. be sure to surround each macro with `{}` if needed.
 5. All enums must be `enum class` enums instead of `typedef enum` enums.
@@ -35,7 +39,7 @@ soon
 
 # Building
 
-Even if a specific linux distro, windows version or macosx version is not explicity supported does not mean it will not work. 
+Even if a specific linux distro, windows version or macosx version is not explicity supported does not mean it will not work.
 If you manage to boot the emulator as well as a game on your system please provide a pull request to update the system compatibility list.
 
 ## Windows
@@ -43,7 +47,7 @@ If you manage to boot the emulator as well as a game on your system please provi
 As of May 9, 2019 supported windows versions are
 * Windows 10 Build 17763
 
-This has to be done in an `x64 Native Tools Command Promp for VS 20xx` 
+This has to be done in an `x64 Native Tools Command Promp for VS 20xx`
 It will not work in any other command prompt.
 This is a fault with meson rather than the volts codebase.
 ```sh
@@ -88,5 +92,5 @@ git submodule update --init
 env CXX=clang++ ~/.local/bin/meson Build
 cd Build
 ninja
-./volt 
+./volt
 ```
