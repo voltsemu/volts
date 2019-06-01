@@ -572,6 +572,10 @@ namespace Volts::PS3
             File.Seek(MetadataStart + sizeof(SCE::Header));
             auto MetaInfo = File.Read<MetaData::Info>();
 
+            const U32 HeaderSize = MetadataEnd - sizeof(SCE::Header) - MetadataStart - sizeof(MetaData::Info);
+            Headers = new Byte[HeaderSize];
+            File.ReadN(Headers, HeaderSize);
+
             aes_context AES;
             SELF::Key MetaKey = GetSELFKey(static_cast<KeyType>(SELFType), SCEFlags, SELFVersion);
 
@@ -586,42 +590,37 @@ namespace Volts::PS3
 
             for(U32 I = 0; I < sizeof(MetaInfo.Key); I++)
             {
-                if(MetaInfo.KeyPad[I] | MetaInfo.IVPad[0])
+                if(MetaInfo.KeyPad[I] | MetaInfo.IVPad[I])
                 {
                     LOG_ERROR(UNSELF, "Failed to decrypt metadata info");
                     return false;
                 }
             }
 
-            const U32 HeaderSize = MetadataEnd - sizeof(SCE::Header) - MetadataStart - sizeof(MetaData::Info);
-            Headers = new Byte[HeaderSize];
-            File.ReadN(Headers, HeaderSize);
-
             size_t Offset = 0;
             Byte Stream[16];
             aes_setkey_enc(&AES, MetaInfo.Key, 128);
-            using Aes = Volts::AES;
-            Aes().SetKeyEnc(MetaInfo.Key, KeySize::S128);
             aes_crypt_ctr(&AES, HeaderSize, &Offset, MetaInfo.IV, Stream, Headers, Headers);
 
-            DataKeys = Headers;
-
-            const auto MetaHead = *(MetaData::Header*)DataKeys;
-            DataKeys += sizeof(MetaData::Header);
+            const auto MetaHead = *(MetaData::Header*)Headers;
 
             DataBufferLength = MetaHead.KeyCount * 16;
 
             for(U32 I = 0; I < MetaHead.SectionCount; I++)
             {
-                auto Section = *(MetaData::Section*)(DataKeys + sizeof(MetaData::Section) * I);
+                auto Section = *(MetaData::Section*)(Headers + sizeof(MetaData::Header) + sizeof(MetaData::Section) * I);
+
+                printf("%llu\n", Section.Offset.Get());
 
                 if(Section.Encrypted == 3)
+                {
                     DataBufferLength += Section.Size;
+                }
 
                 MetaSections.Append(Section);
             }
 
-            DataKeys += MetaHead.SectionCount * sizeof(MetaData::Section);
+            DataKeys = Headers + sizeof(MetaData::Header) + MetaHead.SectionCount * sizeof(MetaData::Section);
 
             return true;
         }
@@ -669,6 +668,7 @@ namespace Volts::PS3
         ELF::Binary WriteELF(THeader* Header, TSections* Sections, TPrograms* Programs)
         {
             ELF::Binary Bin = {128};
+
             Bin.Write(&SmallELF);
             Bin.Write(Header);
 
@@ -680,8 +680,10 @@ namespace Volts::PS3
 
             U32 Offset = 0;
 
+            printf("%u", MetaSections.Len());
             for(auto& Section : MetaSections)
             {
+                printf("%u\n", Section.Type.Get());
                 if(Section.Type == 2)
                 {
                     Bin.Seek(Programs[Section.Index].Offset);
@@ -704,6 +706,11 @@ namespace Volts::PS3
                     else
                     {
                         Bin.Write(DataBuffer + Offset, Section.Size);
+
+                        for(U32 L = 0; L < 25; L++)
+                        {
+                            printf("%u", (DataBuffer + Offset)[L]);
+                        }
                     }
 
                     Offset += Section.Size;
@@ -951,11 +958,13 @@ namespace Volts::PS3
 
             if(!Decrypt.ReadHeaders())
             {
+                LOG_ERROR(UNSELF, "Failed to read headers");
                 return None<ELF::Binary>();
             }
 
             if(!Decrypt.ReadMetadata(Key))
             {
+                LOG_ERROR(UNSELF, "Failed to read metadata");
                 return None<ELF::Binary>();
             }
 
