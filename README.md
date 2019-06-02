@@ -44,8 +44,17 @@ If you manage to boot the emulator as well as a game on your system please provi
 
 ## Windows
 
-As of May 9, 2019 supported windows versions are
+As of June 2, 2019 supported windows versions are
+* Windows 10 Build 16299
 * Windows 10 Build 17763
+
+Assuming an entirley fresh install of Windows 10
+
+1. Download [Git Bash](https://git-scm/download/win) or [GitHub Desktop](https://desktop.github.com/)
+2. Clone Volts using either git bash or github desktop
+3. Download [Visual Studio](https://visualstudio.microsoft.com/downloads/) and install `Desktop development with C++`
+4. Download [python >= 3.6](https://www.python.org/downloads/). Be sure to install pip as part of the setup
+5. TODO: once python on windows stops being so fucking painful
 
 This has to be done in an `x64 Native Tools Command Promp for VS 20xx`
 It will not work in any other command prompt.
@@ -75,8 +84,9 @@ ninja xcode
 
 As of May 9, 2019 supported linux distros are
 * Ubuntu 18.04.2 LTS
+* Debian 9.9.0
 
-Assuming an entirley fresh install of linux
+Assuming an entirley fresh install of Ubuntu
 
 ```sh
 # Basic packages needed
@@ -93,4 +103,18 @@ env CXX=clang++ ~/.local/bin/meson Build
 cd Build
 ninja
 ./volt
+```
+
+Assuming a fresh install of debian
+
+```sh
+su -
+
+apt install git python3-pip llvm ninja-build
+
+meson Build
+
+ninja -C Build
+
+./Build/volt
 ```

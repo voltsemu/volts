@@ -1,6 +1,6 @@
-project('Volts', 'cpp', 
-    default_options : [ 'cpp_std=c++17' ], 
-    version : '0.2.0', 
+project('Volts', 'cpp',
+    default_options : [ 'cpp_std=c++17' ],
+    version : '0.2.0',
     license : 'Apache'
 )
 
@@ -35,11 +35,11 @@ incs = [
 # include the ps3 project
 subdir('Volts/PS3')
 
-args = []
+args = ['-DGCC_WORKAROUND_BULLSHIT']
 
 # disable run time type id and exceptions in the hope of generating smaller code
 # i know you dont pay for features you dont use but this also stops people
-# from trying to use either feature at all so people dont """accidentally""" 
+# from trying to use either feature at all so people dont """accidentally"""
 # use these slow features for convenience sake
 if meson.get_compiler('cpp').get_id() == 'msvc'
     args += ['/GR-', '/arch:AVX2']
