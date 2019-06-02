@@ -29,7 +29,7 @@ namespace Volts
 
         T Get() const
         {
-            if constexpr(Cthulhu::IsSigned<T>::Value)
+            IF_CONSTEXPR(Cthulhu::IsSigned<T>::Value)
                 return (Data << (Max - TStart - TSize)) >> (Max - TSize);
             else
                 return (Data >> TStart) & Mask;

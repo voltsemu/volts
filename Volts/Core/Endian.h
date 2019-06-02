@@ -13,7 +13,7 @@ namespace Volts
         // x86 and arm are little endian
         Little,
     };
-    
+
     // Justification:
     //  - Q: Why have an entire class to represent a big or little endian value?
     //  - A: Due to the way the emulator is designed, many types are constructed through Memory::Copy.
@@ -25,7 +25,7 @@ namespace Volts
 
     /**
      * @brief Represents a value in either endian byte ordering
-     * 
+     *
      * @tparam T The type to store in the value
      * @tparam TOrder the order of the bytes copied into the value
      */
@@ -34,7 +34,7 @@ namespace Volts
     {
         // always check the constraints
         static_assert(sizeof(T) == 2 || sizeof(T) == 4 || sizeof(T) == 8, "It is only possible to byteswap values that are 2, 4, or 8 bytes wide");
-        
+
         // the stored data
         T Data;
 
@@ -44,7 +44,7 @@ namespace Volts
         T Get() const
         {
             // check if this value is loaded as Little endian Data
-            if constexpr(TOrder == Endian::Little) 
+            IF_CONSTEXPR(TOrder == Endian::Little)
             {
                 // if it is we can just return the data as target is little endian as well
                 return Data;
@@ -63,7 +63,7 @@ namespace Volts
         T Get() const
         {
             // if the data is loaded as little and we're on big endian we need to convert it to big
-            if constexpr (TOrder == Endian::Little)
+            IF_CONSTEXPR(TOrder == Endian::Little)
             {
                 return Cthulhu::Math::GenericByteSwap<T>(Data);
             }
