@@ -321,7 +321,7 @@ static const U32 RT3[] = { RT };
 }
 
 
-    void AES::SetKeyEnc(const Cthulhu::Byte* Key, KeySize Size)
+    AES& AES::SetKeyEnc(const Cthulhu::Byte* Key, KeySize Size)
     {
         U32* RK;
         RoundKeys = RK = Buffer;
@@ -375,13 +375,13 @@ static const U32 RT3[] = { RT };
             break;
 
         default:
-            return;
+            return *this;
         }
 
         return *this;
     }
 
-    void AES::SetKeyDec(const Cthulhu::Byte* Key, KeySize Size)
+    AES& AES::SetKeyDec(const Cthulhu::Byte* Key, KeySize Size)
     {
         switch(Size)
         {
@@ -392,7 +392,7 @@ static const U32 RT3[] = { RT };
             Rounds = 14;
             break;
         default:
-            return;
+            return *this;
         }
 
         U32* RK = RoundKeys = Buffer;
@@ -427,7 +427,7 @@ static const U32 RT3[] = { RT };
         return *this;
     }
 
-    void AES::EncryptECB(const Cthulhu::Byte Input[16], Cthulhu::Byte Output[16]) const
+    const AES& AES::EncryptECB(const Cthulhu::Byte Input[16], Cthulhu::Byte Output[16]) const
     {
         U32* RK = RoundKeys;
 
@@ -478,7 +478,7 @@ static const U32 RT3[] = { RT };
         return *this;
     }
 
-    void AES::DecryptECB(const Cthulhu::Byte Input[16], Cthulhu::Byte Output[16]) const
+    const AES& AES::DecryptECB(const Cthulhu::Byte Input[16], Cthulhu::Byte Output[16]) const
     {
         U32* RK = RoundKeys;
 
@@ -529,10 +529,13 @@ static const U32 RT3[] = { RT };
         return *this;
     }
 
-    void AES::EncryptCBC(Cthulhu::U32 Length, Cthulhu::Byte IV[16], const Cthulhu::Byte* Input, Cthulhu::Byte* Output) const
+    const AES& AES::EncryptCBC(Cthulhu::U32 Length, Cthulhu::Byte IV[16], const Cthulhu::Byte* Input, Cthulhu::Byte* Output) const
     {
         if(Length % 16)
-            return;
+        {
+            LOG_ERROR(AES, "Length was not a multiple of 16")
+            return *this;
+        }
 
         while(Length > 0)
         {
@@ -550,10 +553,13 @@ static const U32 RT3[] = { RT };
         return *this;
     }
 
-    void AES::DecryptCBC(Cthulhu::U32 Length, Cthulhu::Byte IV[16], const Cthulhu::Byte* Input, Cthulhu::Byte* Output) const
+    const AES& AES::DecryptCBC(Cthulhu::U32 Length, Cthulhu::Byte IV[16], const Cthulhu::Byte* Input, Cthulhu::Byte* Output) const
     {
         if(Length % 16)
-            return;
+        {
+            LOG_ERROR(AES, "Length was not a multiple of 16")
+            return *this;
+        }
 
         Byte Data[16];
 
@@ -575,7 +581,7 @@ static const U32 RT3[] = { RT };
         return *this;
     }
 
-    void AES::CryptCTR(Cthulhu::U32 Length, Cthulhu::U32* Offset, const Cthulhu::Byte* Input, Cthulhu::Byte* Output) const
+    const AES& AES::CryptCTR(Cthulhu::U32 Length, Cthulhu::U32* Offset, const Cthulhu::Byte* Input, Cthulhu::Byte* Output) const
     {
         Byte Counter[16];
         Byte Stream[16];

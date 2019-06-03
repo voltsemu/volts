@@ -20,12 +20,12 @@ namespace Volts
         AES& SetKeyEnc(const Cthulhu::Byte* Key, KeySize Size);
         AES& SetKeyDec(const Cthulhu::Byte* Key, KeySize Size);
 
-        AES& EncryptECB(const Cthulhu::Byte Input[16], Cthulhu::Byte Output[16]) const;
-        AES& DecryptECB(const Cthulhu::Byte Input[16], Cthulhu::Byte Output[16]) const;
+        const AES& EncryptECB(const Cthulhu::Byte Input[16], Cthulhu::Byte Output[16]) const;
+        const AES& DecryptECB(const Cthulhu::Byte Input[16], Cthulhu::Byte Output[16]) const;
 
-        AES& EncryptCBC(Cthulhu::U32 Length, Cthulhu::Byte IV[16], const Cthulhu::Byte* Input, Cthulhu::Byte* Output) const;
-        AES& DecryptCBC(Cthulhu::U32 Length, Cthulhu::Byte IV[16], const Cthulhu::Byte* Input, Cthulhu::Byte* Output) const;
+        const AES& EncryptCBC(Cthulhu::U32 Length, Cthulhu::Byte IV[16], const Cthulhu::Byte* Input, Cthulhu::Byte* Output) const;
+        const AES& DecryptCBC(Cthulhu::U32 Length, Cthulhu::Byte IV[16], const Cthulhu::Byte* Input, Cthulhu::Byte* Output) const;
 
-        AES& CryptCTR(Cthulhu::U32 Length, Cthulhu::U32* Offset, const Cthulhu::Byte* Input, Cthulhu::Byte* Output) const;
+        const AES& CryptCTR(Cthulhu::U32 Length, Cthulhu::U32* Offset, const Cthulhu::Byte* Input, Cthulhu::Byte* Output) const;
     };
 }
