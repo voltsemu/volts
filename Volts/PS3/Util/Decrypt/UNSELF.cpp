@@ -1053,6 +1053,44 @@ namespace Volts::PS3
                 ELFHead.StringIndex.Get()
             );
 
+            for(U32 I = 0; I < ELFHead.PHCount; I++)
+            {
+                auto Program = File->Read<ELF::ProgramHeader>();
+
+                LOGF_DEBUG(UNSELF,
+                    "Program type %u flags %u offset %llu virt %llu phys %llu fsize %llu memsize %llu align %llu",
+                    Program.Type.Get(),
+                    Program.Flags.Get(),
+                    Program.Offset.Get(),
+                    Program.VirtualAddress.Get(),
+                    Program.PhysicalAddress.Get(),
+                    Program.FileSize.Get(),
+                    Program.MemorySize.Get(),
+                    Program.Align.Get()
+                );
+
+                PHead.Append(Program);
+            }
+
+            File->Seek(SELFHead.ControlOffset);
+
+            U32 I = 0;
+            while(I < SELFHead.ControlLength)
+            {
+                auto Info = ReadControlInfo();
+                I += Info.Size;
+
+                LOGF_DEBUG(UNSELF,
+                    "Control type %u size %u next %llu",
+                    Info.Type,
+                    Info.Size,
+                    Info.Next
+                );
+
+                Controls.Append(Info);
+            }
+
+
             File->Seek(SELFHead.SHeaderOffset);
 
             for(U32 I = 0; I < ELFHead.SHCount; I++)
@@ -1076,46 +1114,6 @@ namespace Volts::PS3
                 SHead.Append(Section);
             }
 
-            File->Seek(SELFHead.PHeaderOffset);
-
-            for(U32 I = 0; I < ELFHead.PHCount; I++)
-            {
-                auto Program = File->Read<ELF::ProgramHeader>();
-
-                LOGF_DEBUG(UNSELF,
-                    "Program type %u flags %u offset %llu virt %llu phys %llu fsize %llu memsize %llu align %llu",
-                    Program.Type.Get(),
-                    Program.Flags.Get(),
-                    Program.Offset.Get(),
-                    Program.VirtualAddress.Get(),
-                    Program.PhysicalAddress.Get(),
-                    Program.FileSize.Get(),
-                    Program.MemorySize.Get(),
-                    Program.Align.Get()
-                );
-
-                PHead.Append(Program);
-            }
-
-            LOGF_DEBUG(UNSELF, "Depth %u", File->CurrentDepth());
-            File->Seek(SELFHead.ControlOffset);
-            LOGF_DEBUG(UNSELF, "Depth %u", File->CurrentDepth());
-
-            U32 I = 0;
-            while(I < SELFHead.ControlLength)
-            {
-                auto Info = ReadControlInfo();
-                I += Info.Size;
-
-                LOGF_DEBUG(UNSELF,
-                    "Control type %u size %u next %llu",
-                    Info.Type,
-                    Info.Size,
-                    Info.Next
-                );
-
-                Controls.Append(Info);
-            }
 
             return true;
         }

@@ -377,6 +377,8 @@ static const U32 RT3[] = { RT };
         default:
             return;
         }
+
+        return *this;
     }
 
     void AES::SetKeyDec(const Cthulhu::Byte* Key, KeySize Size)
@@ -421,6 +423,8 @@ static const U32 RT3[] = { RT };
         *RK++ = *SK++;
         *RK++ = *SK++;
         *RK++ = *SK++;
+
+        return *this;
     }
 
     void AES::EncryptECB(const Cthulhu::Byte Input[16], Cthulhu::Byte Output[16]) const
@@ -436,7 +440,7 @@ static const U32 RT3[] = { RT };
 
         for(U32 I = (Rounds >> 1) - 1; I > 0; I--)
         {
-            AES_FROUND(X0, Y1, Y2, Y3, X0, X1, X2, X3);
+            AES_FROUND(Y0, Y1, Y2, Y3, X0, X1, X2, X3);
             AES_FROUND(X0, X1, X2, X3, Y0, Y1, Y2, Y3);
         }
 
@@ -470,6 +474,8 @@ static const U32 RT3[] = { RT };
         PUT_UINT(X1, Output, 4);
         PUT_UINT(X2, Output, 8);
         PUT_UINT(X3, Output, 12);
+
+        return *this;
     }
 
     void AES::DecryptECB(const Cthulhu::Byte Input[16], Cthulhu::Byte Output[16]) const
@@ -519,6 +525,8 @@ static const U32 RT3[] = { RT };
         PUT_UINT(X1, Output, 4);
         PUT_UINT(X2, Output, 8);
         PUT_UINT(X3, Output, 12);
+
+        return *this;
     }
 
     void AES::EncryptCBC(Cthulhu::U32 Length, Cthulhu::Byte IV[16], const Cthulhu::Byte* Input, Cthulhu::Byte* Output) const
@@ -538,6 +546,8 @@ static const U32 RT3[] = { RT };
             Output += 16;
             Length -= 16;
         }
+
+        return *this;
     }
 
     void AES::DecryptCBC(Cthulhu::U32 Length, Cthulhu::Byte IV[16], const Cthulhu::Byte* Input, Cthulhu::Byte* Output) const
@@ -561,6 +571,8 @@ static const U32 RT3[] = { RT };
             Output += 16;
             Length -= 16;
         }
+
+        return *this;
     }
 
     void AES::CryptCTR(Cthulhu::U32 Length, Cthulhu::U32* Offset, const Cthulhu::Byte* Input, Cthulhu::Byte* Output) const
@@ -585,5 +597,7 @@ static const U32 RT3[] = { RT };
 
             N = (N + 1) & 0x0F;
         }
+
+        return *this;
     }
 }

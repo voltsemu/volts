@@ -356,7 +356,7 @@ namespace Volts::PS3
     // an array of function pointers
     // from page 181
     // http://math-atlas.sourceforge.net/devel/assembly/ppc_isa.pdf
-    static MappedInstruction OPructionTable[] = {
+    static MappedInstruction OPTable[] = {
         STUB, // 0: illegal reserved
         STUB, // 1: unused
         TDI, // 2: Trap Doubleword Immediate
