@@ -6,7 +6,7 @@ So there can be another competing standard.
 
 ## Media
 ![Discord Shield](https://discordapp.com/api/guilds/578380242888949760/widget.png?style=shield)
-[![Build Status](https://travis-ci.org/Apache-HB/CTULib.svg?branch=master)](https://travis-ci.org/Apache-HB/CTULib)
+[![Build Status](https://travis-ci.com/Apache-HB/Volts.svg?token=dPzVKgEubgtf5tzmx1NP&branch=master)](https://travis-ci.com/Apache-HB/Volts)
 
 # Coding style
 
