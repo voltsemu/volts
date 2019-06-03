@@ -924,6 +924,13 @@ namespace Volts::PS3
         }
     };
 
+    // used for decrypting SELF files
+    // functions should always be called in the correct order
+    // that being 
+    // 1. ReadHeaders() to read in unencrypted stuff
+    // 2. ReadMetadata() to read in semi encrypted stuff (can be slow)
+    // 3. DecryptData() to decrypt all the data we've got (this is really slow)
+    // 4. MakeELF() to convert the decrypted data into an ELF file we can work with easily
     class SELFDecryptor
     {
         bool Arch64;
@@ -937,16 +944,25 @@ namespace Volts::PS3
         Array<ELF::SectionHeader> SHead;
         Array<SELF::ControlInfo> Controls;
 
+        // read in a SELF control info section
         SELF::ControlInfo ReadControlInfo()
         {
+            // create struct for later
             SELF::ControlInfo Info;
 
+            // read in the data that will always be there
             Info.Type = File->Read<Big<U32>>();
             Info.Size = File->Read<Big<U32>>();
             Info.Next = File->Read<Big<U64>>();
 
+            // the size of the struct varies depending on the type of the struct
+            // so we have to read in different amounts
             if(Info.Type == 1)
             {
+                // we read in using decltype(T) rather than a raw typename
+                // because these are all anonymous structs that cannot be referenced
+                // by name as they have none, so we get their type by getting the type
+                // of the variable
                 Info.ControlFlags = File->Read<decltype(SELF::ControlInfo::ControlFlags)>();
             }
             else if(Info.Type == 2 && Info.Size == 48)
@@ -963,24 +979,36 @@ namespace Volts::PS3
             }
             else
             {
+                // something went wrong so we have to log that
                 LOGF_ERROR(UNSELF, "Invalid control type of %u", Info.Type);
             }
 
+            // return the data we've read in
             return Info;
         }
 
     public:
 
+        // create a new decryptor
+        // F is the file we need to decrypt
         SELFDecryptor(FileSystem::BufferedFile* F)
             : File(F)
         {
+            // go to the front of the file to make sure we start at the correct offset
             File->Seek(0);
         }
 
+        // read in the files unencrypted headers
+        // returns true when everything goes well
+        // otherwise returns false and will log what went wrong (bad magic numbers)
         bool ReadHeaders()
         {
+            // read in the SCE header, this is at the very front of the file
+            // this contains some of the data needed to parse the file
+            // but not all of it
             SCEHead = File->Read<SCE::Header>();
 
+            // log that shit
             LOGF_DEBUG(UNSELF,
                 "SCE magic %u version %u type %u category %u metastart %u metaend %llu size %llu",
                 SCEHead.Magic,
@@ -992,13 +1020,22 @@ namespace Volts::PS3
                 SCEHead.Size.Get()
             );
 
+            // make sure we have valid magic
+            // this just lets us know we've been fed the right type of file
             if(SCEHead.Magic != "SCE\0"_U32)
             {
+                // if we havent spit out an error
                 LOG_ERROR(UNSELF, "Invalid SCE magic");
                 return false;
             }
 
+            // next comes the self header
+            // this contains more data about the file
+            // specifically data about the ELF executable
+            // including Section and Program header offsets
             SELFHead = File->Read<SELF::Header>();
+
+            // also log that shit
             LOGF_DEBUG(UNSELF,
                 "SELF type %llu ainfo %llu elfoff %llu phoff %llu shoff %llu sinfo %llu voff %llu coff %llu clen %llu",
                 SELFHead.Type.Get(),
@@ -1012,8 +1049,12 @@ namespace Volts::PS3
                 SELFHead.ControlLength.Get()
             );
 
+            // read in AppInfo
+            // some of the data in this struct is used to
+            // grab the correct key to decrypt the files contents
             AInfo = File->Read<AppInfo>();
 
+            // log that stuff
             LOGF_DEBUG(UNSELF,
                 "AppInfo auth %llu vendor %u type %u version %llu",
                 AInfo.AuthID.Get(),
@@ -1022,14 +1063,20 @@ namespace Volts::PS3
                 AInfo.Version.Get()
             );
 
+            // read in the ELF header
+            // unlike a usual ELF parser we only need 64 bit structures
+            // this is because all SELF files have 64 bit ELFs in them
             ELFHead = File->Read<ELF::Header>();
 
+            // sanity check the magic just in case something went tits up
             if(ELFHead.Magic != "\177ELF"_U32)
             {
+                // if something went wrong spit out the file
                 LOG_ERROR(UNSELF, "Invalid ELF magic");
                 return false;
             }
 
+            // log all the data
             LOGF_DEBUG(UNSELF,
                 "ELF magic %u class %u endian %u sversion %u abi %u abiver %u type %u machine %u version %u entry %llu phoff %llu shoff %llu flags %u hsize %u phsize %u phcount %u shsize %u shcount %u str %u",
                 ELFHead.Magic,
@@ -1053,10 +1100,13 @@ namespace Volts::PS3
                 ELFHead.StringIndex.Get()
             );
 
+            // next come the ELF program headers, these are right after the ELF header
             for(U32 I = 0; I < ELFHead.PHCount; I++)
             {
+                // for every Program header we read it in
                 auto Program = File->Read<ELF::ProgramHeader>();
 
+                // then log it
                 LOGF_DEBUG(UNSELF,
                     "Program type %u flags %u offset %llu virt %llu phys %llu fsize %llu memsize %llu align %llu",
                     Program.Type.Get(),
@@ -1069,17 +1119,27 @@ namespace Volts::PS3
                     Program.Align.Get()
                 );
 
+                // then add it to our list of program headers
                 PHead.Append(Program);
             }
 
+            // next we need the control info structs
+            // these also have data we need to decrypt the data
             File->Seek(SELFHead.ControlOffset);
 
+            // ControlInfo structs can be multiple sizes
+            // so we store the total length of structs we read in I
+            // then add the length of each to struct to I until we've
+            // read as much as the header says there is
             U32 I = 0;
             while(I < SELFHead.ControlLength)
             {
+                // so we read in the control info
                 auto Info = ReadControlInfo();
+                // then add the size we've read
                 I += Info.Size;
 
+                // then log the data
                 LOGF_DEBUG(UNSELF,
                     "Control type %u size %u next %llu",
                     Info.Type,
@@ -1087,16 +1147,21 @@ namespace Volts::PS3
                     Info.Next
                 );
 
+                // then add the control to out total controls
                 Controls.Append(Info);
             }
 
 
+            // now we seek to the Section header start offset
             File->Seek(SELFHead.SHeaderOffset);
 
+            // then for every ELF section header
             for(U32 I = 0; I < ELFHead.SHCount; I++)
             {
+                // we read in the header
                 auto Section = File->Read<ELF::SectionHeader>();
 
+                // log all its data
                 LOGF_DEBUG(UNSELF,
                     "Section str %u type %u flags %llu virt %llu off %llu size %llu link %u info %u align %llu entry %llu",
                     Section.StringOffset.Get(),
@@ -1111,6 +1176,7 @@ namespace Volts::PS3
                     Section.EntrySize.Get()
                 );
 
+                // then add it to our list of section headers
                 SHead.Append(Section);
             }
 
