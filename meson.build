@@ -35,7 +35,7 @@ incs = [
 # include the ps3 project
 subdir('Volts/PS3')
 
-args = ['-DGCC_WORKAROUND_BULLSHIT']
+args = []
 
 # disable run time type id and exceptions in the hope of generating smaller code
 # i know you dont pay for features you dont use but this also stops people
@@ -45,6 +45,10 @@ if meson.get_compiler('cpp').get_id() == 'msvc'
     args += ['/GR-', '/arch:AVX2']
 else
     args += ['-fno-rtti', '-fno-exceptions', '-march=native']
+endif
+
+if meson.get_compiler('cpp').get_id() == 'gcc'
+    args += '-DGCC_WORKAROUND_BULLSHIT'
 endif
 
 executable('volt', sources,

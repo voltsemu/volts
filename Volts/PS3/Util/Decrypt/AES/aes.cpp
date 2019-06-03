@@ -326,10 +326,10 @@ static const uint32_t RCON[10] =
  * Forward S-box & tables
  */
 static unsigned char FSb[256];
-static uint32_t FT0[256]; 
-static uint32_t FT1[256]; 
-static uint32_t FT2[256]; 
-static uint32_t FT3[256]; 
+static uint32_t FT0[256];
+static uint32_t FT1[256];
+static uint32_t FT2[256];
+static uint32_t FT3[256];
 
 /*
  * Reverse S-box & tables
@@ -875,7 +875,7 @@ void leftshift_onebit(unsigned char *input, unsigned char *output)
 	int i;
     unsigned char overflow = 0;
 
-	for (i = 15; i >= 0; i--) 
+	for (i = 15; i >= 0; i--)
 	{
 		output[i] = input[i] << 1;
 		output[i] |= overflow;
@@ -886,7 +886,7 @@ void leftshift_onebit(unsigned char *input, unsigned char *output)
 void xor_128(unsigned char *a, unsigned char *b, unsigned char *out)
 {
 	int i;
-	for (i = 0; i < 16; i++) 
+	for (i = 0; i < 16; i++)
 		out[i] = a[i] ^ b[i];
 }
 
@@ -895,7 +895,7 @@ void generate_subkey(aes_context *ctx, unsigned char *K1, unsigned char *K2)
 	unsigned char L[16];
 	unsigned char Z[16];
 	unsigned char tmp[16];
-	
+
 	int i;
 	for (i = 0; i < 16; i++) Z[i] = 0;
 
@@ -909,7 +909,7 @@ void generate_subkey(aes_context *ctx, unsigned char *K1, unsigned char *K2)
         xor_128(tmp,const_Rb,K1);
     }
 
-	if ((K1[0] & 0x80) == 0) 
+	if ((K1[0] & 0x80) == 0)
 	{
         leftshift_onebit(K1,K2);
     } else {
@@ -921,9 +921,9 @@ void generate_subkey(aes_context *ctx, unsigned char *K1, unsigned char *K2)
 void padding (unsigned char *lastb, unsigned char *pad, int length)
 {
 	int i;
-	for (i = 0; i < 16; i++) 
+	for (i = 0; i < 16; i++)
 	{
-		if (i < length) 
+		if (i < length)
 			pad[i] = lastb[i];
         else if (i == length)
             pad[i] = 0x80;
@@ -940,7 +940,7 @@ void aes_cmac(aes_context *ctx, int length, unsigned char *input, unsigned char 
     generate_subkey(ctx, K1, K2);
 
     n = (length + 15) / 16;
-    if (n == 0) 
+    if (n == 0)
 	{
         n = 1;
         flag = 0;
@@ -951,7 +951,7 @@ void aes_cmac(aes_context *ctx, int length, unsigned char *input, unsigned char 
 			flag = 0;
     }
 
-    if (flag) 
+    if (flag)
 	{
         xor_128(&input[16 * (n - 1)], K1, M_last);
     } else {
@@ -960,10 +960,10 @@ void aes_cmac(aes_context *ctx, int length, unsigned char *input, unsigned char 
     }
 
     for (i = 0; i < 16; i++) X[i] = 0;
-    for (i = 0; i < n - 1; i++) 
+    for (i = 0; i < n - 1; i++)
     {
         xor_128(X, &input[16*i], Y);
-		aes_crypt_ecb(ctx, AES_ENCRYPT, Y, X); 
+		aes_crypt_ecb(ctx, AES_ENCRYPT, Y, X);
     }
 
     xor_128(X,M_last,Y);

@@ -263,24 +263,63 @@ static const U32 RT3[] = { RT };
 
 #undef RT
 
-    void AddRoundKey(U8 Round, Byte* State, const U8* Key)
-    {
-        
-    }
-
-    void Cipher(Cthulhu::Byte* Data, Cthulhu::Byte* Key)
-    {
-        U8 Round = 0;
-    }
-
-    void DeCipher(Cthulhu::Byte* Data, Cthulhu::Byte* Key)
-    {
-        U8 Round = 0;
-    }
-
     static const U32 RCON[] = { 1, 2, 4, 8, 16, 32, 64, 128, 27, 54 };
 
 #   define GET_UINT(B, I) (((U32)(B)[I]) | ((U32)(B)[(I) + 1] << 8) | ((U32)(B)[(I) + 2] << 16) | ((U32)(B)[(I) + 3] << 24))
+#   define PUT_UINT(N, B, I)            \
+    {                                   \
+        (B)[I] = (U8)(N);               \
+        (B)[(I)+1] = (U8)((N) >> 8);    \
+        (B)[(I)+2] = (U8)((N) >> 16);   \
+        (B)[(I)+3] = (U8)((N) >> 24);   \
+    }
+
+#define AES_FROUND(X0,X1,X2,X3,Y0,Y1,Y2,Y3)     \
+{                                               \
+    X0 = *RK++ ^ FT0[ ( Y0       ) & 0xFF ] ^   \
+                 FT1[ ( Y1 >>  8 ) & 0xFF ] ^   \
+                 FT2[ ( Y2 >> 16 ) & 0xFF ] ^   \
+                 FT3[ ( Y3 >> 24 ) & 0xFF ];    \
+                                                \
+    X1 = *RK++ ^ FT0[ ( Y1       ) & 0xFF ] ^   \
+                 FT1[ ( Y2 >>  8 ) & 0xFF ] ^   \
+                 FT2[ ( Y3 >> 16 ) & 0xFF ] ^   \
+                 FT3[ ( Y0 >> 24 ) & 0xFF ];    \
+                                                \
+    X2 = *RK++ ^ FT0[ ( Y2       ) & 0xFF ] ^   \
+                 FT1[ ( Y3 >>  8 ) & 0xFF ] ^   \
+                 FT2[ ( Y0 >> 16 ) & 0xFF ] ^   \
+                 FT3[ ( Y1 >> 24 ) & 0xFF ];    \
+                                                \
+    X3 = *RK++ ^ FT0[ ( Y3       ) & 0xFF ] ^   \
+                 FT1[ ( Y0 >>  8 ) & 0xFF ] ^   \
+                 FT2[ ( Y1 >> 16 ) & 0xFF ] ^   \
+                 FT3[ ( Y2 >> 24 ) & 0xFF ];    \
+}
+
+#define AES_RROUND(X0,X1,X2,X3,Y0,Y1,Y2,Y3)     \
+{                                               \
+    X0 = *RK++ ^ RT0[ ( Y0       ) & 0xFF ] ^   \
+                 RT1[ ( Y3 >>  8 ) & 0xFF ] ^   \
+                 RT2[ ( Y2 >> 16 ) & 0xFF ] ^   \
+                 RT3[ ( Y1 >> 24 ) & 0xFF ];    \
+                                                \
+    X1 = *RK++ ^ RT0[ ( Y1       ) & 0xFF ] ^   \
+                 RT1[ ( Y0 >>  8 ) & 0xFF ] ^   \
+                 RT2[ ( Y3 >> 16 ) & 0xFF ] ^   \
+                 RT3[ ( Y2 >> 24 ) & 0xFF ];    \
+                                                \
+    X2 = *RK++ ^ RT0[ ( Y2       ) & 0xFF ] ^   \
+                 RT1[ ( Y1 >>  8 ) & 0xFF ] ^   \
+                 RT2[ ( Y0 >> 16 ) & 0xFF ] ^   \
+                 RT3[ ( Y3 >> 24 ) & 0xFF ];    \
+                                                \
+    X3 = *RK++ ^ RT0[ ( Y3       ) & 0xFF ] ^   \
+                 RT1[ ( Y2 >>  8 ) & 0xFF ] ^   \
+                 RT2[ ( Y1 >> 16 ) & 0xFF ] ^   \
+                 RT3[ ( Y0 >> 24 ) & 0xFF ];    \
+}
+
 
     void AES::SetKeyEnc(const Cthulhu::Byte* Key, KeySize Size)
     {
@@ -294,8 +333,8 @@ static const U32 RT3[] = { RT };
 
         switch(Size)
         {
-        case KeySize::S128: 
-            Rounds = 10; 
+        case KeySize::S128:
+            Rounds = 10;
             for(U32 I = 0; I < 10; I++, RK += 4)
             {
                 RK[4] = RK[0] ^ RCON[I] ^
@@ -310,7 +349,7 @@ static const U32 RT3[] = { RT };
             }
             break;
         case KeySize::S256:
-            Rounds = 14; 
+            Rounds = 14;
             for(U32 I = 0; I < 7; I++, RK += 8)
             {
                 RK[8] = RK[0] ^ RCON[I] ^
@@ -318,12 +357,12 @@ static const U32 RT3[] = { RT };
                     ((U32)ForwardBox[(RK[7] >> 16) & 0xFF] << 8) ^
                     ((U32)ForwardBox[(RK[7] >> 24) & 0xFF] << 16) ^
                     ((U32)ForwardBox[(RK[7]) & 0xFF] << 24);
-            
+
                 RK[9] = RK[1] ^ RK[8];
                 RK[10] = RK[2] ^ RK[9];
                 RK[11] = RK[3] ^ RK[10];
 
-                RK[12] = RK[4] ^ 
+                RK[12] = RK[4] ^
                     ((U32)ForwardBox[RK[11] & 0xFF]) ^
                     ((U32)ForwardBox[(RK[11] >> 8) & 0xFF] << 8) ^
                     ((U32)ForwardBox[(RK[11] >> 16) & 0xFF] << 16) ^
@@ -334,8 +373,8 @@ static const U32 RT3[] = { RT };
                 RK[15] = RK[7] ^ RK[14];
             }
             break;
-        
-        default: 
+
+        default:
             return;
         }
     }
@@ -344,16 +383,16 @@ static const U32 RT3[] = { RT };
     {
         switch(Size)
         {
-        case KeySize::S128: 
+        case KeySize::S128:
             Rounds = 10;
             break;
         case KeySize::S256:
-            Rounds = 14; 
+            Rounds = 14;
             break;
-        default: 
+        default:
             return;
         }
-        
+
         U32* RK = RoundKeys = Buffer;
 
         auto Other = AES();
@@ -387,31 +426,99 @@ static const U32 RT3[] = { RT };
     void AES::EncryptECB(const Cthulhu::Byte Input[16], Cthulhu::Byte Output[16]) const
     {
         U32* RK = RoundKeys;
-        
+
         U32 X0 = GET_UINT(Input, 0) ^ *RK++;
         U32 X1 = GET_UINT(Input, 4) ^ *RK++;
         U32 X2 = GET_UINT(Input, 8) ^ *RK++;
         U32 X3 = GET_UINT(Input, 12) ^ *RK++;
 
+        U32 Y0, Y1, Y2, Y3;
+
         for(U32 I = (Rounds >> 1) - 1; I > 0; I--)
         {
-            
+            AES_FROUND(X0, Y1, Y2, Y3, X0, X1, X2, X3);
+            AES_FROUND(X0, X1, X2, X3, Y0, Y1, Y2, Y3);
         }
+
+        AES_FROUND(Y0, Y1, Y2, Y3, X0, X1, X2, X3);
+
+        X0 = *RK++ ^
+                ((U32)ForwardBox[Y0 & 0xFF]) ^
+                ((U32)ForwardBox[(Y1 >>  8) & 0xFF] <<  8) ^
+                ((U32)ForwardBox[(Y2 >> 16) & 0xFF] << 16) ^
+                ((U32)ForwardBox[(Y3 >> 24) & 0xFF] << 24);
+
+        X1 = *RK++ ^
+                ((U32)ForwardBox[Y1 & 0xFF]) ^
+                ((U32)ForwardBox[(Y2 >>  8) & 0xFF] <<  8) ^
+                ((U32)ForwardBox[(Y3 >> 16) & 0xFF] << 16) ^
+                ((U32)ForwardBox[(Y0 >> 24) & 0xFF] << 24);
+
+        X2 = *RK++ ^
+                ((U32)ForwardBox[Y2 & 0xFF]) ^
+                ((U32)ForwardBox[(Y3 >>  8) & 0xFF] <<  8) ^
+                ((U32)ForwardBox[(Y0 >> 16) & 0xFF] << 16) ^
+                ((U32)ForwardBox[(Y1 >> 24) & 0xFF] << 24);
+
+        X3 = *RK++ ^
+                ((U32)ForwardBox[Y3 & 0xFF]) ^
+                ((U32)ForwardBox[(Y0 >>  8) & 0xFF] <<  8) ^
+                ((U32)ForwardBox[(Y1 >> 16) & 0xFF] << 16) ^
+                ((U32)ForwardBox[(Y2 >> 24) & 0xFF] << 24);
+
+        PUT_UINT(X0, Output, 0);
+        PUT_UINT(X1, Output, 4);
+        PUT_UINT(X2, Output, 8);
+        PUT_UINT(X3, Output, 12);
     }
 
     void AES::DecryptECB(const Cthulhu::Byte Input[16], Cthulhu::Byte Output[16]) const
     {
         U32* RK = RoundKeys;
-        
+
         U32 X0 = GET_UINT(Input, 0) ^ *RK++;
         U32 X1 = GET_UINT(Input, 4) ^ *RK++;
         U32 X2 = GET_UINT(Input, 8) ^ *RK++;
         U32 X3 = GET_UINT(Input, 12) ^ *RK++;
 
+        U32 Y0, Y1, Y2, Y3;
+
         for(U32 I = (Rounds >> 1) - 1; I > 0; I--)
         {
-            
+            AES_RROUND(Y0, Y1, Y2, Y3, X0, X1, X2, X3);
+            AES_RROUND(X0, X1, X2, X3, Y0, Y1, Y2, Y3);
         }
+
+        AES_RROUND(Y0, Y1, Y2, Y3, X0, X1, X2, X3);
+
+        X0 = *RK++ ^
+                ((U32)ReverseBox[Y0 & 0xFF]) ^
+                ((U32)ReverseBox[(Y3 >>  8) & 0xFF] <<  8) ^
+                ((U32)ReverseBox[(Y2 >> 16) & 0xFF] << 16) ^
+                ((U32)ReverseBox[(Y1 >> 24) & 0xFF] << 24);
+
+        X1 = *RK++ ^
+                ((U32)ReverseBox[Y1 & 0xFF]) ^
+                ((U32)ReverseBox[(Y0 >>  8) & 0xFF] <<  8) ^
+                ((U32)ReverseBox[(Y3 >> 16) & 0xFF] << 16) ^
+                ((U32)ReverseBox[(Y2 >> 24) & 0xFF] << 24);
+
+        X2 = *RK++ ^
+                ((U32)ReverseBox[Y2 & 0xFF]) ^
+                ((U32)ReverseBox[(Y1 >>  8) & 0xFF] <<  8) ^
+                ((U32)ReverseBox[(Y0 >> 16) & 0xFF] << 16) ^
+                ((U32)ReverseBox[(Y3 >> 24) & 0xFF] << 24);
+
+        X3 = *RK++ ^
+                ((U32)ReverseBox[Y3 & 0xFF]) ^
+                ((U32)ReverseBox[(Y2 >>  8) & 0xFF] <<  8) ^
+                ((U32)ReverseBox[(Y1 >> 16) & 0xFF] << 16) ^
+                ((U32)ReverseBox[(Y0 >> 24) & 0xFF] << 24);
+
+        PUT_UINT(X0, Output, 0);
+        PUT_UINT(X1, Output, 4);
+        PUT_UINT(X2, Output, 8);
+        PUT_UINT(X3, Output, 12);
     }
 
     void AES::EncryptCBC(Cthulhu::U32 Length, Cthulhu::Byte IV[16], const Cthulhu::Byte* Input, Cthulhu::Byte* Output) const

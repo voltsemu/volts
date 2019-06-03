@@ -16,7 +16,7 @@ int main(int argc, const char** argv)
 	FileSystem::BufferedFile F(argv[1]);
 
 	auto U = UNSELF::DecryptSELF(F);
-
+#if 0
 	FILE* File = fopen("out.elf", "w");
 
 	if(File == nullptr)
@@ -29,4 +29,5 @@ int main(int argc, const char** argv)
 	S.Seek(0);
 	fwrite(S.GetData(), sizeof(Byte), S.GetLength(), File);
 	fclose(File);
+#endif
 }

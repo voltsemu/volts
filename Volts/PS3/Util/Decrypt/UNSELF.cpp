@@ -167,29 +167,24 @@ namespace Volts::PS3
 
     namespace ELF
     {
-        struct SmallHeader
+        struct Header
         {
             U32 Magic;
+
             U8 Class;
             U8 Endian;
-            U8 Version;
+            U8 SVersion;
             U8 ABI;
             U8 ABIVersion;
             Pad Padding[7];
-        };
 
-        static_assert(sizeof(SmallHeader) == 16);
-
-        template<typename T>
-        struct BigHeader
-        {
             Big<U16> Type;
             Big<U16> Machine;
             Big<U32> Version;
 
-            Big<T> Entry;
-            Big<T> PHOffset;
-            Big<T> SHOffset;
+            Big<U64> Entry;
+            Big<U64> PHOffset;
+            Big<U64> SHOffset;
 
             Big<U32> Flags;
             Big<U16> HeaderSize;
@@ -203,51 +198,29 @@ namespace Volts::PS3
             Big<U16> StringIndex;
         };
 
-        static_assert(sizeof(BigHeader<U32>) == 52 - sizeof(SmallHeader));
-        static_assert(sizeof(BigHeader<U64>) == 64 - sizeof(SmallHeader));
+        static_assert(sizeof(Header) == 64);
 
-        template<typename T>
         struct SectionHeader
         {
             Big<U32> StringOffset;
             Big<U32> Type;
 
-            Big<T> Flags;
-            Big<T> VirtualAddress;
-            Big<T> Offset;
-            Big<T> Size;
+            Big<U64> Flags;
+            Big<U64> VirtualAddress;
+            Big<U64> Offset;
+            Big<U64> Size;
 
             Big<U32> Link;
             Big<U32> Info;
 
-            Big<T> Align;
-            Big<T> EntrySize;
+            Big<U64> Align;
+            Big<U64> EntrySize;
         };
 
-        static_assert(sizeof(SectionHeader<U32>) == 40);
-        static_assert(sizeof(SectionHeader<U64>) == 64);
+        static_assert(sizeof(SectionHeader) == 64);
 
-        template<typename T>
-        struct ProgramHeader {};
-
-        template<>
-        PACKED_STRUCT(ProgramHeader<U32>, {
-            Big<U32> Type;
-
-            Big<U32> Offset;
-            Big<U32> VirtualAddress;
-            Big<U32> PhysicalAddress;
-            Big<U32> FileSize;
-            Big<U32> MemorySize;
-            Big<U32> Flags;
-
-            Big<U32> Align;
-        });
-
-        static_assert(sizeof(ProgramHeader<U32>) == 32);
-
-        template<>
-        PACKED_STRUCT(ProgramHeader<U64>, {
+        struct ProgramHeader
+        {
             Big<U32> Type;
 
             Big<U32> Flags;
@@ -258,9 +231,9 @@ namespace Volts::PS3
             Big<U64> MemorySize;
 
             Big<U64> Align;
-        });
+        };
 
-        static_assert(sizeof(ProgramHeader<U64>) == 56);
+        static_assert(sizeof(ProgramHeader) == 56);
     }
 
     namespace MetaData
@@ -309,7 +282,7 @@ namespace Volts::PS3
 
         static_assert(sizeof(Section) == 48);
     }
-
+#if 0
     class SELFDecryptor
     {
         // file stream to read from
@@ -736,6 +709,7 @@ namespace Volts::PS3
                 return WriteELF(&BigELF32, Section32Headers, Program32Headers);
         }
     };
+#endif
 
     struct FirmwareDecryptor
     {
@@ -950,11 +924,239 @@ namespace Volts::PS3
         }
     };
 
+    class SELFDecryptor
+    {
+        bool Arch64;
+        FileSystem::BufferedFile* File;
+        SCE::Header SCEHead;
+        SELF::Header SELFHead;
+        AppInfo AInfo;
+
+        ELF::Header ELFHead;
+        Array<ELF::ProgramHeader> PHead;
+        Array<ELF::SectionHeader> SHead;
+        Array<SELF::ControlInfo> Controls;
+
+        SELF::ControlInfo ReadControlInfo()
+        {
+            SELF::ControlInfo Info;
+
+            Info.Type = File->Read<Big<U32>>();
+            Info.Size = File->Read<Big<U32>>();
+            Info.Next = File->Read<Big<U64>>();
+
+            if(Info.Type == 1)
+            {
+                Info.ControlFlags = File->Read<decltype(SELF::ControlInfo::ControlFlags)>();
+            }
+            else if(Info.Type == 2 && Info.Size == 48)
+            {
+                Info.ELFDigest40 = File->Read<decltype(SELF::ControlInfo::ELFDigest40)>();
+            }
+            else if(Info.Type == 2 && Info.Size == 64)
+            {
+                Info.ELFDigest30 = File->Read<decltype(SELF::ControlInfo::ELFDigest30)>();
+            }
+            else if(Info.Type == 3)
+            {
+                Info.NPDRMInfo = File->Read<decltype(SELF::ControlInfo::NPDRMInfo)>();
+            }
+            else
+            {
+                LOGF_ERROR(UNSELF, "Invalid control type of %u", Info.Type);
+            }
+
+            return Info;
+        }
+
+    public:
+
+        SELFDecryptor(FileSystem::BufferedFile* F)
+            : File(F)
+        {
+            File->Seek(0);
+        }
+
+        bool ReadHeaders()
+        {
+            SCEHead = File->Read<SCE::Header>();
+
+            LOGF_DEBUG(UNSELF,
+                "SCE magic %u version %u type %u category %u metastart %u metaend %llu size %llu",
+                SCEHead.Magic,
+                SCEHead.Version.Get(),
+                SCEHead.Type.Get(),
+                SCEHead.Category.Get(),
+                SCEHead.MetadataStart.Get(),
+                SCEHead.MetadataEnd.Get(),
+                SCEHead.Size.Get()
+            );
+
+            if(SCEHead.Magic != "SCE\0"_U32)
+            {
+                LOG_ERROR(UNSELF, "Invalid SCE magic");
+                return false;
+            }
+
+            SELFHead = File->Read<SELF::Header>();
+            LOGF_DEBUG(UNSELF,
+                "SELF type %llu ainfo %llu elfoff %llu phoff %llu shoff %llu sinfo %llu voff %llu coff %llu clen %llu",
+                SELFHead.Type.Get(),
+                SELFHead.AInfoOffset.Get(),
+                SELFHead.ELFOffset.Get(),
+                SELFHead.PHeaderOffset.Get(),
+                SELFHead.SHeaderOffset.Get(),
+                SELFHead.SInfoOffset.Get(),
+                SELFHead.VersionOffset.Get(),
+                SELFHead.ControlOffset.Get(),
+                SELFHead.ControlLength.Get()
+            );
+
+            AInfo = File->Read<AppInfo>();
+
+            LOGF_DEBUG(UNSELF,
+                "AppInfo auth %llu vendor %u type %u version %llu",
+                AInfo.AuthID.Get(),
+                AInfo.VendorID.Get(),
+                AInfo.Type.Get(),
+                AInfo.Version.Get()
+            );
+
+            ELFHead = File->Read<ELF::Header>();
+
+            if(ELFHead.Magic != "\177ELF"_U32)
+            {
+                LOG_ERROR(UNSELF, "Invalid ELF magic");
+                return false;
+            }
+
+            LOGF_DEBUG(UNSELF,
+                "ELF magic %u class %u endian %u sversion %u abi %u abiver %u type %u machine %u version %u entry %llu phoff %llu shoff %llu flags %u hsize %u phsize %u phcount %u shsize %u shcount %u str %u",
+                ELFHead.Magic,
+                ELFHead.Class,
+                ELFHead.Endian,
+                ELFHead.SVersion,
+                ELFHead.ABI,
+                ELFHead.ABIVersion,
+                ELFHead.Type.Get(),
+                ELFHead.Machine.Get(),
+                ELFHead.Version.Get(),
+                ELFHead.Entry.Get(),
+                ELFHead.PHOffset.Get(),
+                ELFHead.SHOffset.Get(),
+                ELFHead.Flags.Get(),
+                ELFHead.HeaderSize.Get(),
+                ELFHead.PHEntrySize.Get(),
+                ELFHead.PHCount.Get(),
+                ELFHead.SHEntrySize.Get(),
+                ELFHead.SHCount.Get(),
+                ELFHead.StringIndex.Get()
+            );
+
+            File->Seek(SELFHead.SHeaderOffset);
+
+            for(U32 I = 0; I < ELFHead.SHCount; I++)
+            {
+                auto Section = File->Read<ELF::SectionHeader>();
+
+                LOGF_DEBUG(UNSELF,
+                    "Section str %u type %u flags %llu virt %llu off %llu size %llu link %u info %u align %llu entry %llu",
+                    Section.StringOffset.Get(),
+                    Section.Type.Get(),
+                    Section.Flags.Get(),
+                    Section.VirtualAddress.Get(),
+                    Section.Offset.Get(),
+                    Section.Size.Get(),
+                    Section.Link.Get(),
+                    Section.Info.Get(),
+                    Section.Align.Get(),
+                    Section.EntrySize.Get()
+                );
+
+                SHead.Append(Section);
+            }
+
+            File->Seek(SELFHead.PHeaderOffset);
+
+            for(U32 I = 0; I < ELFHead.PHCount; I++)
+            {
+                auto Program = File->Read<ELF::ProgramHeader>();
+
+                LOGF_DEBUG(UNSELF,
+                    "Program type %u flags %u offset %llu virt %llu phys %llu fsize %llu memsize %llu align %llu",
+                    Program.Type.Get(),
+                    Program.Flags.Get(),
+                    Program.Offset.Get(),
+                    Program.VirtualAddress.Get(),
+                    Program.PhysicalAddress.Get(),
+                    Program.FileSize.Get(),
+                    Program.MemorySize.Get(),
+                    Program.Align.Get()
+                );
+
+                PHead.Append(Program);
+            }
+
+            LOGF_DEBUG(UNSELF, "Depth %u", File->CurrentDepth());
+            File->Seek(SELFHead.ControlOffset);
+            LOGF_DEBUG(UNSELF, "Depth %u", File->CurrentDepth());
+
+            U32 I = 0;
+            while(I < SELFHead.ControlLength)
+            {
+                auto Info = ReadControlInfo();
+                I += Info.Size;
+
+                LOGF_DEBUG(UNSELF,
+                    "Control type %u size %u next %llu",
+                    Info.Type,
+                    Info.Size,
+                    Info.Next
+                );
+
+                Controls.Append(Info);
+            }
+
+            return true;
+        }
+
+        bool ReadMetadata(Byte* Key)
+        {
+            return true;
+        }
+
+        void DecryptData()
+        {
+
+        }
+
+    private:
+
+        template<typename THeader, typename TSection, typename TProgram>
+        ELF::Binary CreateBinary(THeader* Header, TSection* Sections, TProgram* TPrograms)
+        {
+            ELF::Binary Bin = {};
+
+            return Bin;
+        }
+
+    public:
+
+        ELF::Binary MakeELF()
+        {
+            if(Arch64);
+                //return CreateBinary();
+            else;
+                //return CreateBinary();
+                return {};
+        }
+    };
+
     namespace UNSELF
     {
         Cthulhu::Option<ELF::Binary> DecryptSELF(Cthulhu::FileSystem::BufferedFile& File, Byte* Key)
         {
-            SELFDecryptor Decrypt(File);
+            SELFDecryptor Decrypt(&File);
 
             if(!Decrypt.ReadHeaders())
             {
