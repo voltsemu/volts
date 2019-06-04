@@ -282,658 +282,16 @@ namespace Volts::PS3
 
         static_assert(sizeof(Section) == 48);
     }
-#if 0
-    class SELFDecryptor
-    {
-        // file stream to read from
-        FileSystem::BufferedFile& File;
-    public:
-        SELFDecryptor(FileSystem::BufferedFile& F)
-            : File(F)
-        {}
-
-        ~SELFDecryptor()
-        {
-            if(Arch64)
-            {
-                delete[] Section64Headers;
-                delete[] Program64Headers;
-            }
-            else
-            {
-                delete[] Section32Headers;
-                delete[] Program32Headers;
-            }
-
-            delete[] DataBuffer;
-            delete[] Headers;
-        }
-
-    private:
-        // if the structure is not relevant to generating the ELF file
-        // at the end we dont need to store the whole struct
-        // so we just store the variables we need to save space and to reduce the amount of variables
-        // flying around
-
-        // SCE::Header
-        U16 SCEFlags;
-        U32 MetadataStart;
-        U32 MetadataEnd;
-
-        // AppInfo
-        U32 SELFType;
-        U64 SELFVersion;
-
-        Array<SELF::ControlInfo> Controls;
-        Array<MetaData::Section> MetaSections;
-        // Other
-        bool Arch64;
-        // this is safe to delete as no pointer arithmatic is performed on it
-        Byte* Headers;
-        // this isnt safe to delete, but will be deleted when Headers is deleted
-        // as they point to the same data
-        Byte* DataKeys;
-        U32 DataBufferLength = 0;
-        Byte* DataBuffer;
-
-
-        // stuff that needs to be serialized into an ELF file
-
-        // ELF header
-        ELF::SmallHeader SmallELF;
-        union
-        {
-            ELF::BigHeader<U32> BigELF32;
-            ELF::BigHeader<U64> BigELF64;
-        };
-
-        union
-        {
-            ELF::SectionHeader<U32>* Section32Headers;
-            ELF::SectionHeader<U64>* Section64Headers;
-        };
-
-        union
-        {
-            ELF::ProgramHeader<U32>* Program32Headers;
-            ELF::ProgramHeader<U64>* Program64Headers;
-        };
-
-        SELF::ControlInfo ReadControlInfo()
-        {
-            SELF::ControlInfo Info;
-
-            Info.Type = File.Read<Big<U32>>();
-            Info.Size = File.Read<Big<U32>>();
-            Info.Next = File.Read<Big<U64>>();
-
-            if(Info.Type == 1)
-            {
-                Info.ControlFlags = File.Read<decltype(SELF::ControlInfo::ControlFlags)>();
-            }
-            else if(Info.Type == 2 && Info.Size == 48)
-            {
-                Info.ELFDigest40 = File.Read<decltype(SELF::ControlInfo::ELFDigest40)>();
-            }
-            else if(Info.Type == 2 && Info.Size == 64)
-            {
-                Info.ELFDigest30 = File.Read<decltype(SELF::ControlInfo::ELFDigest30)>();
-            }
-            else if(Info.Type == 3)
-            {
-                Info.NPDRMInfo = File.Read<decltype(SELF::ControlInfo::NPDRMInfo)>();
-            }
-            else
-            {
-                LOGF_ERROR(UNSELF, "Invalid control type of %u", Info.Type);
-            }
-
-            return Info;
-        }
-
-    public:
-        bool ReadHeaders()
-        {
-            // seek to the front of the file and read in the SCE header
-            File.Seek(0);
-            auto SCEHeader = File.Read<SCE::Header>();
-
-            if(SCEHeader.Magic != "SCE\0"_U32)
-            {
-                LOG_ERROR(UNSELF, "Invalid SCE magic");
-                return false;
-            }
-
-            // save the data we need from the header
-            SCEFlags = SCEHeader.Type;
-            MetadataStart = SCEHeader.MetadataStart;
-            MetadataEnd = SCEHeader.MetadataEnd;
-
-            // the SELF header is after the SCE header, so we read this in as well
-            auto SELFHeader = File.Read<SELF::Header>();
-
-            // read in the app info
-            File.Seek(SELFHeader.AInfoOffset);
-            auto AInfo = File.Read<AppInfo>();
-
-            // save the data we need
-            SELFType = AInfo.Type;
-            SELFVersion = AInfo.Version;
-
-            // find the ELF header
-            File.Seek(SELFHeader.ELFOffset);
-            SmallELF = File.Read<ELF::SmallHeader>();
-
-            if(SmallELF.Magic != "\177ELF"_U32)
-            {
-                LOG_ERROR(UNSELF, "Invalid ELF magic");
-                return false;
-            }
-
-            // check if this is a 32 or 64 bit executable
-            Arch64 = SmallELF.Class == 2;
-
-            // 64 bit elf headers are a different size from 32 bit elf headers
-            // so we need to read in the correct size
-            if((Arch64 = SmallELF.Class == 2))
-                BigELF64 = File.Read<ELF::BigHeader<U64>>();
-            else
-                BigELF32 = File.Read<ELF::BigHeader<U32>>();
-
-            if(Arch64)
-            {
-                File.Seek(SELFHeader.SHeaderOffset);
-                Section64Headers = new ELF::SectionHeader<U64>[BigELF64.SHCount];
-                for(U32 I = 0; I < BigELF64.SHCount; I++)
-                {
-                    Section64Headers[I] = File.Read<ELF::SectionHeader<U64>>();
-                }
-
-                File.Seek(SELFHeader.PHeaderOffset);
-                Program64Headers = new ELF::ProgramHeader<U64>[BigELF64.PHCount];
-                for(U32 I = 0; I < BigELF64.PHCount; I++)
-                {
-                    Program64Headers[I] = File.Read<ELF::ProgramHeader<U64>>();
-                }
-            }
-            else
-            {
-                File.Seek(SELFHeader.SHeaderOffset);
-                Section32Headers = new ELF::SectionHeader<U32>[BigELF32.SHCount];
-                for(U32 I = 0; I < BigELF32.SHCount; I++)
-                {
-                    auto Sect = File.Read<ELF::SectionHeader<U32>>();
-
-                    Section32Headers[I] = Sect;
-                }
-
-                File.Seek(SELFHeader.PHeaderOffset);
-                Program32Headers = new ELF::ProgramHeader<U32>[BigELF32.PHCount];
-                for(U32 I = 0; I < BigELF32.PHCount; I++)
-                {
-                    auto Sect = File.Read<ELF::ProgramHeader<U32>>();
-
-                    Program32Headers[I] = Sect;
-                }
-            }
-
-            File.Seek(SELFHeader.ControlOffset);
-
-            // read in each control info
-            U32 I = 0;
-            while(I < SELFHeader.ControlLength)
-            {
-                auto Info = ReadControlInfo();
-                I += Info.Size;
-                Controls.Append(Info);
-            }
-
-            return true;
-        }
-
-    private:
-        bool DecryptNPDRM(Byte* Metadata, U32 Len, Byte* MetaKey)
-        {
-            Byte Key[16];
-            Byte IV[16];
-            SELF::ControlInfo* Control = nullptr;
-
-            for(U32 I = 0; I < Controls.Len(); I++)
-            {
-                if(Controls[I].Type == 3)
-                {
-                    Control = &Controls[I];
-                    break;
-                }
-            }
-
-            if(!Control)
-            {
-                return true;
-            }
-
-            if(Control->NPDRMInfo.Version == 1)
-            {
-                LOG_ERROR(UNSELF, "Cannot decrypt network license");
-                return false;
-            }
-            else if(Control->NPDRMInfo.Version == 2)
-            {
-                //TODO: support local licenses
-                LOG_ERROR(UNSELF, "Local licenses are not supported yet");
-                return false;
-            }
-            else if(Control->NPDRMInfo.Version == 3)
-            {
-                if(MetaKey)
-                    Memory::Copy<Byte>(Keys::FreeKlic, Key, 16);
-                else
-                    Memory::Copy<Byte>(MetaKey, Key, 16);
-            }
-
-            aes_context AES;
-
-            aes_setkey_dec(&AES, Key, 128);
-            aes_crypt_cbc(&AES, AES_DECRYPT, Len, IV, Metadata, Metadata);
-
-            return true;
-        }
-
-    public:
-        bool ReadMetadata(Byte* Key)
-        {
-            File.Seek(MetadataStart + sizeof(SCE::Header));
-            auto MetaInfo = File.Read<MetaData::Info>();
-
-            const U32 HeaderSize = MetadataEnd - sizeof(SCE::Header) - MetadataStart - sizeof(MetaData::Info);
-            Headers = new Byte[HeaderSize];
-            File.ReadN(Headers, HeaderSize);
-
-            aes_context AES;
-            SELF::Key MetaKey = GetSELFKey(static_cast<KeyType>(SELFType), SCEFlags, SELFVersion);
-
-            if((SCEFlags & 0x8000) != 0x8000)
-            {
-                if(!DecryptNPDRM((Byte*)&MetaInfo, sizeof(MetaData::Info), Key))
-                    return false;
-
-                aes_setkey_dec(&AES, MetaKey.ERK, 256);
-                aes_crypt_cbc(&AES, AES_DECRYPT, sizeof(MetaData::Info), MetaKey.RIV, (Byte*)&MetaInfo, (Byte*)&MetaInfo);
-            }
-
-            for(U32 I = 0; I < sizeof(MetaInfo.Key); I++)
-            {
-                if(MetaInfo.KeyPad[I] | MetaInfo.IVPad[I])
-                {
-                    LOG_ERROR(UNSELF, "Failed to decrypt metadata info");
-                    return false;
-                }
-            }
-
-            size_t Offset = 0;
-            Byte Stream[16];
-            aes_setkey_enc(&AES, MetaInfo.Key, 128);
-            aes_crypt_ctr(&AES, HeaderSize, &Offset, MetaInfo.IV, Stream, Headers, Headers);
-
-            const auto MetaHead = *(MetaData::Header*)Headers;
-
-            DataBufferLength = MetaHead.KeyCount * 16;
-
-            for(U32 I = 0; I < MetaHead.SectionCount; I++)
-            {
-                auto Section = *(MetaData::Section*)(Headers + sizeof(MetaData::Header) + sizeof(MetaData::Section) * I);
-
-                printf("%llu\n", Section.Offset.Get());
-
-                if(Section.Encrypted == 3)
-                {
-                    DataBufferLength += Section.Size;
-                }
-
-                MetaSections.Append(Section);
-            }
-
-            DataKeys = Headers + sizeof(MetaData::Header) + MetaHead.SectionCount * sizeof(MetaData::Section);
-
-            return true;
-        }
-
-        void DecryptData()
-        {
-            aes_context AES;
-
-            U32 BufferOffset = 0;
-
-            DataBuffer = new Byte[DataBufferLength];
-
-            for(auto Section : MetaSections)
-            {
-                Byte Key[16];
-                Byte IV[16];
-                Byte Stream[16];
-                size_t Offset = 0;
-
-                if(Section.Encrypted == 3)
-                {
-                    Memory::Copy(DataKeys + Section.KeyIndex * 16, Key, 16);
-                    Memory::Copy(DataKeys + Section.IVIndex * 16, IV, 16);
-
-                    Byte* Buffer = new Byte[Section.Size];
-
-                    File.Seek(Section.Offset);
-                    File.ReadN(Buffer, Section.Size);
-
-                    Memory::Zero(Stream, 16);
-
-                    aes_setkey_enc(&AES, Key, 128);
-                    aes_crypt_ctr(&AES, Section.Size, &Offset, IV, Stream, Buffer, Buffer);
-
-                    Memory::Copy(Buffer, DataBuffer + BufferOffset, Section.Size);
-
-                    BufferOffset += Section.Size;
-
-                    delete[] Buffer;
-                }
-            }
-        }
-
-        template<typename TSections, typename THeader, typename TPrograms>
-        ELF::Binary WriteELF(THeader* Header, TSections* Sections, TPrograms* Programs)
-        {
-            ELF::Binary Bin = {128};
-
-            Bin.Write(&SmallELF);
-            Bin.Write(Header);
-
-            Bin.Seek(Header->PHOffset);
-            for(U32 I = 0; I < Header->PHCount; I++)
-            {
-                Bin.Write(&Programs[I]);
-            }
-
-            U32 Offset = 0;
-
-            printf("%u", MetaSections.Len());
-            for(auto& Section : MetaSections)
-            {
-                printf("%u\n", Section.Type.Get());
-                if(Section.Type == 2)
-                {
-                    Bin.Seek(Programs[Section.Index].Offset);
-
-                    if(Section.Compressed == 3)
-                    {
-                        const U32 FileSize = Programs[Section.Index].FileSize;
-                        Byte* DBuffer = new Byte[FileSize];
-                        Byte* ZBuffer = new Byte[DataBufferLength];
-                        Memory::Copy(DataBuffer, ZBuffer, DataBufferLength);
-
-                        uLongf ZSize = static_cast<uLongf>(FileSize);
-
-                        uncompress(DBuffer, &ZSize, ZBuffer + Offset, DataBufferLength);
-                        Bin.Write(DBuffer, FileSize);
-
-                        delete[] DBuffer;
-                        delete[] ZBuffer;
-                    }
-                    else
-                    {
-                        Bin.Write(DataBuffer + Offset, Section.Size);
-
-                        for(U32 L = 0; L < 25; L++)
-                        {
-                            printf("%u", (DataBuffer + Offset)[L]);
-                        }
-                    }
-
-                    Offset += Section.Size;
-                }
-            }
-
-            Bin.Seek(Header->SHOffset);
-            for(U32 I = 0; I < Header->SHCount; I++)
-            {
-                Bin.Write(&Sections[I]);
-            }
-
-            Bin.Seek(0);
-            return Bin;
-        }
-
-    public:
-        ELF::Binary MakeELF()
-        {
-            if(Arch64)
-                return WriteELF(&BigELF64, Section64Headers, Program64Headers);
-            else
-                return WriteELF(&BigELF32, Section32Headers, Program32Headers);
-        }
-    };
-#endif
-
-    struct FirmwareDecryptor
-    {
-    private:
-        U64 HeaderSize;
-        U64 MetaOffset;
-        U16 Flags;
-
-        MetaData::Section* Sections;
-        U32 SectionCount;
-
-        U32 KeyLength;
-        Byte* Keys;
-
-        U32 BufferLength;
-        Byte* Buffer;
-
-        Binary* Bin;
-
-    public:
-        FirmwareDecryptor(Binary* B)
-            : Bin(B)
-        {}
-
-        bool LoadHeader()
-        {
-            auto SCE = Bin->Read<SCE::Header>();
-
-            if(SCE.Magic != "SCE\0"_U32)
-            {
-                LOG_ERROR(FIRMWARE, "Invalid SCE Magic");
-                return false;
-            }
-
-            HeaderSize = SCE.MetadataEnd - sizeof(SCE::Header) - SCE.MetadataStart - sizeof(MetaData::Info);
-            MetaOffset = SCE.MetadataStart;
-            Flags = SCE.Type;
-
-            return true;
-        }
-
-        bool LoadMetadata()
-        {
-            Byte Info[sizeof(MetaData::Info)];
-            Byte* Headers = new Byte[HeaderSize];
-
-            Bin->Seek(MetaOffset);
-            Bin->ReadN(Info, sizeof(MetaData::Info));
-
-            Bin->ReadN(Headers, HeaderSize);
-
-            Byte Key[32];
-            Byte IV[16];
-
-            Memory::Copy(Keys::SCEPKGERK, Key, 32);
-            Memory::Copy(Keys::SCEPKGRIV, IV, 16);
-
-            aes_context AES;
-
-            if((Flags & 0x8000) != 0x8000)
-            {
-                aes_setkey_dec(&AES, Key, 256);
-                aes_crypt_cbc(&AES, AES_DECRYPT, sizeof(MetaData::Info), IV, Info, Info);
-            }
-
-            auto MetaInfo = *(MetaData::Info*)Info;
-
-            if(MetaInfo.IVPad[0] | MetaInfo.KeyPad[0])
-            {
-                LOG_ERROR(FIRMWARE, "Failed to decrypt Firmware");
-                return false;
-            }
-
-            size_t Offset = 0;
-            Byte Stream[16];
-
-            aes_setkey_enc(&AES, MetaInfo.Key, 128);
-            aes_crypt_ctr(&AES, HeaderSize, &Offset, MetaInfo.IV, Stream, Headers, Headers);
-
-            auto MetaHead = *(MetaData::Header*)Headers;
-
-            SectionCount = MetaHead.SectionCount;
-
-            Sections = new MetaData::Section[SectionCount];
-
-            BufferLength = 0;
-
-            for(U32 I = 0; I < SectionCount; I++)
-            {
-                auto Sect = *(MetaData::Section*)(Headers + sizeof(MetaData::Header) + sizeof(MetaData::Section) * I);
-
-                BufferLength += Sect.Size;
-
-                Sections[I] = Sect;
-            }
-
-            KeyLength = MetaHead.KeyCount * 16;
-            Keys = new Byte[KeyLength];
-            Memory::Copy(Headers, Keys + sizeof(MetaData::Header) + SectionCount * sizeof(MetaData::Section), KeyLength);
-
-            return true;
-        }
-
-        void DecryptData()
-        {
-            Buffer = new Byte[BufferLength];
-
-            U32 BufferOffset = 0;
-            aes_context AES;
-
-            for(U32 I = 0; I < SectionCount; I++)
-            {
-                if(Sections[I].Encrypted == 3)
-                {
-                    size_t Offset = 0;
-                    Byte Stream[16] = {};
-                    Byte Key[16];
-                    Byte IV[16];
-
-                    Memory::Copy(Keys + Sections[I].KeyIndex * 16, Key, 16);
-                    Memory::Copy(Keys + Sections[I].IVIndex * 16, IV, 16);
-
-                    Byte* Temp = new Byte[Sections[I].Size];
-
-                    Bin->Seek(Sections[I].Offset);
-                    Bin->ReadN(Temp, Sections[I].Size);
-
-                    aes_setkey_enc(&AES, Key, 128);
-                    aes_crypt_ctr(&AES, Sections[I].Size, &Offset, IV, Stream, Temp, Temp);
-
-                    Memory::Copy(Temp, Buffer + BufferOffset, Sections[I].Size);
-
-                    delete[] Temp;
-                }
-                else
-                {
-                    Bin->Seek(Sections[I].Offset);
-                    Bin->ReadN(Buffer + BufferOffset, Sections[I].Size);
-                }
-
-                BufferOffset += Sections[I].Size;
-            }
-        }
-
-        Array<ELF::Binary> MakeELF()
-        {
-            Array<ELF::Binary> Arr;
-
-            U32 Offset = 0;
-
-            for(U32 I = 0; I < SectionCount; I++)
-            {
-                bool Valid = true;
-
-                ELF::Binary Out;
-
-                if(Sections[I].Compressed == 2)
-                {
-                    Byte Temp[32 * 1024];
-                    z_stream Stream;
-                    Stream.zalloc = Z_NULL;
-                    Stream.zfree = Z_NULL;
-                    Stream.opaque = Z_NULL;
-                    Stream.avail_in = Sections[I].Size;
-                    Stream.avail_out = 32 * 1024;
-                    Stream.next_in = Buffer + Offset;
-                    Stream.next_out = Temp;
-                    int Ret = inflateInit(&Stream);
-
-                    while(Stream.avail_in)
-                    {
-                        Ret = inflate(&Stream, Z_NO_FLUSH);
-
-                        if(Ret == Z_STREAM_END)
-                            break;
-
-                        if(Ret != Z_OK)
-                            Valid = false;
-
-                        if(!Stream.avail_out)
-                        {
-                            Out.Write(Temp, 32 * 1024);
-                            Stream.next_out = Temp;
-                            Stream.avail_out = 32 * 1024;
-                        }
-                        else
-                        {
-                            break;
-                        }
-                    }
-
-                    int Res = inflate(&Stream, Z_FINISH);
-
-                    if(Res != Z_STREAM_END)
-                        Valid = false;
-
-                    Out.Write(Temp, 32 * 1024 - Stream.avail_out);
-                    inflateEnd(&Stream);
-                }
-                else
-                {
-                    Out.Write(Buffer + Offset, Sections[I].Size);
-                }
-
-                Offset += Sections[I].Size;
-
-                if(Valid)
-                    Arr.Append(Out);
-            }
-
-            return Arr;
-        }
-    };
 
     // used for decrypting SELF files
     // functions should always be called in the correct order
-    // that being 
+    // that being
     // 1. ReadHeaders() to read in unencrypted stuff
     // 2. ReadMetadata() to read in semi encrypted stuff (can be slow)
     // 3. DecryptData() to decrypt all the data we've got (this is really slow)
     // 4. MakeELF() to convert the decrypted data into an ELF file we can work with easily
     class SELFDecryptor
     {
-        bool Arch64;
         FileSystem::BufferedFile* File;
         SCE::Header SCEHead;
         SELF::Header SELFHead;
@@ -943,6 +301,13 @@ namespace Volts::PS3
         Array<ELF::ProgramHeader> PHead;
         Array<ELF::SectionHeader> SHead;
         Array<SELF::ControlInfo> Controls;
+        Array<MetaData::Section> MetaSections;
+
+        U32 DataKeysLength;
+        Byte* DataKeys;
+
+        U32 DataLength = 0;
+        Byte* DataBuffer;
 
         // read in a SELF control info section
         SELF::ControlInfo ReadControlInfo()
@@ -987,6 +352,48 @@ namespace Volts::PS3
             return Info;
         }
 
+        bool DecryptNPDRM(Byte* Metadata, U32 Len, Byte* MetaKey)
+        {
+            SELF::ControlInfo* Control = nullptr;
+
+            for(U32 I = 0; I < Controls.Len(); I++)
+            {
+                if(Controls[I].Type == 3)
+                {
+                    Control = &Controls[I];
+                    break;
+                }
+            }
+
+            if(!Control)
+            {
+                return true;
+            }
+
+            Byte Key[16];
+            Byte IV[16];
+
+            if(Control->NPDRMInfo.Version == 1)
+            {
+                LOG_ERROR(UNSELF, "Cannot decrypt network license");
+                return false;
+            }
+            else if(Control->NPDRMInfo.Version == 2)
+            {
+                LOG_ERROR(UNSELF, "Local licenses are not supported yet");
+                return false;
+            }
+            else if(Control->NPDRMInfo.Version == 3)
+            {
+                if(MetaKey)
+                    Memory::Copy<Byte>(Keys::FreeKlic, Key, 16);
+                else
+                    Memory::Copy<Byte>(MetaKey, Key, 16);
+            }
+
+            return true;
+        }
+
     public:
 
         // create a new decryptor
@@ -998,6 +405,13 @@ namespace Volts::PS3
             File->Seek(0);
         }
 
+        ~SELFDecryptor()
+        {
+            // TODO: this leaks but for some reason the delete[] crashes on windows
+            //delete[] Data;
+            //delete[] DataBuffer;
+        }
+
         // read in the files unencrypted headers
         // returns true when everything goes well
         // otherwise returns false and will log what went wrong (bad magic numbers)
@@ -1007,18 +421,6 @@ namespace Volts::PS3
             // this contains some of the data needed to parse the file
             // but not all of it
             SCEHead = File->Read<SCE::Header>();
-
-            // log that shit
-            LOGF_DEBUG(UNSELF,
-                "SCE magic %u version %u type %u category %u metastart %u metaend %llu size %llu",
-                SCEHead.Magic,
-                SCEHead.Version.Get(),
-                SCEHead.Type.Get(),
-                SCEHead.Category.Get(),
-                SCEHead.MetadataStart.Get(),
-                SCEHead.MetadataEnd.Get(),
-                SCEHead.Size.Get()
-            );
 
             // make sure we have valid magic
             // this just lets us know we've been fed the right type of file
@@ -1035,33 +437,10 @@ namespace Volts::PS3
             // including Section and Program header offsets
             SELFHead = File->Read<SELF::Header>();
 
-            // also log that shit
-            LOGF_DEBUG(UNSELF,
-                "SELF type %llu ainfo %llu elfoff %llu phoff %llu shoff %llu sinfo %llu voff %llu coff %llu clen %llu",
-                SELFHead.Type.Get(),
-                SELFHead.AInfoOffset.Get(),
-                SELFHead.ELFOffset.Get(),
-                SELFHead.PHeaderOffset.Get(),
-                SELFHead.SHeaderOffset.Get(),
-                SELFHead.SInfoOffset.Get(),
-                SELFHead.VersionOffset.Get(),
-                SELFHead.ControlOffset.Get(),
-                SELFHead.ControlLength.Get()
-            );
-
             // read in AppInfo
             // some of the data in this struct is used to
             // grab the correct key to decrypt the files contents
             AInfo = File->Read<AppInfo>();
-
-            // log that stuff
-            LOGF_DEBUG(UNSELF,
-                "AppInfo auth %llu vendor %u type %u version %llu",
-                AInfo.AuthID.Get(),
-                AInfo.VendorID.Get(),
-                AInfo.Type.Get(),
-                AInfo.Version.Get()
-            );
 
             // read in the ELF header
             // unlike a usual ELF parser we only need 64 bit structures
@@ -1076,51 +455,12 @@ namespace Volts::PS3
                 return false;
             }
 
-            // log all the data
-            LOGF_DEBUG(UNSELF,
-                "ELF magic %u class %u endian %u sversion %u abi %u abiver %u type %u machine %u version %u entry %llu phoff %llu shoff %llu flags %u hsize %u phsize %u phcount %u shsize %u shcount %u str %u",
-                ELFHead.Magic,
-                ELFHead.Class,
-                ELFHead.Endian,
-                ELFHead.SVersion,
-                ELFHead.ABI,
-                ELFHead.ABIVersion,
-                ELFHead.Type.Get(),
-                ELFHead.Machine.Get(),
-                ELFHead.Version.Get(),
-                ELFHead.Entry.Get(),
-                ELFHead.PHOffset.Get(),
-                ELFHead.SHOffset.Get(),
-                ELFHead.Flags.Get(),
-                ELFHead.HeaderSize.Get(),
-                ELFHead.PHEntrySize.Get(),
-                ELFHead.PHCount.Get(),
-                ELFHead.SHEntrySize.Get(),
-                ELFHead.SHCount.Get(),
-                ELFHead.StringIndex.Get()
-            );
-
             // next come the ELF program headers, these are right after the ELF header
             for(U32 I = 0; I < ELFHead.PHCount; I++)
             {
                 // for every Program header we read it in
-                auto Program = File->Read<ELF::ProgramHeader>();
-
-                // then log it
-                LOGF_DEBUG(UNSELF,
-                    "Program type %u flags %u offset %llu virt %llu phys %llu fsize %llu memsize %llu align %llu",
-                    Program.Type.Get(),
-                    Program.Flags.Get(),
-                    Program.Offset.Get(),
-                    Program.VirtualAddress.Get(),
-                    Program.PhysicalAddress.Get(),
-                    Program.FileSize.Get(),
-                    Program.MemorySize.Get(),
-                    Program.Align.Get()
-                );
-
                 // then add it to our list of program headers
-                PHead.Append(Program);
+                PHead.Append(File->Read<ELF::ProgramHeader>());
             }
 
             // next we need the control info structs
@@ -1139,14 +479,6 @@ namespace Volts::PS3
                 // then add the size we've read
                 I += Info.Size;
 
-                // then log the data
-                LOGF_DEBUG(UNSELF,
-                    "Control type %u size %u next %llu",
-                    Info.Type,
-                    Info.Size,
-                    Info.Next
-                );
-
                 // then add the control to out total controls
                 Controls.Append(Info);
             }
@@ -1159,60 +491,295 @@ namespace Volts::PS3
             for(U32 I = 0; I < ELFHead.SHCount; I++)
             {
                 // we read in the header
-                auto Section = File->Read<ELF::SectionHeader>();
-
-                // log all its data
-                LOGF_DEBUG(UNSELF,
-                    "Section str %u type %u flags %llu virt %llu off %llu size %llu link %u info %u align %llu entry %llu",
-                    Section.StringOffset.Get(),
-                    Section.Type.Get(),
-                    Section.Flags.Get(),
-                    Section.VirtualAddress.Get(),
-                    Section.Offset.Get(),
-                    Section.Size.Get(),
-                    Section.Link.Get(),
-                    Section.Info.Get(),
-                    Section.Align.Get(),
-                    Section.EntrySize.Get()
-                );
-
                 // then add it to our list of section headers
-                SHead.Append(Section);
+                SHead.Append(File->Read<ELF::SectionHeader>());
             }
 
 
             return true;
         }
 
+        // read in the encrypted metadata and decrypt it
         bool ReadMetadata(Byte* Key)
         {
+            // find the start of the metadata block
+            File->Seek(SCEHead.MetadataStart + sizeof(SCE::Header));
+
+            // then read in the metadata info section, this contains stuff we'll need
+            // late to decrypt more stuff
+            auto MetaInfo = File->Read<MetaData::Info>();
+
+            // allocate space for the headers
+            const U32 HeaderSize = SCEHead.MetadataEnd - sizeof(SCE::Header) - SCEHead.MetadataStart - sizeof(MetaData::Info);
+            Byte* Headers = new Byte[HeaderSize];
+
+            // so we do need to seek here to prevent some funky off by one errors
+            File->Seek(SCEHead.MetadataStart + sizeof(SCE::Header) + sizeof(MetaData::Info));
+            // then read in the raw sections to decrypt
+            File->ReadN(Headers, HeaderSize);
+
+            aes_context AES;
+            // find the self key we need to decrypt this data
+            SELF::Key MetaKey = GetSELFKey((KeyType)AInfo.Type.Get(), SCEHead.Type, AInfo.Version);
+
+            // if the SELF isnt a debug self we'll need to decrypt some stuff
+            if((SCEHead.Type & 0x8000) != 0x8000)
+            {
+                // if that decryption fails just give up
+                if(!DecryptNPDRM((Byte*)&MetaInfo, sizeof(MetaData::Info), Key))
+                    return false;
+
+                // otherwise decrypt the metadata info section
+                aes_setkey_dec(&AES, MetaKey.ERK, 256);
+                aes_crypt_cbc(&AES, AES_DECRYPT, sizeof(MetaData::Info), MetaKey.RIV, (Byte*)&MetaInfo, (Byte*)&MetaInfo);
+            }
+
+            // the padding should always be 0
+            // so we can make sure it is 0 to be sure we actually decrypted the data
+            for(U32 I = 0; I < 16; I++)
+            {
+                // | is faster than a branch so just do that
+                if(MetaInfo.KeyPad[I] | MetaInfo.IVPad[I])
+                {
+                    // if something isnt 0 (false) then we faild decryption
+                    // report it and back out
+                    LOG_ERROR(UNSELF, "Failed to decrypt metadata info");
+                    return false;
+                }
+            }
+
+            // now we decrypt the metadata section headers
+            size_t Offset = 0;
+            Byte Stream[16];
+            aes_setkey_enc(&AES, MetaInfo.Key, 128);
+            aes_crypt_ctr(
+                &AES,
+                HeaderSize,
+                &Offset,
+                MetaInfo.IV,
+                Stream,
+                Headers,
+                Headers
+            );
+
+            // the first bit of data is the section header, so grab that
+            const auto MetaHead = *(MetaData::Header*)Headers;
+
+            // we need data length for decrypting the body
+            DataKeysLength = MetaHead.KeyCount * 16;
+
+            // then for every section past the header
+            for(U32 I = 0; I < MetaHead.SectionCount; I++)
+            {
+                // convert the raw data to the struct
+                auto Section = *(MetaData::Section*)(Headers + sizeof(MetaData::Header) + sizeof(MetaData::Section) * I);
+
+                // if the section body is encrypted well need to decrypt it
+                // so we add to the datalength so we know the size later
+                if(Section.Encrypted == 3)
+                    DataLength += Section.Size;
+
+                // then add it to our metadata sections
+                MetaSections.Append(Section);
+            }
+
+            // store the data for later so we can get keys and vectors out of it
+            DataKeys = Headers + sizeof(MetaData::Header) + MetaHead.SectionCount * sizeof(MetaData::Section);
+
+            // everything worked properly
             return true;
         }
 
+        // actually decrypt the data we've collected
         void DecryptData()
         {
+            // get an aes context to decrypt with
+            // this can be reused so no point reallocating it each loop
+            aes_context AES;
 
-        }
+            U32 BufferOffset = 0;
+            // create that buffer we got the length for earlier
+            DataBuffer = new Byte[DataLength];
 
-    private:
+            Byte Key[16];
+            Byte IV[16];
 
-        template<typename THeader, typename TSection, typename TProgram>
-        ELF::Binary CreateBinary(THeader* Header, TSection* Sections, TProgram* TPrograms)
-        {
-            ELF::Binary Bin = {};
+            // for all the meta sections
+            for(auto Section : MetaSections)
+            {
+                // if the section is encrypted
+                if(Section.Encrypted == 3)
+                {
+                    size_t Offset = 0;
+                    // get the key and init vector from the decrypted sections
+                    Memory::Copy(DataKeys + Section.KeyIndex * 16, Key, 16);
+                    Memory::Copy(DataKeys + Section.IVIndex * 16, IV, 16);
 
-            return Bin;
+                    // then allocate a buffer for decryption into
+                    Byte* Buffer = new Byte[Section.Size];
+
+                    // then go actually fetch the data
+                    File->Seek(Section.Offset);
+                    File->ReadN(Buffer, Section.Size);
+
+                    Byte Stream[16] = {};
+                    Memory::Zero(Stream, 16);
+
+                    printf("Len %llu\n", Section.Size.Get());
+
+                    printf("Enc: ");
+                    for(U32 I = 0; I < 25; I++)
+                    {
+                        printf("%u ", Buffer[I]);
+                    }
+                    printf("\n");
+
+                    printf("Key: ");
+                    for(auto A : Key)
+                    {
+                        printf("%u ", A);
+                    }
+                    printf("\n");
+
+                    printf("IV: ");
+                    for(auto A : IV)
+                    {
+                        printf("%u ", A);
+                    }
+                    printf("\n");
+
+                    printf("Stream: ");
+                    for(auto A : Stream)
+                    {
+                        printf("%u ", A);
+                    }
+                    printf("\n");
+
+                    printf("NCOff %zu\n", Offset);
+
+                    // once we have the data we can then decrypt it using AES 128 CTR
+                    aes_setkey_enc(&AES, Key, 128);
+                    aes_crypt_ctr(
+                        &AES,
+                        Section.Size,
+                        &Offset,
+                        IV,
+                        Stream,
+                        Buffer,
+                        Buffer
+                    );
+
+                    printf("Dec: ");
+                    for(U32 I = 0; I < 25; I++)
+                    {
+                        printf("%u ", Buffer[I]);
+                    }
+                    printf("\n");
+
+                    // then copy the decrypted data into out buffer
+                    Memory::Copy(Buffer, DataBuffer + BufferOffset, Section.Size);
+
+                    // then add to the buffer offset so we know where to seek next time
+                    BufferOffset += Section.Size;
+
+                    // and clean up after ourselves
+                    delete[] Buffer;
+                }
+            }
         }
 
     public:
 
+        // turns all our data into an ELF binary we can use
         ELF::Binary MakeELF()
         {
-            if(Arch64);
-                //return CreateBinary();
-            else;
-                //return CreateBinary();
-                return {};
+            auto* KF = fopen("out.elf", "w");
+            I64 K = 0;
+            ELF::Binary Bin = {128};
+
+            fwrite(&ELFHead, sizeof(ELFHead), 1, KF);
+
+            // write the elf header
+            Bin.Write(&ELFHead);
+
+            fseek(KF, ELFHead.PHOffset, SEEK_SET);
+
+            // now we write the ELF program headers
+            Bin.Seek(ELFHead.PHOffset);
+            for(auto Program : PHead)
+            {
+                Bin.Write(&Program);
+                fwrite(&Program, sizeof(Program), 1, KF);
+            }
+
+            U32 BufferOffset = 0;
+
+            // for every metadata section
+            for(auto& Section : MetaSections)
+            {
+                // if its a program header
+                if(Section.Type == 2)
+                {
+                    fseek(KF, PHead[Section.Index].Offset, SEEK_SET);
+                    Bin.Seek(PHead[Section.Index].Offset);
+                    LOGF_DEBUG(UNSELF, "Seek %llu", PHead[Section.Index].Offset.Get());
+                    // if the section is compressed
+                    if(Section.Compressed == 3)
+                    {
+                        // decompress it
+                        const U32 FileSize = PHead[Section.Index].FileSize;
+                        Byte* DBuffer = new Byte[FileSize];
+                        Byte* ZBuffer = new Byte[DataLength];
+
+                        Memory::Copy(DataBuffer, ZBuffer, DataLength);
+
+                        uLongf ZSize = static_cast<uLongf>(FileSize);
+
+                        uncompress(DBuffer, &ZSize, ZBuffer + BufferOffset, DataLength);
+
+                        // then write it to the file
+                        Bin.Write(DBuffer, FileSize);
+
+                        fwrite(DBuffer, sizeof(Byte), FileSize, KF);
+
+                        // be sure to clean up after ourselves
+                        delete[] DBuffer;
+                        delete[] ZBuffer;
+                    }
+                    else
+                    {
+                        for(U32 I = 0; I < 25ULL; I++)
+                        {
+                            //LOGF_DEBUG(UNSELF, "Z %u", (DataBuffer + BufferOffset)[I]);
+                        }
+                        // otherwise we can just write the data
+                        Bin.Write(DataBuffer + BufferOffset, Section.Size);
+
+                        fwrite(DataBuffer + BufferOffset, sizeof(Byte), Section.Size, KF);
+                    }
+
+                    BufferOffset += Section.Size;
+                }
+            }
+
+            LOGF_DEBUG(UNSELF, "Depth %u", Bin.Depth());
+
+            fseek(KF, ELFHead.SHOffset, SEEK_SET);
+
+            // now we write the ELF section headers
+            Bin.Seek(ELFHead.SHOffset);
+            for(auto Section : SHead)
+            {
+                Bin.Write(&Section);
+                fwrite(&Section, sizeof(Section), 1, KF);
+            }
+
+            LOGF_DEBUG(UNSELF, "Depth %u", Bin.Depth());
+
+            // seek to the front so the output is clean
+            Bin.Seek(0);
+            fclose(KF);
+            return Bin;
         }
     };
 
@@ -1237,25 +804,6 @@ namespace Volts::PS3
             Decrypt.DecryptData();
 
             return Some(Decrypt.MakeELF());
-        }
-
-        Cthulhu::Array<ELF::Binary> DecryptFirmware(Cthulhu::Binary& Bin)
-        {
-            FirmwareDecryptor Decrypt(&Bin);
-
-            if(!Decrypt.LoadHeader())
-            {
-                return {};
-            }
-
-            if(!Decrypt.LoadMetadata())
-            {
-                return {};
-            }
-
-            Decrypt.DecryptData();
-
-            return Decrypt.MakeELF();
         }
     }
 }

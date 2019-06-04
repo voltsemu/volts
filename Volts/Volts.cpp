@@ -16,18 +16,16 @@ int main(int argc, const char** argv)
 	FileSystem::BufferedFile F(argv[1]);
 
 	auto U = UNSELF::DecryptSELF(F);
-#if 0
-	FILE* File = fopen("out.elf", "w");
+	//FILE* File = fopen("out.elf", "w");
 
-	if(File == nullptr)
-	{
-		printf("REEEEE\n");
-		return 1;
-	}
+	//if(File == nullptr)
+	//{
+	//	printf("REEEEE\n");
+	//	return 1;
+	//}
 
-	auto S = U.Get();
-	S.Seek(0);
-	fwrite(S.GetData(), sizeof(Byte), S.GetLength(), File);
-	fclose(File);
-#endif
+	//auto S = U.Get();
+	//fseek(File, 0, SEEK_SET);
+	//fwrite(S.GetData(), sizeof(Byte), S.GetLength(), File);
+	//fclose(File);
 }
