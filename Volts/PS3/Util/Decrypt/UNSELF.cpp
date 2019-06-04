@@ -611,7 +611,7 @@ namespace Volts::PS3
 
                     Byte Key[16];
                     Byte IV[16];
-                    
+
                     // get the key and init vector from the decrypted sections
                     Memory::Copy(DataKeys + Section.KeyIndex * 16, Key, 16);
                     Memory::Copy(DataKeys + Section.IVIndex * 16, IV, 16);
@@ -720,24 +720,30 @@ namespace Volts::PS3
 
     namespace UNSELF
     {
+        // public facing function to decrypt data
         Cthulhu::Option<ELF::Binary> DecryptSELF(Cthulhu::FileSystem::BufferedFile& File, Byte* Key)
         {
+            // create our decryptor
             SELFDecryptor Decrypt(&File);
 
+            // if we cant read in the headers log it and back out
             if(!Decrypt.ReadHeaders())
             {
                 LOG_ERROR(UNSELF, "Failed to read headers");
                 return None<ELF::Binary>();
             }
 
+            // if we cant read the metadata log it and back out
             if(!Decrypt.ReadMetadata(Key))
             {
                 LOG_ERROR(UNSELF, "Failed to read metadata");
                 return None<ELF::Binary>();
             }
 
+            // this function can never break
             Decrypt.DecryptData();
 
+            // return the data in a nice format
             return Some(Decrypt.MakeELF());
         }
     }

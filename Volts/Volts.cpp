@@ -2,8 +2,7 @@
 #include "Volts.h"
 
 #include "PS3/Util/Decrypt/UNSELF.h"
-#include "Core/Files/TAR.h"
-#include "Core/SIMD/SIMD.h"
+#include "PS3/VM/Interpreter/PPUInterpreter.h"
 
 using namespace Volts;
 using namespace Volts::PS3;
@@ -16,16 +15,9 @@ int main(int argc, const char** argv)
 	FileSystem::BufferedFile F(argv[1]);
 
 	auto U = UNSELF::DecryptSELF(F);
-	FILE* File = fopen("out2.elf", "w");
+	FILE* File = fopen("volts.elf", "w");
 
-	//if(File == nullptr)
-	//{
-	//	printf("REEEEE\n");
-	//	return 1;
-	//}
-
-	auto S = U.Get();
-	fseek(File, 0, SEEK_SET);
-	fwrite(S.GetData(), sizeof(Byte), S.Len(), File);
-	fclose(File);
+	PPUInterpreter Interp;
+	auto B = U.Get();
+	Interp.Run(B);
 }

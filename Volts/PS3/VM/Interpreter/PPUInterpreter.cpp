@@ -1,4 +1,5 @@
 #include "PPUInterpreter.h"
+#include "Core/Endian.h"
 #include "Core/Logger/Logger.h"
 
 namespace Volts::PS3
@@ -425,9 +426,15 @@ namespace Volts::PS3
 
     void PPUInterpreter::Run(Cthulhu::Binary& Bin)
     {
-        while(true)
+        Bin.Seek(0x18);
+        U64 Entry = Bin.Read<Big<U64>>();
+        printf("Entry %llu\n", Entry);
+        Bin.Seek(Entry);
+        //while(true)
         {
-
+            auto Inst = Bin.Read<PPUInstruction>();
+            LOGF_DEBUG(PPU, "Op %u", Inst.Raw);
+            //OPTable[Inst.OPCode];
         }
     }
 }
