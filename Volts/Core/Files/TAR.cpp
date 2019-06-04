@@ -12,7 +12,7 @@ namespace Volts::TAR
     Format::Format(Binary* B)
         : Bin(B)
     {
-        InitialOffset = Bin->Depth();
+        InitialOffset = Bin->Tell();
     }
 
     PACKED_STRUCT(Header,
@@ -62,7 +62,7 @@ namespace Volts::TAR
 
     Array<String> Format::Filenames()
     {
-        U32 Depth = Bin->Depth();
+        U32 Depth = Bin->Tell();
         Array<String> Names;
 
         while(true) 
@@ -76,7 +76,7 @@ namespace Volts::TAR
             }
 
             I32 Size = OctToDec(Utils::ParseInt(Head.Size));
-            Bin->Seek(Bin->Depth() + Size);
+            Bin->Seek(Bin->Tell() + Size);
         }
 
         Bin->Seek(Depth);
@@ -85,7 +85,7 @@ namespace Volts::TAR
 
     Binary Format::GetFile(const String& Name)
     {
-        U32 Depth = Bin->Depth();
+        U32 Depth = Bin->Tell();
         auto Ret = FindFile(Name);
         Bin->Seek(Depth);
 
@@ -108,15 +108,15 @@ namespace Volts::TAR
         // TODO: modify the cthulhu functions to use C8 not char
         if(CString::Compare((char*)HeaderName, Name.CStr()) != 0)
         {
-            Bin->Seek(Bin->Depth() + Size);
+            Bin->Seek(Bin->Tell() + Size);
             return GetFile(Name);
         }
 
         Binary Out;
 
-        Byte* Data = new Byte[Size+1];
+        Byte* Data = new Byte[Size];
         Bin->ReadN(Data, Size);
-        Out.Write(Data, Size+1);
+        Out.WriteN(Data, Size);
         delete[] Data;
         Out.Seek(0);
 

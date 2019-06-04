@@ -9,6 +9,7 @@
 #include "Core/AES/AES.h"
 
 #include <zlib.h>
+#include <omp.h>
 
 
 // SELF files have massive, somewhat overly complex headers that need parsing
@@ -371,7 +372,6 @@ namespace Volts::PS3
             }
 
             Byte Key[16];
-            Byte IV[16];
 
             if(Control->NPDRMInfo.Version == 1)
             {
@@ -601,9 +601,6 @@ namespace Volts::PS3
             // create that buffer we got the length for earlier
             DataBuffer = new Byte[DataLength];
 
-            Byte Key[16];
-            Byte IV[16];
-
             // for all the meta sections
             for(auto Section : MetaSections)
             {
@@ -611,6 +608,10 @@ namespace Volts::PS3
                 if(Section.Encrypted == 3)
                 {
                     size_t Offset = 0;
+
+                    Byte Key[16];
+                    Byte IV[16];
+                    
                     // get the key and init vector from the decrypted sections
                     Memory::Copy(DataKeys + Section.KeyIndex * 16, Key, 16);
                     Memory::Copy(DataKeys + Section.IVIndex * 16, IV, 16);
@@ -625,38 +626,6 @@ namespace Volts::PS3
                     Byte Stream[16] = {};
                     Memory::Zero(Stream, 16);
 
-                    printf("Len %llu\n", Section.Size.Get());
-
-                    printf("Enc: ");
-                    for(U32 I = 0; I < 25; I++)
-                    {
-                        printf("%u ", Buffer[I]);
-                    }
-                    printf("\n");
-
-                    printf("Key: ");
-                    for(auto A : Key)
-                    {
-                        printf("%u ", A);
-                    }
-                    printf("\n");
-
-                    printf("IV: ");
-                    for(auto A : IV)
-                    {
-                        printf("%u ", A);
-                    }
-                    printf("\n");
-
-                    printf("Stream: ");
-                    for(auto A : Stream)
-                    {
-                        printf("%u ", A);
-                    }
-                    printf("\n");
-
-                    printf("NCOff %zu\n", Offset);
-
                     // once we have the data we can then decrypt it using AES 128 CTR
                     aes_setkey_enc(&AES, Key, 128);
                     aes_crypt_ctr(
@@ -668,13 +637,6 @@ namespace Volts::PS3
                         Buffer,
                         Buffer
                     );
-
-                    printf("Dec: ");
-                    for(U32 I = 0; I < 25; I++)
-                    {
-                        printf("%u ", Buffer[I]);
-                    }
-                    printf("\n");
 
                     // then copy the decrypted data into out buffer
                     Memory::Copy(Buffer, DataBuffer + BufferOffset, Section.Size);
@@ -693,24 +655,15 @@ namespace Volts::PS3
         // turns all our data into an ELF binary we can use
         ELF::Binary MakeELF()
         {
-            auto* KF = fopen("out.elf", "w");
-            I64 K = 0;
-            ELF::Binary Bin = {128};
-
-            fwrite(&ELFHead, sizeof(ELFHead), 1, KF);
+            ELF::Binary Bin;
 
             // write the elf header
-            Bin.Write(&ELFHead);
-
-            fseek(KF, ELFHead.PHOffset, SEEK_SET);
+            Bin.Write(ELFHead);
 
             // now we write the ELF program headers
             Bin.Seek(ELFHead.PHOffset);
             for(auto Program : PHead)
-            {
-                Bin.Write(&Program);
-                fwrite(&Program, sizeof(Program), 1, KF);
-            }
+                Bin.Write(Program);
 
             U32 BufferOffset = 0;
 
@@ -720,9 +673,7 @@ namespace Volts::PS3
                 // if its a program header
                 if(Section.Type == 2)
                 {
-                    fseek(KF, PHead[Section.Index].Offset, SEEK_SET);
                     Bin.Seek(PHead[Section.Index].Offset);
-                    LOGF_DEBUG(UNSELF, "Seek %llu", PHead[Section.Index].Offset.Get());
                     // if the section is compressed
                     if(Section.Compressed == 3)
                     {
@@ -738,9 +689,7 @@ namespace Volts::PS3
                         uncompress(DBuffer, &ZSize, ZBuffer + BufferOffset, DataLength);
 
                         // then write it to the file
-                        Bin.Write(DBuffer, FileSize);
-
-                        fwrite(DBuffer, sizeof(Byte), FileSize, KF);
+                        Bin.WriteN(DBuffer, FileSize);
 
                         // be sure to clean up after ourselves
                         delete[] DBuffer;
@@ -748,37 +697,23 @@ namespace Volts::PS3
                     }
                     else
                     {
-                        for(U32 I = 0; I < 25ULL; I++)
-                        {
-                            //LOGF_DEBUG(UNSELF, "Z %u", (DataBuffer + BufferOffset)[I]);
-                        }
                         // otherwise we can just write the data
-                        Bin.Write(DataBuffer + BufferOffset, Section.Size);
-
-                        fwrite(DataBuffer + BufferOffset, sizeof(Byte), Section.Size, KF);
+                        Bin.WriteN(DataBuffer + BufferOffset, Section.Size);
                     }
 
                     BufferOffset += Section.Size;
                 }
             }
 
-            LOGF_DEBUG(UNSELF, "Depth %u", Bin.Depth());
-
-            fseek(KF, ELFHead.SHOffset, SEEK_SET);
-
             // now we write the ELF section headers
             Bin.Seek(ELFHead.SHOffset);
             for(auto Section : SHead)
             {
-                Bin.Write(&Section);
-                fwrite(&Section, sizeof(Section), 1, KF);
+                Bin.Write(Section);
             }
-
-            LOGF_DEBUG(UNSELF, "Depth %u", Bin.Depth());
 
             // seek to the front so the output is clean
             Bin.Seek(0);
-            fclose(KF);
             return Bin;
         }
     };
