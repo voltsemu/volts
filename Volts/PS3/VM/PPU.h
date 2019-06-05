@@ -33,7 +33,7 @@ namespace Volts::PS3
 
         Cthulhu::U32 VRSave = 0U; // VRSAVE register
 
-        Cthulhu::U32 InstrAddress = 0ULL; // current instruction address
+        Cthulhu::U32 Cursor = 0ULL; // current instruction address
 
         struct
         {
@@ -68,6 +68,7 @@ namespace Volts::PS3
         BitField<Cthulhu::U8, 6, 5> TO;
         BitField<Cthulhu::U32, 6, 5> RD;
         BitField<Cthulhu::U32, 6, 5> BO;
+        BitField<Cthulhu::U32, 6, 3> BF;
         BitField<Cthulhu::U32, 11, 5> BI;
         BitField<Cthulhu::U32, 16, 14> BD;
         BitField<Cthulhu::U32, 20, 7> LEV;
@@ -78,10 +79,12 @@ namespace Volts::PS3
         BitField<Cthulhu::U32, 16, 15> UI;
         BitField<Cthulhu::U32, 16, 14> DS;
         BitField<Cthulhu::U32, 30, 1> XO;
-        BitField<Cthulhu::U32, 16, 16> SI;
+        BitField<Cthulhu::U32, 9, 1> L;
 
-        BitField<bool, 30, 1> AA;
-        BitField<bool, 31, 1> LK;
+        BitField<Cthulhu::U32, 30, 1> AA;
+        BitField<Cthulhu::U32, 31, 1> LK;
+
+        Cthulhu::U32
     };
 
     static_assert(sizeof(PPUInstruction) == sizeof(Cthulhu::U32));

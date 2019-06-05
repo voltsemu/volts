@@ -64,7 +64,7 @@ namespace Volts::PS3
 
     void MULLI(PPU& Thread, PPUInstruction OP)
     {
-        Thread.GPR[OP.RD] = (I64)Thread.GPR[OP.RA] * OP.SIMM16;
+        Thread.GPR[OP.RD] = (I64)Thread.GPR[OP.RA] * OP.SI;
     }
 
     void SUBFIC(PPU& Thread, PPUInstruction OP)
@@ -79,12 +79,15 @@ namespace Volts::PS3
 
     void CMPLI(PPU& Thread, PPUInstruction OP)
     {
-
+        if(OP.L)
+            Thread.WriteCR(OP.BF, (U32)Thread.GPR[OP.RA], (U32)OP.SI);
+        else
+            Thread.WriteCR(OP.BF, (I32)Thread.GPR[OP.RA], (I32)OP.SI);
     }
 
-    void CMPI(PPU& Thread, PPUInstruction OP)
+    void CMPL(PPU& Thread, PPUInstruction OP)
     {
-
+        CMPLI(Thread, OP);
     }
 
     void ADDIC(PPU& Thread, PPUInstruction OP)
@@ -104,7 +107,7 @@ namespace Volts::PS3
 
     void ADDI(PPU& Thread, PPUInstruction OP)
     {
-
+        Thread.GPR[OP.RT] = OP.RA ? Thread.GPR[OP.RA] + (I64)OP.SI : (I64)OP.SI;
     }
 
     void ADDIS(PPU& Thread, PPUInstruction OP)
@@ -124,7 +127,11 @@ namespace Volts::PS3
 
     void B(PPU& Thread, PPUInstruction OP)
     {
-
+        // get the address to the next instruction
+        const U32 Address = Thread.Cursor + 4;
+        Thread.Cursor = OP.AA ? OP.DS : Thread.Cursor;
+        if(OP.LK)
+            Thread.LR = Address;
     }
 
     void CRMap(PPU& Thread, PPUInstruction OP)
@@ -154,32 +161,34 @@ namespace Volts::PS3
 
     void ORI(PPU& Thread, PPUInstruction OP)
     {
-
+        Thread.GPR[OP.RA] = Thread.GPR[OP.RS] | OP.SI;
     }
 
     void ORIS(PPU& Thread, PPUInstruction OP)
     {
-
+        Thread.GPR[OP.RA] = Thread.GPR[OP.RS] | ((U64)OP.SI << 16);
     }
 
     void XORI(PPU& Thread, PPUInstruction OP)
     {
-
+        Thread.GPR[OP.RA] = Thread.GPR[OP.RS] ^ OP.SI;
     }
 
     void XORIS(PPU& Thread, PPUInstruction OP)
     {
-
+        Thread.GPR[OP.RA] = Thread.GPR[OP.RS] ^ ((U64)OP.SI << 16);
     }
 
     void ANDI(PPU& Thread, PPUInstruction OP)
     {
-
+        Thread.GPR[OP.RA] = Thread.GPR[OP.RS] & OP.SI;
+        Thread.WriteCR(0, Thread.GPR[OP.RA], 0);
     }
 
     void ANDIS(PPU& Thread, PPUInstruction OP)
     {
-
+        Thread.GPR[OP.RA] = Thread.GPR[OP.RS] & ((U64)OP.SI << 16);
+        Thread.WriteCR(0, Thread.GPR[OP.RA], 0);
     }
 
     void FXDMap(PPU& Thread, PPUInstruction OP)
@@ -369,7 +378,7 @@ namespace Volts::PS3
         SUBFIC, // 8: Subtract From Immediate Carrying
         DOZI, // 9: Difference or Zero Immediate
         CMPLI, // 10: Compare Logical Immediate
-        CMPI, // 11: Compare Immediate
+        CMPL, // 11: Compare Immediate
         ADDIC, // 12: Add Immediate Carry
         ADDIC2, // 13: Add Immediate Carry and Record
         ADDI, // 14: Add Immediate
@@ -430,10 +439,9 @@ namespace Volts::PS3
         U64 Entry = Bin.Read<Big<U64>>();
         printf("Entry %llu\n", Entry);
         Bin.Seek(Entry);
-        for(U32 I = 0; I < 10; I++)
+        for(U32 _ = 0; _ < 10; _++)
         {
             auto Inst = Bin.Read<PPUInstruction>();
-            LOGF_DEBUG(PPU, "Op %u", Inst.Raw & 0b11111100U);
             OPTable[Inst.OPCode](*this, Inst);
         }
     }
