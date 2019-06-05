@@ -89,14 +89,14 @@ namespace Volts::PS3
 
     void ADDIC(PPU& Thread, PPUInstruction OP)
     {
-        const auto R = AddResult<U64>::Flags(Thread.GPR[OP.RA], OP.SIMM16);
+        const auto R = AddResult<U64>::Flags(Thread.GPR[OP.RA], OP.SI);
         Thread.GPR[OP.RD] = R.Result;
         Thread.XER.CA = R.Carry;
     }
 
     void ADDIC2(PPU& Thread, PPUInstruction OP)
     {
-        const auto R = AddResult<U64>::Flags(Thread.GPR[OP.RA], OP.SIMM16);
+        const auto R = AddResult<U64>::Flags(Thread.GPR[OP.RA], OP.SI);
         Thread.GPR[OP.RD] = R.Result;
         Thread.XER.CA = R.Carry;
         Thread.WriteCR(0, R.Result, 0ULL);
@@ -109,7 +109,7 @@ namespace Volts::PS3
 
     void ADDIS(PPU& Thread, PPUInstruction OP)
     {
-
+        Thread.GPR[OP.RT] = OP.RA ? OP.RA + (I64)Thread.GPR[OP.RA] + (OP.SI << 16) : OP.SI << 16;
     }
 
     void BC(PPU& Thread, PPUInstruction OP)
@@ -430,11 +430,11 @@ namespace Volts::PS3
         U64 Entry = Bin.Read<Big<U64>>();
         printf("Entry %llu\n", Entry);
         Bin.Seek(Entry);
-        //while(true)
+        for(U32 I = 0; I < 10; I++)
         {
             auto Inst = Bin.Read<PPUInstruction>();
-            LOGF_DEBUG(PPU, "Op %u", Inst.Raw);
-            //OPTable[Inst.OPCode];
+            LOGF_DEBUG(PPU, "Op %u", Inst.Raw & 0b11111100U);
+            OPTable[Inst.OPCode](*this, Inst);
         }
     }
 }

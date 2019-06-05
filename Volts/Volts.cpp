@@ -15,7 +15,6 @@ int main(int argc, const char** argv)
 	FileSystem::BufferedFile F(argv[1]);
 
 	auto U = UNSELF::DecryptSELF(F);
-	FILE* File = fopen("volts.elf", "w");
 
 	PPUInterpreter Interp;
 	auto B = U.Get();

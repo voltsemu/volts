@@ -78,7 +78,7 @@ namespace Volts::PS3
         BitField<Cthulhu::U32, 16, 15> UI;
         BitField<Cthulhu::U32, 16, 14> DS;
         BitField<Cthulhu::U32, 30, 1> XO;
-        BitField<Cthulhu::U32, 16, 16> SIMM16;
+        BitField<Cthulhu::U32, 16, 16> SI;
 
         BitField<bool, 30, 1> AA;
         BitField<bool, 31, 1> LK;
