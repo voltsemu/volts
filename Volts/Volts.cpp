@@ -14,9 +14,12 @@ int main(int argc, const char** argv)
 	LogLevel = Level::Trace;
 	FileSystem::BufferedFile F(argv[1]);
 
-	auto U = UNSELF::DecryptSELF(F);
-
 	PPUInterpreter Interp;
-	auto B = U.Get();
+	Binary B;
+
+	Byte* Buf = new Byte[F.Size()];
+	F.ReadN(Buf, F.Size());
+
+	B.WriteN(Buf, F.Size());
 	Interp.Run(B);
 }

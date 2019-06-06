@@ -80,11 +80,13 @@ namespace Volts::PS3
         BitField<Cthulhu::U32, 16, 14> DS;
         BitField<Cthulhu::U32, 30, 1> XO;
         BitField<Cthulhu::U32, 9, 1> L;
+        BitField<Cthulhu::U32, 6, 5> RS;
 
         BitField<Cthulhu::U32, 30, 1> AA;
         BitField<Cthulhu::U32, 31, 1> LK;
 
-        Cthulhu::U32
+        BitField<Cthulhu::U32, 16, 14> BT14;
+        BitField<Cthulhu::U32, 6, 24> BT24;
     };
 
     static_assert(sizeof(PPUInstruction) == sizeof(Cthulhu::U32));

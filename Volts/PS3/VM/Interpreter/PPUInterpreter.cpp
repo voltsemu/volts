@@ -2,6 +2,9 @@
 #include "Core/Endian.h"
 #include "Core/Logger/Logger.h"
 
+#include <iostream>
+#include <bitset>
+
 namespace Volts::PS3
 {
     using namespace Cthulhu;
@@ -182,13 +185,13 @@ namespace Volts::PS3
     void ANDI(PPU& Thread, PPUInstruction OP)
     {
         Thread.GPR[OP.RA] = Thread.GPR[OP.RS] & OP.SI;
-        Thread.WriteCR(0, Thread.GPR[OP.RA], 0);
+        Thread.WriteCR(0, Thread.GPR[OP.RA], 0ULL);
     }
 
     void ANDIS(PPU& Thread, PPUInstruction OP)
     {
         Thread.GPR[OP.RA] = Thread.GPR[OP.RS] & ((U64)OP.SI << 16);
-        Thread.WriteCR(0, Thread.GPR[OP.RA], 0);
+        Thread.WriteCR(0, Thread.GPR[OP.RA], 0ULL);
     }
 
     void FXDMap(PPU& Thread, PPUInstruction OP)
@@ -371,7 +374,7 @@ namespace Volts::PS3
         STUB, // 1: unused
         TDI, // 2: Trap Doubleword Immediate
         TWI, // 3: Trap Word Immediate
-        VecMap, // 4: possibly vector OPructions
+        VecMap, // 4: possibly vector extentions
         STUB, // 5: unused
         STUB, // 6: unused
         MULLI, // 7: Multiply Low Immediate
@@ -442,7 +445,10 @@ namespace Volts::PS3
         for(U32 _ = 0; _ < 10; _++)
         {
             auto Inst = Bin.Read<PPUInstruction>();
-            OPTable[Inst.OPCode](*this, Inst);
+
+            std::cout << B << " " << B2 << std::endl;
+            //LOGF_DEBUG(PPU, "OPCD %u", (U8)Inst.OPCode.Get());
+            //OPTable[Inst.OPCode](*this, Inst);
         }
     }
 }
