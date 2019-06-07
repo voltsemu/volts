@@ -14,12 +14,26 @@ int main(int argc, const char** argv)
 	LogLevel = Level::Trace;
 	FileSystem::BufferedFile F(argv[1]);
 
-	PPUInterpreter Interp;
-	Binary B;
+	auto U = UNSELF::DecryptSELF(F);
 
-	Byte* Buf = new Byte[F.Size()];
-	F.ReadN(Buf, F.Size());
+	FILE* Out = fopen("volts.elf", "wb");
+	fwrite(U.Get().GetData(), sizeof(Byte), U.Get().Len(), Out);
 
-	B.WriteN(Buf, F.Size());
-	Interp.Run(B);
+	fseek(Out, 4310, SEEK_SET);
+	U8 AAA[10];
+	fread(AAA, 1, 10, Out);
+	for(U32 I = 0; I < 10; I++)
+	{
+		printf("--- %u\n", AAA[I]);
+	}
+	fclose(Out);
+
+	//auto B = U.Get();
+
+	//Byte* Buf = new Byte[F.Size()];
+	//F.ReadN(Buf, F.Size());
+
+	//B.WriteN(Buf, F.Size());
+	//PPUInterpreter Interp;
+	//Interp.Run(B);
 }

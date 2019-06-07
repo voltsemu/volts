@@ -50,8 +50,13 @@ namespace Volts::PS3
 
         virtual ~PPU() {}
 
+        // entry point of the thread
         virtual void Run(Cthulhu::Binary& Bin) = 0;
+
+        // name of the type of the thead, IE "Interpreter"
         virtual Cthulhu::String Name() const = 0;
+
+        // description of the type of thread
         virtual Cthulhu::String Description() const = 0;
     };
 

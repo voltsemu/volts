@@ -445,10 +445,6 @@ namespace Volts::PS3
         for(U32 _ = 0; _ < 10; _++)
         {
             auto Inst = Bin.Read<PPUInstruction>();
-
-            std::cout << B << " " << B2 << std::endl;
-            //LOGF_DEBUG(PPU, "OPCD %u", (U8)Inst.OPCode.Get());
-            //OPTable[Inst.OPCode](*this, Inst);
         }
     }
 }
