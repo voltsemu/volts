@@ -705,24 +705,8 @@ namespace Volts::PS3
                 }
             }
 
-            Bin.Seek(4310);
-            for(U32 I = 0; I < 10; I++)
-            {
-                printf("- %u\n", Bin.Read<U8>());
-            }
-            printf("REEEEE\n");
-            // now we write the ELF section headers
-            Bin.Seek(ELFHead.SHOffset);
             for(auto Section : SHead)
                 Bin.Write(Section);
-
-            printf("REEEEE\n");
-
-            Bin.Seek(4310);
-            for(U32 I = 0; I < 10; I++)
-            {
-                printf("-- %u\n", Bin.Read<U8>());
-            }
 
             // seek to the front so the output is clean
             Bin.Seek(0);

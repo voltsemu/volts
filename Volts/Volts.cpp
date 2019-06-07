@@ -1,4 +1,6 @@
 ﻿
+#include <unistd.h>
+
 #include "Volts.h"
 
 #include "PS3/Util/Decrypt/UNSELF.h"
@@ -16,24 +18,14 @@ int main(int argc, const char** argv)
 
 	auto U = UNSELF::DecryptSELF(F);
 
-	FILE* Out = fopen("volts.elf", "wb");
-	fwrite(U.Get().GetData(), sizeof(Byte), U.Get().Len(), Out);
-
-	fseek(Out, 4310, SEEK_SET);
-	U8 AAA[10];
-	fread(AAA, 1, 10, Out);
-	for(U32 I = 0; I < 10; I++)
+	FILE* DE = fopen("volts.txt", "wt");
+	for(U32 I = 0; I < U.Get().Len(); I++)
 	{
-		printf("--- %u\n", AAA[I]);
+		fprintf(DE, "idx %u val: %u :end\n", I, U.Get().GetData()[I]);
 	}
+	fclose(DE);
+
+	FILE* Out = fopen("volts.elf", "wb");
+	write(fileno(Out), U.Get().GetData(), U.Get().Len());
 	fclose(Out);
-
-	//auto B = U.Get();
-
-	//Byte* Buf = new Byte[F.Size()];
-	//F.ReadN(Buf, F.Size());
-
-	//B.WriteN(Buf, F.Size());
-	//PPUInterpreter Interp;
-	//Interp.Run(B);
 }
