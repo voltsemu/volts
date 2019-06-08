@@ -10,6 +10,6 @@ namespace Volts::PS3
 
         virtual void Run(Cthulhu::Binary& Bin) override;
         virtual Cthulhu::String Name() const override { return "Interpreter"; }
-        virtual Cthulhu::String Description() const override { return "Execute PPU code without needing to recompile or perform extensive operations per instruction"; }
+        virtual Cthulhu::String Description() const override { return "Execute PPU code without needing to recompile, slowest option"; }
     };
 }

@@ -12,5 +12,5 @@ sources += [
     'Volts/PS3/VM/Interpreter/PPUInterpreter.cpp',
 ]
 
-# add this directory
+# add this directory to the include paths
 incs += include_directories('../')

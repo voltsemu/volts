@@ -69,6 +69,7 @@ namespace Volts::PS3
         // the first 6 bits are always the opcode
         BitField<Cthulhu::U32, 0, 6> OPCode;
 
+        // different segments of each instruction
         BitField<Cthulhu::U32, 6, 24> LI;
         BitField<Cthulhu::U8, 6, 5> TO;
         BitField<Cthulhu::U32, 6, 5> RD;

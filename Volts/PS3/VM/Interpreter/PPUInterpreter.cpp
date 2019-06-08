@@ -9,6 +9,7 @@ namespace Volts::PS3
 {
     using namespace Cthulhu;
 
+    // the result of adding two numbers, this accounts for overflow and some other stuff
     template<typename T>
     struct AddResult
     {
@@ -39,9 +40,14 @@ namespace Volts::PS3
             return AddResult{L, R, B};
         }
 
+        // the resulting number
         T Result;
+
+        // is the carry bit set?
         bool Carry;
+        // is it 0?
         bool Zero;
+        // is the result positive or negative?
         bool Sign;
     };
 
@@ -65,6 +71,7 @@ namespace Volts::PS3
 
     }
 
+    // Set the register selected by RD to the register selected by RA multiplied by SI
     void MULLI(PPU& Thread, PPUInstruction OP)
     {
         Thread.GPR[OP.RD] = (I64)Thread.GPR[OP.RA] * OP.SI;
@@ -72,7 +79,9 @@ namespace Volts::PS3
 
     void SUBFIC(PPU& Thread, PPUInstruction OP)
     {
-        Thread.GPR[OP.RT] = Thread.GPR[OP.RA] + (I64)OP.SI + 1;
+        const auto R = AddResult<U64>::Flags(~Thread.GPR[OP.RA], OP.SI, 1);
+        Thread.GPR[OP.RD] = R.Result;
+        Thread.XER.CA = R.Carry;
     }
 
     void DOZI(PPU& Thread, PPUInstruction OP)
@@ -80,6 +89,9 @@ namespace Volts::PS3
 
     }
 
+    // if L is not 0 compare the gpr selected by RA with SI as unsigned
+    // then write the result into the condition register with an offset of BF
+    // if L is 0 then compare signed
     void CMPLI(PPU& Thread, PPUInstruction OP)
     {
         if(OP.L)
@@ -88,6 +100,7 @@ namespace Volts::PS3
             Thread.WriteCR(OP.BF, (I32)Thread.GPR[OP.RA], (I32)OP.SI);
     }
 
+    // alias to COMPLI
     void CMPL(PPU& Thread, PPUInstruction OP)
     {
         CMPLI(Thread, OP);
@@ -108,6 +121,8 @@ namespace Volts::PS3
         Thread.WriteCR(0, R.Result, 0ULL);
     }
 
+    // set the gpr pointer to by RT to the gpr pointed to by RA plus SI
+    // if RA is 0 then set the register to SI
     void ADDI(PPU& Thread, PPUInstruction OP)
     {
         Thread.GPR[OP.RT] = OP.RA ? Thread.GPR[OP.RA] + (I64)OP.SI : (I64)OP.SI;
@@ -128,6 +143,9 @@ namespace Volts::PS3
 
     }
 
+    // get the next instruction then check if LK is true
+    // if LK is true then jump to offset pointed to by the next inst
+    // otherwise just dont
     void B(PPU& Thread, PPUInstruction OP)
     {
         // get the address to the next instruction
@@ -438,6 +456,7 @@ namespace Volts::PS3
 
     void PPUInterpreter::Run(Cthulhu::Binary& Bin)
     {
+        // all debug for now
         Bin.Seek(0x18);
         U64 Entry = Bin.Read<Big<U64>>();
         printf("Entry %llu\n", Entry);

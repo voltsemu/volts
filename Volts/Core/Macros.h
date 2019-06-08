@@ -42,6 +42,7 @@ namespace Volts
 #   define CPUID(I, R) __get_cpuid(I, &R[0], &R[1], &R[2], &R[3])
 #endif
 
+// all the flags we care about
 #define MMX_FLAG 0x00800000
 #define SSE_FLAG 0x02000000
 #define SSE2_FLAG 0x04000000
@@ -61,6 +62,7 @@ namespace Volts
 #define AVX2_FLAG 0x00000020
 #define SSE4A_FLAG 0x00000040
 
+// when i want something to be inline the compiler better make it inline
 #if CC_MSVC || CC_INTEL
 #   define VINLINE __forceinline
 #else
