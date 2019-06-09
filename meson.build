@@ -51,10 +51,16 @@ if meson.get_compiler('cpp').get_id() == 'gcc'
     args += '-DGCC_WORKAROUND_BULLSHIT'
 endif
 
+deps = [zlib.get_variable('zlib_dep')]
+
+if host_machine.system() == 'darwin'
+    deps += dependency('appleframeworks', modules : 'coreservices')
+endif
+
 executable('volt', sources,
     include_directories : incs,
     link_with : libs,
     install : true,
     cpp_args : args,
-    dependencies : zlib.get_variable('zlib_dep')
+    dependencies : deps
 )

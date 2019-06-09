@@ -1,12 +1,13 @@
 #pragma once
 
 #include <stdio.h>
+#include <Core/Collections/CthulhuString.h>
 #include "Volts/Config.h"
 
 namespace Volts
 {
     // how bad is the thing we logged?
-    enum class Level 
+    enum class Level
     {
         // a trace, possibly for a function call or single operating
         Trace,
@@ -18,7 +19,7 @@ namespace Volts
         // but not bad enough to warrant crashing or exiting.
         Warning,
         // something very bad has happened.
-        // may have damaged emulator integrity 
+        // may have damaged emulator integrity
         // some stuff may stop functioning
         Error,
         // something so bad has happened the emulator has exited non gracefully
@@ -31,6 +32,42 @@ namespace Volts
 
     // print the associated prefix for a level
     void PrintPrefix(Level);
+
+    enum class VideoDriver : Cthulhu::U8
+    {
+        DirectX9 = (1 << 0),
+        DirectX11 = (1 << 1),
+        DirectX12 = (1 << 2),
+        OpenGL = (1 << 3),
+        Vulkan = (1 << 4),
+        OpenCL = (1 << 5),
+        None = (1 << 6),
+    };
+
+    enum class GPUVendor : Cthulhu::U8
+    {
+        AMD, ///< AMD/ATI cards
+        NVidia, ///< NVidia cards
+        Intel, ///< Intel iGPUs
+    };
+
+    enum class CPUVendor : Cthulhu::U8
+    {
+        AMD,
+        Intel,
+    };
+
+    enum class CPUDesign : Cthulhu::U8
+    {
+        Chiplet, ///< AMD ryzen cpus with more than 4 cores are made of chiplets, we need to know this so we can put threads on specific cores to reduce CXX lag
+        Single, ///< Intel CPUs are just one big blob of cores, this reduces CXX latency
+    };
+
+    VideoDriver SupportedDrivers();
+
+    Cthulhu::String GPUDriver();
+    Cthulhu::String OSName();
+
 
 // basic logging with formatting
 #define LOGF(C, L, M, ...) { if(L >= LogLevel) { PrintPrefix(L); printf("[" #C "] " M "\n", __VA_ARGS__); } }
