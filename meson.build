@@ -1,4 +1,4 @@
-project('Volts', 'cpp',
+project('Volts', ['cpp', 'objc'],
     default_options : [ 'cpp_std=c++17' ],
     version : '0.2.0',
     license : 'Apache'
@@ -25,6 +25,10 @@ sources = [
     'Volts/Core/Files/TAR.cpp',
     'Volts/Volts.cpp',
 ]
+
+if host_machine.system() == 'darwin'
+    sources += 'Volts/Core/Darwin/Darwin.mm'
+endif
 
 incs = [
     include_directories('Volts'),

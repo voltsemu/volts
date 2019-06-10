@@ -77,19 +77,19 @@ namespace Volts
 #elif OS_APPLE
         SInt32 Major, Minor, BugFix;
 
-        if(Getstalt(getstalktSystemVersionMajor, &Major))
+        if(Gestalt(gestaltSystemVersionMajor, &Major))
             return "OSX";
 
-        if(Getstalt(getstaltSystemVersionMinor, &Minor))
+        if(Gestalt(gestaltSystemVersionMinor, &Minor))
             return "OSX";
 
-        if(Getstalt(getstaltSystemVersionBugFix, &BugFix))
+        if(Gestalt(gestaltSystemVersionBugFix, &BugFix))
             return "OSX";
 
         return "OSX {0}.{1}.{2}"_S.ArrayFormat({
-            Utils::ToString((U64)Major),
-            Utils::ToString((U64)Minor),
-            Utils::ToString((U64)BigFix)
+            Utils::ToString((I64)Major),
+            Utils::ToString((I64)Minor),
+            Utils::ToString((I64)BugFix)
         });
 #endif
     }
