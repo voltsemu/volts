@@ -59,6 +59,21 @@ deps = [zlib.get_variable('zlib_dep')]
 
 if host_machine.system() == 'darwin'
     deps += dependency('appleframeworks', modules : 'coreservices')
+else
+    # apple doesnt have support for vulkan
+    pymodule = import('python3')
+    python3 = pymodule.find_python()
+
+    #check if we have the vulkan sdk
+    res = run_command(python3, '-c', 'import os; print(os.environ["VULKAN_SDK"].strip())')
+
+    if res.returncode() != 0
+        message('Vulkan SDK not found, not building with vulkan')
+    else
+        # if we do then we should use it
+        args += '-DWITH_VULKAN'
+        incs += res.stdout().strip() / 'Include'
+    endif
 endif
 
 executable('volt', sources,
