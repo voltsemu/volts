@@ -15,10 +15,14 @@ sources += [
     # GPU stuff
     'Volts/PS3/VM/Render/Vulkan/Render.cpp',
     'Volts/PS3/VM/Render/Frame.cpp',
-
-    # Mac specific
-    'Volts/PS3/VM/Render/Metal/Render.mm',
 ]
+
+# Mac specific, this has to be seperated here
+# because compilers that arent clang flip when
+# given .mm files
+if host_machine.system() == 'darwin'
+    sources += 'Volts/PS3/VM/Render/Metal/Render.mm'
+endif
 
 # add this directory to the include paths
 incs += include_directories('../')

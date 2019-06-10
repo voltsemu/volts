@@ -1,8 +1,12 @@
-project('Volts', ['cpp', 'objcpp'],
+project('Volts', ['cpp'],
     default_options : [ 'cpp_std=c++17' ],
     version : '0.2.0',
     license : 'Apache'
 )
+
+if host_machine.system() == 'darwin'
+    add_languages('objcpp')
+endif
 
 # get cthulhu for the standard library
 cthulhu = subproject('Cthulhu')
