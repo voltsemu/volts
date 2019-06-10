@@ -11,7 +11,7 @@
 #   include <VersionHelpers.h>
 #   pragma comment(lib, "wbemuuid.lib")
 #elif OS_APPLE
-#   include <CoreServices/CoreServices.h>
+#   include "Core/Darwin/Darwin.h"
 #endif
 
 namespace Volts
@@ -75,22 +75,7 @@ namespace Volts
 
         return String::FromPtr(Data);
 #elif OS_APPLE
-        SInt32 Major, Minor, BugFix;
-
-        if(Gestalt(gestaltSystemVersionMajor, &Major))
-            return "OSX";
-
-        if(Gestalt(gestaltSystemVersionMinor, &Minor))
-            return "OSX";
-
-        if(Gestalt(gestaltSystemVersionBugFix, &BugFix))
-            return "OSX";
-
-        return "OSX {0}.{1}.{2}"_S.ArrayFormat({
-            Utils::ToString((I64)Major),
-            Utils::ToString((I64)Minor),
-            Utils::ToString((I64)BugFix)
-        });
+        return "OSX "_S + String::FromPtr(Darwin::OSName());
 #endif
     }
 }

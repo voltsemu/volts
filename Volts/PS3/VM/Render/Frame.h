@@ -1,8 +1,15 @@
 #pragma once
 
+// basically the only header we can have here because objective C++
 #include <Meta/Macros.h>
-#include <Meta/Aliases.h>
-#include <Core/Collections/CthulhuString.h>
+
+#if OS_WINDOWS
+#   include <Windows.h>
+#elif OS_LINUX
+#   include <X11/Xlib.h>
+#   include <X11/Xos.h>
+#   include <X11/Xutil.h>
+#endif
 
 namespace Volts::PS3::RSX
 {
@@ -17,15 +24,22 @@ namespace Volts::PS3::RSX
 
     struct Frame
     {
-        void SetHeight(Cthulhu::U32 H);
-        void SetWidth(Cthulhu::U32 W);
-        void SetTitle(Cthulhu::String& T);
+        void SetHeight(unsigned H);
+        void SetWidth(unsigned W);
+        void SetX(unsigned X);
+        void SetY(unsigned Y);
+        void SetTitle(const char* T);
         void Create();
+        void Close();
         FrameHandle GetHandle() const;
 
     private:
-        Cthulhu::U32 Width, Height;
-        Cthulhu::String Title;
+        unsigned Width, Height;
+        unsigned X, Y;
+        const char* Title;
         FrameHandle Handle;
+#if OS_LINUX
+        Display* D;
+#endif
     };
 }

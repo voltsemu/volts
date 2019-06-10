@@ -15,6 +15,9 @@ sources += [
     # GPU stuff
     'Volts/PS3/VM/Render/Vulkan/Render.cpp',
     'Volts/PS3/VM/Render/Frame.cpp',
+
+    # Mac specific
+    'Volts/PS3/VM/Render/Metal/Render.mm',
 ]
 
 # add this directory to the include paths

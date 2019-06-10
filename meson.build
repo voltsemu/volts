@@ -1,4 +1,4 @@
-project('Volts', ['cpp', 'objc'],
+project('Volts', ['cpp', 'objcpp'],
     default_options : [ 'cpp_std=c++17' ],
     version : '0.2.0',
     license : 'Apache'
@@ -55,10 +55,14 @@ if meson.get_compiler('cpp').get_id() == 'gcc'
     args += '-DGCC_WORKAROUND_BULLSHIT'
 endif
 
+if meson.get_compiler('cpp').get_id() == 'clang'
+    args += '-std=c++17'
+endif
+
 deps = [zlib.get_variable('zlib_dep')]
 
 if host_machine.system() == 'darwin'
-    deps += dependency('appleframeworks', modules : 'coreservices')
+    deps += dependency('appleframeworks', modules : ['Foundation', 'Metal'])
 else
     # apple doesnt have support for vulkan
     pymodule = import('python3')
@@ -81,5 +85,6 @@ executable('volt', sources,
     link_with : libs,
     install : true,
     cpp_args : args,
+    objcpp_args : args,
     dependencies : deps
 )

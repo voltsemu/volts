@@ -12,10 +12,7 @@ using namespace Cthulhu;
 int main(int argc, const char** argv)
 {
 	LogLevel = Level::Trace;
-	FileSystem::BufferedFile F(argv[1]);
+	//FileSystem::BufferedFile F(argv[1]);
 
 	printf("%s\n", OSName().CStr());
-
-	//auto U = UNSELF::DecryptSELF(F);
-
 }

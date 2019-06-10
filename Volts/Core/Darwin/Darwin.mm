@@ -1,6 +1,9 @@
+
 #include "Darwin.h"
 
-Cthulhu::String Volts::Darwin::OSName()
+#import <Foundation/Foundation.h>
+
+char* Volts::Darwin::OSName()
 {
-    return [[[NSProcessInfo processInfo] operatingSystemVersionString] UTF8String];
+    return strdup([[[NSProcessInfo processInfo] operatingSystemVersionString] UTF8String]);
 }
