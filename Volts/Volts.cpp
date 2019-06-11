@@ -5,6 +5,7 @@
 #include "PS3/VM/Interpreter/PPUInterpreter.h"
 #include "PS3/VM/Render/Frame.h"
 #include "PS3/VM/Render/Vulkan/Render.h"
+#include "PS3/VM/Render/Metal/Render.h"
 
 #if OS_WINDOWS
 #	include <WinBase.h>
@@ -22,13 +23,8 @@ int main(int argc, const char** argv)
 
 	printf("%s\n", OSName().CStr());
 
-	RSX::Frame a;
-	a.SetTitle("Jeff");
-	a.SetHeight(500);
-	a.SetWidth(500);
-	a.SetX(100);
-	a.SetY(100);
-	a.Create();
+	RSX::Metal M;
+	M.Test();
 }
 
 // windows specific entry point because windows does some funny stuff around windowing and the like

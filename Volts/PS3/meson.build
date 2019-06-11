@@ -15,7 +15,16 @@ sources += [
     # GPU stuff
     'Volts/PS3/VM/Render/Vulkan/Render.cpp',
     'Volts/PS3/VM/Render/Frame.cpp',
+    'Volts/PS3/VM/Render/OpenGL/Render.cpp',
 ]
+
+if host_machine.system() == 'windows'
+    # only windows supports directx
+    sources += [
+        'Volts/PS3/VM/Render/DirectX11/Render.cpp',
+        'Volts/PS3/VM/Render/DirectX12/Render.cpp'
+    ]
+endif
 
 # Mac specific, this has to be seperated here
 # because compilers that arent clang flip when

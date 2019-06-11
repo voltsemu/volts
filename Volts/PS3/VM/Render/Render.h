@@ -2,7 +2,7 @@
 
 namespace Volts::PS3::RSX
 {
-    enum class GPUVendor : Cthulhu::U8
+    enum class GPUVendor
     {
         AMD, ///< AMD/ATI cards
         NVidia, ///< NVidia cards
@@ -13,18 +13,11 @@ namespace Volts::PS3::RSX
     {
         // The name of the device. ie GTX 960, Radeon VII, Intel HD 6000
         char* Name;
-        // the rating of this device
-        // +1000 if discrete
-        // +500 if intergrated
-        // +250 if virtual GPU
-        // +50 if CPU
-        unsigned Power;
-
-        GPUVendor Vendor; // who made this gpu
     };
 
     struct Render
     {
+        virtual ~Render() {}
         virtual void Init() = 0;
         // is this backend supported on the current platform?
         // IE. does this current platforms GPU support directx 12?

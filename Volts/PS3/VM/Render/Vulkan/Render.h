@@ -1,3 +1,5 @@
+#if WITH_VULKAN
+
 #pragma once
 
 #include <Meta/Macros.h>
@@ -18,6 +20,7 @@ namespace Volts::PS3::RSX
 
     struct Vulkan : Render
     {
+        virtual ~Vulkan() override {}
         virtual void Init() override;
         void Test();
 
@@ -29,3 +32,5 @@ namespace Volts::PS3::RSX
         DLL VulkanDLL;
     };
 }
+
+#endif

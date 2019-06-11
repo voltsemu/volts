@@ -107,21 +107,19 @@ namespace Volts::PS3::RSX
         return Handle;
     }
 
+#if OS_WINDOWS
     bool Frame::ShouldStayOpen()
     {
-#if OS_WINDOWS
         // the hi word of GetQueueStatus is the amount of messages matching QS_ALLINPUT
         // and since QS_ALLINPUT matches everything it returns the amount of messages
         // in the queue
         return GetMessage(&LastMessage, nullptr, 0, 0) != -1;
-#endif
     }
 
     void Frame::PollEvents()
     {
-#if OS_WINDOWS
         TranslateMessage(&LastMessage);
         DispatchMessage(&LastMessage);
-#endif
     }
+#endif
 }
