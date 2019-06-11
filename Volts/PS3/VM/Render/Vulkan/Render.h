@@ -5,6 +5,7 @@
 #include <Meta/Macros.h>
 #include "PS3/VM/Render/Render.h"
 #include "PS3/VM/Render/Frame.h"
+#include "VulkanSupport.h"
 
 #if OS_WINDOWS
 #   include <libloaderapi.h>
@@ -12,25 +13,23 @@
 
 namespace Volts::PS3::RSX
 {
-#if OS_WINDOWS
-    using DLL = HMODULE;
-#elif OS_LINUX
-    using DLL = void*;
-#endif
 
     struct Vulkan : Render
     {
         virtual ~Vulkan() override {}
-        virtual void Init() override;
+        virtual InitError Init() override;
         void Test();
 
+        virtual RenderDevice* Devices(unsigned& Count) const override;
         virtual bool Supported() const override;
 
         virtual const char* Name() const override { return "Vulkan"; }
         virtual const char* Detail() const override { return "Vulkan is a low level rendering API from the Khronos Group"; }
-    private:
-        DLL VulkanDLL;
     };
+
+    VSCRIPT({
+        Render::Register(new Vulkan());
+    });
 }
 
 #endif

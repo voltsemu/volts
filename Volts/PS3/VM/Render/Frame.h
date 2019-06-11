@@ -3,6 +3,8 @@
 // basically the only header we can have here because objective C++
 #include <Meta/Macros.h>
 
+// if we're on a platform other than apple we can include
+// whatever we want, so we might as well take advantage of it
 #if OS_WINDOWS
 #   include <Windows.h>
 #elif OS_LINUX
@@ -32,7 +34,7 @@
 //  - Q: why not use XXX windowing library?
 //  - A: see all my critisisms of Qt
 //       also add performance into that because chances are XXX runs badly :^)
-//  - Q: "and also why the fuck aren't you using something like winit instead of using every windowing system individually" - cobalt
+//  - Q: "and also why the fuck aren't you using something like winit instead of using every windowing system individually"
 //  - A: see all of the above criticisms of Qt and apply them to that answer
 
 namespace Volts::PS3::RSX
@@ -40,7 +42,10 @@ namespace Volts::PS3::RSX
 
 #if OS_WINDOWS
     using FrameHandle = HWND;
+    // on windows every window has a callback function for input
     using WindowCallback = decltype(DefWindowProc);
+
+    // we also need these on windows to open windows
     extern int CmdShow;
     extern HINSTANCE Instance;
 #elif OS_LINUX
@@ -84,7 +89,9 @@ namespace Volts::PS3::RSX
 #endif
 
 #if OS_WINDOWS
+        // the last message we got from the event loop
         MSG LastMessage;
+        // the callback we give to the OS to poll events with
         WindowCallback* InputCallback;
 #endif
     };

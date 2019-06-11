@@ -19,8 +19,16 @@ namespace Volts::PS3::RSX
         }
     }
 
+    RenderDevice* Metal::Devices(unsigned& Count) const
+    {
+        Count = 0;
+        return nullptr;
+    }
+
     bool Metal::Supported() const
     {
+        // only returns a valid device if metal is supported
+        // otherwise it returns null, which is also false
         return !!MTLCreateSystemDefaultDevice();
     }
 }

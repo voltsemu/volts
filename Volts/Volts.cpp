@@ -22,9 +22,10 @@ int main(int argc, const char** argv)
 	//FileSystem::BufferedFile F(argv[1]);
 
 	printf("%s\n", OSName().CStr());
-
+#if OS_APPLE
 	RSX::Metal M;
 	M.Test();
+#endif
 }
 
 // windows specific entry point because windows does some funny stuff around windowing and the like
@@ -39,7 +40,6 @@ int APIENTRY wWinMain(
 	RSX::CmdShow = nShowCmd;
 	RSX::Instance = hInstance;
 	LogLevel = Level::Trace;
-	//FileSystem::BufferedFile F(argv[1]);
 
 	RSX::Vulkan V;
 	V.Init();
