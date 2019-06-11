@@ -9,21 +9,7 @@ namespace Volts::PS3::RSX
 
     InitError Vulkan::Init()
     {
-        // if the library cant be opened, chances are it doesnt exist
-        if(!VulkanSupport::LoadDLL())
-            return InitError::NoDriver;
-
-        const char* Extensions[] = {
-            VK_KHR_SURFACE_EXTENSION_NAME,
-#if OS_WINDOWS
-            VK_KHR_WIN32_SURFACE_EXTENSION_NAME,
-#elif OS_LINUX
-            VK_KHR_XLIB_SURFACE_EXTENSION_NAME,
-#if VK_USE_PLATFORM_WAYLAND_KHR
-            VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME
-#endif // VK_USE_PLATFORM_WAYLAND_KHR
-#endif // OS_WINDOWS OS_LINUX
-        };
+        auto Instance = VulkanSupport::MakeInstance();
 
         // everything went well
         return InitError::Ok;
@@ -48,6 +34,8 @@ namespace Volts::PS3::RSX
 
     void Vulkan::Test()
     {
+        auto Inst = VulkanSupport::SimpleInstance();
+        auto Devs = VulkanSupport::Devices(Inst);
     }
 
     RenderDevice* Vulkan::Devices(unsigned& Count) const
@@ -57,7 +45,7 @@ namespace Volts::PS3::RSX
 
     bool Vulkan::Supported() const
     {
-        return VulkanSupport::Found();
+        return true;
     }
 }
 

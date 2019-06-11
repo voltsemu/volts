@@ -42,7 +42,7 @@ int APIENTRY wWinMain(
 	LogLevel = Level::Trace;
 
 	RSX::Vulkan V;
-	V.Init();
+	//V.Init();
 	V.Test();
 }
 #endif

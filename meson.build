@@ -64,6 +64,7 @@ if meson.get_compiler('cpp').get_id() == 'clang'
 endif
 
 deps = [zlib.get_variable('zlib_dep')]
+links = []
 
 if host_machine.system() == 'darwin'
     deps += dependency('appleframeworks', modules : ['Foundation', 'Metal'])
@@ -82,10 +83,9 @@ else
         # if we do then we should use it
         args += '-DWITH_VULKAN'
         incs += res.stdout().strip() / 'Include'
+        links += res.stdout().strip() / 'Lib' / 'vulkan-1.lib'
     endif
 endif
-
-links = []
 
 if host_machine.system() == 'windows'
     links += '/SUBSYSTEM:WINDOWS'

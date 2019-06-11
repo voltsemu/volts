@@ -75,3 +75,7 @@ namespace Volts
     // signifies padding in a structure
     using Pad = Cthulhu::Byte;
 }
+
+#define VMAJOR 0
+#define VMINOR 1
+#define VPATCH 0

@@ -16,17 +16,23 @@ namespace Volts::PS3::RSX::VulkanSupport
     // otherwise retrn false
     bool LoadDLL();
 
-    // load in vulkan functions so we can use them
-    void LoadFunctions();
-
     // check if vulkan was found in LoadDLL
     bool Found();
+
+    // make an instance thats ready for rendering
+    VkInstance MakeInstance();
+
+    // make a simple instance that we can use for querying data
+    VkInstance SimpleInstance();
 
     // load in all extensions
     // returns true if the extensions loaded
     // returns false otherwise
     bool InitExtensions();
 
+    // check if an extension is supported
     bool Supported(const char* Extension);
+
+    Cthulhu::Array<Cthulhu::String> Devices(VkInstance Instance);
 }
 

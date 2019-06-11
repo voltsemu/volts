@@ -9,10 +9,14 @@ namespace Volts::PS3::RSX
 {
     enum class InitError
     {
-        Ok = 0,
-        NoDriver = 1,
-        OldDriver = 2,
-        Other = 3,
+        // everything worked
+        Ok,
+        // driver not found
+        NoDriver,
+        // driver is unsupported or is missing features
+        Unsupported,
+        // something else went wrong
+        Other,
     };
 
     struct RenderDevice

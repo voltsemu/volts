@@ -10,48 +10,72 @@
 
 namespace Volts::PS3::RSX::VulkanSupport
 {
-    VKDECLARE(vkEnumerateInstanceExtensionProperties);
-    VKDECLARE(vkCreateInstance);
-    VKDECLARE(vkEnumeratePhysicalDevices);
-    VKDECLARE(vkGetPhysicalDeviceProperties);
-    VKDECLARE(vkDestroyInstance);
-
     using namespace Cthulhu;
     // on windows DLL files are HMODULES
     // on linux they're void*
+
+    const char* ExtensionNames[] = {
+            VK_KHR_SURFACE_EXTENSION_NAME,
 #if OS_WINDOWS
-    using DLL = HMODULE;
+            VK_KHR_WIN32_SURFACE_EXTENSION_NAME,
 #elif OS_LINUX
-    using DLL = void*;
+            VK_KHR_XLIB_SURFACE_EXTENSION_NAME,
 #endif
-    DLL VulkanDLL;
+        };
 
-    bool Valid = false;
 
-    bool LoadDLL()
+    void MakeInfo(VkApplicationInfo& App, VkInstanceCreateInfo& Create)
     {
-        // load the library in at runtime
-#if OS_WINDOWS
-        VulkanDLL = LoadLibraryA("vulkan-1.dll");
-#elif OS_LINUX
-        VulkanDLL = dlopen("libvulkan.so.1");
-#endif
+        App.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+        App.pApplicationName = "Volts";
+        App.applicationVersion = VK_MAKE_VERSION(VMAJOR, VMINOR, VPATCH);
+        App.pEngineName = "RSX";
+        App.engineVersion = VK_MAKE_VERSION(VMAJOR, VMINOR, VPATCH);
+        App.apiVersion = VK_API_VERSION_1_0;
 
-        return (Valid = VulkanDLL != nullptr);
+        Create.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+        Create.pApplicationInfo = &App;
+
+        Create.enabledLayerCount = 0;
+        Create.ppEnabledLayerNames = nullptr;
     }
 
-    bool Found()
+    VkInstance MakeInstance()
     {
-        return Valid;
+        VkApplicationInfo App = {};
+        VkInstanceCreateInfo Create = {};
+        MakeInfo(App, Create);
+
+        Create.enabledExtensionCount = sizeof(ExtensionNames) / sizeof(const char*);
+        Create.ppEnabledExtensionNames = ExtensionNames;
+
+        VkInstance Instance;
+        if(vkCreateInstance(&Create, nullptr, &Instance) != VK_SUCCESS)
+        {
+            // TODO: log error
+            return nullptr;
+        }
+
+        return Instance;
     }
 
-    void LoadFunctions()
+    VkInstance SimpleInstance()
     {
-        VKLOAD(VulkanDLL, vkEnumerateInstanceExtensionProperties);
-        VKLOAD(VulkanDLL, vkCreateInstance);
-        VKLOAD(VulkanDLL, vkEnumeratePhysicalDevices);
-        VKLOAD(VulkanDLL, vkGetPhysicalDeviceProperties);
-        VKLOAD(VulkanDLL, vkDestroyInstance);
+        VkApplicationInfo App = {};
+        VkInstanceCreateInfo Create = {};
+        MakeInfo(App, Create);
+
+        Create.enabledExtensionCount = 0;
+        Create.ppEnabledExtensionNames = nullptr;
+
+        VkInstance Instance;
+        if(vkCreateInstance(&Create, nullptr, &Instance) != VK_SUCCESS)
+        {
+            // TODO: log error
+            return nullptr;
+        }
+
+        return Instance;
     }
 
     Array<VkExtensionProperties> Extensions;
@@ -59,11 +83,11 @@ namespace Volts::PS3::RSX::VulkanSupport
     bool InitExtensions()
     {
         U32 Count;
-        if(VulkanSupport::vkEnumerateInstanceExtensionProperties(nullptr, &Count, nullptr) != VK_SUCCESS)
+        if(vkEnumerateInstanceExtensionProperties(nullptr, &Count, nullptr) != VK_SUCCESS)
             return false;
 
         Extensions.Reserve(Count);
-        VulkanSupport::vkEnumerateInstanceExtensionProperties(nullptr, &Count, Extensions.Data());
+        vkEnumerateInstanceExtensionProperties(nullptr, &Count, Extensions.Data());
 
         return true;
     }
@@ -77,6 +101,35 @@ namespace Volts::PS3::RSX::VulkanSupport
         }
 
         return false;
+    }
+
+    Cthulhu::Array<Cthulhu::String> Devices(VkInstance Instance)
+    {
+        U32 Count = 0;
+        if(vkEnumeratePhysicalDevices(Instance, &Count, nullptr) != VK_SUCCESS)
+            return {};
+
+        if(Count == 0)
+            return {};
+
+        auto* Devices = new VkPhysicalDevice[Count];
+
+        vkEnumeratePhysicalDevices(Instance, &Count, Devices);
+
+        Array<Cthulhu::String> Ret;
+
+        for(U32 I = 0; I < Count; I++)
+        {
+            VkPhysicalDeviceProperties Prop = {};
+            vkGetPhysicalDeviceProperties(Devices[I], &Prop);
+            MessageBox(nullptr, Prop.deviceName, "Vulkan", 0);
+            // TODO: this is kinda busted for some reason
+            Ret.Append(String::FromPtr(CString::Duplicate(Prop.deviceName)));
+        }
+
+        delete[] Devices;
+
+        return Ret;
     }
 }
 
