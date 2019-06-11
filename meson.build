@@ -73,8 +73,9 @@ else
     python3 = pymodule.find_python()
 
     #check if we have the vulkan sdk
-    res = run_command(python3, '-c', 'import os; print(os.environ["VULKAN_SDK"].strip())')
+    res = run_command(python3, '-c', 'import os; print(os.environ["VULKAN_SDK"])')
 
+    # returns non-zero because an exception is thrown if the sdk isnt found
     if res.returncode() != 0
         message('Vulkan SDK not found, not building with vulkan')
     else
@@ -84,11 +85,19 @@ else
     endif
 endif
 
+links = []
+
+if host_machine.system() == 'windows'
+    links += '/SUBSYSTEM:WINDOWS'
+endif
+
 executable('volt', sources,
     include_directories : incs,
     link_with : libs,
     install : true,
     cpp_args : args,
     objcpp_args : args,
-    dependencies : deps
+    dependencies : deps,
+    link_args : links,
+    gui_app : true
 )

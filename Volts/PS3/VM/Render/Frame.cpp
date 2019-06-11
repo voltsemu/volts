@@ -2,6 +2,16 @@
 
 namespace Volts::PS3::RSX
 {
+#if OS_WINDOWS
+    int CmdShow = 0;
+    HINSTANCE Instance = nullptr;
+
+    void Frame::InputHandle(WindowCallback Callback)
+    {
+        InputCallback = Callback;
+    }
+#endif
+
     void Frame::SetHeight(unsigned H)
     {
         Height = H;
@@ -27,10 +37,38 @@ namespace Volts::PS3::RSX
         Title = T;
     }
 
-    void Create()
+    void Frame::Create()
     {
 #if OS_WINDOWS
-        
+        const char* WindowClassName = "VoltsFrameClass";
+        WNDCLASS WC = {};
+        WC.lpfnWndProc = InputCallback;
+        WC.hInstance = Instance;
+        WC.lpszClassName = WindowClassName;
+
+        RegisterClass(&WC);
+
+        Handle = CreateWindowEx(
+            0,
+            WindowClassName,
+            Title,
+            WS_OVERLAPPEDWINDOW,
+
+            X, Y, Width, Height,
+
+            nullptr,
+            nullptr,
+            Instance,
+            nullptr
+        );
+
+        if(Handle == nullptr)
+        {
+            // figure out how to log
+            return;
+        }
+
+        ShowWindow(Handle, CmdShow);
 #elif OS_LINUX
         D = XOpenDisplay(nullptr);
 
@@ -55,7 +93,7 @@ namespace Volts::PS3::RSX
     void Frame::Close()
     {
 #if OS_WINDOWS
-
+        CloseWindow(Handle);
 #elif OS_LINUX
         XDestroyWindow(D, Handle);
         XCloseDisplay(D);
@@ -67,5 +105,23 @@ namespace Volts::PS3::RSX
     FrameHandle Frame::GetHandle() const
     {
         return Handle;
+    }
+
+    bool Frame::ShouldStayOpen()
+    {
+#if OS_WINDOWS
+        // the hi word of GetQueueStatus is the amount of messages matching QS_ALLINPUT
+        // and since QS_ALLINPUT matches everything it returns the amount of messages
+        // in the queue
+        return GetMessage(&LastMessage, nullptr, 0, 0) != -1;
+#endif
+    }
+
+    void Frame::PollEvents()
+    {
+#if OS_WINDOWS
+        TranslateMessage(&LastMessage);
+        DispatchMessage(&LastMessage);
+#endif
     }
 }

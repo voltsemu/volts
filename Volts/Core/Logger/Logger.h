@@ -44,13 +44,6 @@ namespace Volts
         None = (1 << 6),
     };
 
-    enum class GPUVendor : Cthulhu::U8
-    {
-        AMD, ///< AMD/ATI cards
-        NVidia, ///< NVidia cards
-        Intel, ///< Intel iGPUs
-    };
-
     enum class CPUVendor : Cthulhu::U8
     {
         AMD,

@@ -3,6 +3,12 @@
 
 #include "PS3/Util/Decrypt/UNSELF.h"
 #include "PS3/VM/Interpreter/PPUInterpreter.h"
+#include "PS3/VM/Render/Frame.h"
+#include "PS3/VM/Render/Vulkan/Render.h"
+
+#if OS_WINDOWS
+#	include <WinBase.h>
+#endif
 
 using namespace Volts;
 using namespace Volts::PS3;
@@ -15,4 +21,32 @@ int main(int argc, const char** argv)
 	//FileSystem::BufferedFile F(argv[1]);
 
 	printf("%s\n", OSName().CStr());
+
+	RSX::Frame a;
+	a.SetTitle("Jeff");
+	a.SetHeight(500);
+	a.SetWidth(500);
+	a.SetX(100);
+	a.SetY(100);
+	a.Create();
 }
+
+// windows specific entry point because windows does some funny stuff around windowing and the like
+#if OS_WINDOWS
+int APIENTRY wWinMain(
+	HINSTANCE hInstance,
+	HINSTANCE hPrevInstance,
+	LPWSTR lpCmdLine,
+	int nShowCmd
+)
+{
+	RSX::CmdShow = nShowCmd;
+	RSX::Instance = hInstance;
+	LogLevel = Level::Trace;
+	//FileSystem::BufferedFile F(argv[1]);
+
+	RSX::Vulkan V;
+	V.Init();
+	V.Test();
+}
+#endif

@@ -90,19 +90,15 @@ Assuming an entirley fresh install of Ubuntu
 
 ```sh
 # Basic packages needed
-sudo apt install git python3 python3-pip ninja-build clang llvm
+sudo apt install git python3 python3-pip ninja-build
 pip3 install --user meson
-
-# Grab other stuff from github
-git submodule update --init
 
 # pip wont put meson on the path by default so we have to specifiy the full path
 # meson will also use g++ by default, but g++ doesnt support c++17 as much as clang
 # so we use clang instead
-env CXX=clang++ ~/.local/bin/meson Build
-cd Build
-ninja
-./volt
+~/.local/bin/meson Build
+ninja -C Build
+./Build/volt
 ```
 
 Assuming a fresh install of debian
