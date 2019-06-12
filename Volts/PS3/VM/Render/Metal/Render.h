@@ -2,10 +2,17 @@
 
 #include "PS3/VM/Render/Render.h"
 
-#if OS_APPLE
+#import <MetalKit/MetalKit.h>
 
 namespace Volts::PS3::RSX
 {
+    struct MetalDevice : RenderDevice
+    {
+        virtual const char* Name() const override;
+    private:
+        id<MTLDevice> Device;
+    };
+
     struct Metal : Render
     {
         virtual ~Metal() override {}
@@ -24,5 +31,3 @@ namespace Volts::PS3::RSX
         Render::Register(new Metal());
     });
 }
-
-#endif

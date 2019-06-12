@@ -40,6 +40,32 @@ incs = [
     cthulhu.get_variable('inc')
 ]
 
+deps = [zlib.get_variable('zlib_dep')]
+links = []
+
+vulkan = false
+
+if host_machine.system() == 'darwin'
+    deps += dependency('appleframeworks', modules : ['Foundation', 'Metal'])
+else
+    # apple doesnt have support for vulkan
+    pymodule = import('python3')
+    python3 = pymodule.find_python()
+
+    #check if we have the vulkan sdk
+    res = run_command(python3, '-c', 'import os; print(os.environ["VULKAN_SDK"])')
+
+    # returns non-zero because an exception is thrown if the sdk isnt found
+    if res.returncode() != 0
+        message('Vulkan SDK not found, not building with vulkan')
+    else
+        # if we do then we should use it
+        vulkan = true
+        incs += res.stdout().strip() / 'Include'
+        links += res.stdout().strip() / 'Lib' / 'vulkan-1.lib'
+    endif
+endif
+
 # include the ps3 project
 subdir('Volts/PS3')
 
@@ -61,30 +87,6 @@ endif
 
 if meson.get_compiler('cpp').get_id() == 'clang'
     args += '-std=c++17'
-endif
-
-deps = [zlib.get_variable('zlib_dep')]
-links = []
-
-if host_machine.system() == 'darwin'
-    deps += dependency('appleframeworks', modules : ['Foundation', 'Metal'])
-else
-    # apple doesnt have support for vulkan
-    pymodule = import('python3')
-    python3 = pymodule.find_python()
-
-    #check if we have the vulkan sdk
-    res = run_command(python3, '-c', 'import os; print(os.environ["VULKAN_SDK"])')
-
-    # returns non-zero because an exception is thrown if the sdk isnt found
-    if res.returncode() != 0
-        message('Vulkan SDK not found, not building with vulkan')
-    else
-        # if we do then we should use it
-        args += '-DWITH_VULKAN'
-        incs += res.stdout().strip() / 'Include'
-        links += res.stdout().strip() / 'Lib' / 'vulkan-1.lib'
-    endif
 endif
 
 if host_machine.system() == 'windows'

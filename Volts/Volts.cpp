@@ -5,7 +5,7 @@
 #include "PS3/VM/Interpreter/PPUInterpreter.h"
 #include "PS3/VM/Render/Frame.h"
 #include "PS3/VM/Render/Vulkan/Render.h"
-#include "PS3/VM/Render/Metal/Render.h"
+#include "PS3/VM/Render/Backends.h"
 
 #if OS_WINDOWS
 #	include <WinBase.h>
@@ -21,11 +21,10 @@ int main(int argc, const char** argv)
 	LogLevel = Level::Trace;
 	//FileSystem::BufferedFile F(argv[1]);
 
-	printf("%s\n", OSName().CStr());
-#if OS_APPLE
-	RSX::Metal M;
-	M.Test();
-#endif
+	for(auto Render : RSX::GetBackends())
+	{
+		printf("%s\n", Render->Name());
+	}
 }
 
 // windows specific entry point because windows does some funny stuff around windowing and the like

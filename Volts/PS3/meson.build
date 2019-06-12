@@ -13,12 +13,17 @@ sources += [
     'Volts/PS3/VM/Interpreter/PPUInterpreter.cpp',
 
     # GPU stuff
-    'Volts/PS3/VM/Render/Vulkan/Render.cpp',
-    'Volts/PS3/VM/Render/Vulkan/VulkanSupport.cpp',
     'Volts/PS3/VM/Render/Frame.cpp',
     'Volts/PS3/VM/Render/OpenGL/Render.cpp',
     'Volts/PS3/VM/Render/Render.cpp',
 ]
+
+if vulkan
+    sources += [
+        'Volts/PS3/VM/Render/Vulkan/Render.cpp',
+        'Volts/PS3/VM/Render/Vulkan/VulkanSupport.cpp',
+    ]
+endif
 
 if host_machine.system() == 'windows'
     # only windows supports directx

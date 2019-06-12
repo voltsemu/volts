@@ -5,10 +5,18 @@
 
 namespace Volts::PS3::RSX
 {
-    Cthulhu::Array<Render*> Backends = {};
+    Cthulhu::Array<Render*> Backends;
+    Cthulhu::U32 Num = 0;
     void Render::Register(Render* Backend)
     {
+        Num++;
+        printf("Num: %u Len: %u\n", Num, Backends.Len());
         Backends.Append(Backend);
+
+        for(auto& A : Backends)
+        {
+            printf("R: %s\n", A->Name());
+        }
     }
 
     Cthulhu::Array<Render*>& GetBackends()

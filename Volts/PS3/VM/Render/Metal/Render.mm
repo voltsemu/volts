@@ -1,16 +1,14 @@
 
 #include "Render.h"
 
-#import <MetalKit/MetalKit.h>
-
 namespace Volts::PS3::RSX
 {
     InitError Metal::Init()
     {
-
+        return InitError::Ok;
     }
 
-    void Meta::DeInit()
+    void Metal::DeInit()
     {
 
     }
