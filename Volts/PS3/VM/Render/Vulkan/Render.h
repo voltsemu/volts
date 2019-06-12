@@ -3,8 +3,6 @@
 #pragma once
 
 #include <Meta/Macros.h>
-#include "PS3/VM/Render/Render.h"
-#include "PS3/VM/Render/Frame.h"
 #include "VulkanSupport.h"
 
 #if OS_WINDOWS
@@ -13,11 +11,12 @@
 
 namespace Volts::PS3::RSX
 {
-
     struct Vulkan : Render
     {
         virtual ~Vulkan() override {}
         virtual InitError Init() override;
+        virtual void DeInit() override;
+
         void Test();
 
         virtual RenderDevice* Devices(unsigned& Count) const override;
@@ -25,6 +24,10 @@ namespace Volts::PS3::RSX
 
         virtual const char* Name() const override { return "Vulkan"; }
         virtual const char* Detail() const override { return "Vulkan is a low level rendering API from the Khronos Group"; }
+
+    private:
+        VkInstance RenderInstance;
+        Cthulhu::Array<VulkanDevice> DeviceArray;
     };
 
     VSCRIPT({

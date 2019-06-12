@@ -8,6 +8,9 @@ namespace Volts::PS3::RSX
     {
         virtual ~OpenGL() override {}
 
+        virtual InitError Init() override;
+        virtual void DeInit() override;
+
         virtual bool Supported() const { return true; /* i have yet to see a device that doesnt support OpenGL */ }
         virtual RenderDevice* Devices(unsigned& Count) const override { return nullptr; }
 

@@ -7,6 +7,11 @@ namespace Volts::PS3::RSX
         return InitError::Ok;
     }
 
+    void DirectX12::DeInit()
+    {
+
+    }
+
     bool DirectX12::Supported() const
     {
         return false;

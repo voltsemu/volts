@@ -2,6 +2,9 @@
 
 #include <Core/Collections/CthulhuString.h>
 #include "Render.h"
+#include <chrono>
+
+using namespace std::chrono;
 
 namespace Volts::PS3::RSX
 {
@@ -9,38 +12,31 @@ namespace Volts::PS3::RSX
 
     InitError Vulkan::Init()
     {
-        auto Instance = VulkanSupport::MakeInstance();
+        RenderInstance = VulkanSupport::MakeInstance();
+
+        // if that failed then chances are the drivers dont work
+        // because are we really going to run out of memory this
+        // early on
+        if(RenderInstance == nullptr)
+            return InitError::NoDriver;
 
         // everything went well
         return InitError::Ok;
     }
 
-#if OS_WINDOWS
-    LRESULT CALLBACK WindowProc(HWND Wnd, UINT Msg, WPARAM W, LPARAM L)
+    void Vulkan::DeInit()
     {
-        switch(Msg)
-        {
-        case WM_KEYDOWN:
-            break;
-        case WM_KEYUP:
-            break;
-        default:
-            return DefWindowProc(Wnd, Msg, W, L);
-        }
-
-        return 0;
+        vkDestroyInstance(RenderInstance, nullptr);
     }
-#endif
 
     void Vulkan::Test()
     {
-        auto Inst = VulkanSupport::SimpleInstance();
-        auto Devs = VulkanSupport::Devices(Inst);
     }
 
     RenderDevice* Vulkan::Devices(unsigned& Count) const
     {
-        return nullptr;
+        Count = DeviceArray.Len();
+        return *DeviceArray;
     }
 
     bool Vulkan::Supported() const

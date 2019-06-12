@@ -22,14 +22,17 @@ namespace Volts::PS3::RSX
     struct RenderDevice
     {
         // The name of the device. ie GTX 960, Radeon VII, Intel HD 6000
-        char* Name;
+        virtual const char* Name() const = 0;
+        bool operator==(const RenderDevice& Other) const;
     };
 
     // call init on these before calling any other function
     struct Render
     {
         virtual ~Render() {}
+        // init some basic stuff, dont actually create a window or anything
         virtual InitError Init() = 0;
+        virtual void DeInit() = 0;
         // is this backend supported on the current platform?
         // IE. does this current platforms GPU support directx 12?
         virtual bool Supported() const = 0;

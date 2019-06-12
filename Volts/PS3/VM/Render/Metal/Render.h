@@ -9,7 +9,8 @@ namespace Volts::PS3::RSX
     struct Metal : Render
     {
         virtual ~Metal() override {}
-        virtual void Init() override;
+        virtual InitError Init() override;
+        virtual void DeInit() override;
         void Test();
 
         virtual bool Supported() const override;

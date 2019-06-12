@@ -8,6 +8,21 @@
 
 #define VKDECLARE(Name) CAT(PFN_, Name) Name
 
+namespace Volts::PS3::RSX
+{
+    VulkanDevice::VulkanDevice(VkPhysicalDevice D)
+        : Device(D)
+        , Properties(new VkPhysicalDeviceProperties)
+    {
+        vkGetPhysicalDeviceProperties(Device, Properties);
+    }
+
+    const char* VulkanDevice::Name() const
+    {
+        return Properties->deviceName;
+    }
+}
+
 namespace Volts::PS3::RSX::VulkanSupport
 {
     using namespace Cthulhu;
@@ -103,7 +118,7 @@ namespace Volts::PS3::RSX::VulkanSupport
         return false;
     }
 
-    Cthulhu::Array<Cthulhu::String> Devices(VkInstance Instance)
+    Cthulhu::Array<VulkanDevice> ListDevices(VkInstance Instance)
     {
         U32 Count = 0;
         if(vkEnumeratePhysicalDevices(Instance, &Count, nullptr) != VK_SUCCESS)
@@ -116,15 +131,11 @@ namespace Volts::PS3::RSX::VulkanSupport
 
         vkEnumeratePhysicalDevices(Instance, &Count, Devices);
 
-        Array<Cthulhu::String> Ret;
+        Array<VulkanDevice> Ret;
 
         for(U32 I = 0; I < Count; I++)
         {
-            VkPhysicalDeviceProperties Prop = {};
-            vkGetPhysicalDeviceProperties(Devices[I], &Prop);
-            MessageBox(nullptr, Prop.deviceName, "Vulkan", 0);
-            // TODO: this is kinda busted for some reason
-            Ret.Append(String::FromPtr(CString::Duplicate(Prop.deviceName)));
+            Ret.Append(Devices[I]);
         }
 
         delete[] Devices;

@@ -2,6 +2,9 @@
 
 #include "Core/Macros.h"
 #include <Core/Collections/Array.h>
+#include <Core/Memory/Memory.h>
+#include "PS3/VM/Render/Render.h"
+#include "PS3/VM/Render/Frame.h"
 
 #if OS_WINDOWS
 #   define VK_USE_PLATFORM_WIN32_KHR
@@ -9,16 +12,33 @@
 
 #include <vulkan/vulkan.h>
 
+namespace Volts::PS3::RSX
+{
+    struct VulkanDevice : RenderDevice
+    {
+        VulkanDevice()
+            : Device()
+            , Properties(nullptr)
+        {}
+
+        VulkanDevice(VkPhysicalDevice D);
+        const char* Name() const override;
+
+        ~VulkanDevice()
+        {
+            // TODO: memory cleanup
+            // delete Properties;
+            Properties = nullptr;
+        }
+
+    private:
+        VkPhysicalDevice Device;
+        VkPhysicalDeviceProperties* Properties = nullptr;
+    };
+}
+
 namespace Volts::PS3::RSX::VulkanSupport
 {
-    // load the vulkan DLL in at runtime
-    // return true if the library loaded successfully
-    // otherwise retrn false
-    bool LoadDLL();
-
-    // check if vulkan was found in LoadDLL
-    bool Found();
-
     // make an instance thats ready for rendering
     VkInstance MakeInstance();
 
@@ -33,6 +53,6 @@ namespace Volts::PS3::RSX::VulkanSupport
     // check if an extension is supported
     bool Supported(const char* Extension);
 
-    Cthulhu::Array<Cthulhu::String> Devices(VkInstance Instance);
+    Cthulhu::Array<VulkanDevice> ListDevices(VkInstance Instance);
 }
 

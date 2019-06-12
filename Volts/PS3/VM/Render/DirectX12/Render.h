@@ -9,6 +9,7 @@ namespace Volts::PS3::RSX
         virtual ~DirectX12() override {}
 
         virtual InitError Init() override;
+        virtual void DeInit() override;
         virtual bool Supported() const override;
 
         virtual RenderDevice* Devices(unsigned& Count) const override;

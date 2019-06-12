@@ -5,7 +5,12 @@
 
 namespace Volts::PS3::RSX
 {
-    void Metal::Init()
+    InitError Metal::Init()
+    {
+
+    }
+
+    void Meta::DeInit()
     {
 
     }
