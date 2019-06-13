@@ -41,6 +41,9 @@ namespace Volts::PS3::RSX
         // return an array of RenderDevice and put the length in Count
         virtual RenderDevice* Devices(unsigned& Count) const = 0;
 
+        // does this need a device to be able to render?
+        virtual bool RequiresDevice() const = 0;
+
         virtual const char* Name() const = 0;
         virtual const char* Detail() const = 0;
 

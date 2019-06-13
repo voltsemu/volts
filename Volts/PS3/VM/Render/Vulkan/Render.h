@@ -25,8 +25,10 @@ namespace Volts::PS3::RSX
         virtual const char* Name() const override { return "Vulkan"; }
         virtual const char* Detail() const override { return "Vulkan is a low level rendering API from the Khronos Group"; }
 
+        virtual bool RequiresDevice() const override { return true; }
+
     private:
         VkInstance RenderInstance;
-        Cthulhu::Array<VulkanDevice> DeviceArray;
+        Cthulhu::Array<VulkanDevice>* DeviceArray;
     };
 }

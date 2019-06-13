@@ -42,7 +42,7 @@ namespace Volts::PS3::RSX
         virtual const char* Name() const override;
     private:
         DX12::Adapter* Adapter = nullptr;
-        DX12::AdapterDescriptor* Descriptor = nullptr;
+        DX12::AdapterDescriptor Descriptor;
     };
 
     struct DirectX12 : Render
@@ -58,6 +58,8 @@ namespace Volts::PS3::RSX
 
         virtual const char* Name() const override { return "DirectX12"; }
         virtual const char* Detail() const override { return "DirectX12 is a windows only graphics API with similar performance to vulkan"; }
+
+        virtual bool RequiresDevice() const override { return true; }
     private:
         DX12::DLL Library;
         Cthulhu::Array<DX12Device> RenderDevices;

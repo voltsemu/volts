@@ -28,7 +28,7 @@ namespace Volts::PS3::RSX
         {
             // TODO: memory cleanup
             // delete Properties;
-            Properties = nullptr;
+            // Properties = nullptr;
         }
 
     private:
@@ -53,6 +53,6 @@ namespace Volts::PS3::RSX::VulkanSupport
     // check if an extension is supported
     bool Supported(const char* Extension);
 
-    Cthulhu::Array<VulkanDevice> ListDevices(VkInstance Instance);
+    Cthulhu::Array<VulkanDevice>* ListDevices(VkInstance Instance);
 }
 

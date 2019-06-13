@@ -7,18 +7,20 @@ namespace Volts::PS3::RSX
     DX12Device::DX12Device(IDXGIAdapter1* Adapt)
         : Adapter(Adapt)
     {
-        Adapt->GetDesc1(Descriptor);
+        if(!!Adapt)
+            Adapt->GetDesc1(&Descriptor);
     }
 
     DX12Device::~DX12Device()
     {
-        delete Adapter;
-        delete Descriptor;
+        // TODO: fix memory leaks
+        // delete Adapter;
+        // delete Descriptor;
     }
 
     const char* DX12Device::Name() const
     {
-        return (const char*)Descriptor->Description;
+        return (const char*)Memory::Duplicate(Descriptor.Description, sizeof(Descriptor.Description));
     }
 
     DirectX12::DirectX12()

@@ -110,7 +110,7 @@ namespace Volts::PS3::RSX::VulkanSupport
         return false;
     }
 
-    Cthulhu::Array<VulkanDevice> ListDevices(VkInstance Instance)
+    Cthulhu::Array<VulkanDevice>* ListDevices(VkInstance Instance)
     {
         U32 Count = 0;
         if(vkEnumeratePhysicalDevices(Instance, &Count, nullptr) != VK_SUCCESS)
@@ -123,11 +123,11 @@ namespace Volts::PS3::RSX::VulkanSupport
 
         vkEnumeratePhysicalDevices(Instance, &Count, Devices);
 
-        Array<VulkanDevice> Ret;
+        Array<VulkanDevice>* Ret = new Array<VulkanDevice>();
 
         for(U32 I = 0; I < Count; I++)
         {
-            Ret.Append(Devices[I]);
+            Ret->Append(Devices[I]);
         }
 
         delete[] Devices;

@@ -21,6 +21,8 @@ namespace Volts::PS3::RSX
         if(RenderInstance == nullptr)
             return InitError::NoDriver;
 
+        DeviceArray = VulkanSupport::ListDevices(RenderInstance);
+
         // everything went well
         return InitError::Ok;
     }
@@ -28,6 +30,7 @@ namespace Volts::PS3::RSX
     void Vulkan::DeInit()
     {
         vkDestroyInstance(RenderInstance, nullptr);
+        delete DeviceArray;
     }
 
     void Vulkan::Test()
@@ -36,8 +39,8 @@ namespace Volts::PS3::RSX
 
     RenderDevice* Vulkan::Devices(unsigned& Count) const
     {
-        Count = DeviceArray.Len();
-        return *DeviceArray;
+        Count = DeviceArray->Len();
+        return DeviceArray->Data();
     }
 
     bool Vulkan::Supported() const

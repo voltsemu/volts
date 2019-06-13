@@ -50,8 +50,8 @@ namespace Volts::PS3::RSX
 
     RenderDevice* Metal::Devices(unsigned& Count) const
     {
-        Count = 0;
-        return nullptr;
+        Count = DeviceCount;
+        return AllDevices;
     }
 
     bool Metal::Supported() const

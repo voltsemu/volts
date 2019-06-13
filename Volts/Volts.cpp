@@ -47,14 +47,20 @@ int APIENTRY wWinMain(
 	for(auto* Render : RSX::GetBackends())
 	{
 		MessageBox(nullptr, Render->Name(), "Volts", 0);
+		if(!Render->RequiresDevice())
+			continue;
+
+		MessageBox(nullptr, "Here", "Volts", 0);
+
+		U32 Count = 0;
+		MessageBox(nullptr, "Here3", "Volts", 0);
+		Render->Init();
+		MessageBox(nullptr, "Here4", "Volts", 0);
+		RSX::RenderDevice* Devices = Render->Devices(Count);
+		MessageBox(nullptr, "Here2", "Volts", 0);
+		MessageBox(nullptr, (std::string("Count ") + std::to_string(Count)).c_str(), Render->Name(), 0);
+		for(U32 I = 0; I < Count; I++)
+			MessageBox(nullptr, Devices[I].Name(), "Volts", 0);
 	}
-
-	//RSX::DirectX12 X;
-	//U32 I = 0;
-	//X.Devices(I);
-
-	//RSX::Vulkan V;
-	//V.Init();
-	//V.Test();
 }
 #endif

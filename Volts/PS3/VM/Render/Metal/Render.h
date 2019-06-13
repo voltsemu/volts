@@ -28,6 +28,8 @@ namespace Volts::PS3::RSX
 
         virtual const char* Name() const override { return "Metal"; }
         virtual const char* Detail() const override { return "Metal is a low level rendering API only supported on Apple devices"; }
+
+        virtual bool RequiresDevice() const override { return true; }
     private:
         MetalDevice* AllDevices;
         unsigned DeviceCount;
