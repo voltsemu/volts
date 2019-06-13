@@ -46,4 +46,6 @@ namespace Volts::PS3::RSX
 
         static void Register(Render* Data);
     };
+
+#define REGISTER_RENDER(Type) auto CAT(__, __LINE__) = (Volts::PS3::RSX::Render::Register(new Type()), 0);
 }

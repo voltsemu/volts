@@ -5,23 +5,14 @@
 
 namespace Volts::PS3::RSX
 {
-    Cthulhu::Array<Render*> Backends;
-    Cthulhu::U32 Num = 0;
     void Render::Register(Render* Backend)
     {
-        Num++;
-        printf("Num: %u Len: %u\n", Num, Backends.Len());
-        Backends.Append(Backend);
-
-        for(auto& A : Backends)
-        {
-            printf("R: %s\n", A->Name());
-        }
+        MessageBox(nullptr, Backend->Name(), "Volts", 0);
     }
 
-    Cthulhu::Array<Render*>& GetBackends()
+    Cthulhu::Array<Render*> GetBackends()
     {
-        return Backends;
+        return {};
     }
 
     bool RenderDevice::operator==(const RenderDevice& Other) const

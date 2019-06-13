@@ -2,6 +2,11 @@
 
 namespace Volts::PS3::RSX
 {
+    OpenGL::OpenGL()
+    {
+        MessageBox(nullptr, "OpenGL Ctor", "Volts", 0);
+    }
+
     InitError OpenGL::Init()
     {
         return InitError::Ok;
@@ -11,4 +16,6 @@ namespace Volts::PS3::RSX
     {
 
     }
+
+    static OpenGL* OGLSingleton = new OpenGL();
 }

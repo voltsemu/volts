@@ -5,5 +5,5 @@
 
 namespace Volts::PS3::RSX
 {
-    Cthulhu::Array<Render*>& GetBackends();
+    Cthulhu::Array<Render*> GetBackends();
 }

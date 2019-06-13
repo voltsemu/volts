@@ -9,9 +9,10 @@ namespace Volts::PS3::RSX
     {
 
     };
-    
+
     struct OpenGL : Render
     {
+        OpenGL();
         virtual ~OpenGL() override {}
 
         virtual InitError Init() override;
@@ -23,8 +24,4 @@ namespace Volts::PS3::RSX
         virtual const char* Name() const override { return "OpenGL"; }
         virtual const char* Detail() const override { return "OpenGL is a high level rendering API with great compatibility on windows and linux"; }
     };
-
-    VSCRIPT({
-        Render::Register(new OpenGL());
-    });
 }

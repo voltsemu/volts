@@ -43,14 +43,13 @@ incs = [
 deps = [zlib.get_variable('zlib_dep')]
 links = []
 
-vulkan = false
+pymodule = import('python3')
+python3 = pymodule.find_python()
 
 if host_machine.system() == 'darwin'
     deps += dependency('appleframeworks', modules : ['Foundation', 'Metal'])
 else
     # apple doesnt have support for vulkan
-    pymodule = import('python3')
-    python3 = pymodule.find_python()
 
     #check if we have the vulkan sdk
     res = run_command(python3, '-c', 'import os; print(os.environ["VULKAN_SDK"])')
@@ -60,10 +59,13 @@ else
         message('Vulkan SDK not found, not building with vulkan')
     else
         # if we do then we should use it
-        vulkan = true
         incs += res.stdout().strip() / 'Include'
         links += res.stdout().strip() / 'Lib' / 'vulkan-1.lib'
     endif
+endif
+
+if host_machine.system() == 'windows'
+    links += 'd3d12.lib'
 endif
 
 # include the ps3 project

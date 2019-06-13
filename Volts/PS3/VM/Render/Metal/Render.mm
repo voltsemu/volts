@@ -3,6 +3,11 @@
 
 namespace Volts::PS3::RSX
 {
+    Metal::Metal()
+    {
+        printf("Metal Ctor\n");
+    }
+
     InitError Metal::Init()
     {
         return InitError::Ok;
@@ -34,4 +39,6 @@ namespace Volts::PS3::RSX
         // otherwise it returns null, which is also false
         return !!MTLCreateSystemDefaultDevice();
     }
+
+    static Metal* MTLSingleton = new Metal();
 }

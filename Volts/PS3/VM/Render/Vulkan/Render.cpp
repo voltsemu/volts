@@ -2,13 +2,15 @@
 
 #include <Core/Collections/CthulhuString.h>
 #include "Render.h"
-#include <chrono>
-
-using namespace std::chrono;
 
 namespace Volts::PS3::RSX
 {
     using namespace Cthulhu;
+
+    Vulkan::Vulkan()
+    {
+        MessageBox(nullptr, "Vulkan Ctor", "Volts", 0);
+    }
 
     InitError Vulkan::Init()
     {
@@ -43,6 +45,8 @@ namespace Volts::PS3::RSX
     {
         return true;
     }
+
+    static Vulkan* VKSingleton = new Vulkan();
 }
 
 #endif // WITH_VULKAN

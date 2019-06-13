@@ -16,14 +16,11 @@ sources += [
     'Volts/PS3/VM/Render/Frame.cpp',
     'Volts/PS3/VM/Render/OpenGL/Render.cpp',
     'Volts/PS3/VM/Render/Render.cpp',
-]
 
-if vulkan
-    sources += [
-        'Volts/PS3/VM/Render/Vulkan/Render.cpp',
-        'Volts/PS3/VM/Render/Vulkan/VulkanSupport.cpp',
-    ]
-endif
+    # vulkan stuff
+    'Volts/PS3/VM/Render/Vulkan/Render.cpp',
+    'Volts/PS3/VM/Render/Vulkan/VulkanSupport.cpp',
+]
 
 if host_machine.system() == 'windows'
     # only windows supports directx
