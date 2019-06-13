@@ -23,7 +23,7 @@ namespace Volts::PS3::RSX
 
     DirectX12::DirectX12()
     {
-        MessageBox(nullptr, "DirectX12 Ctor", "Volts", 0);
+        Render::Register(this);
     }
 
     InitError DirectX12::Init()

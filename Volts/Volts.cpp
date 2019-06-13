@@ -44,6 +44,11 @@ int APIENTRY wWinMain(
 	RSX::Instance = hInstance;
 	LogLevel = Level::Trace;
 
+	for(auto* Render : RSX::GetBackends())
+	{
+		MessageBox(nullptr, Render->Name(), "Volts", 0);
+	}
+
 	//RSX::DirectX12 X;
 	//U32 I = 0;
 	//X.Devices(I);

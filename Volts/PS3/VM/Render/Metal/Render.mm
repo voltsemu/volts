@@ -45,7 +45,7 @@ namespace Volts::PS3::RSX
 
     void Metal::Test()
     {
-        
+
     }
 
     RenderDevice* Metal::Devices(unsigned& Count) const

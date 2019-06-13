@@ -12,6 +12,7 @@ namespace Volts::PS3::RSX
     struct Vulkan : Render
     {
         Vulkan();
+
         virtual ~Vulkan() override {}
         virtual InitError Init() override;
         virtual void DeInit() override;

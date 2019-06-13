@@ -1,13 +1,5 @@
 #include "VulkanSupport.h"
 
-#if OS_WINDOWS
-#   define VKLOAD(Handle, Name) { Name = (decltype(Name))GetProcAddress(Handle, #Name); }
-#elif OS_LINUX
-#   define VKLOAD(Handle, Name) { Name = (decltype(Name))dlsym(Handle, #Name); }
-#endif
-
-#define VKDECLARE(Name) CAT(PFN_, Name) Name
-
 namespace Volts::PS3::RSX
 {
     VulkanDevice::VulkanDevice(VkPhysicalDevice D)
@@ -143,6 +135,3 @@ namespace Volts::PS3::RSX::VulkanSupport
         return Ret;
     }
 }
-
-#undef VKDECLARE
-#undef VKLOAD

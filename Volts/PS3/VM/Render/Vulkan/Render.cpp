@@ -1,5 +1,3 @@
-#if WITH_VULKAN
-
 #include <Core/Collections/CthulhuString.h>
 #include "Render.h"
 
@@ -9,11 +7,12 @@ namespace Volts::PS3::RSX
 
     Vulkan::Vulkan()
     {
-        MessageBox(nullptr, "Vulkan Ctor", "Volts", 0);
+        Render::Register(this);
     }
 
     InitError Vulkan::Init()
     {
+        VulkanSupport::InitExtensions();
         RenderInstance = VulkanSupport::MakeInstance();
 
         // if that failed then chances are the drivers dont work
@@ -48,5 +47,3 @@ namespace Volts::PS3::RSX
 
     static Vulkan* VKSingleton = new Vulkan();
 }
-
-#endif // WITH_VULKAN

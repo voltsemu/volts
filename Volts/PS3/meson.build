@@ -14,15 +14,17 @@ sources += [
 
     # GPU stuff
     'Volts/PS3/VM/Render/Frame.cpp',
-    'Volts/PS3/VM/Render/OpenGL/Render.cpp',
     'Volts/PS3/VM/Render/Render.cpp',
+
+    # everything supports opengl
+    'Volts/PS3/VM/Render/OpenGL/Render.cpp',
 ]
 
 if vulkan
     sources += [
         # vulkan stuff
-        'Volts/PS3/VM/Render/Vulkan/Render.cpp',
         'Volts/PS3/VM/Render/Vulkan/VulkanSupport.cpp',
+        'Volts/PS3/VM/Render/Vulkan/Render.cpp',
     ]
 endif
 
