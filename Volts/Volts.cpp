@@ -4,8 +4,8 @@
 #include "PS3/Util/Decrypt/UNSELF.h"
 #include "PS3/VM/Interpreter/PPUInterpreter.h"
 #include "PS3/VM/Render/Frame.h"
-#include "PS3/VM/Render/Vulkan/Render.h"
-#include "PS3/VM/Render/DirectX12/Render.h"
+//#include "PS3/VM/Render/Vulkan/Render.h"
+//#include "PS3/VM/Render/DirectX12/Render.h"
 #include "PS3/VM/Render/Backends.h"
 
 #if OS_WINDOWS
@@ -17,7 +17,7 @@ using namespace Volts;
 using namespace Volts::PS3;
 using namespace Cthulhu;
 
-static auto* VKSingleton = new RSX::Vulkan();
+//static auto* VKSingleton = new RSX::Vulkan();
 
 // entry point, nothing here yet as right now we're just testing very basic parts
 int main(int argc, const char** argv)

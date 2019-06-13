@@ -24,7 +24,7 @@ namespace Volts::PS3::RSX
         virtual ~RenderDevice() {}
         // The name of the device. ie GTX 960, Radeon VII, Intel HD 6000
         virtual const char* Name() const = 0;
-        bool operator==(const RenderDevice& Other) const;
+        virtual bool operator==(const RenderDevice& Other) const;
     };
 
     // call init on these before calling any other function

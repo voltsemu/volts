@@ -463,7 +463,9 @@ namespace Volts::PS3
         Bin.Seek(Entry);
         for(U32 _ = 0; _ < 10; _++)
         {
+            // TODO: replace this with an actual interpreter lol
             auto Inst = Bin.Read<PPUInstruction>();
+            OPTable[Inst.OPCode](*this, Inst);
         }
     }
 }

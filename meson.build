@@ -46,6 +46,8 @@ links = []
 pymodule = import('python3')
 python3 = pymodule.find_python()
 
+vulkan = false
+
 if host_machine.system() == 'darwin'
     deps += dependency('appleframeworks', modules : ['Foundation', 'Metal'])
 else
@@ -58,6 +60,7 @@ else
     if res.returncode() != 0
         message('Vulkan SDK not found, not building with vulkan')
     else
+        vulkan = true
         # if we do then we should use it
         incs += res.stdout().strip() / 'Include'
         links += res.stdout().strip() / 'Lib' / 'vulkan-1.lib'

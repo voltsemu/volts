@@ -4,7 +4,7 @@ namespace Volts::PS3::RSX
 {
     OpenGL::OpenGL()
     {
-        MessageBox(nullptr, "OpenGL Ctor", "Volts", 0);
+        Render::Register(this);
     }
 
     InitError OpenGL::Init()
