@@ -35,6 +35,17 @@ namespace Volts::PS3::RSX
 
     void Vulkan::Test()
     {
+        RSX::Frame F;
+        F.SetHeight(500);
+        F.SetWidth(500);
+        F.SetX(500);
+        F.SetY(500);
+        F.SetTitle("Skidaddle");
+        F.InputHandle(DefWindowProc);
+        F.Create();
+
+        while(F.ShouldStayOpen())
+            F.PollEvents();
     }
 
     RenderDevice* Vulkan::Devices(unsigned& Count) const

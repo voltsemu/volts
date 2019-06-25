@@ -31,9 +31,7 @@ namespace Volts::PS3::RSX
         AllDevices = new MetalDevice[DeviceCount];
 
         for(unsigned I = 0; I < DeviceCount; I++)
-        {
             AllDevices[I] = MetalDevice(Devs[I]);
-        }
 
         return InitError::Ok;
     }
