@@ -18,7 +18,6 @@ namespace Volts::PS3::RSX
     {
         VulkanDevice()
             : Device()
-            , Properties(nullptr)
         {}
 
         VulkanDevice(VkPhysicalDevice D);
@@ -33,7 +32,7 @@ namespace Volts::PS3::RSX
 
     private:
         VkPhysicalDevice Device;
-        VkPhysicalDeviceProperties* Properties = nullptr;
+        VkPhysicalDeviceProperties Properties = {};
     };
 }
 

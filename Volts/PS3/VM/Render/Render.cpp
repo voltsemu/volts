@@ -26,6 +26,6 @@ namespace Volts::PS3::RSX
     {
         // comparing names should usually work
         // this can always be overloaded so this is just a fallback
-        return Cthulhu::CString::Compare(Name(), Other.Name()) == 0;
+        return Name() == Other.Name();
     }
 }

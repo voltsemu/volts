@@ -27,7 +27,7 @@ namespace Volts::PS3::RSX
 
     std::wstring MetalDevice::Name() const
     {
-        return [Device.name UTF8String];
+        return std::wstring([Device.name UTF8String]);
     }
 
     InitError Metal::Init()

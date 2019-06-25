@@ -12,7 +12,7 @@ namespace Volts::PS3::RSX
         CreateDXGIFactory1(__uuidof(DX12::Factory), (void**)&Factory);
         DX12::Adapter* Adapt = nullptr;
         for(U32 I = 0; Factory->EnumAdapters1(I, &Adapt) != DXGI_ERROR_NOT_FOUND; I++)
-            RenderDevices.Append(DX12::DX12Device(Adapt));
+            RenderDevices.Append(Adapt);
 
 #if VDEBUG
         DX12::ComPtr<DX12::Debug> DebugInterface;

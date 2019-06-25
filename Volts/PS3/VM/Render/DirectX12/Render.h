@@ -25,6 +25,6 @@ namespace Volts::PS3::RSX
     private:
         bool Initialized = false;
         Cthulhu::U8 SwapFrames = 3;
-        Cthulhu::Array<DX12::Device> RenderDevices;
+        Cthulhu::Array<DX12::DX12Device> RenderDevices;
     };
 }

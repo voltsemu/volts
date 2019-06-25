@@ -4,15 +4,13 @@ namespace Volts::PS3::RSX
 {
     VulkanDevice::VulkanDevice(VkPhysicalDevice D)
         : Device(D)
-        , Properties(new VkPhysicalDeviceProperties)
     {
-        vkGetPhysicalDeviceProperties(Device, Properties);
+        vkGetPhysicalDeviceProperties(Device, &Properties);
     }
 
-    str::wstring VulkanDevice::Name() const
+    std::wstring VulkanDevice::Name() const
     {
-        MessageBox(nullptr, Properties->deviceName, "Vulkan Internal", 0);
-        return std::wstring(Properties->deviceName);
+        return std::wstring(&Properties.deviceName[0], &Properties.deviceName[VK_MAX_PHYSICAL_DEVICE_NAME_SIZE]);
     }
 }
 
