@@ -5,11 +5,6 @@
 
 namespace Volts::PS3::RSX
 {
-    struct OpenGLDevice : RenderDevice
-    {
-
-    };
-
     struct OpenGL : Render
     {
         OpenGL();
@@ -24,6 +19,7 @@ namespace Volts::PS3::RSX
         virtual const char* Name() const override { return "OpenGL"; }
         virtual const char* Detail() const override { return "OpenGL is a high level rendering API with great compatibility on windows and linux"; }
 
+        // OpenGL doesnt need a graphics card to explicitly support it
         virtual bool RequiresDevice() const override { return false; }
     };
 }

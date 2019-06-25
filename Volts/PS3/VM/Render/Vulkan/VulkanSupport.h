@@ -22,7 +22,7 @@ namespace Volts::PS3::RSX
         {}
 
         VulkanDevice(VkPhysicalDevice D);
-        const char* Name() const override;
+        virtual std::wstring Name() const override;
 
         ~VulkanDevice()
         {

@@ -31,7 +31,8 @@ endif
 if host_machine.system() == 'windows'
     # only windows supports directx
     sources += [
-        'Volts/PS3/VM/Render/DirectX12/Render.cpp'
+        'Volts/PS3/VM/Render/DirectX12/Render.cpp',
+        'Volts/PS3/VM/Render/DirectX12/DX12Support.cpp',
     ]
 endif
 

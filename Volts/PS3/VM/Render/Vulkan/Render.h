@@ -13,7 +13,7 @@ namespace Volts::PS3::RSX
     {
         Vulkan();
 
-        virtual ~Vulkan() override {}
+        virtual ~Vulkan() override;
         virtual InitError Init() override;
         virtual void DeInit() override;
 

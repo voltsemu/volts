@@ -11,18 +11,9 @@ namespace Volts::PS3::RSX
     Metal::Metal()
     {
         Render::Register(this);
-    }
-
-    const char* MetalDevice::Name() const
-    {
-        return [Device.name UTF8String];
-    }
-
-    InitError Metal::Init()
-    {
         // make sure we're supported on this system
         if(!Supported())
-            return InitError::NoDriver;
+            return;
 
         // get all devices
         NSArray<id<MTLDevice>>* Devs = MTLCopyAllDevices();
@@ -32,7 +23,17 @@ namespace Volts::PS3::RSX
 
         for(unsigned I = 0; I < DeviceCount; I++)
             AllDevices[I] = MetalDevice(Devs[I]);
+    }
 
+    std::wstring MetalDevice::Name() const
+    {
+        return [Device.name UTF8String];
+    }
+
+    InitError Metal::Init()
+    {
+        if(!Supported())
+            return InitError::NoDriver;
         return InitError::Ok;
     }
 

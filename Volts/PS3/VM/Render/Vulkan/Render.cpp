@@ -8,10 +8,6 @@ namespace Volts::PS3::RSX
     Vulkan::Vulkan()
     {
         Render::Register(this);
-    }
-
-    InitError Vulkan::Init()
-    {
         VulkanSupport::InitExtensions();
         RenderInstance = VulkanSupport::MakeInstance();
 
@@ -19,18 +15,25 @@ namespace Volts::PS3::RSX
         // because are we really going to run out of memory this
         // early on
         if(RenderInstance == nullptr)
-            return InitError::NoDriver;
+            return;
 
         DeviceArray = VulkanSupport::ListDevices(RenderInstance);
+    }
 
-        // everything went well
+    Vulkan::~Vulkan()
+    {
+        vkDestroyInstance(RenderInstance, nullptr);
+        delete DeviceArray;
+    }
+
+    InitError Vulkan::Init()
+    {
         return InitError::Ok;
     }
 
     void Vulkan::DeInit()
     {
-        vkDestroyInstance(RenderInstance, nullptr);
-        delete DeviceArray;
+
     }
 
     void Vulkan::Test()
@@ -56,7 +59,7 @@ namespace Volts::PS3::RSX
 
     bool Vulkan::Supported() const
     {
-        return true;
+        return RenderInstance != nullptr;
     }
 
     static Vulkan* VKSingleton = new Vulkan();

@@ -10,7 +10,7 @@ namespace Volts::PS3::RSX
     {
         MetalDevice() {}
         MetalDevice(id<MTLDevice> Dev);
-        virtual const char* Name() const override;
+        virtual std::wstring Name() const override;
     private:
         id<MTLDevice> Device;
     };

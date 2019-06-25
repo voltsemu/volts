@@ -4,39 +4,25 @@ namespace Volts::PS3::RSX
 {
     using namespace Cthulhu;
 
-    DX12Device::DX12Device(IDXGIAdapter1* Adapt)
-        : Adapter(Adapt)
-    {
-        if(!!Adapt)
-            Adapt->GetDesc1(&Descriptor);
-    }
-
-    DX12Device::~DX12Device()
-    {
-        // TODO: fix memory leaks
-        // delete Adapter;
-        // delete Descriptor;
-    }
-
-    const char* DX12Device::Name() const
-    {
-        return (const char*)Memory::Duplicate(Descriptor.Description, sizeof(Descriptor.Description));
-    }
-
     DirectX12::DirectX12()
     {
         Render::Register(this);
-    }
-
-    InitError DirectX12::Init()
-    {
         // get all the things we can use as a render device
         DX12::Factory* Factory = nullptr;
         CreateDXGIFactory1(__uuidof(DX12::Factory), (void**)&Factory);
         DX12::Adapter* Adapt = nullptr;
         for(U32 I = 0; Factory->EnumAdapters1(I, &Adapt) != DXGI_ERROR_NOT_FOUND; I++)
-            RenderDevices.Append(Adapt);
+            RenderDevices.Append(DX12::DX12Device(Adapt));
 
+#if VDEBUG
+        DX12::ComPtr<DX12::Debug> DebugInterface;
+        D3D12GetDebugInterface(IID_PPV_ARGS(&DebugInterface));
+        DebugInterface->EnableDebugLayer();
+#endif
+    }
+
+    InitError DirectX12::Init()
+    {
         return InitError::Ok;
     }
 

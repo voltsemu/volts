@@ -9,17 +9,16 @@ namespace Volts::PS3::RSX
         vkGetPhysicalDeviceProperties(Device, Properties);
     }
 
-    const char* VulkanDevice::Name() const
+    str::wstring VulkanDevice::Name() const
     {
-        return Properties->deviceName;
+        MessageBox(nullptr, Properties->deviceName, "Vulkan Internal", 0);
+        return std::wstring(Properties->deviceName);
     }
 }
 
 namespace Volts::PS3::RSX::VulkanSupport
 {
     using namespace Cthulhu;
-    // on windows DLL files are HMODULES
-    // on linux they're void*
 
     const char* ExtensionNames[] = {
             VK_KHR_SURFACE_EXTENSION_NAME,
@@ -126,9 +125,7 @@ namespace Volts::PS3::RSX::VulkanSupport
         Array<VulkanDevice>* Ret = new Array<VulkanDevice>();
 
         for(U32 I = 0; I < Count; I++)
-        {
             Ret->Append(Devices[I]);
-        }
 
         delete[] Devices;
 

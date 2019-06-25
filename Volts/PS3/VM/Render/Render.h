@@ -3,6 +3,8 @@
 // this header also works because its all defines
 #include "Core/Macros.h"
 
+#include <string>
+
 // we cant use anything except integral types in here because objectiveC++ includes this file
 // and objcpp really does not like C++17 code
 namespace Volts::PS3::RSX
@@ -23,7 +25,7 @@ namespace Volts::PS3::RSX
     {
         virtual ~RenderDevice() {}
         // The name of the device. ie GTX 960, Radeon VII, Intel HD 6000
-        virtual const char* Name() const = 0;
+        virtual std::wstring Name() const = 0;
         virtual bool operator==(const RenderDevice& Other) const;
     };
 

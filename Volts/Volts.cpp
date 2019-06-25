@@ -46,9 +46,9 @@ int APIENTRY wWinMain(
 			continue;
 
 		U32 Count = 0;
-		Render->Init();
 		RSX::RenderDevice* Devices = Render->Devices(Count);
 		MessageBox(nullptr, (std::string("Count ") + std::to_string(Count)).c_str(), Render->Name(), 0);
+		MessageBox(nullptr, Render->Name(), "Volts", 0);
 		for(U32 I = 0; I < Count; I++)
 			MessageBoxW(nullptr, (LPWSTR)Devices[I].Name(), L"Volts", 0);
 	}
