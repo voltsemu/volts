@@ -73,7 +73,7 @@ namespace Volts
         fread(Data, sizeof(C8), sizeof(Data) - 1, UName);
         pclose(UName);
 
-        return String::FromPtr(Data);
+        return String::FromPtr((char*)Data);
 #elif OS_APPLE
         return "OSX "_S + String::FromPtr(Darwin::OSName());
 #endif

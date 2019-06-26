@@ -9,7 +9,6 @@
 #include "Core/AES/AES.h"
 
 #include <zlib.h>
-#include <omp.h>
 
 
 // SELF files have massive, somewhat overly complex headers that need parsing

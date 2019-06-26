@@ -5,3 +5,6 @@
 
 // enable debug mode, this enables LOG[F]_PRINT and some other stuff
 #define VDEBUG 1
+
+// enable directx 12 debug stuff
+#define VDXDEBUG 1

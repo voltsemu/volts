@@ -21,10 +21,30 @@ namespace Volts::PS3::RSX::DX12
         return Descriptor.Description;
     }
 
-    ComPtr<Device> CreateDevice(ComPtr<Adapter> Adapt)
+    ComPtr<Queue> CreateCommandQueue(ComPtr<Device> Dev, ListType Type)
     {
-        ComPtr<Device> Device;
-        D3D12CreateDevice(Adapt.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&Device));
-        return Device;
+        ComPtr<Queue> CommandQueue;
+
+        QueueDescriptor Desc = {};
+        Desc.Type = (D3D12_COMMAND_LIST_TYPE)Type;
+        Desc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_HIGH;
+        Desc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
+        Desc.NodeMask = 0;
+
+        Dev->CreateCommandQueue(&Desc, IID_PPV_ARGS(&CommandQueue));
+
+        return CommandQueue;
+    }
+
+    bool TearingSupport()
+    {
+        bool CanTear = false;
+
+        if(ComPtr<Factory> Factory; SUCCEEDED(CreateDXGIFactory1(IID_PPV_ARGS(&Factory))))
+            if(ComPtr<Factory5> Factory5; SUCCEEDED(Factory.As(&Factory5)))
+                if(FAILED(Factory5->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &CanTear, sizeof(CanTear))))
+                    CanTear = false;
+
+        return CanTear;
     }
 }

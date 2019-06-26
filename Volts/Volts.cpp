@@ -19,12 +19,10 @@ using namespace Cthulhu;
 int main(int argc, const char** argv)
 {
 	LogLevel = Level::Trace;
-	//FileSystem::BufferedFile F(argv[1]);
 
-	for(auto Render : RSX::GetBackends())
-	{
-		printf("%s\n", Render->Name());
-	}
+	for(auto* Render : RSX::GetBackends())
+		if(Render->Name() == "DirectX12")
+			Render->Init();
 }
 
 // windows specific entry point because windows does some funny stuff around windowing and the like
@@ -38,17 +36,12 @@ int APIENTRY wWinMain(
 {
 	RSX::CmdShow = nShowCmd;
 	RSX::Instance = hInstance;
-	LogLevel = Level::Trace;
+	int Argc;
+	wchar_t** Argv = CommandLineToArgvW(GetCommandLineW(), &Argc);
 
-	for(auto* Render : RSX::GetBackends())
-	{
-		if(!Render->RequiresDevice())
-			continue;
+	// call main with the args
+	main(Argc, (const char**)Argv);
 
-		U32 Count = 0;
-		RSX::RenderDevice* Devices = Render->Devices(Count);
-		for(U32 I = 0; I < Count; I++)
-			MessageBoxW(nullptr, Devices[I].Name().c_str(), L"Volts", 0);
-	}
+	LocalFree(Argv);
 }
 #endif
