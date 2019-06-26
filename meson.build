@@ -30,8 +30,12 @@ sources = [
     'Volts/Volts.cpp',
 ]
 
+args = []
+
 if host_machine.system() == 'darwin'
     sources += 'Volts/Core/Darwin/Darwin.mm'
+    # we need C++ modules to use objc @import in objcpp
+    args += '-fmodules'
 endif
 
 incs = [
@@ -73,8 +77,6 @@ endif
 
 # include the ps3 project
 subdir('Volts/PS3')
-
-args = []
 
 # disable run time type id and exceptions in the hope of generating smaller code
 # i know you dont pay for features you dont use but this also stops people

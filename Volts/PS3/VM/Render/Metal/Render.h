@@ -4,6 +4,18 @@
 
 #import <MetalKit/MetalKit.h>
 
+// make objcpp shut up about sticking _Nonnull and _Nullable in front of every damn pointer
+// TODO: once code is stabilized remove this and mark everythings nullability
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnullability-completeness"
+
+// objective c classes can only appear in global scope
+@interface Copper : NSObject<MTKViewDelegate>
+
+- (nonnull instancetype)initWithView:(nonnull MTKView*)view;
+
+@end
+
 namespace Volts::PS3::RSX
 {
     struct MetalDevice : RenderDevice
@@ -32,6 +44,9 @@ namespace Volts::PS3::RSX
         virtual bool RequiresDevice() const override { return true; }
     private:
         MetalDevice* AllDevices;
+        MTKView* _Nonnull View;
         unsigned DeviceCount;
     };
 }
+
+#pragma clang diagnostic pop

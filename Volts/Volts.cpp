@@ -21,7 +21,7 @@ int main(int argc, const char** argv)
 	LogLevel = Level::Trace;
 
 	for(auto* Render : RSX::GetBackends())
-		if(Render->Name() == "DirectX12")
+		if(strcmp(Render->Name(), "Metal") == 0)
 			Render->Init();
 }
 

@@ -1,6 +1,48 @@
 
 #include "Render.h"
 
+#import <simd/simd.h>
+
+@implementation Copper
+{
+    id<MTLDevice> Device;
+    id<MTLRenderPipelineState> State;
+    id<MTLCommandQueue> Queue;
+    vector_uint2 Size;
+}
+
+- (nonnull instancetype)initWithView:(nonnull MTLView*)view
+{
+    self = [super init];
+
+    if(self)
+    {
+        NSError* Error = nullptr;
+
+        Device = view.device;
+
+        id<MTLLibrary> Lib = [Device newDefaultLibrary];
+
+        MTLRenderPipelineDescriptor* Desc = [MTLRenderPipelineDescriptor new];
+        Desc.label = @"Volts";
+        Desc.colorAttatchments[0].pixelFormat = view.colorPixelFormat;
+
+        State = [Device newRenderPipelineStateWithDescriptor:Desc error:&Error];
+
+        Queue = [Device newCommandQueue];
+    }
+
+    return self;
+}
+
+- (void)MTKView:(nonnull MTKView*)view drawableSizeWillChange:(CGSize)size
+{
+    Size.x = size.width;
+    Size.y = size.height;
+}
+
+@end
+
 namespace Volts::PS3::RSX
 {
     MetalDevice::MetalDevice(id<MTLDevice> Dev)
@@ -27,13 +69,15 @@ namespace Volts::PS3::RSX
 
     std::wstring MetalDevice::Name() const
     {
-        return std::wstring([Device.name UTF8String]);
+        auto Str = [Device.name UTF8String];
+        return std::wstring(&Str[0], &Str[[Device.name length]]);
     }
 
     InitError Metal::Init()
     {
         if(!Supported())
             return InitError::NoDriver;
+
         return InitError::Ok;
     }
 
