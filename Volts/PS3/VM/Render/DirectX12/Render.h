@@ -67,7 +67,7 @@ namespace Volts::PS3::RSX
 
         Cthulhu::U64 FenceValues[SwapFrames] = {};
         DX12::ComPtr<DX12::Resource> Buffers[SwapFrames];
-        DX12::ComPtr<DX12::Allocator> Allocators[SwapFrames];
+        DX12::ComPtr<DX12::Allocator> Allocator;
 
         Cthulhu::Array<DX12::DX12Device> RenderDevices;
         Frame Frame;

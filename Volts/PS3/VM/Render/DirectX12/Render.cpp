@@ -48,11 +48,72 @@ namespace Volts::PS3::RSX
         // TODO: dont hardcode this
         auto DXDevice = (DX12::DX12Device*)Dev;
 
+#if VDXDEBUG
+        DX_CHECK(D3D12GetDebugInterface(IID_PPV_ARGS(&Debugger)));
+        Debugger->EnableDebugLayer();
+#endif
 
+        DX12::ComPtr<DX12::Factory> Factory;
 
-        SetupDevice(DXDevice->GetAdapter());
+#if VDXDEBUG
+        DX_CHECK(CreateDXGIFactory2(DXGI_CREATE_FACTORY_DEBUG, IID_PPV_ARGS(&Factory)));
+#else
+        DX_CHECK(CreateDXGIFactory2(0, IID_PPV_ARGS(&Factory)));
+#endif
 
-        SetupSwapChain();
+        DX_CHECK(D3D12CreateDevice(DXDevice->GetAdapter(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&CurrentDevice)));
+
+        D3D12_COMMAND_QUEUE_DESC QDesc = {};
+        QDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
+        QDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
+
+        DX_CHECK(CurrentDevice->CreateCommandQueue(&QDesc, IID_PPV_ARGS(&Queue)));
+
+        DXGI_SWAP_CHAIN_DESC1 SDesc = {};
+        SDesc.BufferCount = SwapFrames;
+        SDesc.Width = 500;
+        SDesc.Height = 500;
+        SDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+        SDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+        SDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+        SDesc.SampleDesc.Count = 1;
+
+        DX12::ComPtr<DX12::SwapChain1> Swap1;
+
+        DX_CHECK(Factory->CreateSwapChainForHwnd(Queue.Get(), Frame.GetHandle(), &SDesc, nullptr, nullptr, &Swap1));
+
+        DX_CHECK(Swap1.As(&Swap));
+
+        DX_CHECK(Factory->MakeWindowAssociation(Frame.GetHandle(), DXGI_MWA_NO_ALT_ENTER));
+
+        CurrentBackBuffer = Swap->GetCurrentBackBufferIndex();
+
+        {
+            D3D12_DESCRIPTOR_HEAP_DESC HDesc = {};
+            HDesc.NumDescriptors = SwapFrames;
+            HDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+            HDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+            DX_CHECK(CurrentDevice->CreateDescriptorHeap(&HDesc, IID_PPV_ARGS(&Heap)));
+
+            RTVSize = CurrentDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+        }
+
+        {
+            D3D12_CPU_DESCRIPTOR_HANDLE RHandle = Heap->GetCPUDescriptorHandleForHeapStart();
+
+            for(Cthulhu::U32 I = 0; I < SwapFrames; I++)
+            {
+                DX_CHECK(Swap->GetBuffer(I, IID_PPV_ARGS(&Buffers[I])));
+                CurrentDevice->CreateRenderTargetView(Buffers[I].Get(), nullptr, RHandle);
+                RHandle.ptr += RTVSize;
+            }
+        }
+
+        CurrentDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&Allocator));
+
+        //SetupDevice(DXDevice->GetAdapter());
+
+        //SetupSwapChain();
 
         //CurrentBackBuffer = Swap->GetCurrentBackBufferIndex();
 
@@ -245,7 +306,7 @@ namespace Volts::PS3::RSX
         OutputDebugString("Name Jeff");
 #endif
     }
-
+#if 0
     void DirectX12::Render()
     {
         auto Alloc = Allocators[CurrentBackBuffer];
@@ -299,6 +360,6 @@ namespace Volts::PS3::RSX
             WaitForValue(FenceValues[CurrentBackBuffer]);
         }
     }
-
+#endif
     static DirectX12* DX12Singleton = new DirectX12();
 }
