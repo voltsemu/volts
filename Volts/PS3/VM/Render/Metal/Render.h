@@ -31,7 +31,7 @@ namespace Volts::PS3::RSX
     {
         Metal();
         virtual ~Metal() override {}
-        virtual InitError Init() override;
+        virtual InitError Init(RenderDevice* Device) override;
         virtual void DeInit() override;
         void Test();
 

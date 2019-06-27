@@ -1,5 +1,7 @@
 #include "DX12Support.h"
 
+#include <comdef.h>
+
 namespace Volts::PS3::RSX::DX12
 {
     DX12Device::DX12Device(IDXGIAdapter1* Adapt)
@@ -21,17 +23,15 @@ namespace Volts::PS3::RSX::DX12
         return Descriptor.Description;
     }
 
-    ComPtr<Queue> CreateCommandQueue(ComPtr<Device> Dev, ListType Type)
+    ComPtr<Queue> CreateCommandQueue(ComPtr<Device> Dev)
     {
         ComPtr<Queue> CommandQueue;
 
         QueueDescriptor Desc = {};
-        Desc.Type = (D3D12_COMMAND_LIST_TYPE)Type;
-        Desc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_HIGH;
+        Desc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
         Desc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
-        Desc.NodeMask = 0;
 
-        Dev->CreateCommandQueue(&Desc, IID_PPV_ARGS(&CommandQueue));
+        DX_CHECK(Dev->CreateCommandQueue(&Desc, IID_PPV_ARGS(&CommandQueue)));
 
         return CommandQueue;
     }

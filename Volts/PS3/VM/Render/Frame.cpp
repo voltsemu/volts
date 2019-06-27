@@ -36,30 +36,38 @@ namespace Volts::PS3::RSX
     {
         Title = T;
     }
-
+#if OS_WINDOWS
+    void Frame::Create(Render* Parent)
+#else
     void Frame::Create()
+#endif
     {
 #if OS_WINDOWS
         const char* WindowClassName = "VoltsFrameClass";
-        WNDCLASS WC = {};
+        WNDCLASSEX WC = { 0 };
+        WC.cbSize = sizeof(WNDCLASSEX);
+        WC.style = CS_HREDRAW | CS_VREDRAW;
         WC.lpfnWndProc = InputCallback;
         WC.hInstance = Instance;
+        WC.hCursor = LoadCursor(nullptr, IDC_ARROW);
         WC.lpszClassName = WindowClassName;
+        RegisterClassEx(&WC);
 
-        RegisterClass(&WC);
+        RECT WR = { X, Y, (LONG)(Width), (LONG)(Height) };
+        AdjustWindowRect(&WR, WS_OVERLAPPEDWINDOW, false);
 
-        Handle = CreateWindowEx(
-            0,
+        Handle = CreateWindow(
             WindowClassName,
             Title,
             WS_OVERLAPPEDWINDOW,
-
-            X, Y, Width, Height,
-
+            CW_USEDEFAULT,
+            CW_USEDEFAULT,
+            WR.right - WR.left,
+            WR.bottom - WR.top,
             nullptr,
             nullptr,
             Instance,
-            nullptr
+            Parent
         );
 
         if(Handle == nullptr)

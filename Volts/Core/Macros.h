@@ -10,6 +10,9 @@
 #define CAT_INNER(A, B) A##B
 #define CAT(A, B) CAT_INNER(A, B)
 
+#define INNER_STR(...) #__VA_ARGS__
+#define STR(...) INNER_STR(__VA_ARGS__)
+
 #if CC_MSVC
 // use some funny msvc specific macros to change byte padding to 1 then declare the struct
 #   define PACKED_STRUCT(Name, Fields)  __pragma(pack(push, 1)) \

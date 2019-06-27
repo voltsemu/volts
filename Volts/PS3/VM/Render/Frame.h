@@ -3,6 +3,8 @@
 // basically the only header we can have here because objective C++
 #include <Meta/Macros.h>
 
+#include "Render.h"
+
 // if we're on a platform other than apple we can include
 // whatever we want, so we might as well take advantage of it
 #if OS_WINDOWS
@@ -69,7 +71,18 @@ namespace Volts::PS3::RSX
         void SetX(unsigned X);
         void SetY(unsigned Y);
         void SetTitle(const char* T);
+
+#if OS_WINDOWS
+#       define WINDOWS_THIS this
+#else
+#       define WINDOWS_THIS
+#endif
+
+#if OS_WINDOWS
+        void Create(Render* Parent);
+#else
         void Create();
+#endif
         void Close();
         FrameHandle GetHandle() const;
 

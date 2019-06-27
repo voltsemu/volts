@@ -21,8 +21,12 @@ int main(int argc, const char** argv)
 	LogLevel = Level::Trace;
 
 	for(auto* Render : RSX::GetBackends())
-		if(strcmp(Render->Name(), "Metal") == 0)
-			Render->Init();
+		if(strcmp(Render->Name(), "DirectX12") == 0)
+		{
+			U32 I = 0;
+			auto* Devs = Render->Devices(I);
+			Render->Init(&Devs[0]);
+		}
 }
 
 // windows specific entry point because windows does some funny stuff around windowing and the like

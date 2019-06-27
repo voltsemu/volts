@@ -7,7 +7,7 @@ namespace Volts::PS3::RSX
         Render::Register(this);
     }
 
-    InitError OpenGL::Init()
+    InitError OpenGL::Init(RenderDevice*)
     {
         return InitError::Ok;
     }

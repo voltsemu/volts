@@ -34,7 +34,7 @@ namespace Volts::PS3::RSX
     {
         virtual ~Render() {}
         // init some basic stuff, dont actually create a window or anything
-        virtual InitError Init() = 0;
+        virtual InitError Init(RenderDevice*) = 0;
         virtual void DeInit() = 0;
         // is this backend supported on the current platform?
         // IE. does this current platforms GPU support directx 12?

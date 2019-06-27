@@ -65,7 +65,7 @@ namespace Volts::TAR
         U32 Depth = Bin->Tell();
         Array<String> Names;
 
-        while(true) 
+        while(true)
         {
             auto Head = Bin->Read<Header>();
             Names.Append(Head.Name);
@@ -101,12 +101,12 @@ namespace Volts::TAR
             LOG_ERROR(TAR, "Invalid TAR Magic");
             return {};
         }
-                
+
         I32 Size = OctToDec(Utils::ParseInt(Head.Size));
 
         C8* HeaderName = Head.Name;
         // TODO: modify the cthulhu functions to use C8 not char
-        if(CString::Compare((char*)HeaderName, Name.CStr()) != 0)
+        if(Cthulhu::CString::Compare((char*)HeaderName, Name.CStr()) != 0)
         {
             Bin->Seek(Bin->Tell() + Size);
             return GetFile(Name);

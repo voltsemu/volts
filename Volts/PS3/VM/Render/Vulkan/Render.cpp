@@ -26,7 +26,7 @@ namespace Volts::PS3::RSX
         delete DeviceArray;
     }
 
-    InitError Vulkan::Init()
+    InitError Vulkan::Init(RenderDevice* Device)
     {
         return InitError::Ok;
     }
@@ -45,7 +45,7 @@ namespace Volts::PS3::RSX
         F.SetY(500);
         F.SetTitle("Skidaddle");
         F.InputHandle(DefWindowProc);
-        F.Create();
+        F.Create(WINDOWS_THIS);
 
         while(F.ShouldStayOpen())
             F.PollEvents();

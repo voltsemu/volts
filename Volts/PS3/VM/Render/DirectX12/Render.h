@@ -12,7 +12,7 @@ namespace Volts::PS3::RSX
         DirectX12();
         virtual ~DirectX12() override {}
 
-        virtual InitError Init() override;
+        virtual InitError Init(RenderDevice* Device) override;
         virtual void DeInit() override;
         virtual bool Supported() const override;
 
@@ -24,6 +24,7 @@ namespace Volts::PS3::RSX
         virtual bool RequiresDevice() const override { return true; }
 
     private:
+
         void SetupSwapChain();
         void SetupHeap();
         void SetupDevice(DX12::Adapter* Adapt);

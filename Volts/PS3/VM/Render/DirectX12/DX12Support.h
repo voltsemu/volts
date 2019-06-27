@@ -3,6 +3,7 @@
 #include "Volts/Config.h"
 
 #include "PS3/VM/Render/Render.h"
+#include "Volts/Core/Logger/Logger.h"
 
 #include <d3d12.h>
 #include <dxgi.h>
@@ -34,17 +35,12 @@ namespace Volts::PS3::RSX::DX12
     using Adapter = IDXGIAdapter1;
 
     using Handle = HANDLE;
+    using Result = HRESULT;
 
     using AdapterDescriptor = DXGI_ADAPTER_DESC1;
     using QueueDescriptor = D3D12_COMMAND_QUEUE_DESC;
-    using SwapDescriptor = DXGI_SWAP_CHAIN_DESC1;
+    using SwapDescriptor = DXGI_SWAP_CHAIN_DESC;
     using HeapDescriptor = D3D12_DESCRIPTOR_HEAP_DESC;
-
-    enum class ListType
-    {
-        Direct = D3D12_COMMAND_LIST_TYPE_DIRECT,
-        Compute = D3D12_COMMAND_LIST_TYPE_COMPUTE,
-    };
 
     struct DX12Device : RenderDevice
     {
@@ -59,8 +55,11 @@ namespace Volts::PS3::RSX::DX12
         AdapterDescriptor Descriptor;
     };
 
-    ComPtr<Device> CreateDevice(ComPtr<Adapter> Adapt);
-    ComPtr<Queue> CreateCommandQueue(ComPtr<Device> Dev, ListType Type);
-
+    ComPtr<Queue> CreateCommandQueue(ComPtr<Device> Dev);
+#if VDXDEBUG
+#   define DX_CHECK(...) { auto HR = __VA_ARGS__; if(FAILED(HR)) { LOGF_ERROR(DX12, "Check failed " __FILE__ ":" STR(__LINE__) " HR(0x%x) %s", HR, _com_error(HR).ErrorMessage()); } }
+#else
+#   define DX_CHECK(...) { __VA_ARGS__; }
+#endif
     bool TearingSupport();
 }

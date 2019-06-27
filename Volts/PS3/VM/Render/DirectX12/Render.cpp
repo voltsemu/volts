@@ -1,5 +1,7 @@
 #include "Render.h"
 
+#include <comdef.h>
+
 namespace Volts::PS3::RSX
 {
     using namespace Cthulhu;
@@ -33,7 +35,7 @@ namespace Volts::PS3::RSX
         return 0;
     }
 
-    InitError DirectX12::Init()
+    InitError DirectX12::Init(RenderDevice* Dev)
     {
         Frame.SetWidth(500);
         Frame.SetHeight(500);
@@ -41,13 +43,14 @@ namespace Volts::PS3::RSX
         Frame.SetY(500);
         Frame.InputHandle(Proc);
         Frame.SetTitle("DirectX12 Volts");
-        Frame.Create();
-
-
-
+        Frame.Create(this);
 
         // TODO: dont hardcode this
-        SetupDevice(RenderDevices[0].GetAdapter());
+        auto DXDevice = (DX12::DX12Device*)Dev;
+
+
+
+        SetupDevice(DXDevice->GetAdapter());
 
         SetupSwapChain();
 
@@ -82,42 +85,42 @@ namespace Volts::PS3::RSX
     {
         DX12::ComPtr<DX12::Factory> Factory;
 
-        CreateDXGIFactory2(
 #if VDXDEBUG
-            DXGI_CREATE_FACTORY_DEBUG,
+        DX_CHECK(CreateDXGIFactory2(DXGI_CREATE_FACTORY_DEBUG, IID_PPV_ARGS(&Factory)));
 #else
-            0,
+        DX_CHECK(CreateDXGIFactory2(0, IID_PPV_ARGS(&Factory)));
 #endif
-            IID_PPV_ARGS(&Factory));
-
         DX12::SwapDescriptor Desc = {};
-        // TODO: dont hardcode these
-        Desc.Width = 500;
-        Desc.Height = 500;
 
         // TODO: this might need to be changed
-        Desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
-        Desc.Stereo = false;
+        Desc.BufferDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
         Desc.SampleDesc = { 1, 0 };
         Desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 
         // TODO: might need to be changed
         Desc.BufferCount = SwapFrames;
-        Desc.Scaling = DXGI_SCALING_STRETCH;
+        Desc.Windowed = true;
+        Desc.OutputWindow = Frame.GetHandle();
         Desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-        Desc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
         Desc.Flags = CanTear ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
 
 #if VDXDEBUG
-        D3D12GetDebugInterface(IID_PPV_ARGS(&Debugger));
+        DX_CHECK(D3D12GetDebugInterface(IID_PPV_ARGS(&Debugger)));
         Debugger->EnableDebugLayer();
 #endif
+        Queue = DX12::CreateCommandQueue(CurrentDevice);
 
-        Queue = DX12::CreateCommandQueue(CurrentDevice, DX12::ListType::Direct);
+        DX_CHECK(CurrentDevice->GetDeviceRemovedReason());
 
         DX12::ComPtr<DX12::SwapChain1> Swap1;
-        Factory->CreateSwapChainForHwnd(Queue.Get(), Frame.GetHandle(), &Desc, nullptr, nullptr, &Swap1);
-        Factory->MakeWindowAssociation(Frame.GetHandle(), DXGI_MWA_NO_ALT_ENTER);
+        CurrentDevice.As(&Swap1);
+        DX_CHECK(Factory->CreateSwapChain(
+            Queue.Get(),
+            &Desc,
+            (IDXGISwapChain**)Swap1.GetAddressOf()
+        ));
+
+        DX_CHECK(Factory->MakeWindowAssociation(Frame.GetHandle(), DXGI_MWA_NO_ALT_ENTER));
         Swap1.As(&Swap);
     }
 
@@ -131,13 +134,13 @@ namespace Volts::PS3::RSX
         // TODO: this probably shouldnt be hardcoded
         Desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
 
-        CurrentDevice->CreateDescriptorHeap(&Desc, IID_PPV_ARGS(&Heap));
+        DX_CHECK(CurrentDevice->CreateDescriptorHeap(&Desc, IID_PPV_ARGS(&Heap)));
     }
 
     void DirectX12::SetupDevice(DX12::Adapter* Adapt)
     {
-        D3D12CreateDevice(Adapt, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&CurrentDevice));
-
+        // TOOD: is there a way that means we dont have to create the device twice?
+        DX_CHECK(D3D12CreateDevice(Adapt, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&CurrentDevice)));
 #if VDXDEBUG
         if(SUCCEEDED(CurrentDevice.As(&DebugQueue)))
         {
@@ -162,6 +165,8 @@ namespace Volts::PS3::RSX
             DebugQueue->PushStorageFilter(&Filter);
         }
 #endif
+
+        DX_CHECK(D3D12CreateDevice(Adapt, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&CurrentDevice)));
     }
 
     void DirectX12::UpdateRTV()
@@ -174,7 +179,7 @@ namespace Volts::PS3::RSX
         for(Cthulhu::U32 I = 0; I < SwapFrames; I++)
         {
             DX12::ComPtr<DX12::Resource> Buffer;
-            Swap->GetBuffer(I, IID_PPV_ARGS(&Buffer));
+            DX_CHECK(Swap->GetBuffer(I, IID_PPV_ARGS(&Buffer)));
 
             CurrentDevice->CreateRenderTargetView(Buffer.Get(), nullptr, RTVHandle);
 
@@ -187,26 +192,26 @@ namespace Volts::PS3::RSX
     DX12::ComPtr<DX12::Allocator> DirectX12::CreateAllocator()
     {
         DX12::ComPtr<DX12::Allocator> Alloc;
-        CurrentDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&Alloc));
+        DX_CHECK(CurrentDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&Alloc)));
 
         return Alloc;
     }
 
     void DirectX12::SetupList(DX12::Allocator* Alloc)
     {
-        CurrentDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, Alloc, nullptr, IID_PPV_ARGS(&CommandList));
+        DX_CHECK(CurrentDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, Alloc, nullptr, IID_PPV_ARGS(&CommandList)));
         CommandList->Close();
     }
 
     void DirectX12::SetupFence()
     {
-        CurrentDevice->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&Fence));
+        DX_CHECK(CurrentDevice->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&Fence)));
     }
 
     void DirectX12::SetupFenceHandle()
     {
         FenceEvent = CreateEventA(nullptr, false, false, nullptr);
-        // TODO: check to see if it fails
+        // TODO: DX_CHECK to see if it fails
     }
 
     Cthulhu::U64 DirectX12::Signal(Cthulhu::U64& FenceValue)

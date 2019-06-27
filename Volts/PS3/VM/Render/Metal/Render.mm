@@ -73,7 +73,7 @@ namespace Volts::PS3::RSX
         return std::wstring(&Str[0], &Str[[Device.name length]]);
     }
 
-    InitError Metal::Init()
+    InitError Metal::Init(RenderDevice* Device)
     {
         if(!Supported())
             return InitError::NoDriver;
