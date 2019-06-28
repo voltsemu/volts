@@ -25,13 +25,6 @@ namespace Volts::PS3::RSX
 
     LRESULT CALLBACK Proc(HWND Wnd, UINT M, WPARAM W, LPARAM L)
     {
-        if(M == WM_CREATE)
-        {
-            auto* Parent = (DirectX12*)((LPCREATESTRUCT)L)->lpCreateParams;
-            SetWindowLongPtr(Wnd, GWLP_USERDATA, (LONG_PTR)Parent);
-            return 0;
-        }
-
         auto* DXWindow = (DirectX12*)GetWindowLongPtr(Wnd, GWLP_USERDATA);
 
         switch(M)
@@ -53,8 +46,11 @@ namespace Volts::PS3::RSX
                 exit(0);
                 break;
             case WM_CREATE:
-                OutputDebugString("AAAAAAA");
+            {
+                auto* Parent = (DirectX12*)((LPCREATESTRUCT)L)->lpCreateParams;
+                SetWindowLongPtr(Wnd, GWLP_USERDATA, (LONG_PTR)Parent);
                 break;
+            }
             default:
                 return DefWindowProc(Wnd, M, W, L);
         }
