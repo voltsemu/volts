@@ -39,11 +39,11 @@ namespace Volts::PS3::RSX
     void Vulkan::Test()
     {
         RSX::Frame F;
-        F.SetHeight(500);
-        F.SetWidth(500);
-        F.SetX(500);
-        F.SetY(500);
-        F.SetTitle("Skidaddle");
+        F.Height = 500;
+        F.Width = 500;
+        F.X = 500;
+        F.Y = 500;
+        F.Title = "Skidaddle";
         F.InputHandle(DefWindowProc);
         F.Create(WINDOWS_THIS);
 

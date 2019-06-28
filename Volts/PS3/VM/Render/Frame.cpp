@@ -12,30 +12,6 @@ namespace Volts::PS3::RSX
     }
 #endif
 
-    void Frame::SetHeight(unsigned H)
-    {
-        Height = H;
-    }
-
-    void Frame::SetWidth(unsigned W)
-    {
-        Width = W;
-    }
-
-    void Frame::SetX(unsigned XIn)
-    {
-        X = XIn;
-    }
-
-    void Frame::SetY(unsigned YIn)
-    {
-        Y = YIn;
-    }
-
-    void Frame::SetTitle(const char* T)
-    {
-        Title = T;
-    }
 #if OS_WINDOWS
     void Frame::Create(Render* Parent)
 #else
@@ -43,7 +19,7 @@ namespace Volts::PS3::RSX
 #endif
     {
 #if OS_WINDOWS
-        const char* WindowClassName = "VoltsFrameClass";
+        const char WindowClassName[] = "VoltsFrameClass";
         WNDCLASSEX WC = { 0 };
         WC.cbSize = sizeof(WNDCLASSEX);
         WC.style = CS_HREDRAW | CS_VREDRAW;
@@ -51,19 +27,18 @@ namespace Volts::PS3::RSX
         WC.hInstance = Instance;
         WC.hCursor = LoadCursor(nullptr, IDC_ARROW);
         WC.lpszClassName = WindowClassName;
+        WC.cbClsExtra = sizeof(Render*);
         RegisterClassEx(&WC);
 
-        RECT WR = { X, Y, (LONG)(Width), (LONG)(Height) };
-        AdjustWindowRect(&WR, WS_OVERLAPPEDWINDOW, false);
-
-        Handle = CreateWindow(
-            WindowClassName,
-            Title,
+        Handle = CreateWindowExW(
+            0,
+            std::wstring(&WindowClassName[0], &WindowClassName[sizeof(WindowClassName)]).c_str(),
+            std::wstring(&Title[0], &Title[strlen(Title)]).c_str(),
             WS_OVERLAPPEDWINDOW,
             CW_USEDEFAULT,
             CW_USEDEFAULT,
-            WR.right - WR.left,
-            WR.bottom - WR.top,
+            Width,
+            Height,
             nullptr,
             nullptr,
             Instance,
@@ -76,7 +51,6 @@ namespace Volts::PS3::RSX
             return;
         }
 
-        ShowWindow(Handle, CmdShow);
 #elif OS_LINUX
         D = XOpenDisplay(nullptr);
 
@@ -94,7 +68,7 @@ namespace Volts::PS3::RSX
             5, BlackPixel(D, S), WhitePixel(D, S)
         );
 #elif OS_APPLE
-
+        // TODO: apple support is going to be painful...
 #endif
     }
 
@@ -105,6 +79,17 @@ namespace Volts::PS3::RSX
 #elif OS_LINUX
         XDestroyWindow(D, Handle);
         XCloseDisplay(D);
+#elif OS_APPLE
+
+#endif
+    }
+
+    void Frame::Show()
+    {
+#if OS_WINDOWS
+        ShowWindow(Handle, CmdShow);
+#elif OS_LINUX
+        // TODO: all this
 #elif OS_APPLE
 
 #endif

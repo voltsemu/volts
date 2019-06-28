@@ -4,6 +4,7 @@
 #include "PS3/VM/Render/Frame.h"
 
 #include <Core/Collections/Array.h>
+#include <Core/Math/Limits.h>
 
 namespace Volts::PS3::RSX
 {
@@ -25,33 +26,38 @@ namespace Volts::PS3::RSX
 
     private:
 
-        void SetupSwapChain();
-        void SetupHeap();
-        void SetupDevice(DX12::Adapter* Adapt);
-        void SetupList(DX12::Allocator* Alloc);
-        void SetupFence();
-        void SetupFenceHandle();
+#if VDXDEBUG
+        DX12::ComPtr<DX12::Debug> Debugger;
+        DX12::ComPtr<DX12::InfoQueue> DebugQueue;
+        void EnableDebugger();
+#endif
 
-        DX12::ComPtr<DX12::Allocator> CreateAllocator();
-
-        void UpdateRTV();
+        struct
+        {
+            Cthulhu::U64 FrameCount = 0;
+            Cthulhu::U64 MSSinceLastFrame = 0;
+            Cthulhu::U64 LastFrame = 0;
+            Cthulhu::F64 ElapsedTime = 0.0;
+        } Stats;
+    public:
         void Update();
         void Render();
+        void Resize(RECT NewSize);
+    private:
+        DX12::ComPtr<DX12::CommandList> CreateCommandList();
 
-        Cthulhu::U64 Signal(Cthulhu::U64& FenceValue);
-        void WaitForValue(Cthulhu::U64 Duration);
-        void Flush(Cthulhu::U64& FenceValue);
+        Cthulhu::U64 Signal(Cthulhu::U64& Val);
+        void WaitForFenceValue(Cthulhu::U64 Val, Cthulhu::U64 Duration = Cthulhu::Math::Limits<Cthulhu::U64>::Max());
+        void Flush();
+        void UpdateRTV();
 
-        static constexpr Cthulhu::U8 SwapFrames = 3;
+        static constexpr Cthulhu::U8 SwapFrames = 2;
         Cthulhu::U64 FrameCounter = 0;
 
         bool Initialized = false;
         bool VSync = false;
-        bool CanTear = false;
-#if VDXDEBUG
-        DX12::ComPtr<DX12::Debug> Debugger;
-        DX12::ComPtr<DX12::InfoQueue> DebugQueue;
-#endif
+        bool TearingSupport = false;
+
         DX12::ComPtr<DX12::Device> CurrentDevice;
         DX12::ComPtr<DX12::DescriptorHeap> Heap;
         DX12::ComPtr<DX12::SwapChain> Swap;
@@ -67,9 +73,11 @@ namespace Volts::PS3::RSX
 
         Cthulhu::U64 FenceValues[SwapFrames] = {};
         DX12::ComPtr<DX12::Resource> Buffers[SwapFrames];
-        DX12::ComPtr<DX12::Allocator> Allocator;
+        DX12::ComPtr<DX12::Allocator> Allocators[SwapFrames];
 
         Cthulhu::Array<DX12::DX12Device> RenderDevices;
+
+        RECT WindowRect;
         Frame Frame;
     };
 }

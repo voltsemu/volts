@@ -55,11 +55,11 @@ namespace Volts::PS3::RSX::DX12
         AdapterDescriptor Descriptor;
     };
 
-    ComPtr<Queue> CreateCommandQueue(ComPtr<Device> Dev);
+    bool CanTear();
+
 #if VDXDEBUG
 #   define DX_CHECK(...) { auto HR = __VA_ARGS__; if(FAILED(HR)) { LOGF_ERROR(DX12, "Check failed " __FILE__ ":" STR(__LINE__) " HR(0x%x) %s", HR, _com_error(HR).ErrorMessage()); } }
 #else
 #   define DX_CHECK(...) { __VA_ARGS__; }
 #endif
-    bool TearingSupport();
 }

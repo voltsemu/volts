@@ -66,12 +66,6 @@ namespace Volts::PS3::RSX
         void InputHandle(WindowCallback* Callback);
 #endif
 
-        void SetHeight(unsigned H);
-        void SetWidth(unsigned W);
-        void SetX(unsigned X);
-        void SetY(unsigned Y);
-        void SetTitle(const char* T);
-
 #if OS_WINDOWS
 #       define WINDOWS_THIS this
 #else
@@ -83,6 +77,8 @@ namespace Volts::PS3::RSX
 #else
         void Create();
 #endif
+
+        void Show();
         void Close();
         FrameHandle GetHandle() const;
 
@@ -92,10 +88,10 @@ namespace Volts::PS3::RSX
         void PollEvents();
 #endif
 
-    private:
         unsigned Width, Height;
         unsigned X, Y;
         const char* Title;
+    private:
         FrameHandle Handle;
 #if OS_LINUX
         Display* D;
