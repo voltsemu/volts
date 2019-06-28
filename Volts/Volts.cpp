@@ -21,7 +21,7 @@ int main(int argc, const char** argv)
 	LogLevel = Level::Trace;
 
 	for(auto* Render : RSX::GetBackends())
-		if(strcmp(Render->Name(), "Metal") == 0)
+		if(strcmp(Render->Name(), "DirectX12") == 0)
 		{
 			U32 I = 0;
 			auto* Devs = Render->Devices(I);

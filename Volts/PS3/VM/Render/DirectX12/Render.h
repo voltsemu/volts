@@ -51,7 +51,7 @@ namespace Volts::PS3::RSX
         void Flush();
         void UpdateRTV();
 
-        static constexpr Cthulhu::U8 SwapFrames = 2;
+        static constexpr Cthulhu::U8 SwapFrames = 3;
         Cthulhu::U64 FrameCounter = 0;
 
         bool Initialized = false;
