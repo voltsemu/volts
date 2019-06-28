@@ -11,7 +11,7 @@
     vector_uint2 Size;
 }
 
-- (nonnull instancetype)initWithView:(nonnull MTLView*)view
+- (instancetype)initWithView:(MTKView*)view
 {
     self = [super init];
 
@@ -19,13 +19,12 @@
     {
         NSError* Error = nullptr;
 
-        Device = view.device;
+        //Device = view.device;
 
         id<MTLLibrary> Lib = [Device newDefaultLibrary];
 
         MTLRenderPipelineDescriptor* Desc = [MTLRenderPipelineDescriptor new];
         Desc.label = @"Volts";
-        Desc.colorAttatchments[0].pixelFormat = view.colorPixelFormat;
 
         State = [Device newRenderPipelineStateWithDescriptor:Desc error:&Error];
 
@@ -53,6 +52,7 @@ namespace Volts::PS3::RSX
     Metal::Metal()
     {
         Render::Register(this);
+
         // make sure we're supported on this system
         if(!Supported())
             return;
@@ -77,6 +77,23 @@ namespace Volts::PS3::RSX
     {
         if(!Supported())
             return InitError::NoDriver;
+
+        Window = [
+            [NSWindow alloc]
+            initWithContentRect:NSMakeRect(500, 500, 500, 500)
+                styleMask:NSWindowStyleMaskResizable | NSWindowStyleMaskClosable | NSWindowStyleMaskTitled
+                backing:NSBackingStoreBuffered
+                defer:NO
+        ];
+
+        [Window setTitle:@"Metal Volts"];
+
+        View = (MTKView*)Window.contentView;
+
+        [Window orderFrontRegardless];
+        [Window setRestorable:NO];
+
+        while(true);
 
         return InitError::Ok;
     }

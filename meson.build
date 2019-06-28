@@ -53,7 +53,7 @@ python3 = pymodule.find_python()
 vulkan = false
 
 if host_machine.system() == 'darwin'
-    deps += dependency('appleframeworks', modules : ['Foundation', 'Metal'])
+    deps += dependency('appleframeworks', modules : ['Foundation', 'Metal', 'Cocoa'])
 else
     # apple doesnt have support for vulkan
 

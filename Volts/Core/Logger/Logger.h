@@ -91,7 +91,7 @@ namespace Volts
 #define LOGF_FATAL(C, M, ...) LOGF(C, Level::Fatal, M, __VA_ARGS__)
 
 // basic logging without formatting
-#define LOG(C, L, M) LOGF(C, L, M)
+#define LOG(C, L, M) { if(L >= LogLevel) { printf("[" #C "] " M "\n"); } }
 
 #define LOG_TRACE(C, M) LOG(C, Level::Trace, M)
 #define LOG_INFO(C, M) LOG(C, Level::Info, M)

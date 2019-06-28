@@ -12,7 +12,7 @@
 // objective c classes can only appear in global scope
 @interface Copper : NSObject<MTKViewDelegate>
 
-- (nonnull instancetype)initWithView:(nonnull MTKView*)view;
+- (instancetype)initWithView:(MTKView*)view;
 
 @end
 
@@ -44,7 +44,8 @@ namespace Volts::PS3::RSX
         virtual bool RequiresDevice() const override { return true; }
     private:
         MetalDevice* AllDevices;
-        MTKView* _Nonnull View;
+        MTKView* View;
+        NSWindow* Window;
         unsigned DeviceCount;
     };
 }
