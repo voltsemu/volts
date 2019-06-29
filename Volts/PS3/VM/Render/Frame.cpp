@@ -20,7 +20,7 @@ namespace Volts::PS3::RSX
     {
 #if OS_WINDOWS
         const char WindowClassName[] = "VoltsFrameClass";
-        WNDCLASSEX WC = { 0 };
+        WNDCLASSEX WC = {};
         WC.cbSize = sizeof(WNDCLASSEX);
         WC.style = CS_HREDRAW | CS_VREDRAW;
         WC.lpfnWndProc = InputCallback;
@@ -35,8 +35,8 @@ namespace Volts::PS3::RSX
             std::wstring(&WindowClassName[0], &WindowClassName[sizeof(WindowClassName)]).c_str(),
             std::wstring(&Title[0], &Title[strlen(Title)]).c_str(),
             WS_OVERLAPPEDWINDOW,
-            CW_USEDEFAULT,
-            CW_USEDEFAULT,
+            X,
+            Y,
             Width,
             Height,
             nullptr,

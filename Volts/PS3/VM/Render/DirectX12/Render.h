@@ -27,59 +27,45 @@ namespace Volts::PS3::RSX
     private:
 
 #if VDXDEBUG
-        DX12::ComPtr<DX12::Debug> Debugger;
         DX12::ComPtr<DX12::InfoQueue> DebugQueue;
         void EnableDebugger();
 #endif
 
-        struct
-        {
-            Cthulhu::U64 FrameCount = 0;
-            Cthulhu::U64 MSSinceLastFrame = 0;
-            Cthulhu::U64 LastFrame = 0;
-            Cthulhu::F64 ElapsedTime = 0.0;
-        } Stats;
+        static constexpr Cthulhu::U8 FrameCount = 2;
 
-    public:
-        void Update();
-        void Render();
-        void Resize(RECT NewSize);
-
-        bool Initialized = false;
-
-    private:
-        DX12::ComPtr<DX12::CommandList> CreateCommandList();
-
-        Cthulhu::U64 Signal(Cthulhu::U64& Val);
-        void WaitForFenceValue(Cthulhu::U64 Val, Cthulhu::U64 Duration = Cthulhu::Math::Limits<Cthulhu::U64>::Max());
-        void Flush();
-        void UpdateRTV();
-
-        static constexpr Cthulhu::U8 SwapFrames = 3;
-        Cthulhu::U64 FrameCounter = 0;
-        bool VSync = false;
-        bool TearingSupport = false;
-
-        DX12::ComPtr<DX12::Device> CurrentDevice;
-        DX12::ComPtr<DX12::DescriptorHeap> Heap;
+        // Pipeline objects
+        D3D12_VIEWPORT Viewport;
+        D3D12_RECT ScissorRect;
         DX12::ComPtr<DX12::SwapChain> Swap;
+        DX12::ComPtr<DX12::Device> Device;
+        DX12::ComPtr<DX12::Resource> Targets[FrameCount];
+        DX12::ComPtr<DX12::Allocator> Allocators[FrameCount];
         DX12::ComPtr<DX12::Queue> Queue;
+        DX12::ComPtr<DX12::RootSignature> RootSignature;
+        DX12::ComPtr<DX12::DescriptorHeap> RTVHeap;
+        DX12::ComPtr<DX12::PipelineState> PipelineState;
         DX12::ComPtr<DX12::CommandList> CommandList;
+        Cthulhu::U32 RTVDescriptorSize;
 
-        Cthulhu::U64 FenceVal = 0;
-        DX12::ComPtr<DX12::Fence> Fence;
+        // Resource objects
+        DX12::ComPtr<DX12::Resource> VertexBuffer;
+        D3D12_VERTEX_BUFFER_VIEW VertexBufferView;
+
+        // Synchronization objects
+        Cthulhu::U32 FrameIndex;
         DX12::Handle FenceEvent;
+        DX12::ComPtr<DX12::Fence> Fence;
+        Cthulhu::U64 FenceValues[FrameCount];
 
-        Cthulhu::U64 CurrentBackBuffer;
-        Cthulhu::U64 RTVSize;
+        void Render();
 
-        Cthulhu::U64 FenceValues[SwapFrames] = {};
-        DX12::ComPtr<DX12::Resource> Buffers[SwapFrames];
-        DX12::ComPtr<DX12::Allocator> Allocators[SwapFrames];
+        void PopulateCommandList();
+        void MoveToNextFrame();
+
+        void WaitForGPU();
 
         Cthulhu::Array<DX12::DX12Device> RenderDevices;
 
-        RECT WindowRect;
         Frame Frame;
     };
 }

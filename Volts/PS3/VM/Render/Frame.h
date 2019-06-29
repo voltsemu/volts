@@ -88,6 +88,8 @@ namespace Volts::PS3::RSX
         void PollEvents();
 #endif
 
+        Cthulhu::F32 AspectRatio() const { return ((Cthulhu::F32)Width) / ((Cthulhu::F32)Height); }
+
         unsigned Width, Height;
         unsigned X, Y;
         const char* Title;
