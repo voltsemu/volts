@@ -39,10 +39,14 @@ namespace Volts::PS3::RSX
             Cthulhu::U64 LastFrame = 0;
             Cthulhu::F64 ElapsedTime = 0.0;
         } Stats;
+
     public:
         void Update();
         void Render();
         void Resize(RECT NewSize);
+
+        bool Initialized = false;
+
     private:
         DX12::ComPtr<DX12::CommandList> CreateCommandList();
 
@@ -53,8 +57,6 @@ namespace Volts::PS3::RSX
 
         static constexpr Cthulhu::U8 SwapFrames = 3;
         Cthulhu::U64 FrameCounter = 0;
-
-        bool Initialized = false;
         bool VSync = false;
         bool TearingSupport = false;
 

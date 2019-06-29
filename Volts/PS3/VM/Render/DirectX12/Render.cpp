@@ -27,9 +27,12 @@ namespace Volts::PS3::RSX
     {
         auto* DXWindow = (DirectX12*)GetWindowLongPtr(Wnd, GWLP_USERDATA);
 
+
         switch(M)
         {
             case WM_PAINT:
+                if(!DXWindow->Initialized)
+                    break;
                 DXWindow->Update();
                 DXWindow->Render();
                 break;
@@ -54,6 +57,8 @@ namespace Volts::PS3::RSX
             default:
                 return DefWindowProc(Wnd, M, W, L);
         }
+
+
         return 0;
     }
 
@@ -313,6 +318,8 @@ namespace Volts::PS3::RSX
 
             WaitForFenceValue(FenceValues[CurrentBackBuffer]);
         }
+
+        Flush();
     }
 
     void DirectX12::Resize(RECT NewSize)
@@ -342,7 +349,7 @@ namespace Volts::PS3::RSX
                 SwapFrames,
                 ClientWidth,
                 ClientHeight,
-                SwapDesc.BufferDesc.Format,
+                DXGI_FORMAT_UNKNOWN,
                 SwapDesc.Flags
             ));
 

@@ -28,6 +28,7 @@ namespace Volts::PS3::RSX
 
     InitError Vulkan::Init(RenderDevice* Device)
     {
+
         return InitError::Ok;
     }
 

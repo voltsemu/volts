@@ -25,8 +25,27 @@ namespace Volts::PS3::RSX::VulkanSupport
 #elif OS_LINUX
             VK_KHR_XLIB_SURFACE_EXTENSION_NAME,
 #endif
+
+#if VVKDEBUG
+            "VK_LAYER_CHRONOS_validation",
+            VK_EXT_DEBUG_UTILS_EXTENSION_NAME,
+#endif
         };
 
+#if VVKDEBUG
+    static VKAPI_ATTR VkBool32 VKAPI_CALL VkCallback(
+        VkDebugUtilsMessageSeverityFlagsBitEXT Severity,
+        VkDebugUtilsMessageTypeFlagsEXT Type,
+        const VkDebugUtilsMessageCallbackDataEXT* Data,
+        void* UserData
+    )
+    {
+        if(Severity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
+            LOGF_DEBUG(VK, "Validation Layer: %s", Data->pMessage);
+
+        return VK_FALSE;
+    }
+#endif
 
     void MakeInfo(VkApplicationInfo& App, VkInstanceCreateInfo& Create)
     {
@@ -50,7 +69,7 @@ namespace Volts::PS3::RSX::VulkanSupport
         VkInstanceCreateInfo Create = {};
         MakeInfo(App, Create);
 
-        Create.enabledExtensionCount = sizeof(ExtensionNames) / sizeof(const char*);
+        Create.enabledExtensionCount = (sizeof(ExtensionNames) / sizeof(const char*));
         Create.ppEnabledExtensionNames = ExtensionNames;
 
         VkInstance Instance;

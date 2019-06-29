@@ -28,7 +28,11 @@ namespace Volts::PS3::RSX
         virtual bool RequiresDevice() const override { return true; }
 
     private:
+
         VkInstance RenderInstance;
+#if VVKDEBUG
+        VkDebugUtilsMessengerEXT Debugger;
+#endif
         Cthulhu::Array<VulkanDevice>* DeviceArray;
     };
 }
