@@ -10,8 +10,7 @@ namespace Volts::PS3::RSX
 
     DirectX12::DirectX12()
         // TODO: dont hardcode
-        : Viewport(0.0f, 0.0f, 0.0f, 0.0f)
-        , ScissorRect(0.0f, 0.0f, 0, 0)
+        : Viewport({ 0.0f, 0.0f, 500.0f, 500.0f, D3D12_MIN_DEPTH, D3D12_MAX_DEPTH })
     {
         Render::Register(this);
         // get all the things we can use as a render device
@@ -30,10 +29,19 @@ namespace Volts::PS3::RSX
 
         switch(M)
         {
+            case WM_PAINT:
+                DXWindow->Render();
+                break;
             case WM_CREATE:
             {
                 auto* Parent = (DirectX12*)((LPCREATESTRUCT)L)->lpCreateParams;
                 SetWindowLongPtr(Wnd, GWLP_USERDATA, (LONG_PTR)Parent);
+                break;
+            }
+            case WM_DESTROY:
+            {
+                DXWindow->DeInit();
+                PostQuitMessage(0);
                 break;
             }
             default:
@@ -161,8 +169,8 @@ namespace Volts::PS3::RSX
             UINT CompileFlags = 0;
 #endif
 
-            DX_CHECK(D3DCompileFromFile(L"shaders.hlsl", nullptr, nullptr, "VSMain", "vs_5_0", CompileFlags, 0, &VertexShader, nullptr));
-            DX_CHECK(D3DCompileFromFile(L"shaders.hlsl", nullptr, nullptr, "PSMain", "ps_5_0", CompileFlags, 0, &PixelShader, nullptr));
+            DX_CHECK(D3DCompileFromFile(L"C:\\Users\\Elliot\\source\\repos\\RPCS3X\\Volts\\PS3\\VM\\Render\\DirectX12\\shaders.hlsl", nullptr, nullptr, "VSMain", "vs_5_0", CompileFlags, 0, &VertexShader, nullptr));
+            DX_CHECK(D3DCompileFromFile(L"C:\\Users\\Elliot\\source\\repos\\RPCS3X\\Volts\\PS3\\VM\\Render\\DirectX12\\shaders.hlsl", nullptr, nullptr, "PSMain", "ps_5_0", CompileFlags, 0, &PixelShader, nullptr));
 
             D3D12_INPUT_ELEMENT_DESC Descs[] =
             {
@@ -200,7 +208,7 @@ namespace Volts::PS3::RSX
                 { { -0.25f, -0.25f * Frame.AspectRatio(), 0.0f }, { 0.0f, 0.0f, 1.0f, 1.0f } },
             };
 
-            const UINT BufferSize = sizeof(Traingle);
+            const UINT BufferSize = sizeof(Triangle);
 
             DX_CHECK(Device->CreateCommittedResource(
                 &DX12::HeapProps(D3D12_HEAP_TYPE_UPLOAD),
@@ -211,10 +219,10 @@ namespace Volts::PS3::RSX
                 IID_PPV_ARGS(&VertexBuffer)
             ));
 
-            Byte* VertexData;
+            UINT8* VertexData;
             D3D12_RANGE ReadRange = { 0, 0 };
-            DX_CHECK(VertexBuffer->Map(0, &ReadRange, (void**)VertexData));
-            Memory::Copy(Triangle, VertexData, BufferSize);
+            DX_CHECK(VertexBuffer->Map(0, &ReadRange, reinterpret_cast<void**>(&VertexData)));
+            memcpy(VertexData, Triangle, sizeof(Triangle));
             VertexBuffer->Unmap(0, nullptr);
 
             VertexBufferView.BufferLocation = VertexBuffer->GetGPUVirtualAddress();
@@ -245,7 +253,8 @@ namespace Volts::PS3::RSX
 
     void DirectX12::DeInit()
     {
-
+        WaitForGPU();
+        CloseHandle(FenceEvent);
     }
 
     bool DirectX12::Supported() const
@@ -261,11 +270,19 @@ namespace Volts::PS3::RSX
 
     void DirectX12::Render()
     {
+        PopulateCommandList();
 
+        ID3D12CommandList* Lists[] = { CommandList.Get() };
+        Queue->ExecuteCommandLists(_countof(Lists), Lists);
+
+        DX_CHECK(Swap->Present(1, 0));
+
+        MoveToNextFrame();
     }
 
     void DirectX12::PopulateCommandList()
     {
+        OutputDebugString("Before Reset\n");
         DX_CHECK(Allocators[FrameIndex]->Reset());
         DX_CHECK(CommandList->Reset(Allocators[FrameIndex].Get(), PipelineState.Get()));
 
@@ -273,26 +290,29 @@ namespace Volts::PS3::RSX
         CommandList->RSSetViewports(1, &Viewport);
         CommandList->RSSetScissorRects(1, &ScissorRect);
 
-        CommandList->ResourceBarrier(1, &DX12::ResourceBarrier::Transition(Targets[FrameIndex].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
+        OutputDebugString("Before Transition\n");
+        CommandList->ResourceBarrier(1, &DX12::ResourceBarrier::Transition(Targets[FrameIndex].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
 
         D3D12_CPU_DESCRIPTOR_HANDLE RTVHandle = RTVHeap->GetCPUDescriptorHandleForHeapStart();
         CommandList->OMSetRenderTargets(1, &RTVHandle, false, nullptr);
 
         const F32 ClearColour[] = { 0.0f, 0.2f, 0.4f, 1.0f };
         CommandList->ClearRenderTargetView(RTVHandle, ClearColour, 0, nullptr);
-        CommandList->IASetPrimitiveTopology(D3D12_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+        CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
         CommandList->IASetVertexBuffers(0, 1, &VertexBufferView);
         CommandList->DrawInstanced(3, 1, 0, 0);
 
-        CommandList->ResourceBarrier(1, &DX12::ResourceBarrier::Transition(Targets[FrameIndex].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
+        CommandList->ResourceBarrier(1, &DX12::ResourceBarrier::Transition(Targets[FrameIndex].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
+        OutputDebugString("After Transition\n");
 
         DX_CHECK(CommandList->Close());
+        OutputDebugString("Close\n");
     }
 
     void DirectX12::MoveToNextFrame()
     {
         const UINT64 CurrentFenceValue = FenceValues[FrameIndex];
-        DX_CHECK(CommandQueue->Signal(Fence.Get(), CurrentFenceValue));
+        DX_CHECK(Queue->Signal(Fence.Get(), CurrentFenceValue));
 
         FrameIndex = Swap->GetCurrentBackBufferIndex();
 

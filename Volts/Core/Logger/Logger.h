@@ -81,7 +81,7 @@ namespace Volts
 #define LOGF_INFO(C, M, ...) LOGF(C, Level::Info, M, __VA_ARGS__)
 
 #if VDEBUG
-#   define LOGF_DEBUG(C, M, ...) { PrintPrefix(Level::Debug); printf("[" #C "] " M "\n", __VA_ARGS__); }
+#   define LOGF_DEBUG(C, M, ...) { LOGF(C, Level::Debug, M, __VA_ARGS__) }
 #else
 #   define LOGF_DEBUG(C, M, ...)
 #endif

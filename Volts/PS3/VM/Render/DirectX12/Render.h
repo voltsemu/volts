@@ -56,9 +56,9 @@ namespace Volts::PS3::RSX
         DX12::Handle FenceEvent;
         DX12::ComPtr<DX12::Fence> Fence;
         Cthulhu::U64 FenceValues[FrameCount];
-
+    public:
         void Render();
-
+    private:
         void PopulateCommandList();
         void MoveToNextFrame();
 
