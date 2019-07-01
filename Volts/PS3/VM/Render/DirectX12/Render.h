@@ -47,6 +47,9 @@ namespace Volts::PS3::RSX
         DX12::ComPtr<DX12::CommandList> CommandList;
         Cthulhu::U32 RTVDescriptorSize;
 
+        DX12::ComPtr<DX12::Allocator> BundleAllocator;
+        DX12::ComPtr<DX12::CommandList> Bundle;
+
         // Resource objects
         DX12::ComPtr<DX12::Resource> VertexBuffer;
         D3D12_VERTEX_BUFFER_VIEW VertexBufferView;
