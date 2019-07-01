@@ -11,6 +11,16 @@
     vector_uint2 Size;
 }
 
+- (void)mtkView:(nonnull MTKView*)view drawableSizeWillChange:(CGSize)size
+{
+
+}
+
+- (void)drawInMTKView:(nonnull MTKView*)view
+{
+
+}
+
 - (instancetype)initWithView:(MTKView*)view
 {
     self = [super init];
@@ -38,6 +48,38 @@
 {
     Size.x = size.width;
     Size.y = size.height;
+}
+
+@end
+
+@interface VAppDelegate : NSObject<NSApplicationDelegate>
+
++ (void)focusApp;
+
+@end
+
+@implementation VAppDelegate
+
++ (void)focusApp
+{
+    NSRunningApplication* App = [NSRunningApplication runningApplicationsWithBundleIdentifier:@"com.apple.dock"][0];
+    [App activateWithOptions:NSApplicationActivateIgnoringOtherApps];
+    //force dock to take focus, this is needed otherwise TransformProcessType will fail
+        
+    ProcessSerialNumber SerialNumber = { 0, kCurrentProcess };
+    (void)TransformProcessType(&SerialNumber, kProcessTransformToForegroundApplication);
+    //register the current application as a foreground proccess
+
+    ([[NSRunningApplication currentApplication] activateWithOptions:NSApplicationActivateIgnoringOtherApps]);
+    //now make the current app take focus
+}
+
+- (void)applicationDidFinishLaunching:(NSNotification*)notify
+{
+    NSString* BundleName = ([[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"]);
+    //if were not running in a bundle, force the app to focus (BundleName is nil if not bundled)
+    if(BundleName == nil)
+        [VAppDelegate focusApp];
 }
 
 @end
@@ -89,11 +131,14 @@ namespace Volts::PS3::RSX
         [Window setTitle:@"Metal Volts"];
 
         View = (MTKView*)Window.contentView;
+        [Window setAcceptsMouseMovedEvents:YES];
 
-        [Window orderFrontRegardless];
-        [Window setRestorable:NO];
+        //[Window orderFrontRegardless];
+        //[Window setRestorable:NO];
 
-        while(true);
+        [NSApplication sharedApplication];
+        [NSApp setDelegate:[[VAppDelegate alloc] init]];
+        [NSApp run];
 
         return InitError::Ok;
     }
