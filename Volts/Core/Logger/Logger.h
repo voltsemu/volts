@@ -40,6 +40,9 @@ namespace Volts
 
     // print the associated prefix for a level
     void PrintPrefix(Level);
+    void Print(const char* Fmt, ...);
+
+    void Close();
 
     enum class VideoDriver : Cthulhu::U8
     {
@@ -71,11 +74,9 @@ namespace Volts
 
 
 // basic logging with formatting
-#if OS_WINDOWS
-#   define LOGF(C, L, M, ...) { if(L >= LogLevel) { ATL::CString CS; CS.Format(M, __VA_ARGS__); MessageBox(nullptr, CS, #C, 0); } }
-#else
-#   define LOGF(C, L, M, ...) { if(L >= LogLevel) { PrintPrefix(L); printf("[" #C "] " M "\n", __VA_ARGS__); } }
-#endif
+
+#define LOGF(C, L, M, ...) { if(L >= LogLevel) { PrintPrefix(L); Volts::Print("[" #C "] " M "\n", __VA_ARGS__); } }
+
 
 #define LOGF_TRACE(C, M, ...) LOGF(C, Level::Trace, M, __VA_ARGS__)
 #define LOGF_INFO(C, M, ...) LOGF(C, Level::Info, M, __VA_ARGS__)
@@ -91,13 +92,13 @@ namespace Volts
 #define LOGF_FATAL(C, M, ...) LOGF(C, Level::Fatal, M, __VA_ARGS__)
 
 // basic logging without formatting
-#define LOG(C, L, M) { if(L >= LogLevel) { printf("[" #C "] " M "\n"); } }
+#define LOG(C, L, M) { if(L >= LogLevel) { Volts::Print("[" #C "] " M "\n"); } }
 
 #define LOG_TRACE(C, M) LOG(C, Level::Trace, M)
 #define LOG_INFO(C, M) LOG(C, Level::Info, M)
 
 #if VDEBUG
-#   define LOG_DEBUG(C, M) { PrintPrefix(Level::Debug); printf("[" #C "] " M "\n"); }
+#   define LOG_DEBUG(C, M) { PrintPrefix(Level::Debug); Volts::Print("[" #C "] " M "\n"); }
 #else
 #   define LOG_DEBUG(C, M)
 #endif

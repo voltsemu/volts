@@ -19,6 +19,7 @@ It's important to have a consistent style througout the codebase to improve read
 4. All macros must be in `SCREAMING_SNAKE_CASE` they must also not pollute the function with variable names. be sure to surround each macro with `{}` if needed.
 5. All enums must be `enum class` enums instead of `typedef enum` enums.
 6. prefix all macros with `V`.
+7. `*` and `&` go on the left side. `type* name` not `type * name` or `type *name`.
 
 ## Code style
 1. Code that produces warnings on any platform must be fixed to make the build completley quiet.
@@ -27,12 +28,15 @@ It's important to have a consistent style througout the codebase to improve read
 4. Everything must be within the `Volts` namespace to avoid global namespace pollution.
 5. Document any code that is even slightly ambiguous, if it isnt understandable in code review it must be fixed before it is pushed to master.
 6. If it is a choice between OOP and procedural code, make procedural code.
+7. Use #pragma once istead of include guards.
+8. All C++ files have the .cpp file extension, all C files have the .c file extension, and all C/C++ headers have the .h file extension.
 
 ### Banned things
 1. exceptions are banned, no exceptions at all. ever.
 2. do not use RTTI or `dynamic_cast` ever, virtual functions should also be kept to a bare minimum.
 3. `thread_local` is banned.
 4. Nested classes are banned.
+5. Relative imports are banned. No ../ in #include's.
 
 # How to play a game
 soon
@@ -106,7 +110,11 @@ Assuming a fresh install of debian
 ```sh
 su -
 
-apt install git python3-pip llvm ninja-build
+apt install git python3-pip llvm ninja-build libx11-dev
+
+pip3 install meson
+
+cd Volts
 
 meson Build
 

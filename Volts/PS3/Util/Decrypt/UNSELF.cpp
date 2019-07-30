@@ -505,7 +505,7 @@ namespace Volts::PS3
             File->Seek(SCEHead.MetadataStart + sizeof(SCE::Header));
 
             // then read in the metadata info section, this contains stuff we'll need
-            // late to decrypt more stuff
+            // later to decrypt more stuff
             auto MetaInfo = File->Read<MetaData::Info>();
 
             // allocate space for the headers
@@ -540,7 +540,7 @@ namespace Volts::PS3
                 // | is faster than a branch so just do that
                 if(MetaInfo.KeyPad[I] | MetaInfo.IVPad[I])
                 {
-                    // if something isnt 0 (false) then we faild decryption
+                    // if something isnt 0 (false) then we failed decryption
                     // report it and back out
                     LOG_ERROR(UNSELF, "Failed to decrypt metadata info");
                     return false;
@@ -623,7 +623,6 @@ namespace Volts::PS3
                     File->ReadN(Buffer, Section.Size);
 
                     Byte Stream[16] = {};
-                    Memory::Zero(Stream, 16);
 
                     // once we have the data we can then decrypt it using AES 128 CTR
                     aes_setkey_enc(&AES, Key, 128);
@@ -636,6 +635,8 @@ namespace Volts::PS3
                         Buffer,
                         Buffer
                     );
+
+                    LOGF_ERROR(UNSELF, "BufferOffset %u", BufferOffset);
 
                     // then copy the decrypted data into out buffer
                     Memory::Copy(Buffer, DataBuffer + BufferOffset, Section.Size);
@@ -661,6 +662,7 @@ namespace Volts::PS3
 
             // now we write the ELF program headers
             Bin.Seek(ELFHead.PHOffset);
+
             for(auto Program : PHead)
                 Bin.Write(Program);
 

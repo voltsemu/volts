@@ -3,6 +3,8 @@
 #include <Core/Collections/CthulhuString.h>
 #include <Core/Memory/Memory.h>
 
+#include <cstdarg>
+
 #if OS_WINDOWS
 #   define _WIN32_DCOM
 #   include <comdef.h>
@@ -16,6 +18,13 @@
 
 namespace Volts
 {
+    static auto* Out = fopen("volts.out", "w");
+
+    void Close()
+    {
+        fclose(Out);
+    }
+
     using namespace Cthulhu;
     Level LogLevel = Level::Warning;
 
@@ -24,27 +33,35 @@ namespace Volts
         switch(S)
         {
         case Level::Trace:
-            printf("trace: ");
+            fprintf(Out, "trace: ");
             break;
         case Level::Info:
-            printf("info: ");
+            fprintf(Out, "info: ");
             break;
         case Level::Debug:
-            printf("debug: ");
+            fprintf(Out, "debug: ");
             break;
         case Level::Warning:
-            printf("warning: ");
+            fprintf(Out, "warning: ");
             break;
         case Level::Error:
-            printf("error: ");
+            fprintf(Out, "error: ");
             break;
         case Level::Fatal:
-            printf("fatal: ");
+            fprintf(Out, "fatal: ");
             break;
         default:
-            printf("other: ");
+            fprintf(Out, "other: ");
             break;
         }
+    }
+
+    void Print(const char* Fmt, ...)
+    {
+        va_list List;
+        va_start(List, Fmt);
+        fprintf(Out, Fmt, List);
+        va_end(List);
     }
 
     VideoDriver SupportedDrivers()

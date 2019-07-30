@@ -9,7 +9,18 @@
 #if OS_WINDOWS
 #	include <WinBase.h>
 #	include <shellapi.h>
+#	include <io.h>
+#	include <fileapi.h>
 #endif
+
+#include <io.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <errno.h>
+#include <share.h>
 
 using namespace Volts;
 using namespace Volts::PS3;
@@ -20,13 +31,29 @@ int main(int argc, const char** argv)
 {
 	LogLevel = Level::Trace;
 
-	for(auto* Render : RSX::GetBackends())
-		if(strcmp(Render->Name(), "DirectX12") == 0)
-		{
-			U32 I = 0;
-			auto* Devs = Render->Devices(I);
-			Render->Init(&Devs[0]);
-		}
+	HANDLE File = CreateFileA(
+		"volts_output.bin",
+		GENERIC_READ | GENERIC_WRITE,
+		FILE_SHARE_READ | FILE_SHARE_WRITE,
+		nullptr,
+		CREATE_ALWAYS,
+		FILE_ATTRIBUTE_NORMAL,
+		nullptr
+	);
+
+	FileSystem::BufferedFile F{"C:\\Users\\Elliot\\source\\repos\\RPCS3X\\Build\\EBOOT.BIN"};
+	auto S = UNSELF::DecryptSELF(F).Get();
+	WriteFile(
+		File,
+		S.GetData(),
+		S.Len(),
+		nullptr,
+		nullptr
+	);
+
+	FindClose(File);
+
+	Volts::Close();
 }
 
 // windows specific entry point because windows does some funny stuff around windowing and the like
