@@ -2,38 +2,25 @@
 
 #include <Meta/Macros.h>
 
+#include <Core/Collections/CthulhuString.h>
+
 #if OS_WINDOWS
 #   include <fileapi.h>
 #else
 #   include <stdio.h>
 #endif
 
-#if 0
-    only this works on windows, idk why. something about posix
-	HANDLE File = CreateFileA(
-		"volts_output.bin",
-		GENERIC_READ | GENERIC_WRITE,
-		FILE_SHARE_READ | FILE_SHARE_WRITE,
-		nullptr,
-		CREATE_ALWAYS,
-		FILE_ATTRIBUTE_NORMAL,
-		nullptr
-	);
-
-	FileSystem::BufferedFile F{"C:\\Users\\Elliot\\source\\repos\\RPCS3X\\Build\\EBOOT.BIN"};
-	auto S = UNSELF::DecryptSELF(F).Get();
-	WriteFile(
-		File,
-		S.GetData(),
-		S.Len(),
-		nullptr,
-		nullptr
-	);
-
-	FindClose(File);
-
-#endif
-
 namespace Volts
 {
+#if OS_WINDOWS
+	using FileHandle = HANDLE;
+#elif OS_LINUX
+	using FileHandle = int;
+#elif OS_APPLE
+	using FileHandle = FILE*;
+#endif
+
+	FileHandle OpenFile(const Cthulhu::String& Path);
+	void CloseFile(FileHandle Handle);
+	void WriteFile(FileHandle Handle, Cthulhu::Byte* Data, Cthulhu::U32 Len);
 }
