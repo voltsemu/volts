@@ -30,7 +30,7 @@ namespace Volts::PS3::SFO
         Format Type;
 
         // the data being stored
-        Cthulhu::Array<Cthulhu::U8> Bytes;
+        Cthulhu::Array<Cthulhu::Byte> Bytes;
     };
 
     // Represents a System File Object
