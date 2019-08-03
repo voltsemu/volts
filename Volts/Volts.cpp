@@ -29,9 +29,41 @@ int main(int argc, const char** argv)
 {
 	LogLevel = Level::Trace;
 
+	HANDLE H = CreateFileA(
+		"volts_output_win32.elf",
+		GENERIC_READ | GENERIC_WRITE,
+		FILE_SHARE_READ | FILE_SHARE_WRITE,
+		nullptr,
+		CREATE_ALWAYS,
+		FILE_ATTRIBUTE_NORMAL,
+		nullptr
+	);
+
+	auto* H2 = fopen("volts_output_posix.elf", "wb");
+
+	auto H3 = open("volts_output_ll_posix.elf", _O_WRONLY | _O_CREAT, 0777);
+
 	FileSystem::BufferedFile F{"C:\\Users\\Elliot\\source\\repos\\RPCS3X\\Build\\EBOOT.BIN"};
 	auto S = UNSELF::DecryptSELF(F).Get();
-	
+
+	WriteFile(
+		H,
+		S.GetData(),
+		S.Len(),
+		nullptr,
+		nullptr
+	);
+
+	fwrite(S.GetData(), 1, S.Len(), H2);
+
+	write(H3, S.GetData(), S.Len());
+
+	FindClose(H);
+
+	fclose(H2);
+
+	close(H3);
+
 	Volts::Close();
 }
 
