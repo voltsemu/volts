@@ -297,6 +297,8 @@ namespace Volts::PS3
         SELF::Header SELFHead;
         AppInfo AInfo;
 
+        MetaData::Header MetaHead;
+
         ELF::Header ELFHead;
         Array<ELF::ProgramHeader> PHead;
         Array<ELF::SectionHeader> SHead;
@@ -402,13 +404,6 @@ namespace Volts::PS3
         {
             // go to the front of the file to make sure we start at the correct offset
             File->Seek(0);
-        }
-
-        ~SELFDecryptor()
-        {
-            // TODO: this leaks but for some reason the delete[] crashes on windows
-            //delete[] Data;
-            //delete[] DataBuffer;
         }
 
         // read in the files unencrypted headers
@@ -562,18 +557,18 @@ namespace Volts::PS3
             );
 
             // the first bit of data is the section header, so grab that
-            const auto MetaHead = *(MetaData::Header*)Headers;
+            MetaHead = *(MetaData::Header*)Headers;
 
             // we need data length for decrypting the body
             DataKeysLength = MetaHead.KeyCount * 16;
 
             // then for every section past the header
-            for(U32 I = 0; I < MetaHead.SectionCount; I++)
+            for(U32 I = 0; I < MetaHead.SectionCount.Get(); I++)
             {
                 // convert the raw data to the struct
                 auto Section = *(MetaData::Section*)(Headers + sizeof(MetaData::Header) + sizeof(MetaData::Section) * I);
 
-                // if the section body is encrypted well need to decrypt it
+                // if the section body is encrypted we'll need to decrypt it
                 // so we add to the datalength so we know the size later
                 if(Section.Encrypted == 3)
                     DataLength += Section.Size;
@@ -635,8 +630,6 @@ namespace Volts::PS3
                         Buffer,
                         Buffer
                     );
-
-                    LOGF_ERROR(UNSELF, "BufferOffset %u", BufferOffset);
 
                     // then copy the decrypted data into out buffer
                     Memory::Copy(Buffer, DataBuffer + BufferOffset, Section.Size);
