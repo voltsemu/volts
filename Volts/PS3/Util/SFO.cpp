@@ -86,7 +86,7 @@ namespace Volts::PS3::SFO
             // create a string to store the key
             String Key;
 
-            // read in the key on char at a time
+            // read in the key on char at a time, its always null terminated (i hope)
             while(C8 C = File.Next())
                 Key += C;
 
@@ -96,7 +96,7 @@ namespace Volts::PS3::SFO
             // read in as many bytes as needed,
             // we go with MaxLength instead of DataLength
             // so that we get null bytes in strings
-            Array<U8> Bytes = File.ReadBytes(Redirector.MaxLength);
+            Array<Byte> Bytes = File.ReadBytes(Redirector.MaxLength);
 
             // create a value from the data we collected
             Value Set = { Redirector.DataFormat, Bytes };
