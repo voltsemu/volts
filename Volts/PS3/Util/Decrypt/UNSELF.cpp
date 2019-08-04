@@ -563,7 +563,7 @@ namespace Volts::PS3
             DataKeysLength = MetaHead.KeyCount * 16;
 
             // then for every section past the header
-            for(U32 I = 0; I < MetaHead.SectionCount.Get(); I++)
+            for(U32 I = 0; I < MetaHead.SectionCount; I++)
             {
                 // convert the raw data to the struct
                 auto Section = *(MetaData::Section*)(Headers + sizeof(MetaData::Header) + sizeof(MetaData::Section) * I);

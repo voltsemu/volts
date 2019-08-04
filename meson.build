@@ -108,6 +108,6 @@ executable('volt', sources,
     cpp_args : args,
     objcpp_args : args,
     dependencies : deps,
-    link_args : links#,
-    #gui_app : true
+    link_args : links,
+    gui_app : true
 )
