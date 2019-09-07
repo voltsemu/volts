@@ -1,0 +1,14 @@
+{
+    "window.title": "Volts",
+    
+    "game.play": "Play",
+    "game.pause": "Pause",
+    "game.stop": "Stop",
+    "game.reload": "Reload",
+
+    "library.reload": "Reload",
+    "library.remove": "Remove",
+
+    "progress.loading": "Loading",
+    "progress.compile": "Compiling"
+}

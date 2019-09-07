@@ -11,3 +11,9 @@
 
 // enable vulkan debug stuff
 #define VVKDEBUG 1
+
+// enable metal debug
+#define VMTLDEBUG 1
+
+//enable OpenGL debug
+#define VOGLDEBUG 1

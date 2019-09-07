@@ -15,14 +15,24 @@ using namespace Cthulhu;
 int main(int argc, const char** argv)
 {
 	LogLevel = Level::Trace;
-	auto H = OpenFile("volts.elf");
-	FileSystem::BufferedFile F{argv[1]};
-	auto S = UNSELF::DecryptSELF(F).Get();
 
-	WriteFile(H, S.GetData(), S.Len());
+	auto Backends = RSX::GetBackends();
 
-	CloseFile(H);
-
+	for(auto Backend : Backends)
+	{
+		if(strcmp(Backend->Name(), "Metal") == 0)
+		{
+			unsigned Count = 0;
+			auto* Devices = Backend->Devices(Count);
+			for(U32 I = 0; I < Count; I++)
+			{
+				printf("%ls\n", Devices[I].Name().c_str());
+			}
+			Backend->Init(Devices);
+			printf("Jeff\n");
+		}
+	}
+	
 	Volts::Close();
 }
 

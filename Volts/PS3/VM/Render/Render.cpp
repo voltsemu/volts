@@ -8,7 +8,7 @@ namespace Volts::PS3::RSX
     Cthulhu::Array<Render*>* Backends = nullptr;
     void Render::Register(Render* Backend)
     {
-        // we creat the array here to avoid the strange inner workings
+        // we create the array here to avoid the strange inner workings
         // of static initialization
         if(!Backends)
             Backends = new Cthulhu::Array<Render*>();

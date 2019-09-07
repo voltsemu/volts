@@ -82,6 +82,11 @@
         [VAppDelegate focusApp];
 }
 
+- (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication*)app 
+{
+    return YES;
+}
+
 @end
 
 namespace Volts::PS3::RSX
@@ -133,8 +138,8 @@ namespace Volts::PS3::RSX
         View = (MTKView*)Window.contentView;
         [Window setAcceptsMouseMovedEvents:YES];
 
-        //[Window orderFrontRegardless];
-        //[Window setRestorable:NO];
+        [Window orderFrontRegardless];
+        [Window setRestorable:NO];
 
         [NSApplication sharedApplication];
         [NSApp setDelegate:[[VAppDelegate alloc] init]];
