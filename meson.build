@@ -105,5 +105,6 @@ executable('volt', sources,
     objcpp_args : args,
     dependencies : deps,
     link_args : links,
-    gui_app : true
+    gui_app : true,
+    cpp_pch : 'Volts/PS3/GUI/Windows/GUI.h'
 )
