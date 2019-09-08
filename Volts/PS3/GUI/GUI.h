@@ -1,10 +1,11 @@
 #pragma once
 
-namespace Volts::PS3
-{
-    struct GUI
-    {
-        // god only knows what goes in here
-        GUI();
-    };
-}
+#include <Meta/Macros.h>
+
+#if OS_WINDOWS
+#   include "Windows/GUI.h"
+#elif OS_APPLE
+#   include "Darwin/GUI.h"
+#elif OS_LINUX
+#   include "Linux/GUI.h"
+#endif

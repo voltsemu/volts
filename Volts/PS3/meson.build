@@ -34,7 +34,9 @@ if host_machine.system() == 'windows'
         'Volts/PS3/VM/Render/DirectX12/Render.cpp',
         'Volts/PS3/VM/Render/DirectX12/DX12Support.cpp',
     ]
+    links += ['d3d12.lib', 'd3dcompiler.lib']
 endif
+
 
 # Mac specific, this has to be seperated here
 # because compilers that arent clang flip when
@@ -45,3 +47,5 @@ endif
 
 # add this directory to the include paths
 incs += include_directories('../')
+
+subdir('GUI')

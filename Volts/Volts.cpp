@@ -7,6 +7,8 @@
 #include "PS3/VM/Render/Backends.h"
 
 #include "Core/IO/File.h"
+#include "PS3/GUI/GUI.h"
+
 using namespace Volts;
 using namespace Volts::PS3;
 using namespace Cthulhu;
@@ -16,23 +18,8 @@ int main(int argc, const char** argv)
 {
 	LogLevel = Level::Trace;
 
-	auto Backends = RSX::GetBackends();
+	auto G = GUI();
 
-	for(auto Backend : Backends)
-	{
-		if(strcmp(Backend->Name(), "Metal") == 0)
-		{
-			unsigned Count = 0;
-			auto* Devices = Backend->Devices(Count);
-			for(U32 I = 0; I < Count; I++)
-			{
-				printf("%ls\n", Devices[I].Name().c_str());
-			}
-			Backend->Init(Devices);
-			printf("Jeff\n");
-		}
-	}
-	
 	Volts::Close();
 }
 

@@ -72,10 +72,6 @@ else
     endif
 endif
 
-if host_machine.system() == 'windows'
-    links += ['d3d12.lib', 'd3dcompiler.lib']
-endif
-
 # include the ps3 project
 subdir('Volts/PS3')
 
