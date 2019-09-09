@@ -7,18 +7,22 @@
 #include "PS3/VM/Render/Backends.h"
 
 #include "Core/IO/File.h"
-#include "PS3/GUI/GUI.h"
 
 using namespace Volts;
 using namespace Volts::PS3;
 using namespace Cthulhu;
 
+int Entry(int argc, const char** argv)
+{
+	LogLevel = Level::Trace;
+
+	Volts::Close();
+}
+
 // entry point, nothing here yet as right now we're just testing very basic parts
 int main(int argc, const char** argv)
 {
 	LogLevel = Level::Trace;
-
-	auto G = GUI();
 
 	Volts::Close();
 }

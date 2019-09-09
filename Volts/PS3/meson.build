@@ -47,5 +47,3 @@ endif
 
 # add this directory to the include paths
 incs += include_directories('../')
-
-subdir('GUI')

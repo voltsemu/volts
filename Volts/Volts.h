@@ -4,6 +4,8 @@
 
 #pragma once
 
+extern "C" int Entry(int, const char**);
+
 namespace Volts
 {
 
