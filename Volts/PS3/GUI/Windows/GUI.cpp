@@ -20,8 +20,8 @@ namespace Volts::PS3
 
         WC.cbSize = sizeof(WNDCLASSEX);
         WC.style = CS_HREDRAW | CS_VREDRAW;
-        WC.lpfnWndProc = DefWindowProcW;
-        WC.lpszClassName = WindowClass;
+        WC.lpfnWndProc = DefWindowProc;
+        WC.lpszClassName = (LPCSTR)WindowClass;
         WC.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
 
         RegisterClassEx(&WC);
