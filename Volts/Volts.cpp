@@ -25,7 +25,7 @@ int main(int argc, const char** argv)
 
 // windows specific entry point because windows does some funny stuff around windowing and the like
 #if OS_WINDOWS
-int APIENTRY wWinMain(
+int __stdcall wWinMain(
 	HINSTANCE hInstance,
 	HINSTANCE hPrevInstance,
 	LPWSTR lpCmdLine,
