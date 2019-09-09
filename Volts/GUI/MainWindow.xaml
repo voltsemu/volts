@@ -7,21 +7,4 @@
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="VoltsGUI.MainWindow"
         Title="Volts">
-    <rc:RibbonWindow>
-        <rc:ControlRibbon>
-            <rc:RibbonTab Header="File">
-                <StackPanel Orientation="Horizontal">
-                    <rc:RibbonTabGroup Text="Games">
-                        <StackPanel Orientation="Horizontal">
-                            <rc:RibbonButton Text="Load"/>
-                        </StackPanel>
-                    </rc:RibbonTabGroup>
-                </StackPanel>
-            </rc:RibbonTab>
-            <rc:RibbonTab Header="Settings">
-                <StackPanel Orientation="Horizontal">
-                </StackPanel>
-            </rc:RibbonTab>
-        </rc:ControlRibbon>
-    </rc:RibbonWindow>
 </Window>
