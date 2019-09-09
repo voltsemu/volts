@@ -1,17 +1,28 @@
-#include "DarwinGUI.h"
+#include "GUI.h"
 
-@interface DarwinGUI : NSWindow
-
-@end
-
-@implementation DarwinGUI
-
-@end
+#import <Cocoa/Cocoa.h>
 
 namespace Volts::PS3
 {
-    DarwinGUI::DarwinGUI()
-    {
-        Handle = [DarwinGUI new];
+    GUI::GUI()
+    {   
+        NSWindow* Window = [
+            [NSWindow alloc]
+            initWithContentRect:NSMakeRect(500, 500, 500, 500)
+                styleMask:NSWindowStyleMaskResizable | NSWindowStyleMaskClosable | NSWindowStyleMaskTitled
+                backing:NSBackingStoreBuffered
+                defer:NO
+        ];
+
+        [Window setTitle:@"Volts"];
+        [Window setAcceptsMouseMovedEvents:YES];
+
+        [Window orderFrontRegardless];
+        [Window setRestorable:NO];
+
+        Handle = Window;
+
+        [NSApplication sharedApplication];
+        [NSApp run];
     }
 }

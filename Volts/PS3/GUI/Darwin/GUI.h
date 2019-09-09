@@ -2,9 +2,9 @@
 
 namespace Volts::PS3
 {
-    struct DarwinGUI
+    struct GUI
     {
-        DarwinGUI();
+        GUI();
         void* Handle;
     };
 }

@@ -5,7 +5,7 @@ if host_machine.system() == 'windows'
     links += 'WindowsApp.lib'
 elif host_machine.system() == 'darwin'
     sources += [
-        'Volts/PS3/GUI/Darwin/GUI.cpp'
+        'Volts/PS3/GUI/Darwin/GUI.mm'
     ]
 else
     sources += [
