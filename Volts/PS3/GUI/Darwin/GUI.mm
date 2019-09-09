@@ -1,6 +1,6 @@
 #include "DarwinGUI.h"
 
-@interface DarwinGUI
+@interface DarwinGUI : NSWindow
 
 @end
 
