@@ -1,6 +1,8 @@
 dot = find_program('dotnet')
 
-gui = custom_target('gui',
-    output : '.',
-    command : [dot, 'build']
+gui_target = custom_target('gui_target',
+    output : 'VoltsGUI',
+    command : [dot, 'build', '../Volts/GUI/', '-o', '@OUTPUT@']
 )
+
+gui = run_target('gui', command : gui_target)

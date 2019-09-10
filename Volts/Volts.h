@@ -4,7 +4,11 @@
 
 #pragma once
 
-extern "C" int Entry(int, const char**);
+extern "C" 
+{
+    void Load();
+    void Unload();
+}
 
 namespace Volts
 {

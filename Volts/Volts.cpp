@@ -12,11 +12,12 @@ using namespace Volts;
 using namespace Volts::PS3;
 using namespace Cthulhu;
 
-int Entry(int argc, const char** argv)
+void Load()
 {
-	LogLevel = Level::Trace;
 
+}
+
+void Unload()
+{
 	Volts::Close();
-
-	return 0;
 }

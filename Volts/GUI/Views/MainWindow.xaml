@@ -6,26 +6,18 @@
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="VoltsGUI.Views.MainWindow"
         Icon="/Assets/avalonia-logo.ico"
-        Title="VoltsGUI">
+        MinHeight="500"
+        MinWidth="500"
+        Title="Volts">
 
     <Design.DataContext>
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
-    <Window.Styles>
-        <Style Selector="TabControl">
-            <Setter Property="Background" Value="#9C89B8"/>
-        </Style>
-    </Window.Styles>
-
     <TabControl>
         <TabItem Header="File">
         </TabItem>
-
-        <TabItem Header="Games">
-        </TabItem>
-
-        <TabItem Header="Settings">
+        <TabItem Header="Game">
         </TabItem>
     </TabControl>
 </Window>
