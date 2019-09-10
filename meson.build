@@ -97,13 +97,14 @@ if host_machine.system() == 'windows'
     links += '/SUBSYSTEM:WINDOWS'
 endif
 
-executable('volt', sources,
+vlib = shared_library('volt', sources,
     include_directories : incs,
     link_with : libs,
     install : true,
     cpp_args : args,
     objcpp_args : args,
     dependencies : deps,
-    link_args : links,
-    gui_app : true
+    link_args : links
 )
+
+subdir('Volts/GUI')
