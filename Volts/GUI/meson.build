@@ -1,12 +1,5 @@
 dot = find_program('dotnet')
 
-#todo: find a way to stop this building everytime
-custom_target('gui',
-    output : 'VoltsGUI',
-    command : [dot, 'build', meson.current_source_dir(), '-o', meson.current_build_dir()],
-    build_by_default : true
-)
-
 release_platform = ''
 
 if host_machine.system() == 'darwin'
@@ -17,20 +10,26 @@ elif host_machine.system() == 'linux'
     release_platform = 'linux-x64'
 endif
 
-run_target('release', 
+#compile the gui
+compile_ui = custom_target('compile_gui', 
     command : [
-        dot, 
-        'publish', 
+        dot, 'publish', 
         meson.current_source_dir(), 
-        '-c', 
-        'Release', 
-        '-r', 
-        release_platform, 
-        '-o', 
-        meson.current_build_dir(),
-        '--self-contained',
-        'true',
+        '-c', 'Release', 
+        '-r', release_platform, 
+        '-o', meson.current_build_dir(),
+        '--self-contained', 'true',
+        '-v', 'q',
         '/p:TrimUnusedDependencies=true'
     ],
-    depends : vlib
+    depends : [
+        vlib
+    ],
+    output : '.'
+)
+
+#then copy the shared library to the right place
+run_target('release',
+    command : ['cp', vlib.full_path(), meson.current_build_dir()],
+    depends : compile_ui
 )
