@@ -15,9 +15,9 @@ namespace VoltsGUI.Views
 
         public MainWindow()
         {
-            InitializeComponent();
             this.Opened += (s, e) => Load();
             this.Closing += (s, e) => Unload();
+            InitializeComponent();
         }
 
         private void InitializeComponent()
