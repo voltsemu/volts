@@ -25,19 +25,3 @@ void Unload()
 {
 	Volts::Close();
 }
-
-#ifdef VCONSOLE_APP
-
-int main(int argc, const char** argv)
-{
-
-}
-
-int APIENTRY wWinMain(
-
-)
-{
-
-}
-
-#endif

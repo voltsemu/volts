@@ -7,10 +7,10 @@ namespace VoltsGUI.Views
 {
     public class MainWindow : Window
     {
-        [DllImport("libvolt.dll")]
+        [DllImport("libvolt")]
         public static extern void Load();
 
-        [DllImport("libvolt.dll")]
+        [DllImport("libvolt")]
         public static extern void Unload();
 
         public MainWindow()

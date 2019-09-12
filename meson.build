@@ -108,15 +108,3 @@ vlib = shared_library('volt', sources,
 )
 
 subdir('Volts/GUI')
-
-args += '-DVCONSOLE_APP'
-
-executable('volts', sources,
-    include_directories : incs,
-    link_with : libs,
-    install : true,
-    cpp_args : args,
-    objcpp_args : args,
-    dependencies : deps,
-    link_args : links
-)
