@@ -14,10 +14,47 @@
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
-    <TabControl>
-        <TabItem Header="File">
-        </TabItem>
-        <TabItem Header="Game">
-        </TabItem>
-    </TabControl>
+    <Window.Styles>
+        <Style Selector="TabControl">
+            <Setter Property="Background" Value="#F0F0F0" />
+            <Setter Property="Margin" Value="0 0 0 0" />
+        </Style>
+
+        <Style Selector="TabItem">
+            <Setter Property="Margin" Value="0 0 0 0" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+    </Window.Styles>
+
+    <DockPanel>
+        <TabControl DockPanel.Dock="Top">
+            <TabItem Header="File">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" Height="44">
+                    <Button Height="44">
+                        <TextBlock>Open Game</TextBlock>
+                    </Button>
+                    <Button Height="44">
+                        <TextBlock>Open Theme</TextBlock>
+                    </Button>
+                </StackPanel>
+            </TabItem>
+            <TabItem Header="Game">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" Height="44">
+                    <Button Height="44">
+                        <TextBlock>Play</TextBlock>
+                    </Button>
+                    <Button Height="44">
+                        <TextBlock>Pause</TextBlock>
+                    </Button>
+                    <Button Height="44">
+                        <TextBlock>Stop</TextBlock>
+                    </Button>
+                    <Button Height="44">
+                        <TextBlock>Config</TextBlock>
+                    </Button>
+                </StackPanel>
+            </TabItem>
+        </TabControl>
+        <TextBlock>Jeff</TextBlock>
+    </DockPanel>
 </Window>

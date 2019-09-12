@@ -1,8 +1,9 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using Avalonia;
+using Newtonsoft.Json;
 using CommandLine;
-using CommandLine.Text;
 using Avalonia.Logging.Serilog;
 using VoltsGUI.ViewModels;
 using VoltsGUI.Views;
@@ -13,17 +14,25 @@ namespace VoltsGUI
     {
         class Options
         {
-            [Option('c', "console", Required = false, HelpText = "Run command line version and dont launch gui")]
-            public bool Console { set; get; }
+            [Option('t', "generate-theme", Required = false, HelpText = "Generate template theme .json file")]
+            public bool Theme { set; get; }
+
+            [Option('l', "list-themes", Required = false, HelpText = "List all discovered theme files")]
+            public bool ListThemes { set; get; }
         }
         // Initialization code. Don't use any Avalonia, third-party APIs or any
         // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
         // yet and stuff might break.
         public static void Main(string[] args) 
             => Parser.Default.ParseArguments<Options>(args)
-                .WithParsed<Options>(opts => { if(opts.Console) ConsoleMain(opts); else BuildAvaloniaApp().Start(AppMain, args); })
-                .WithNotParsed<Options>(errs => {
-                    // TODO: error reporting and help command
+                .WithParsed<Options>(opts => {
+                    if(opts.Theme) 
+                    {
+                        GenerateThemeTemplate();
+                        return;
+                    }
+
+                    BuildAvaloniaApp().Start(AppMain, args);
                 });
 
         // Avalonia configuration, don't remove; also used by visual designer.
@@ -35,9 +44,10 @@ namespace VoltsGUI
 
         // Your application's entry point. Here you can initialize your MVVM framework, DI
         // container, etc.
-        private static void ConsoleMain(Options opts)
+        private static void GenerateThemeTemplate()
         {
-            Console.WriteLine("Running from console");
+            string json = JsonConvert.SerializeObject(new Theme());
+            File.WriteAllText("mytheme.json", json);
         }
 
         private static void AppMain(Application app, string[] args)
