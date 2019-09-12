@@ -12,6 +12,10 @@ using namespace Volts;
 using namespace Volts::PS3;
 using namespace Cthulhu;
 
+#if OS_WINDOWS
+BOOL APIENTRY DllMain(HANDLE hModule, DWORD Reason, void* Something) { return TRUE; }
+#endif
+
 void Load()
 {
 
@@ -21,3 +25,19 @@ void Unload()
 {
 	Volts::Close();
 }
+
+#ifdef VCONSOLE_APP
+
+int main(int argc, const char** argv)
+{
+
+}
+
+int APIENTRY wWinMain(
+
+)
+{
+
+}
+
+#endif

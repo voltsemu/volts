@@ -10,12 +10,15 @@
 #   define VEXTERN_API
 #endif
 
-extern "C" 
+extern "C"
 {
     // load the emulator stuff up so we can play games
-    void VEXTERN_API Load();
+    VEXTERN_API
+    void Load();
+
     // unload everything to shut down cleanly
-    void VEXTERN_API Unload();
+    VEXTERN_API
+    void Unload();
 }
 
 namespace Volts
