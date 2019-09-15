@@ -13,12 +13,28 @@ using namespace Volts::PS3;
 using namespace Cthulhu;
 
 #if OS_WINDOWS
-BOOL APIENTRY DllMain(HANDLE hModule, DWORD Reason, void* Something) { return TRUE; }
+#	include <windows.h>
+extern "C" BOOL WINAPI DllMain(
+	HINSTANCE const Instance,
+	DWORD const Reason,
+	LPVOID const Reserved
+)
+{
+	switch(Reason)
+	{
+	case DLL_PROCESS_ATTACH:
+	case DLL_THREAD_ATTACH:
+	case DLL_THREAD_DETACH:
+	case DLL_PROCESS_DETACH:
+		break;
+	}
+	return TRUE;
+}
 #endif
 
-void Load()
+void Load(LogFunc Func)
 {
-
+	Func("Jeff", 0);
 }
 
 void Unload()

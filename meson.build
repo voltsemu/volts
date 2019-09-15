@@ -80,7 +80,7 @@ subdir('Volts/PS3')
 # from trying to use either feature at all so people dont """accidentally"""
 # use these slow features for convenience sake
 if meson.get_compiler('cpp').get_id() == 'msvc'
-    args += ['/GR-', '/arch:AVX2']
+    args += ['/GR-', '/arch:AVX2', '/LD']
 else
     args += ['-fno-rtti', '-fno-exceptions', '-march=native']
 endif

@@ -6,20 +6,19 @@
 
 #if OS_WINDOWS
 #   define VEXTERN_API __declspec(dllexport)
+#   define VDECL __cdecl
 #else
 #   define VEXTERN_API
+#   define VDECL
 #endif
 
-extern "C"
-{
-    // load the emulator stuff up so we can play games
-    VEXTERN_API
-    void Load();
+typedef void(*LogFunc)(const char*, int);
 
-    // unload everything to shut down cleanly
-    VEXTERN_API
-    void Unload();
-}
+// load the emulator stuff up so we can play games
+extern "C" VEXTERN_API void VDECL Load(LogFunc);
+
+// unload everything to shut down cleanly
+extern "C" VEXTERN_API void VDECL Unload();
 
 namespace Volts
 {
