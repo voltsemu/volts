@@ -14,6 +14,8 @@ cthulhu = subproject('Cthulhu')
 # get zlib for decompressing files
 zlib = subproject('zlib')
 
+imgui = subproject('imgui')
+
 # get all the needed cthulhu projects
 libs = [
     cthulhu.get_variable('metalib'),
@@ -45,7 +47,10 @@ incs = [
     cthulhu.get_variable('inc')
 ]
 
-deps = [zlib.get_variable('zlib_dep')]
+deps = [
+    zlib.get_variable('zlib_dep'),
+    imgui.get_variable('imgui_dep')
+]
 links = []
 
 pymodule = import('python3')
@@ -92,15 +97,6 @@ endif
 if meson.get_compiler('cpp').get_id() == 'clang'
     args += '-std=c++17'
 endif
-
-sources += [
-    'subprojects/imgui/imgui.cpp',
-    'subprojects/imgui/imgui_demo.cpp',
-    'subprojects/imgui/imgui_draw.cpp',
-    'subprojects/imgui/imgui_widgets.cpp'
-]
-
-incs += include_directories('subprojects/imgui')
 
 executable('volt', sources,
     include_directories : incs,

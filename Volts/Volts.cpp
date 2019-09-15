@@ -8,12 +8,17 @@
 
 #include "Core/IO/File.h"
 
+#include <imgui.h>
+
 using namespace Volts;
 using namespace Volts::PS3;
 using namespace Cthulhu;
 
 int main(int Argc, const char** Argv)
 {
+	IMGUI_CHECKVERSION();
+	ImGUI::CreateContext();
+	ImGuiIO& IO = ImGui::GetIO();
 	LogLevel = Level::Trace;
 	Volts::Close();
 }
