@@ -12,32 +12,30 @@ using namespace Volts;
 using namespace Volts::PS3;
 using namespace Cthulhu;
 
-#if OS_WINDOWS
-#	include <windows.h>
-extern "C" BOOL WINAPI DllMain(
-	HINSTANCE const Instance,
-	DWORD const Reason,
-	LPVOID const Reserved
-)
+int main(int Argc, const char** Argv)
 {
-	switch(Reason)
-	{
-	case DLL_PROCESS_ATTACH:
-	case DLL_THREAD_ATTACH:
-	case DLL_THREAD_DETACH:
-	case DLL_PROCESS_DETACH:
-		break;
-	}
-	return TRUE;
-}
-#endif
-
-void Load(LogFunc Func)
-{
-	Func("Jeff", 0);
-}
-
-void Unload()
-{
+	LogLevel = Level::Trace;
 	Volts::Close();
 }
+
+
+#if OS_WINDOWS
+
+int wWinMain(
+	HINSTANCE Instance,
+	HINSTANCE PrevInstance,
+	LPWSTR CmdLine,
+	int ShowCmd
+)
+{
+	RSX::CmdShow = ShowCmd;
+	RSX::Instance = Instance;
+	int Argc;
+	wchar_t** Argv = CommandLineToArgvW(GetCommandLineW(), &Argc);
+
+	main(Argc, (const char**)Argv);
+
+	LocalFree(Argv);
+}
+
+#endif

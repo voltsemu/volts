@@ -80,7 +80,7 @@ subdir('Volts/PS3')
 # from trying to use either feature at all so people dont """accidentally"""
 # use these slow features for convenience sake
 if meson.get_compiler('cpp').get_id() == 'msvc'
-    args += ['/GR-', '/arch:AVX2', '/LD']
+    args += ['/GR-', '/arch:AVX2']
 else
     args += ['-fno-rtti', '-fno-exceptions', '-march=native']
 endif
@@ -93,18 +93,23 @@ if meson.get_compiler('cpp').get_id() == 'clang'
     args += '-std=c++17'
 endif
 
-if host_machine.system() == 'windows'
-    links += '/SUBSYSTEM:WINDOWS'
-endif
+sources += [
+    'subprojects/imgui/imgui.cpp',
+    'subprojects/imgui/imgui_demo.cpp',
+    'subprojects/imgui/imgui_draw.cpp',
+    'subprojects/imgui/imgui_widgets.cpp'
+]
 
-vlib = shared_library('volt', sources,
+incs += include_directories('subprojects/imgui')
+
+executable('volt', sources,
     include_directories : incs,
     link_with : libs,
     install : true,
     cpp_args : args,
     objcpp_args : args,
     dependencies : deps,
-    link_args : links
+    link_args : links,
+    gui_app : true
 )
 
-subdir('Volts/GUI')
