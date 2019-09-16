@@ -4,6 +4,3 @@
 [submodule "subprojects/zlib"]
 	path = subprojects/zlib
 	url = https://github.com/Apache-HB/zlib.git
-[submodule "subprojects/imgui"]
-	path = subprojects/imgui
-	url = https://github.com/Apache-HB/imgui.git

@@ -14,14 +14,11 @@ cthulhu = subproject('Cthulhu')
 # get zlib for decompressing files
 zlib = subproject('zlib')
 
-imgui = subproject('imgui')
-
 # get all the needed cthulhu projects
 libs = [
     cthulhu.get_variable('metalib'),
     cthulhu.get_variable('corelib'),
-    cthulhu.get_variable('fslib'),
-    imgui.get_variable('imgui')
+    cthulhu.get_variable('fslib')
 ]
 
 # get the very basic core sources
@@ -49,8 +46,7 @@ incs = [
 ]
 
 deps = [
-    zlib.get_variable('zlib_dep'),
-    imgui.get_variable('imgui_dep')
+    zlib.get_variable('zlib_dep')
 ]
 
 pymodule = import('python3')
@@ -82,7 +78,6 @@ endif
 # include the ps3 project
 subdir('Volts/PS3')
 subdir('Volts/GUI')
-
 
 # disable run time type id and exceptions in the hope of generating smaller code
 # i know you dont pay for features you dont use but this also stops people

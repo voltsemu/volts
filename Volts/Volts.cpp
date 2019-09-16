@@ -35,6 +35,7 @@ int wWinMain(
 {
 	RSX::CmdShow = ShowCmd;
 	RSX::Instance = Instance;
+	GUI::Instance = Instance;
 	int Argc;
 	wchar_t** Argv = CommandLineToArgvW(GetCommandLineW(), &Argc);
 
