@@ -1,6 +1,6 @@
 
 #include "Render.h"
-
+/*
 #import <simd/simd.h>
 
 @implementation Copper
@@ -172,4 +172,4 @@ namespace Volts::PS3::RSX
     }
 
     static Metal* MTLSingleton = new Metal();
-}
+}*/

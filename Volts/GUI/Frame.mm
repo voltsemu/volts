@@ -16,13 +16,59 @@
     
     if(self)
     {
-        Device = view.device;
-        Queue = [Device newCommandQueue];
+        self.Device = view.device;
+        self.Queue = [_Device newCommandQueue];
 
         // TODO: imgui
     }
 
     return self;
+}
+
+- (void)drawInMTKView:(nonnull MTKView*)view
+{
+    // TODO
+}
+
+- (void)mtkView:(MTKView*)view drawableSizeWillChange:(CGSize)size
+{
+
+}
+
+@end
+
+@interface VAppDelegate : NSObject<NSApplicationDelegate>
++ (void)focusApp;
+@end
+
+@implementation VAppDelegate
+
++ (void)focusApp
+{
+    NSRunningApplication* App = [NSRunningApplication runningApplicationsWithBundleIdentifier:@"com.apple.dock"][0];
+    [App activateWithOptions:NSApplicationActivateIgnoringOtherApps];
+    //force dock to take focus, this is needed otherwise TransformProcessType will fail
+        
+    ProcessSerialNumber SerialNumber = { 0, kCurrentProcess };
+    (void)TransformProcessType(&SerialNumber, kProcessTransformToForegroundApplication);
+    //register the current application as a foreground proccess
+
+    ([[NSRunningApplication currentApplication] activateWithOptions:NSApplicationActivateIgnoringOtherApps]);
+    //now make the current app take focus
+}
+
+
+- (void)applicationDidFinishLaunching:(NSNotification*)notify
+{
+    NSString* BundleName = ([[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"]);
+    //if were not running in a bundle, force the app to focus (BundleName is nil if not bundled)
+    if(BundleName == nil)
+        [VAppDelegate focusApp];
+}
+
+- (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication*)app 
+{
+    return YES;
 }
 
 @end
@@ -43,21 +89,21 @@ namespace Volts::GUI
         Handle = [
             [NSWindow alloc]
             initWithContentRect:NSMakeRect(Width, Height, X, Y)
-                styleMask:NSWindowStyleMaskResizable | NSWindowStyleMaskClosable | NSWindowStyleMaskTilted
+                styleMask:NSWindowStyleMaskResizable | NSWindowStyleMaskClosable | NSWindowStyleMaskTitled
                 backing:NSBackingStoreBuffered
                 defer:NO
         ];
 
-        [Handle setTitle:@"Volts"];
+        [(NSWindow*)Handle setTitle:@"Volts"];
 
-        View = (MTKView*)Window.contentView;
-        [Handle setAcceptsMouseMovedEvents:YES];
+        View = (MTKView*)((NSWindow*)Handle).contentView;
+        [(NSWindow*)Handle setAcceptsMouseMovedEvents:YES];
 
-        [Handle orderFrontRegardless];
-        [Handle setRestorable:NO];
+        [(NSWindow*)Handle orderFrontRegardless];
+        [(NSWindow*)Handle setRestorable:NO];
 
         [NSApplication sharedApplication];
-        [NSApp setDelegate:[[TODO alloc] init]];
+        [NSApp setDelegate:[[VAppDelegate alloc] init]];
         [NSApp run];
 #elif OS_LINUX
 

@@ -1,5 +1,5 @@
 #pragma once
-
+/*
 #include "PS3/VM/Render/Render.h"
 
 #import <MetalKit/MetalKit.h>
@@ -50,4 +50,4 @@ namespace Volts::PS3::RSX
     };
 }
 
-#pragma clang diagnostic pop
+#pragma clang diagnostic pop*/

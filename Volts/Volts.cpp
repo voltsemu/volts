@@ -8,6 +8,8 @@
 
 #include "Core/IO/File.h"
 
+#include "GUI/Frame.h"
+
 #include <imgui.h>
 
 using namespace Volts;
@@ -16,9 +18,7 @@ using namespace Cthulhu;
 
 int main(int Argc, const char** Argv)
 {
-	IMGUI_CHECKVERSION();
-	ImGUI::CreateContext();
-	ImGuiIO& IO = ImGui::GetIO();
+	GUI::Frame{500, 500, 500, 500, "Volts"};
 	LogLevel = Level::Trace;
 	Volts::Close();
 }

@@ -6,7 +6,7 @@ namespace Volts::GUI
 
     struct Frame
     {
-        Frame(U32 W, U32 H, const String& Title);
+        Frame(U32 W, U32 H, U32 X, U32 Y, const String& Title);
 #if OS_WINDOWS
         using FrameHandle = HWND;
         using ViewHandle = void; // IDK
