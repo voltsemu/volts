@@ -20,7 +20,8 @@ imgui = subproject('imgui')
 libs = [
     cthulhu.get_variable('metalib'),
     cthulhu.get_variable('corelib'),
-    cthulhu.get_variable('fslib')
+    cthulhu.get_variable('fslib'),
+    imgui.get_variable('imgui')
 ]
 
 # get the very basic core sources
@@ -51,12 +52,13 @@ deps = [
     zlib.get_variable('zlib_dep'),
     imgui.get_variable('imgui_dep')
 ]
-links = []
 
 pymodule = import('python3')
 python3 = pymodule.find_python()
 
 vulkan = false
+
+links = []
 
 if host_machine.system() == 'darwin'
     deps += dependency('appleframeworks', modules : ['Foundation', 'Metal', 'Cocoa'])

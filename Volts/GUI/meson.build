@@ -1,3 +1,5 @@
+subdir('imgui')
+
 if host_machine.system() == 'darwin'
     sources += 'Volts/GUI/Frame.mm'
 else
