@@ -1,4 +1,9 @@
+#pragma once
+
 #include <Core/Collections/CthulhuString.h>
+#include <Core/Types/Lambda.h>
+
+#include "Render/Render.h"
 
 #if OS_WINDOWS
 #   include <Windows.h>
@@ -22,7 +27,9 @@ namespace Volts::GUI
 
     struct Frame
     {
-        Frame(U32 W, U32 H, U32 X, U32 Y, const String& Title);
+        Frame();
+        Frame& Title(const String& T);
+        void Run(Lambda<void()> Generator);
 #if OS_WINDOWS
         using FrameHandle = HWND;
 #elif OS_APPLE
@@ -31,5 +38,7 @@ namespace Volts::GUI
         using FrameHandle = void*; // IDK
 #endif
         FrameHandle Handle;
+        RSX::Render& CurrentRender;
+        String T;
     };
 }

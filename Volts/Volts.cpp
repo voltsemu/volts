@@ -18,7 +18,11 @@ using namespace Cthulhu;
 
 int main(int Argc, const char** Argv)
 {
-	GUI::Frame{500, 500, 500, 500, "Volts"};
+	GUI::Frame()
+		.Title("Volts")
+		.Run([]{
+
+		});
 	LogLevel = Level::Trace;
 	Volts::Close();
 }

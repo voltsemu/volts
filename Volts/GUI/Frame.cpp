@@ -9,36 +9,108 @@
 #   include <imgui/examples/imgui_impl_vulkan.h>
 #endif
 
+extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND, UINT, WPARAM, LPARAM);
+
 namespace Volts::GUI
 {
 #if OS_WINDOWS
     HINSTANCE Instance = {};
 
-    Frame::Frame(
-        U32 W,
-        U32 H,
-        U32 X,
-        U32 Y,
-        const String& Title
+    Frame::Frame() {}
+
+    Frame& Frame::Title(const String& T) { this->T = T; return *this; }
+
+    LRESULT CALLBACK FrameProc(
+        HWND Window,
+        UINT Msg,
+        WPARAM W,
+        LPARAM L
     )
+    {
+        if(ImGui_ImplWin32_WndProcHandler(Window, Msg, W, L))
+            return true;
+
+        switch(Msg)
+        {
+            case WM_CREATE:
+            {
+                CREATESTRUCT* Create = (CREATESTRUCT*)L;
+                SetWindowLongPtr(Window, GWLP_USERDATA, (LONG_PTR)Create->lpCreateParams);
+            }
+            break;
+            case WM_DESTROY:
+                PostQuitMessage(0);
+                return 0;
+        }
+
+        return DefWindowProc(Window, Msg, W, L);
+    }
+
+    void Frame::Run(Lambda<void()> Generator)
     {
         WNDCLASSEX WC = {};
         WC.cbSize = sizeof(WNDCLASSEX);
         WC.style = CS_HREDRAW | CS_VREDRAW;
-        WC.lpfnWndProc = DefWindowProc;
+        WC.lpfnWndProc = FrameProc;
         WC.hInstance = Instance;
         WC.hIcon = LoadIcon(nullptr, IDI_APPLICATION);
         WC.hCursor = LoadCursor(nullptr, IDC_ARROW);
         WC.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
-        WC.lpszClassName = L"Volts";
+        WC.lpszClassName = T.CStr();
         WC.hIconSm = LoadIcon(nullptr, IDI_WINLOGO);
 
         RegisterClassEx(&WC);
 
-        I32 Width = GetSystemMetrics(SM_CXSCREEN);
-        I32 Height = GetSystemMetrics(SM_CYSCREEN);
+        LONG Width = GetSystemMetrics(SM_CXSCREEN);
+        LONG Height = GetSystemMetrics(SM_CYSCREEN);
 
-        // TODO: everything
+        RECT Space = { 0L, 0L, Width, Height };
+
+        AdjustWindowRectEx(
+            &Space,
+            WS_OVERLAPPEDWINDOW | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
+            false,
+            WS_EX_APPWINDOW | WS_EX_WINDOWEDGE
+        );
+
+        Handle = CreateWindowEx(
+            0,
+            T.CStr(),
+            T.CStr(),
+            WS_OVERLAPPEDWINDOW | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
+            0,
+            0,
+            Space.right - Space.left,
+            Space.bottom - Space.top,
+            nullptr,
+            nullptr,
+            GUI::Instance,
+            &Generator
+        );
+
+        ShowWindow(Handle, SW_SHOW);
+        SetForegroundWindow(Handle);
+        SetFocus(Handle);
+
+        IMGUI_CHECKVERSION();
+        ImGui::CreateContext();
+        ImGui::StyleColorsDark();
+
+        MSG Message = {};
+        while(Message.message != WM_QUIT)
+        {
+            if(PeekMessage(&Message, nullptr, 0, 0, PM_REMOVE))
+            {
+                TranslateMessage(&Message);
+                DispatchMessage(&Message);
+            }
+        }
+
+        ImGui_ImplWin32_Shutdown();
+        ImGui::DestroyContext();
+
+        DestroyWindow(Handle);
+        UnregisterClass(WC.lpszClassName, WC.hInstance);
     }
 #else
 
