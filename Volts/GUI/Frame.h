@@ -38,8 +38,13 @@ namespace Volts::GUI
 #elif OS_LINUX
         using FrameHandle = void*; // IDK
 #endif
-        FrameHandle Handle;
+
+#if !OS_APPLE
+        // apple only supports metal so we dont need a pointer to a renderer
         RSX::Render* CurrentRender = nullptr;
+#endif
+
+        FrameHandle Handle;
         String T;
     };
 }

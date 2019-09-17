@@ -36,7 +36,10 @@ args = []
 if host_machine.system() == 'darwin'
     sources += 'Volts/Core/Darwin/Darwin.mm'
     # we need C++ modules to use objc @import in objcpp
-    args += '-fmodules'
+    args += [
+        '-fmodules',
+        '-fobjc-arc'
+    ]
 endif
 
 incs = [
@@ -57,7 +60,7 @@ vulkan = false
 links = []
 
 if host_machine.system() == 'darwin'
-    deps += dependency('appleframeworks', modules : ['Foundation', 'Metal', 'Cocoa'])
+    deps += dependency('appleframeworks', modules : ['Foundation', 'Metal', 'MetalKit', 'QuartzCore', 'Cocoa'])
 else
     # apple doesnt have support for vulkan
 

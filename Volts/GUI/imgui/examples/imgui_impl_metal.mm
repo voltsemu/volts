@@ -537,7 +537,7 @@ void ImGui_ImplMetal_DestroyDeviceObjects()
         indexBufferOffset += cmd_list->IdxBuffer.Size * sizeof(ImDrawIdx);
     }
 
-    id weakSelf = self;
+    __weak id weakSelf = self;
     [commandBuffer addCompletedHandler:^(id<MTLCommandBuffer>)
     {
         dispatch_async(dispatch_get_main_queue(), ^{
