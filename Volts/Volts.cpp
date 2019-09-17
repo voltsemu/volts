@@ -1,9 +1,6 @@
 ﻿
 #include "Volts.h"
 
-#include "PS3/Util/Decrypt/UNSELF.h"
-#include "PS3/VM/Interpreter/PPUInterpreter.h"
-
 #include "Core/IO/File.h"
 
 #include "GUI/Frame.h"
@@ -11,7 +8,6 @@
 #include <imgui.h>
 
 using namespace Volts;
-using namespace Volts::PS3;
 using namespace Cthulhu;
 
 int main(int Argc, const char** Argv)
