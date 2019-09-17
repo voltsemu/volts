@@ -3,19 +3,20 @@
 #include <Core/Collections/CthulhuString.h>
 #include <Core/Types/Lambda.h>
 
-#include "Render/Render.h"
-
 #if OS_WINDOWS
 #   include <Windows.h>
 #   include <d3d12.h>
 #   include <dxgi1_4.h>
-#   include <tchar.h>
-#   include <wrl.h>
 #elif OS_APPLE
 // TODO: what includes
 #elif OS_LINUX
 // TODO: window includes
 #endif
+
+namespace Volts::RSX
+{
+    struct Render;
+}
 
 namespace Volts::GUI
 {
@@ -38,7 +39,7 @@ namespace Volts::GUI
         using FrameHandle = void*; // IDK
 #endif
         FrameHandle Handle;
-        RSX::Render& CurrentRender;
+        RSX::Render* CurrentRender = nullptr;
         String T;
     };
 }

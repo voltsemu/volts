@@ -3,8 +3,6 @@
 
 #include "PS3/Util/Decrypt/UNSELF.h"
 #include "PS3/VM/Interpreter/PPUInterpreter.h"
-#include "PS3/VM/Render/Frame.h"
-#include "PS3/VM/Render/Backends.h"
 
 #include "Core/IO/File.h"
 
@@ -37,8 +35,6 @@ int wWinMain(
 	int ShowCmd
 )
 {
-	RSX::CmdShow = ShowCmd;
-	RSX::Instance = Instance;
 	GUI::Instance = Instance;
 	int Argc;
 	wchar_t** Argv = CommandLineToArgvW(GetCommandLineW(), &Argc);
