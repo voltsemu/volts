@@ -2,6 +2,8 @@
 
 #include "Render/Render.h"
 
+#include <vulkan/vulkan.h>
+
 namespace Volts::RSX
 {
     struct Vulkan : Render
@@ -10,5 +12,9 @@ namespace Volts::RSX
         virtual void Detach() override;
         virtual const String& Name() const override { return "Vulkan"; }
         virtual const String& Description() const override { return "Vulkan3D"; }
+    private:
+        bool SetupVulkan();
+
+        VkResult CreateInstance();
     };
 }
