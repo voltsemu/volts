@@ -78,8 +78,8 @@
 
         ImGui::NewFrame();
 
-        static bool S = true;
-        ImGui::ShowDemoWindow(&S);
+        // run the main UI
+        Volts::GUI::Frame::GUILoop();
 
         ImGui::Render();
         ImDrawData* Draw = ImGui::GetDrawData();
@@ -238,7 +238,7 @@ namespace Volts::GUI
 
     Frame& Frame::Title(const String& T) { this->T = T; return *this; }
 
-    void Frame::Run(Lambda<void()> Generator)
+    void Frame::Run()
     {
         // run the application
         [VApp sharedApplication];

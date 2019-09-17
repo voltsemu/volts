@@ -32,12 +32,6 @@ namespace Volts::GUI
 
         switch(Msg)
         {
-            case WM_CREATE:
-            {
-                CREATESTRUCT* Create = (CREATESTRUCT*)L;
-                SetWindowLongPtr(Window, GWLP_USERDATA, (LONG_PTR)Create->lpCreateParams);
-            }
-            break;
             case WM_DESTROY:
                 PostQuitMessage(0);
                 return 0;
@@ -46,7 +40,7 @@ namespace Volts::GUI
         return DefWindowProc(Window, Msg, W, L);
     }
 
-    void Frame::Run(Lambda<void()> Generator)
+    void Frame::Run()
     {
         WNDCLASSEX WC = {};
         WC.cbSize = sizeof(WNDCLASSEX);
@@ -85,7 +79,7 @@ namespace Volts::GUI
             nullptr,
             nullptr,
             GUI::Instance,
-            &Generator
+            nullptr
         );
 
         ShowWindow(Handle, SW_SHOW);

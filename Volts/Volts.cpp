@@ -14,9 +14,7 @@ int main(int Argc, const char** Argv)
 {
 	GUI::Frame()
 		.Title("Volts")
-		.Run([]{
-
-		});
+		.Run();
 	LogLevel = Level::Trace;
 	Volts::Close();
 }

@@ -30,7 +30,10 @@ namespace Volts::GUI
     {
         Frame();
         Frame& Title(const String& T);
-        void Run(Lambda<void()> Generator);
+        void Run();
+
+        static void GUILoop();
+
 #if OS_WINDOWS
         using FrameHandle = HWND;
 #elif OS_APPLE

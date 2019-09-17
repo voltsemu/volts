@@ -2,6 +2,8 @@ subdir('imgui')
 
 incs += include_directories('.')
 
+sources += 'Volts/GUI/GUI.cpp'
+
 if host_machine.system() == 'darwin'
     sources += 'Volts/GUI/Frame.mm'
 else
