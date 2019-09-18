@@ -33,31 +33,11 @@ namespace Volts::GUI
         F->LastFrame = Now;
     }
 
-    void ShowSettings(Frame* F)
+    bool ShowLog = true;
+    void ShowLogs(Frame* F)
     {
-        ImGui::SetNextWindowPos(ImVec2(200, 25), ImGuiCond_FirstUseEver);
-        ImGui::Begin("Settings");
-        if(ImGui::BeginMenuBar())
-        {
-            if(ImGui::BeginMenu("Windows"))
-            {
-                ImGui::MenuItem("Metrics", nullptr, &Metrics);
-                ImGui::EndMenu();
-            }
+        ImGui::Begin("Log", &ShowLog);
 
-            ImGui::EndMenuBar();
-        }
-
-        ImGui::End();
-    }
-
-    void Frame::GUILoop(Frame* F)
-    {
-        ShowSettings(F);
-        ShowMetrics(F);
-        
-        ImGui::Begin("Log");
-        
         if(ImGui::Button("Clear"))
             Logs.clear();
 
@@ -75,5 +55,33 @@ namespace Volts::GUI
 
         ImGui::EndChild();
         ImGui::End();
+    }
+
+    void ShowSettings(Frame* F)
+    {
+        ImGui::SetNextWindowPos(ImVec2(200, 25), ImGuiCond_FirstUseEver);
+        ImGui::Begin("Settings", nullptr, ImGuiWindowFlags_MenuBar);
+        
+        if(ImGui::BeginMenuBar())
+        {
+            if(ImGui::BeginMenu("Windows"))
+            {
+                ImGui::MenuItem("Metrics", nullptr, &Metrics);
+                ImGui::MenuItem("Logs", nullptr, &ShowLog);
+                ImGui::EndMenu();
+            }
+
+            ImGui::EndMenuBar();
+        }
+
+        ImGui::End();
+    }
+
+    void Frame::GUILoop(Frame* F)
+    {
+        ShowSettings(F);
+        ShowMetrics(F);
+        
+        if(ShowLog) ShowLogs(F);
     }
 }
