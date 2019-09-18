@@ -4,10 +4,14 @@
 
 namespace Volts::GUI
 {
-    void Frame::GUILoop()
+    void Frame::GUILoop(Frame* F)
     {
-        ImGui::Begin("Jeff");
-        ImGui::Text("AAA");
+        auto Now = std::chrono::high_resolution_clock::now();
+        ImGui::Begin("Metrics");
+
+        ImGui::Text("FPS: %lf", std::chrono::duration<double>(Now - F->LastFrame));
         ImGui::End();
+
+        F->LastFrame = Now;
     }
 }

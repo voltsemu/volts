@@ -10,3 +10,8 @@ else
     sources += 'Volts/GUI/Frame.cpp'
     subdir('Render/Vulkan')
 endif
+
+
+if host_machine.system() == 'windows'
+    subdir('Render/DX12')
+endif

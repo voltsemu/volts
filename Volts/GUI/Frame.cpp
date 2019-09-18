@@ -2,6 +2,8 @@
 
 #include "imgui/imgui.h"
 
+#include "Render/Render.h"
+
 #if OS_WINDOWS
 #   include "imgui/examples/imgui_impl_dx12.h"
 #   include "imgui/examples/imgui_impl_win32.h"
@@ -90,6 +92,9 @@ namespace Volts::GUI
         ImGui::CreateContext();
         ImGui::StyleColorsDark();
 
+        ImGui_ImplWin32_Init(Handle);
+        //dx12 or vulkan
+
         MSG Message = {};
         while(Message.message != WM_QUIT)
         {
@@ -98,8 +103,14 @@ namespace Volts::GUI
                 TranslateMessage(&Message);
                 DispatchMessage(&Message);
             }
+
+            ImGui_ImplWin32_NewFrame();
+            CurrentRender->NewGUIFrame();
+            // dx12 or vulkan
+            ImGui::NewFrame();
         }
 
+        // dx12 or vulkan
         ImGui_ImplWin32_Shutdown();
         ImGui::DestroyContext();
 

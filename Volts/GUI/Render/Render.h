@@ -21,5 +21,10 @@ namespace Volts::RSX
 
         virtual const String& Name() const = 0;
         virtual const String& Description() const = 0;
+
+        virtual void InitGUI() const = 0;
+        virtual void NewGUIFrame() const = 0;
+        virtual void ShutdownGUI() const = 0;
+        virtual void RenderGUI() const = 0;
     };
 }
