@@ -93,7 +93,7 @@ namespace Volts::GUI
         ImGui::StyleColorsDark();
 
         ImGui_ImplWin32_Init(Handle);
-        //dx12 or vulkan
+        CurrentRender->InitGUI();
 
         MSG Message = {};
         while(Message.message != WM_QUIT)
@@ -106,11 +106,14 @@ namespace Volts::GUI
 
             ImGui_ImplWin32_NewFrame();
             CurrentRender->NewGUIFrame();
-            // dx12 or vulkan
             ImGui::NewFrame();
+
+            Frame::GUILoop(this);
+
+            CurrentRender->RenderGUI();
         }
 
-        // dx12 or vulkan
+        CurrentRender->ShutdownGUI();
         ImGui_ImplWin32_Shutdown();
         ImGui::DestroyContext();
 

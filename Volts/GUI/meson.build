@@ -4,11 +4,13 @@ incs += include_directories('.')
 
 sources += 'Volts/GUI/GUI.cpp'
 
+subdir('Render/Vulkan')
+
 if host_machine.system() == 'darwin'
     sources += 'Volts/GUI/Frame.mm'
+    subdir('Render/Metal')
 else
     sources += 'Volts/GUI/Frame.cpp'
-    subdir('Render/Vulkan')
 endif
 
 

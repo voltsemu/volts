@@ -98,7 +98,7 @@ namespace Volts::TAR
 
         if(Memory::Compare<Byte>(Head.Magic, TARMagic, sizeof(TARMagic) - 1) != 0)
         {
-            LOG_ERROR(TAR, "Invalid TAR Magic");
+            ERROR("Invalid TAR Magic");
             return {};
         }
 

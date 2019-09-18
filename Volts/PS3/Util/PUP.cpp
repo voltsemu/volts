@@ -26,7 +26,7 @@ namespace Volts::PS3::PUP
 
         if(Head.Magic.Data != "SCEUF\0\0\0"_U64)
         {
-            LOG_ERROR(FIRMWARE, "Invalid PUP magic");
+            ERROR("Invalid PUP magic");
             return false;
         }
 

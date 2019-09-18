@@ -22,31 +22,30 @@ namespace Volts::RSX
 
     struct DX12 : Render
     {
+        virtual ~DX12() {}
         virtual void Start(GUI::Frame* Handle) override;
         virtual void Detach() override;
-        virtual const String& Name() const override { return "DX12"; }
-        virtual const String& Description() const override { return "DirectX12"; }
+        virtual const String Name() const override { return "DX12"; }
+        virtual const String Description() const override { return "DirectX12"; }
 
         virtual void InitGUI() const override
         {
-            // TODO: info
-            ImGui_ImplDX12_Init();
+            // TODO
         }
 
         virtual void NewGUIFrame() const override
         {
-            ImGui_ImplDX12_NewFrame();
+            // TODO
         }
 
         virtual void ShutdownGUI() const override
         {
-            ImGui_ImplDX12_ShutDown();
+            // TODO
         }
 
         virtual void RenderGUI() const override
         {
-            ImDrawData* Draw = ImGui::GetDrawData();
-            ImGui_ImplDX12_RenderDrawData(Draw, /* todo */);
+            // TODO
         }
 
     private:

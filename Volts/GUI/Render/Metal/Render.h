@@ -2,18 +2,15 @@
 
 #include "Render/Render.h"
 
-#include <vulkan/vulkan.h>
-#include "imgui/examples/imgui_impl_vulkan.h"
-
 namespace Volts::RSX
 {
-    struct Vulkan : Render
+    struct Metal : Render
     {
-        virtual ~Vulkan() {}
+        virtual ~Metal() {}
         virtual void Start(GUI::Frame* Handle) override;
         virtual void Detach() override;
-        virtual const String Name() const override { return "Vulkan"; }
-        virtual const String Description() const override { return "Vulkan3D"; }
+        virtual const String Name() const override { return "Metal"; }
+        virtual const String Description() const override { return "MetalKit"; }
 
         virtual void InitGUI() const override
         {
@@ -40,6 +37,6 @@ namespace Volts::RSX
 
         bool CreateInstance();
 
-        VkInstance Instance;
+        void* Handle;
     };
 }

@@ -14,6 +14,8 @@ cthulhu = subproject('Cthulhu')
 # get zlib for decompressing files
 zlib = subproject('zlib')
 
+fmt = subproject('fmt')
+
 # get all the needed cthulhu projects
 libs = [
     cthulhu.get_variable('metalib'),
@@ -23,18 +25,12 @@ libs = [
 
 # get the very basic core sources
 sources = [
-    'Volts/Core/Logger/Logger.cpp',
-    'Volts/Core/SIMD/SIMD.cpp',
-    'Volts/Core/AES/AES.cpp',
-    'Volts/Core/Files/TAR.cpp',
-    'Volts/Core/IO/File.cpp',
-    'Volts/Volts.cpp',
+    'Volts/Volts.cpp'
 ]
 
 args = []
 
 if host_machine.system() == 'darwin'
-    sources += 'Volts/Core/Darwin/Darwin.mm'
     # we need C++ modules to use objc @import in objcpp
     args += [
         '-fmodules',
@@ -49,38 +45,16 @@ incs = [
 ]
 
 deps = [
-    zlib.get_variable('zlib_dep')
+    zlib.get_variable('zlib_dep'),
+    fmt.get_variable('fmt_dep')
 ]
 
-pymodule = import('python3')
-python3 = pymodule.find_python()
-
-vulkan = false
-
 links = []
-
-if host_machine.system() == 'darwin'
-    deps += dependency('appleframeworks', modules : ['Foundation', 'Metal', 'MetalKit', 'QuartzCore', 'Cocoa'])
-else
-    # apple doesnt have support for vulkan
-
-    #check if we have the vulkan sdk
-    res = run_command(python3, '-c', 'import os; print(os.environ["VULKAN_SDK"])')
-
-    # returns non-zero because an exception is thrown if the sdk isnt found
-    if res.returncode() != 0
-        message('Vulkan SDK not found, not building with vulkan')
-    else
-        vulkan = true
-        # if we do then we should use it
-        incs += res.stdout().strip() / 'Include'
-        links += res.stdout().strip() / 'Lib' / 'vulkan-1.lib'
-    endif
-endif
 
 # include the ps3 project
 subdir('Volts/PS3')
 subdir('Volts/GUI')
+subdir('Volts/Core')
 
 # disable run time type id and exceptions in the hope of generating smaller code
 # i know you dont pay for features you dont use but this also stops people

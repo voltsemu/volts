@@ -347,7 +347,7 @@ namespace Volts::PS3
             else
             {
                 // something went wrong so we have to log that
-                LOGF_ERROR(UNSELF, "Invalid control type of %u", Info.Type);
+                ERROR("Invalid control type of %u", Info.Type);
             }
 
             // return the data we've read in
@@ -376,12 +376,12 @@ namespace Volts::PS3
 
             if(Control->NPDRMInfo.Version == 1)
             {
-                LOG_ERROR(UNSELF, "Cannot decrypt network license");
+                ERROR("Cannot decrypt network license");
                 return false;
             }
             else if(Control->NPDRMInfo.Version == 2)
             {
-                LOG_ERROR(UNSELF, "Local licenses are not supported yet");
+                ERROR("Local licenses are not supported yet");
                 return false;
             }
             else if(Control->NPDRMInfo.Version == 3)
@@ -421,7 +421,7 @@ namespace Volts::PS3
             if(SCEHead.Magic != "SCE\0"_U32)
             {
                 // if we havent spit out an error
-                LOG_ERROR(UNSELF, "Invalid SCE magic");
+                ERROR("Invalid SCE magic");
                 return false;
             }
 
@@ -445,7 +445,7 @@ namespace Volts::PS3
             if(ELFHead.Magic != "\177ELF"_U32)
             {
                 // if something went wrong spit out the file
-                LOG_ERROR(UNSELF, "Invalid ELF magic");
+                ERROR("Invalid ELF magic");
                 return false;
             }
 
@@ -537,7 +537,7 @@ namespace Volts::PS3
                 {
                     // if something isnt 0 (false) then we failed decryption
                     // report it and back out
-                    LOG_ERROR(UNSELF, "Failed to decrypt metadata info");
+                    ERROR("Failed to decrypt metadata info");
                     return false;
                 }
             }
@@ -719,14 +719,14 @@ namespace Volts::PS3
             // if we cant read in the headers log it and back out
             if(!Decrypt.ReadHeaders())
             {
-                LOG_ERROR(UNSELF, "Failed to read headers");
+                ERROR("Failed to read headers");
                 return None<ELF::Binary>();
             }
 
             // if we cant read the metadata log it and back out
             if(!Decrypt.ReadMetadata(Key))
             {
-                LOG_ERROR(UNSELF, "Failed to read metadata");
+                ERROR("Failed to read metadata");
                 return None<ELF::Binary>();
             }
 

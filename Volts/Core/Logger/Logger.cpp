@@ -5,6 +5,8 @@
 
 #include <cstdarg>
 
+#include <fmt/format.h>
+
 #if OS_WINDOWS
 #   define _WIN32_DCOM
 #   include <comdef.h>
@@ -16,83 +18,18 @@
 #   include "Core/Darwin/Darwin.h"
 #endif
 
+#include "GUI/Frame.h"
+
 namespace Volts
 {
-    static auto* Out = fopen("volts.out", "w");
-
-    void Close()
-    {
-        fclose(Out);
-    }
-
     using namespace Cthulhu;
     Level LogLevel = Level::Warning;
 
-    void PrintPrefix(Level S)
+    void Print(Level L, std::string Msg)
     {
-        switch(S)
+        if(L >= LogLevel)
         {
-        case Level::Trace:
-            fprintf(Out, "trace: ");
-            break;
-        case Level::Info:
-            fprintf(Out, "info: ");
-            break;
-        case Level::Debug:
-            fprintf(Out, "debug: ");
-            break;
-        case Level::Warning:
-            fprintf(Out, "warning: ");
-            break;
-        case Level::Error:
-            fprintf(Out, "error: ");
-            break;
-        case Level::Fatal:
-            fprintf(Out, "fatal: ");
-            break;
-        default:
-            fprintf(Out, "other: ");
-            break;
+            GUI::Frame::Log(Msg);
         }
-    }
-
-    void Print(const char* Fmt, ...)
-    {
-        va_list List;
-        va_start(List, Fmt);
-        fprintf(Out, Fmt, List);
-        va_end(List);
-    }
-
-    VideoDriver SupportedDrivers()
-    {
-        return VideoDriver::None;
-    }
-
-    Cthulhu::String GPUDriver()
-    {
-        return "";
-    }
-
-    Cthulhu::String OSName()
-    {
-#if OS_WINDOWS
-        return "Windows (TODO)";
-        // this one is going to be a pain to implement as we'll have to
-        // bundle the entire emu into its own windows package
-        // (which 1. i have no clue how to do and 2. looks really painful)
-#elif OS_LINUX
-        C8 Data[1024] = {};
-        FILE* UName = popen("uname -a", "r");
-        if(UName == nullptr)
-            return "Unsupported Distro (uname not found)";
-
-        fread(Data, sizeof(C8), sizeof(Data) - 1, UName);
-        pclose(UName);
-
-        return String::FromPtr((char*)Data);
-#elif OS_APPLE
-        return "OSX "_S + String::FromPtr(Darwin::OSName());
-#endif
     }
 }

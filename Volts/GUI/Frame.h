@@ -4,6 +4,8 @@
 #include <Core/Types/Lambda.h>
 
 #include <chrono>
+#include <deque>
+#include <string>
 
 #if OS_WINDOWS
 #   include <Windows.h>
@@ -33,6 +35,7 @@ namespace Volts::GUI
         void Run();
 
         static void GUILoop(Frame* F);
+        static void Log(std::string Msg);
 
 #if OS_WINDOWS
         using FrameHandle = HWND;
