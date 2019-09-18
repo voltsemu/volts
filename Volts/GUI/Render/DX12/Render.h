@@ -13,8 +13,6 @@
 #include <wrl.h>
 #include <shellapi.h>
 
-#include "imgui/examples/imgui_impl_dx12.h"
-
 namespace Volts::RSX
 {
     template<typename T>
@@ -23,36 +21,49 @@ namespace Volts::RSX
     struct DX12 : Render
     {
         virtual ~DX12() {}
-        virtual void Start(GUI::Frame* Handle) override;
+        virtual void Attach(GUI::Frame* Handle) override;
         virtual void Detach() override;
         virtual const String Name() const override { return "DX12"; }
         virtual const String Description() const override { return "DirectX12"; }
 
-        virtual void InitGUI() const override
-        {
-            // TODO
-        }
-
-        virtual void NewGUIFrame() const override
-        {
-            // TODO
-        }
-
-        virtual void ShutdownGUI() const override
-        {
-            // TODO
-        }
-
-        virtual void RenderGUI() const override
-        {
-            // TODO
-        }
+        virtual void BeginRender() override;
+        virtual void PresentRender() override;
 
     private:
-        bool Setup();
-        bool LoadPipeline();
+        void LoadPipeline();
+        void LoadData();
+        void PopulateCommandList();
+        void WaitForGPU();
+        void AdvanceFrame();
+
+        static constexpr U32 FrameCount = 2;
+
+        // Pipeline state objects
+        D3D12_VIEWPORT Viewport;
+        D3D12_RECT Scissor;
 
         Ptr<IDXGISwapChain3> Swap;
         Ptr<ID3D12Device> Device;
+        Ptr<ID3D12CommandQueue> CommandQueue;
+
+        Ptr<ID3D12Resource> RenderTargets[FrameCount];
+        Ptr<ID3D12CommandAllocator> CommandAllocators[FrameCount];
+
+        Ptr<ID3D12RootSignature> RootSignature;
+        Ptr<ID3D12PipelineState> PipelineState;
+        Ptr<ID3D12GraphicsCommandList> CommandList;
+        Ptr<ID3D12DescriptorHeap> RTVHeap;
+        U32 RTVDescriptorSize;
+
+        Ptr<ID3D12DescriptorHeap> SRVHeap;
+
+        // Synchronization data
+        U32 FrameIndex;
+        HANDLE FenceEvent;
+        Ptr<ID3D12Fence> Fence;
+        U64 FenceValues[FrameCount];
+
+        // External data
+        GUI::Frame* Frame;
     };
 }

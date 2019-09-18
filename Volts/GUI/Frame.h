@@ -28,6 +28,11 @@ namespace Volts::GUI
     extern HINSTANCE Instance;
 #endif
 
+    struct Size
+    {
+        U32 Width, Height;
+    };
+
     struct Frame
     {
         Frame();
@@ -51,6 +56,8 @@ namespace Volts::GUI
 #endif
 
         std::chrono::time_point<std::chrono::high_resolution_clock> LastFrame = std::chrono::high_resolution_clock::now();
+
+        Size GetSize() const;
 
         FrameHandle Handle;
         String T;

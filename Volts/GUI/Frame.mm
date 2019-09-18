@@ -16,7 +16,7 @@
 @implementation VApp
 - (void)sendEvent:(NSEvent*)event
 {
-    if([event type] == NSEventTypeKeyUp && ([event modifierFlags] & NSEventModifierFlagCommand)) 
+    if([event type] == NSEventTypeKeyUp && ([event modifierFlags] & NSEventModifierFlagCommand))
         [[self keyWindow] sendEvent:event];
     else
         [super sendEvent:event];
@@ -72,7 +72,7 @@
     CGFloat BufferScale = view.window.screen.backingScaleFactor ?: NSScreen.mainScreen.backingScaleFactor;
 
     IO.DisplayFramebufferScale = ImVec2(BufferScale, BufferScale);
-    
+
     IO.DeltaTime = float(1.f / 60.f);
 
     id<MTLCommandBuffer> Buffer = [self.Queue commandBuffer];
@@ -228,7 +228,7 @@
     [MetalView setDevice:MetalDevice];
     [MetalView setColorPixelFormat:MTLPixelFormatBGRA8Unorm];
     [MetalView setDepthStencilPixelFormat:MTLPixelFormatDepth32Float_Stencil8];
-    
+
     [Window setContentView:MetalView];
     CGSize Space = { (CGFloat)500, (CGFloat)500 };
     [MetalView setDrawableSize:Space];
@@ -236,6 +236,8 @@
     [Window makeKeyAndOrderFront:nil];
 
     ViewDelegate.Queue = [MetalDevice newCommandQueue];
+
+    F->Handle = Window;
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -259,14 +261,22 @@
 
 
 
+#define WINDOW(X) (())
+
 namespace Volts::GUI
 {
     Frame::Frame()
     {
-        
+
     }
 
     Frame& Frame::Title(const String& T) { this->T = T; return *this; }
+
+    Size Frame::GetSize() const
+    {
+        NSRect S = Handle.contentView.frame.size;
+        return { S.width, S.height };
+    }
 
     void Frame::Run()
     {

@@ -42,7 +42,7 @@ namespace Volts
     void Print(Level L, std::string Msg);
 }
 
-#define INFO(...) { Volts::Print(Volts::Level::Info, fmt::format(__VA_ARGS__)); }
-#define WARN(...) { Volts::Print(Volts::Level::Warning, fmt::format(__VA_ARGS__)); }
-#define ERROR(...) { Volts::Print(Volts::Level::Error, fmt::format(__VA_ARGS__)); }
-#define FATAL(...) { Volts::Print(Volts::Level::Fatal, fmt::format(__VA_ARGS__)); }
+#define VINFO(...) { Volts::Print(Volts::Level::Info, fmt::format(__VA_ARGS__)); }
+#define VWARN(...) { Volts::Print(Volts::Level::Warning, fmt::format(__VA_ARGS__)); }
+#define VERROR(...) { Volts::Print(Volts::Level::Error, fmt::format(__VA_ARGS__)); }
+#define VFATAL(...) { Volts::Print(Volts::Level::Fatal, fmt::format(__VA_ARGS__)); }
