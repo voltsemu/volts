@@ -42,10 +42,22 @@
 
 
 @interface VViewDelegate : NSObject<MTKViewDelegate>
+{
+    Volts::GUI::Frame* F;
+}
+
 @property(nonatomic, strong) id Queue;
+
 @end
 
 @implementation VViewDelegate
+
+- (instancetype)initWithFrame:(Volts::GUI::Frame*)frame
+{
+    self = [super init];
+    F = frame;
+    return self;
+}
 
 - (void)mtkView:(nonnull MTKView*)view drawableSizeWillChange:(CGSize)size
 {
@@ -79,7 +91,7 @@
         ImGui::NewFrame();
 
         // run the main UI
-        Volts::GUI::Frame::GUILoop();
+        Volts::GUI::Frame::GUILoop(F);
 
         ImGui::Render();
         ImDrawData* Draw = ImGui::GetDrawData();
@@ -159,11 +171,19 @@
     id WindowDelegate;
     VViewDelegate* ViewDelegate;
     id MetalDevice;
-    id MetalView;
+    VMTKView* MetalView;
+    Volts::GUI::Frame* F;
 }
 @end
 
 @implementation VAppDelegate
+
+- (instancetype)initWithFrame:(Volts::GUI::Frame*)frame
+{
+    self = [super init];
+    F = frame;
+    return self;
+}
 
 // this is essentially main() for mac
 - (void)applicationDidFinishLaunching:(NSNotification*)notify
@@ -189,15 +209,25 @@
 
     /// set the view delegate and metal device
 
-    ViewDelegate = [[VViewDelegate alloc] init];
+    ViewDelegate = [[VViewDelegate alloc] initWithFrame:F];
     MetalDevice = MTLCreateSystemDefaultDevice();
+    if(MetalDevice == nil)
+    {
+        NSAlert* Alert = [[NSAlert alloc] init];
+        [Alert setMessageText:@"Metal device not found"];
+        [Alert setInformativeText:@"This device does not support the metal API. Metal was introduced in OSX 10.11"];
+        [Alert beginSheetModalForWindow:Window completionHandler:^(NSModalResponse resp) {
+            [NSApp terminate:nil];
+        }];
+
+        return;
+    }
     MetalView = [[VMTKView alloc] init];
 
     [MetalView setDelegate:ViewDelegate];
     [MetalView setDevice:MetalDevice];
     [MetalView setColorPixelFormat:MTLPixelFormatBGRA8Unorm];
     [MetalView setDepthStencilPixelFormat:MTLPixelFormatDepth32Float_Stencil8];
-    
     
     [Window setContentView:MetalView];
     CGSize Space = { (CGFloat)500, (CGFloat)500 };
@@ -243,7 +273,7 @@ namespace Volts::GUI
         // run the application
         [VApp sharedApplication];
         [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
-        [NSApp setDelegate:[[VAppDelegate alloc] init]];
+        [NSApp setDelegate:[[VAppDelegate alloc] initWithFrame:this]];
         [NSApp activateIgnoringOtherApps:YES];
         [NSApp run];
     }
