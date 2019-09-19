@@ -4,6 +4,8 @@
 
 #include "Render/Render.h"
 
+#include "Render/DX12/Render.h"
+
 #if OS_WINDOWS
 #   include "imgui/examples/imgui_impl_dx12.h"
 #   include "imgui/examples/imgui_impl_win32.h"
@@ -32,14 +34,33 @@ namespace Volts::GUI
         if(ImGui_ImplWin32_WndProcHandler(Window, Msg, W, L))
             return true;
 
+        RSX::Render* Backend = reinterpret_cast<RSX::Render*>(GetWindowLongPtr(Window, GWLP_USERDATA));
+
         switch(Msg)
         {
+            case WM_CREATE:
+            {
+                LPCREATESTRUCT Create = reinterpret_cast<LPCREATESTRUCT>(L);
+                SetWindowLongPtr(Window, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(Create->lpCreateParams));
+            }
+            return 0;
+
             case WM_DESTROY:
                 PostQuitMessage(0);
                 return 0;
         }
 
         return DefWindowProc(Window, Msg, W, L);
+    }
+
+    Size Frame::GetSize() const
+    {
+        RECT Rect;
+        GetWindowRect(Handle, &Rect);
+        return {
+            static_cast<U32>(Rect.right - Rect.left),
+            static_cast<U32>(Rect.bottom - Rect.top)
+        };
     }
 
     void Frame::Run()
@@ -81,19 +102,21 @@ namespace Volts::GUI
             nullptr,
             nullptr,
             GUI::Instance,
-            nullptr
+            this
         );
 
         ShowWindow(Handle, SW_SHOW);
         SetForegroundWindow(Handle);
         SetFocus(Handle);
 
+        // todo: lets not hardcode this shall we
+        CurrentRender = new RSX::DX12();
+
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
         ImGui::StyleColorsDark();
 
-        ImGui_ImplWin32_Init(Handle);
-        CurrentRender->InitGUI();
+        CurrentRender->Attach(this);
 
         MSG Message = {};
         while(Message.message != WM_QUIT)
@@ -104,17 +127,15 @@ namespace Volts::GUI
                 DispatchMessage(&Message);
             }
 
-            ImGui_ImplWin32_NewFrame();
-            CurrentRender->NewGUIFrame();
+            CurrentRender->BeginRender();
             ImGui::NewFrame();
 
             Frame::GUILoop(this);
 
-            CurrentRender->RenderGUI();
+            CurrentRender->PresentRender();
         }
 
-        CurrentRender->ShutdownGUI();
-        ImGui_ImplWin32_Shutdown();
+        CurrentRender->Detach();
         ImGui::DestroyContext();
 
         DestroyWindow(Handle);

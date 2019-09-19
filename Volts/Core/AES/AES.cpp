@@ -533,7 +533,7 @@ static const U32 RT3[] = { RT };
     {
         if(Length % 16)
         {
-            ERROR("Length was not a multiple of 16");
+            VERROR("Length was not a multiple of 16");
             return *this;
         }
 
@@ -557,7 +557,7 @@ static const U32 RT3[] = { RT };
     {
         if(Length % 16)
         {
-            ERROR("Length was not a multiple of 16");
+            VERROR("Length was not a multiple of 16");
             return *this;
         }
 
