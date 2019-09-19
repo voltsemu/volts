@@ -30,6 +30,13 @@ namespace Volts::RSX
         virtual void PresentRender() override;
 
     private:
+
+        struct Vertex
+        {
+            F32 Pos[3];
+            F32 Colour[4];
+        };
+
         void LoadPipeline();
         void LoadData();
         void PopulateCommandList();
@@ -56,6 +63,9 @@ namespace Volts::RSX
         U32 RTVDescriptorSize;
 
         Ptr<ID3D12DescriptorHeap> SRVHeap;
+
+        Ptr<ID3D12Resource> VertexBuffer;
+        D3D12_VERTEX_BUFFER_VIEW VertexBufferView;
 
         // Synchronization data
         U32 FrameIndex;

@@ -1,10 +1,11 @@
 #include "Render.h"
-#include <vector>
-
+#include <Core/Memory/Memory.h>
 #include "Frame.h"
 
 #include "Support.h"
 #include "Config.h"
+
+#include "d3dx12.h"
 
 #include "imgui/imgui.h"
 #include "imgui/examples/imgui_impl_win32.h"
@@ -77,7 +78,9 @@ namespace Volts::RSX
         const F32 ClearColour[] = { 0.0f, 0.2f, 0.4f, 1.0f };
 
         CommandList->ClearRenderTargetView(RTVHandle, ClearColour, 0, nullptr);
-
+        CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+        CommandList->IASetVertexBuffers(0, 1, &VertexBufferView);
+        CommandList->DrawInstanced(3, 1, 0, 0);
         // render stuff in here
 
         ImGui::Render();
@@ -237,6 +240,90 @@ namespace Volts::RSX
             ));
         }
 
+        {
+            Ptr<ID3DBlob> VertexShader;
+            Ptr<ID3DBlob> PixelShader;
+
+            UINT CompileFlags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
+
+            VALIDATE(D3DCompileFromFile(
+                L"C:\\Users\\Elliot\\source\\repos\\RPCS3X\\Volts\\GUI\\Render\\DX12\\shaders.hlsl",
+                nullptr,
+                nullptr,
+                "VSMain",
+                "vs_5_0",
+                CompileFlags,
+                0,
+                &VertexShader,
+                nullptr
+            ));
+
+            VALIDATE(D3DCompileFromFile(
+                L"C:\\Users\\Elliot\\source\\repos\\RPCS3X\\Volts\\GUI\\Render\\DX12\\shaders.hlsl",
+                nullptr,
+                nullptr,
+                "PSMain",
+                "vs_5_0",
+                CompileFlags,
+                0,
+                &PixelShader,
+                nullptr
+            ));
+
+            D3D12_INPUT_ELEMENT_DESC IED[] =
+            {
+                { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+                { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+            };
+
+            D3D12_GRAPHICS_PIPELINE_STATE_DESC PSO = {};
+            PSO.InputLayout = {IED, _countof(IED) };
+            PSO.pRootSignature = RootSignature.Get();
+            PSO.VS = CD3DX12_SHADER_BYTECODE(VertexShader.Get());
+            PSO.PS = CD3DX12_SHADER_BYTECODE(PixelShader.Get());
+
+            D3D12_RASTERIZER_DESC RD = {};
+            RD.FillMode = D3D12_FILL_MODE_SOLID;
+            RD.CullMode = D3D12_CULL_MODE_BACK;
+            RD.FrontCounterClockwise = false;
+            RD.DepthBias = D3D12_DEFAULT_DEPTH_BIAS;
+            RD.DepthBiasClamp = D3D12_DEFAULT_DEPTH_BIAS_CLAMP;
+            RD.SlopeScaledDepthBias = D3D12_DEFAULT_SLOPE_SCALED_DEPTH_BIAS;
+            RD.DepthClipEnable = true;
+            RD.MultisampleEnable = false;
+            RD.AntialiasedLineEnable = false;
+            RD.ForcedSampleCount = 0;
+            RD.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
+
+            PSO.RasterizerState = RD;
+
+            D3D12_BLEND_DESC BD = {};
+            BD.AlphaToCoverageEnable = false;
+            BD.IndependentBlendEnable = false;
+
+            D3D12_RENDER_TARGET_BLEND_DESC RTBD =
+            {
+                false, false,
+                D3D12_BLEND_ONE, D3D12_BLEND_ZERO, D3D12_BLEND_OP_ADD,
+                D3D12_BLEND_ONE, D3D12_BLEND_ZERO, D3D12_BLEND_OP_ADD,
+                D3D12_LOGIC_OP_NOOP,
+                D3D12_COLOR_WRITE_ENABLE_ALL
+            };
+            for(U32 I = 0; I < D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT; I++)
+                BD.RenderTarget[I] = RTBD;
+
+            PSO.BlendState = BD;
+
+            PSO.DepthStencilState.DepthEnable = false;
+            PSO.DepthStencilState.StencilEnable = false;
+            PSO.SampleMask = UINT_MAX;
+            PSO.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+            PSO.NumRenderTargets = 1;
+            PSO.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+            PSO.SampleDesc.Count = 1;
+            VALIDATE(Device->CreateGraphicsPipelineState(&PSO, IID_PPV_ARGS(&PipelineState)));
+        }
+
         VALIDATE(Device->CreateCommandList(
             0,
             D3D12_COMMAND_LIST_TYPE_DIRECT,
@@ -246,6 +333,36 @@ namespace Volts::RSX
         ));
 
         VALIDATE(CommandList->Close());
+
+        {
+            Vertex Tris[] =
+            {
+                { { 0.f, 0.25f * 2, 0.f }, { 1.f, 0.f, 0.f, 1.f } },
+                { { 0.25f, -0.25f * 2, 0.f }, { 0.f, 1.f, 0.f, 1.f } },
+                { { -0.25f, -0.25f * 2, 0.f }, { 0.f, 0.f, 1.f, 1.f } }
+            };
+
+            const U32 TrisSize = sizeof(Tris);
+
+            VALIDATE(Device->CreateCommittedResource(
+                &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
+                D3D12_HEAP_FLAG_NONE,
+                &CD3DX12_RESOURCE_DESC::Buffer(TrisSize),
+                D3D12_RESOURCE_STATE_GENERIC_READ,
+                nullptr,
+                IID_PPV_ARGS(&VertexBuffer)
+            ));
+
+            Byte* VertexData;
+            CD3DX12_RANGE ReadRange(0, 0);
+            VALIDATE(VertexBuffer->Map(0, &ReadRange, reinterpret_cast<void**>(&VertexData)));
+            memcpy(VertexData, Tris, TrisSize);
+            VertexBuffer->Unmap(0, nullptr);
+
+            VertexBufferView.BufferLocation = VertexBuffer->GetGPUVirtualAddress();
+            VertexBufferView.StrideInBytes = sizeof(Vertex);
+            VertexBufferView.SizeInBytes = TrisSize;
+        }
 
         {
             VALIDATE(Device->CreateFence(
