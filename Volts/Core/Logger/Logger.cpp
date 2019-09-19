@@ -29,7 +29,8 @@ namespace Volts
     {
         if(L >= LogLevel)
         {
-            GUI::Frame::Log(Msg);
+            GUI::Frame::Log(Msg + "\n");
+            printf("%s", Msg.c_str());
         }
     }
 }

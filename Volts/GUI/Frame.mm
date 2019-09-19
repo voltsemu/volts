@@ -1,6 +1,9 @@
 #include "Frame.h"
 
+#include "Core/Logger/Logger.h"
+
 #import <Cocoa/Cocoa.h>
+#import <Metal/Metal.h>
 #import <MetalKit/MetalKit.h>
 
 #include "imgui/imgui.h"
@@ -277,6 +280,11 @@ namespace Volts::GUI
             static_cast<U32>(S.width), 
             static_cast<U32>(S.height)
         };
+    }
+
+    void Frame::SetBackground(const String& Path)
+    {
+
     }
 
     void Frame::Run()

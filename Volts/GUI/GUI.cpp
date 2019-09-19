@@ -10,8 +10,7 @@
 
 namespace Volts::GUI
 {
-    ImGuiTextBuffer Logs;
-
+    ImGuiTextBuffer Frame::Logs = {};
     void Frame::Log(std::string Msg)
     {
         Logs.append(Msg.c_str());
@@ -36,18 +35,18 @@ namespace Volts::GUI
         ImGui::Begin("Log", &ShowLog);
 
         if(ImGui::Button("Clear"))
-            Logs.clear();
+            Frame::Logs.clear();
 
         ImGui::SameLine();
 
         if(ImGui::Button("Test"))
-            Logs.append("Test\n");
+            Frame::Logs.append("Test\n");
 
         ImGui::Separator();
 
         ImGui::BeginChild("scrolling");
         ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(1, 0));
-        ImGui::TextUnformatted(Logs.begin());
+        ImGui::TextUnformatted(Frame::Logs.begin());
         ImGui::PopStyleVar();
 
         ImGui::EndChild();
@@ -80,5 +79,14 @@ namespace Volts::GUI
         if(ShowMetric) ShowMetrics(F);
         
         if(ShowLog) ShowLogs(F);
+
+        ImGui::Begin("UNSELF");
+        if(ImGui::Button("Do the thing"))
+        {
+            Cthulhu::FileSystem::BufferedFile F{"/Users/student/Documents/GitHub/Volts/Build/EBOOT.BIN"};
+            VINFO("Decrypting file");
+            auto I = PS3::UNSELF::DecryptSELF(F);
+        }
+        ImGui::End();
     }
 }

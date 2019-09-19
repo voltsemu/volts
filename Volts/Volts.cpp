@@ -12,7 +12,7 @@ using namespace Cthulhu;
 
 int main(int Argc, const char** Argv)
 {
-	LogLevel = Level::Warning;
+	LogLevel = Level::Info;
 	GUI::Frame()
 		.Title("Volts")
 		.Run();

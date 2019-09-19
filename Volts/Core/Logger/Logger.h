@@ -4,6 +4,7 @@
 #include <Core/Collections/CthulhuString.h>
 #include "Volts/Config.h"
 
+#define FMT_EXCEPTIONS 0
 #include <fmt/format.h>
 
 #if OS_WINDOWS

@@ -3,6 +3,8 @@
 #include <Core/Collections/CthulhuString.h>
 #include <Core/Types/Lambda.h>
 
+#include "imgui/imgui.h"
+
 #include <chrono>
 #include <deque>
 #include <string>
@@ -39,6 +41,9 @@ namespace Volts::GUI
         Frame& Title(const String& T);
         void Run();
 
+        void SetBackground(const String& Path);
+
+        static ImGuiTextBuffer Logs;
         static void GUILoop(Frame* F);
         static void Log(std::string Msg);
 
