@@ -67,6 +67,8 @@ namespace Volts::RSX
         Ptr<ID3D12Resource> VertexBuffer;
         D3D12_VERTEX_BUFFER_VIEW VertexBufferView;
 
+        Ptr<ID3D12InfoQueue> DebugQueue;
+
         // Synchronization data
         U32 FrameIndex;
         HANDLE FenceEvent;

@@ -127,6 +127,7 @@ namespace Volts::RSX
             Ptr<ID3D12Debug> Debugger;
             VALIDATE(D3D12GetDebugInterface(IID_PPV_ARGS(&Debugger)));
             Debugger->EnableDebugLayer();
+            Debugger->Release();
             FactoryFlags |= DXGI_CREATE_FACTORY_DEBUG;
         }
 #endif
@@ -158,6 +159,8 @@ namespace Volts::RSX
                 IID_PPV_ARGS(&CommandQueue)
             ));
         }
+
+        VALIDATE(Device->QueryInterface(IID_PPV_ARGS(&DebugQueue)));
 
         {
             DXGI_SWAP_CHAIN_DESC1 SCD = {};
@@ -263,7 +266,7 @@ namespace Volts::RSX
                 nullptr,
                 nullptr,
                 "PSMain",
-                "vs_5_0",
+                "ps_5_0",
                 CompileFlags,
                 0,
                 &PixelShader,
