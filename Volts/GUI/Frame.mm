@@ -237,7 +237,7 @@
 
     ViewDelegate.Queue = [MetalDevice newCommandQueue];
 
-    F->Handle = Window;
+    F->Handle = (__bridge void*)Window;
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -261,8 +261,6 @@
 
 
 
-#define WINDOW(X) (())
-
 namespace Volts::GUI
 {
     Frame::Frame()
@@ -274,8 +272,11 @@ namespace Volts::GUI
 
     Size Frame::GetSize() const
     {
-        NSRect S = Handle.contentView.frame.size;
-        return { S.width, S.height };
+        CGSize S = [WINDOW(CFBridgingRelease(Handle)) contentView].frame.size;
+        return { 
+            static_cast<U32>(S.width), 
+            static_cast<U32>(S.height)
+        };
     }
 
     void Frame::Run()

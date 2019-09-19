@@ -8,7 +8,7 @@ subdir('Render/Vulkan')
 
 if host_machine.system() == 'darwin'
     sources += 'Volts/GUI/Frame.mm'
-    subdir('Render/Metal')
+    deps += dependency('appleframeworks', modules : ['Foundation', 'Metal', 'MetalKit', 'QuartzCore', 'Cocoa'])
 else
     sources += 'Volts/GUI/Frame.cpp'
 endif
