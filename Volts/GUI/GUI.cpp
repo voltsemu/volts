@@ -17,18 +17,15 @@ namespace Volts::GUI
         Logs.append(Msg.c_str());
     }
 
-    bool Metrics = true;
+    bool ShowMetric = true;
 
     void ShowMetrics(Frame* F)
     {
         auto Now = std::chrono::high_resolution_clock::now();
-        if(Metrics)
-        {
-            ImGui::SetNextWindowPos(ImVec2(25, 25), ImGuiCond_FirstUseEver);
-            ImGui::Begin("Metrics", &Metrics);
-            ImGui::Text("FPS: %f.2ms", ((double)std::chrono::duration_cast<std::chrono::nanoseconds>(Now - F->LastFrame).count())/1e6);
-            ImGui::End();
-        }
+        ImGui::SetNextWindowPos(ImVec2(25, 25), ImGuiCond_FirstUseEver);
+        ImGui::Begin("Metrics", &ShowMetric);
+        ImGui::Text("FPS: %f.2ms", ((double)std::chrono::duration_cast<std::chrono::nanoseconds>(Now - F->LastFrame).count())/1e6);
+        ImGui::End();
 
         F->LastFrame = Now;
     }
@@ -66,7 +63,7 @@ namespace Volts::GUI
         {
             if(ImGui::BeginMenu("Windows"))
             {
-                ImGui::MenuItem("Metrics", nullptr, &Metrics);
+                ImGui::MenuItem("Metrics", nullptr, &ShowMetric);
                 ImGui::MenuItem("Logs", nullptr, &ShowLog);
                 ImGui::EndMenu();
             }
@@ -80,7 +77,7 @@ namespace Volts::GUI
     void Frame::GUILoop(Frame* F)
     {
         ShowSettings(F);
-        ShowMetrics(F);
+        if(ShowMetric) ShowMetrics(F);
         
         if(ShowLog) ShowLogs(F);
     }
