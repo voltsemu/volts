@@ -109,6 +109,7 @@ namespace Volts::GUI
         SetForegroundWindow(Handle);
         SetFocus(Handle);
 
+        // todo: lets not hardcode this shall we
         CurrentRender = new RSX::DX12();
 
         IMGUI_CHECKVERSION();

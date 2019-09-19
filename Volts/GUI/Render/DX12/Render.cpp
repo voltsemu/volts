@@ -4,6 +4,7 @@
 #include "Frame.h"
 
 #include "Support.h"
+#include "Config.h"
 
 #include "imgui/imgui.h"
 #include "imgui/examples/imgui_impl_win32.h"
@@ -62,8 +63,8 @@ namespace Volts::RSX
         Barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
         Barrier.Transition = {
             RenderTargets[FrameIndex].Get(),
-            D3D12_RESOURCE_STATE_PRESENT,
-            D3D12_RESOURCE_STATE_RENDER_TARGET
+            D3D12_RESOURCE_STATE_RENDER_TARGET,
+            D3D12_RESOURCE_STATE_PRESENT
         };
 
         CommandList->ResourceBarrier(1, &Barrier);
@@ -72,6 +73,10 @@ namespace Volts::RSX
         RTVHandle.ptr = RTVHeap->GetCPUDescriptorHandleForHeapStart().ptr + (FrameIndex * RTVDescriptorSize);
         CommandList->OMSetRenderTargets(1, &RTVHandle, false, nullptr);
         CommandList->SetDescriptorHeaps(1, &SRVHeap);
+
+        const F32 ClearColour[] = { 0.0f, 0.2f, 0.4f, 1.0f };
+
+        CommandList->ClearRenderTargetView(RTVHandle, ClearColour, 0, nullptr);
 
         // render stuff in here
 
@@ -82,8 +87,8 @@ namespace Volts::RSX
         Barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
         Barrier.Transition = {
             RenderTargets[FrameIndex].Get(),
-            D3D12_RESOURCE_STATE_RENDER_TARGET,
-            D3D12_RESOURCE_STATE_PRESENT
+            D3D12_RESOURCE_STATE_PRESENT,
+            D3D12_RESOURCE_STATE_RENDER_TARGET
         };
 
         CommandList->ResourceBarrier(1, &Transition);
@@ -113,6 +118,15 @@ namespace Volts::RSX
     void DX12::LoadPipeline()
     {
         UINT FactoryFlags = 0;
+
+#if VDXDEBUG
+        {
+            Ptr<ID3D12Debug> Debugger;
+            VALIDATE(D3D12GetDebugInterface(IID_PPV_ARGS(&Debugger)));
+            Debugger->EnableDebugLayer();
+            FactoryFlags |= DXGI_CREATE_FACTORY_DEBUG;
+        }
+#endif
 
         Ptr<IDXGIFactory4> Factory;
         VALIDATE(CreateDXGIFactory2(FactoryFlags, IID_PPV_ARGS(&Factory)));
