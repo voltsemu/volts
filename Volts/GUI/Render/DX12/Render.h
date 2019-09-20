@@ -31,6 +31,10 @@ namespace Volts::RSX
         virtual void BeginRender() override;
         virtual void PresentRender() override;
 
+        virtual void Windowed() override;
+        virtual void Borderless() override;
+        virtual void Fullscreen() override;
+
     private:
 
         struct Vertex

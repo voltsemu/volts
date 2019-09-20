@@ -53,6 +53,25 @@ namespace Volts::GUI
         return DefWindowProc(Window, Msg, W, L);
     }
 
+    void Frame::Fullscreen()
+    {
+
+    }
+
+    void Frame::Borderless()
+    {
+        if(GetWindowLongPtr(Handle, GWL_STYLE) & WS_POPUP)
+        {
+            SetWindowLongPtr(Handle, GWL_STYLE, WS_VISIBLE | WS_OVERLAPPEDWINDOW);
+            SetWindowPos(Handle, nullptr, 0, 0, 600, 400, SWP_FRAMECHANGED);
+        }
+    }
+
+    void Frame::Windowed()
+    {
+
+    }
+
     Size Frame::GetSize() const
     {
         RECT Rect;

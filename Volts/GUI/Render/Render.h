@@ -23,6 +23,10 @@ namespace Volts::RSX
         virtual const String Name() const = 0;
         virtual const String Description() const = 0;
 
+        virtual void Windowed() = 0;
+        virtual void Fullscreen() = 0;
+        virtual void Borderless() = 0;
+
         virtual void BeginRender() = 0;
         virtual void PresentRender() = 0;
     };

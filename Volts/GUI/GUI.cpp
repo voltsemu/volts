@@ -57,7 +57,7 @@ namespace Volts::GUI
     {
         ImGui::SetNextWindowPos(ImVec2(200, 25), ImGuiCond_FirstUseEver);
         ImGui::Begin("Settings", nullptr, ImGuiWindowFlags_MenuBar);
-        
+
         if(ImGui::BeginMenuBar())
         {
             if(ImGui::BeginMenu("Windows"))
@@ -77,7 +77,7 @@ namespace Volts::GUI
     {
         ShowSettings(F);
         if(ShowMetric) ShowMetrics(F);
-        
+
         if(ShowLog) ShowLogs(F);
 
         ImGui::Begin("UNSELF");
@@ -87,6 +87,18 @@ namespace Volts::GUI
             VINFO("Decrypting file");
             auto I = PS3::UNSELF::DecryptSELF(F);
         }
+        ImGui::End();
+
+        ImGui::Begin("Debug");
+        if(ImGui::Button("Fullscreen"))
+            F->Fullscreen();
+
+        if(ImGui::Button("Borderless"))
+            F->Borderless();
+
+        if(ImGui::Button("Windowed"))
+            F->Windowed();
+
         ImGui::End();
     }
 }

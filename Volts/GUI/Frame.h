@@ -35,6 +35,13 @@ namespace Volts::GUI
         U32 Width, Height;
     };
 
+    enum WindowState
+    {
+        Windowed,
+        Borderless,
+        Fullscreen
+    };
+
     struct Frame
     {
         Frame();
@@ -42,6 +49,10 @@ namespace Volts::GUI
         void Run();
 
         void SetBackground(const String& Path);
+
+        void Fullscreen();
+        void Borderless();
+        void Windowed();
 
         static ImGuiTextBuffer Logs;
         static void GUILoop(Frame* F);

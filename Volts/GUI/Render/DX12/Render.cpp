@@ -50,6 +50,21 @@ namespace Volts::RSX
         CloseHandle(FenceEvent);
     }
 
+    void DX12::Windowed()
+    {
+
+    }
+
+    void DX12::Fullscreen()
+    {
+
+    }
+
+    void DX12::Borderless()
+    {
+
+    }
+
     void DX12::PopulateCommandList()
     {
         VALIDATE(CommandAllocators[FrameIndex]->Reset());
@@ -58,11 +73,6 @@ namespace Volts::RSX
         CommandList->SetGraphicsRootSignature(RootSignature.Get());
         CommandList->RSSetViewports(1, &Viewport);
         CommandList->RSSetScissorRects(1, &Scissor);
-
-        if(RenderTargets[FrameIndex].Get() != nullptr)
-            DX_DEBUG(DebugQueue, "RenderTarget good");
-        else
-            DX_DEBUG(DebugQueue, "RenderTarget bad");
 
         CommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(
             RenderTargets[FrameIndex].Get(),
@@ -74,12 +84,9 @@ namespace Volts::RSX
         RTVHandle.ptr = RTVHeap->GetCPUDescriptorHandleForHeapStart().ptr + (FrameIndex * RTVDescriptorSize);
         CommandList->OMSetRenderTargets(1, &RTVHandle, false, nullptr);
 
-        if(&SRVHeap != nullptr)
-            DX_DEBUG(DebugQueue, "SRVHeap good");
-        else
-            DX_DEBUG(DebugQueue, "SRVHeap bad");
+        ID3D12DescriptorHeap* SRV[] = { SRVHeap.Get() };
 
-        CommandList->SetDescriptorHeaps(1, { &SRVHeap });
+        CommandList->SetDescriptorHeaps(1, SRV);
 
         const F32 ClearColour[] = { 0.0f, 0.2f, 0.4f, 1.0f };
 
