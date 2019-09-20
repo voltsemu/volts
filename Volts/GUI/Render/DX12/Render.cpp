@@ -2,14 +2,13 @@
 #include <Core/Memory/Memory.h>
 #include "Frame.h"
 
-#include "Support.h"
-#include "Config.h"
-
 #include "d3dx12.h"
 
 #include "imgui/imgui.h"
 #include "imgui/examples/imgui_impl_win32.h"
 #include "imgui/examples/imgui_impl_dx12.h"
+
+#define DX_DEBUG(Queue, Message) Queue->AddApplicationMessage(D3D12_MESSAGE_SEVERITY_MESSAGE, Message)
 
 namespace Volts::RSX
 {
@@ -60,20 +59,27 @@ namespace Volts::RSX
         CommandList->RSSetViewports(1, &Viewport);
         CommandList->RSSetScissorRects(1, &Scissor);
 
-        D3D12_RESOURCE_BARRIER Barrier = {};
-        Barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-        Barrier.Transition = {
-            RenderTargets[FrameIndex].Get(),
-            D3D12_RESOURCE_STATE_RENDER_TARGET,
-            D3D12_RESOURCE_STATE_PRESENT
-        };
+        if(RenderTargets[FrameIndex].Get() != nullptr)
+            DX_DEBUG(DebugQueue, "RenderTarget good");
+        else
+            DX_DEBUG(DebugQueue, "RenderTarget bad");
 
-        CommandList->ResourceBarrier(1, &Barrier);
+        CommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(
+            RenderTargets[FrameIndex].Get(),
+            D3D12_RESOURCE_STATE_PRESENT,
+            D3D12_RESOURCE_STATE_RENDER_TARGET
+        ));
 
         D3D12_CPU_DESCRIPTOR_HANDLE RTVHandle = {};
         RTVHandle.ptr = RTVHeap->GetCPUDescriptorHandleForHeapStart().ptr + (FrameIndex * RTVDescriptorSize);
         CommandList->OMSetRenderTargets(1, &RTVHandle, false, nullptr);
-        CommandList->SetDescriptorHeaps(1, &SRVHeap);
+
+        if(&SRVHeap != nullptr)
+            DX_DEBUG(DebugQueue, "SRVHeap good");
+        else
+            DX_DEBUG(DebugQueue, "SRVHeap bad");
+
+        CommandList->SetDescriptorHeaps(1, { &SRVHeap });
 
         const F32 ClearColour[] = { 0.0f, 0.2f, 0.4f, 1.0f };
 
@@ -86,15 +92,11 @@ namespace Volts::RSX
         ImGui::Render();
         ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), CommandList.Get());
 
-        D3D12_RESOURCE_BARRIER Transition = {};
-        Barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-        Barrier.Transition = {
+        CommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(
             RenderTargets[FrameIndex].Get(),
-            D3D12_RESOURCE_STATE_PRESENT,
-            D3D12_RESOURCE_STATE_RENDER_TARGET
-        };
-
-        CommandList->ResourceBarrier(1, &Transition);
+            D3D12_RESOURCE_STATE_RENDER_TARGET,
+            D3D12_RESOURCE_STATE_PRESENT
+        ));
 
         // stop rendering here
 
@@ -113,7 +115,10 @@ namespace Volts::RSX
         ID3D12CommandList* Commands[] = { CommandList.Get() };
         CommandQueue->ExecuteCommandLists(_countof(Commands), Commands);
 
-        VALIDATE(Swap->Present(1, 0));
+
+        UINT PresentFlags = Tear ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
+
+        VALIDATE(Swap->Present(1, PresentFlags));
 
         AdvanceFrame();
     }
@@ -127,7 +132,6 @@ namespace Volts::RSX
             Ptr<ID3D12Debug> Debugger;
             VALIDATE(D3D12GetDebugInterface(IID_PPV_ARGS(&Debugger)));
             Debugger->EnableDebugLayer();
-            Debugger->Release();
             FactoryFlags |= DXGI_CREATE_FACTORY_DEBUG;
         }
 #endif
@@ -160,9 +164,12 @@ namespace Volts::RSX
             ));
         }
 
+#if VDXDEBUG
         VALIDATE(Device->QueryInterface(IID_PPV_ARGS(&DebugQueue)));
-
+#endif
         {
+            Tear = DX12Support::CanTear();
+            DX_DEBUG(DebugQueue, "Before SwapChain");
             DXGI_SWAP_CHAIN_DESC1 SCD = {};
             SCD.BufferCount = FrameCount;
             auto Size = Frame->GetSize();
@@ -172,7 +179,7 @@ namespace Volts::RSX
             SCD.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
             SCD.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
             SCD.SampleDesc.Count = 1;
-            SCD.Flags = DX12Support::CanTear() ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
+            SCD.Flags = Tear ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
 
             Ptr<IDXGISwapChain1> SwapChain;
             VALIDATE(Factory->CreateSwapChainForHwnd(
@@ -192,6 +199,7 @@ namespace Volts::RSX
         FrameIndex = Swap->GetCurrentBackBufferIndex();
 
         {
+            DX_DEBUG(DebugQueue, "Before RTV");
             D3D12_DESCRIPTOR_HEAP_DESC DHD = {};
             DHD.NumDescriptors = FrameCount;
             DHD.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
@@ -202,6 +210,7 @@ namespace Volts::RSX
         }
 
         {
+            DX_DEBUG(DebugQueue, "Before CommandAllocator");
             D3D12_CPU_DESCRIPTOR_HANDLE CDH = RTVHeap->GetCPUDescriptorHandleForHeapStart();
 
             for(U32 I = 0; I < FrameCount; I++)
@@ -218,6 +227,7 @@ namespace Volts::RSX
         }
 
         {
+            DX_DEBUG(DebugQueue, "Before SRV");
             D3D12_DESCRIPTOR_HEAP_DESC DHD = {};
             DHD.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
             DHD.NumDescriptors = 1;

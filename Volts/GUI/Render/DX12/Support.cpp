@@ -9,11 +9,19 @@ namespace Volts::DX12Support
     using Microsoft::WRL::ComPtr;
     bool CanTear()
     {
-        ComPtr<IDXGIFactory6> Factory;
-        VALIDATE(CreateDXGIFactory1(IID_PPV_ARGS(&Factory)));
+        ComPtr<IDXGIFactory4> Factory;
+        auto Res = CreateDXGIFactory1(IID_PPV_ARGS(&Factory));
         bool Tearing = false;
-        VALIDATE(Factory->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &Tearing, sizeof(Tearing)));
+        if(SUCCEEDED(Res))
+        {
+            ComPtr<IDXGIFactory5> Factory5;
+            Res = Factory.As(&Factory5);
+            if(SUCCEEDED(Res))
+            {
+                Res = Factory5->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &Tearing, sizeof(Tearing));
+            }
+        }
 
-        return Tearing;
+        return SUCCEEDED(Res) && Tearing;
     }
 }

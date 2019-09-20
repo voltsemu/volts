@@ -2,6 +2,8 @@
 
 #include "Render/Render.h"
 
+#include "Support.h"
+
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
@@ -67,13 +69,18 @@ namespace Volts::RSX
         Ptr<ID3D12Resource> VertexBuffer;
         D3D12_VERTEX_BUFFER_VIEW VertexBufferView;
 
+#if VDXDEBUG
         Ptr<ID3D12InfoQueue> DebugQueue;
+#endif
 
         // Synchronization data
         U32 FrameIndex;
         HANDLE FenceEvent;
         Ptr<ID3D12Fence> Fence;
         U64 FenceValues[FrameCount];
+
+        // extra data
+        bool Tear;
 
         // External data
         GUI::Frame* Frame;
