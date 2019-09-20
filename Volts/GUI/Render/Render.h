@@ -2,6 +2,8 @@
 
 #include <Core/Collections/CthulhuString.h>
 
+#include "Frame.h"
+
 namespace Volts::GUI
 {
     struct Frame;
@@ -26,6 +28,8 @@ namespace Volts::RSX
         virtual void Windowed() = 0;
         virtual void Fullscreen() = 0;
         virtual void Borderless() = 0;
+
+        virtual void Resize(GUI::Size NewSize) = 0;
 
         virtual void BeginRender() = 0;
         virtual void PresentRender() = 0;
