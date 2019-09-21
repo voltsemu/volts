@@ -65,6 +65,38 @@ namespace Volts::RSX
 
     }
 
+    void DX12::Resize(GUI::Size NewSize)
+    {
+        FlushGPU();
+        VALIDATE(CommandAllocators[FrameIndex]->Reset());
+        VALIDATE(CommandList->Reset(CommandAllocators[FrameIndex].Get(), nullptr));
+        for(U32 I = 0; I < FrameCount; I++)
+            RenderTargets[I].Reset();
+
+        VALIDATE(Swap->ResizeBuffers(FrameCount, NewSize.Width, NewSize.Height, DXGI_FORMAT_R8G8B8A8_UNORM, 0));
+        FrameIndex = 0;
+
+        VALIDATE(CommandList->Close());
+        ID3D12CommandList* Commands[] = { CommandList.Get() };
+        CommandQueue->ExecuteCommandLists(_countof(Commands), Commands);
+    }
+
+    void DX12::FlushGPU()
+    {
+        for(U32 I = 0; I < FrameCount; I++)
+        {
+            U64 FenceSignal = ++FenceValues[I];
+            CommandQueue->Signal(Fence.Get(), FenceSignal);
+            if(Fence->GetCompletedValue() < FenceValues[I])
+            {
+                Fence->SetEventOnCompletion(FenceSignal, FenceEvent);
+                WaitForSingleObjectEx(FenceEvent, INFINITE, false);
+            }
+        }
+
+        FrameIndex = 0;
+    }
+
     void DX12::PopulateCommandList()
     {
         VALIDATE(CommandAllocators[FrameIndex]->Reset());
@@ -125,7 +157,7 @@ namespace Volts::RSX
 
         UINT PresentFlags = Tear ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
 
-        VALIDATE(Swap->Present(1, PresentFlags));
+        VALIDATE(Swap->Present(Frame->VSync, PresentFlags));
 
         AdvanceFrame();
     }

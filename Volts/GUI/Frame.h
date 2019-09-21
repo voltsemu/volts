@@ -75,6 +75,8 @@ namespace Volts::GUI
 
         Size GetSize() const;
 
+
+        U32 VSync = false;
         FrameHandle Handle;
         String T;
     };

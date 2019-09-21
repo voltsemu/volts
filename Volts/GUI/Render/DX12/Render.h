@@ -28,6 +28,8 @@ namespace Volts::RSX
         virtual const String Name() const override { return "DX12"; }
         virtual const String Description() const override { return "DirectX12"; }
 
+        virtual void Resize(GUI::Size NewSize) override;
+
         virtual void BeginRender() override;
         virtual void PresentRender() override;
 
@@ -47,6 +49,7 @@ namespace Volts::RSX
         void LoadData();
         void PopulateCommandList();
         void WaitForGPU();
+        void FlushGPU();
         void AdvanceFrame();
 
         static constexpr U32 FrameCount = 2;

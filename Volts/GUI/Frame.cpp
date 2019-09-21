@@ -45,6 +45,19 @@ namespace Volts::GUI
             }
             return 0;
 
+            case WM_SIZE:
+            {
+                if(!!Backend)
+                {
+                    RECT Rect;
+                    GetWindowRect(Window, &Rect);
+                    Backend->Resize({
+                        static_cast<U32>(Rect.right - Rect.left),
+                        static_cast<U32>(Rect.bottom - Rect.top)
+                    });
+                }
+            }
+
             case WM_DESTROY:
                 PostQuitMessage(0);
                 return 0;

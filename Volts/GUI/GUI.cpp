@@ -16,23 +16,23 @@ namespace Volts::GUI
         Logs.append(Msg.c_str());
     }
 
-    bool ShowMetric = true;
+    bool ShowMetrics = true;
 
-    void ShowMetrics(Frame* F)
+    void Metrics(Frame* F)
     {
         auto Now = std::chrono::high_resolution_clock::now();
         ImGui::SetNextWindowPos(ImVec2(25, 25), ImGuiCond_FirstUseEver);
-        ImGui::Begin("Metrics", &ShowMetric);
+        ImGui::Begin("Metrics", &ShowMetrics);
         ImGui::Text("FPS: %f.2ms", ((double)std::chrono::duration_cast<std::chrono::nanoseconds>(Now - F->LastFrame).count())/1e6);
         ImGui::End();
 
         F->LastFrame = Now;
     }
 
-    bool ShowLog = true;
-    void ShowLogs(Frame* F)
+    bool ShowLogs = true;
+    void LogWindow(Frame* F)
     {
-        ImGui::Begin("Log", &ShowLog);
+        ImGui::Begin("Log", &ShowLogs);
 
         if(ImGui::Button("Clear"))
             Frame::Logs.clear();
@@ -53,17 +53,42 @@ namespace Volts::GUI
         ImGui::End();
     }
 
-    void ShowSettings(Frame* F)
+    bool ShowOptions = false;
+    void Options(Frame* F)
+    {
+        ImGui::Begin("Options", &ShowOptions);
+
+        static const char* VSyncOptions[] = { "Disabled", "Single Buffered", "Double Buffered", "Triple Buffered" };
+        static const char* CurrentItem = nullptr;
+        if(ImGui::BeginCombo("##vsync", "VSync"))
+        {
+            for(U32 I = 0; I < IM_ARRAYSIZE(VSyncOptions); I++)
+            {
+                bool IsSelected = (CurrentItem = VSyncOptions[I]);
+                if(ImGui::Selectable(VSyncOptions[I], IsSelected))
+                    CurrentItem = VSyncOptions[I];
+                if(IsSelected)
+                    ImGui::SetItemDefaultFocus();
+            }
+            ImGui::EndCombo();
+        }
+
+        ImGui::End();
+    }
+
+    bool ShowSettings = true;
+    void Settings(Frame* F)
     {
         ImGui::SetNextWindowPos(ImVec2(200, 25), ImGuiCond_FirstUseEver);
-        ImGui::Begin("Settings", nullptr, ImGuiWindowFlags_MenuBar);
+        ImGui::Begin("Settings", &ShowSettings, ImGuiWindowFlags_MenuBar);
 
         if(ImGui::BeginMenuBar())
         {
             if(ImGui::BeginMenu("Windows"))
             {
-                ImGui::MenuItem("Metrics", nullptr, &ShowMetric);
-                ImGui::MenuItem("Logs", nullptr, &ShowLog);
+                ImGui::MenuItem("Metrics", nullptr, &ShowMetrics);
+                ImGui::MenuItem("Logs", nullptr, &ShowLogs);
+                ImGui::MenuItem("Options", nullptr, &ShowOptions);
                 ImGui::EndMenu();
             }
 
@@ -75,10 +100,10 @@ namespace Volts::GUI
 
     void Frame::GUILoop(Frame* F)
     {
-        ShowSettings(F);
-        if(ShowMetric) ShowMetrics(F);
-
-        if(ShowLog) ShowLogs(F);
+        if(ShowSettings) Settings(F);
+        if(ShowMetrics) Metrics(F);
+        if(ShowOptions) Options(F);
+        if(ShowLogs) LogWindow(F);
 
         ImGui::Begin("UNSELF");
         if(ImGui::Button("Do the thing"))
