@@ -212,8 +212,8 @@ namespace Volts::RSX
             DXGI_SWAP_CHAIN_DESC1 SCD = {};
             SCD.BufferCount = FrameCount;
             auto Size = Frame->GetSize();
-            SCD.Width = Size.Width;
-            SCD.Height = Size.Height;
+            SCD.Width = Size.Width * 2;
+            SCD.Height = Size.Height * 2;
             SCD.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
             SCD.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
             SCD.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;

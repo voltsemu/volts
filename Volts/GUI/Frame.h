@@ -35,6 +35,8 @@ namespace Volts::GUI
         U32 Width, Height;
     };
 
+    using AspectRatio = Size;
+
     enum WindowState
     {
         Windowed,
@@ -68,13 +70,14 @@ namespace Volts::GUI
 
 #if !OS_APPLE
         // apple only supports metal so we dont need a pointer to a renderer
-        RSX::Render* CurrentRender = nullptr;
+        static RSX::Render* CurrentRender;
 #endif
 
         std::chrono::time_point<std::chrono::high_resolution_clock> LastFrame = std::chrono::high_resolution_clock::now();
 
         Size GetSize() const;
 
+        AspectRatio Aspect = { 16, 9 };
 
         U32 VSync = false;
         FrameHandle Handle;

@@ -19,6 +19,8 @@ namespace Volts::RSX
         virtual void BeginRender() override {}
         virtual void PresentRender() override {}
 
+        virtual void Resize(GUI::Size NewSize) override {}
+
         virtual void Windowed() override {}
         virtual void Borderless() override {}
         virtual void Fullscreen() override {}
