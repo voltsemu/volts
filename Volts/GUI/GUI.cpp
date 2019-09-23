@@ -104,6 +104,7 @@ namespace Volts::GUI
         if(ShowMetrics) Metrics(F);
         if(ShowOptions) Options(F);
         if(ShowLogs) LogWindow(F);
+        if(static bool Demo = true; Demo) ImGui::ShowDemoWindow(&Demo);
 
         ImGui::Begin("UNSELF");
         if(ImGui::Button("Do the thing"))

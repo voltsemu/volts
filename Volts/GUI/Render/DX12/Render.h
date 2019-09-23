@@ -49,7 +49,6 @@ namespace Volts::RSX
         void LoadData();
         void PopulateCommandList();
         void WaitForGPU();
-        void FlushGPU();
         void AdvanceFrame();
 
         static constexpr U32 FrameCount = 2;

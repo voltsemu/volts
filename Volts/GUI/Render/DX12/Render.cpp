@@ -67,34 +67,7 @@ namespace Volts::RSX
 
     void DX12::Resize(GUI::Size NewSize)
     {
-        FlushGPU();
-        VALIDATE(CommandAllocators[FrameIndex]->Reset());
-        VALIDATE(CommandList->Reset(CommandAllocators[FrameIndex].Get(), nullptr));
-        for(U32 I = 0; I < FrameCount; I++)
-            RenderTargets[I].Reset();
 
-        VALIDATE(Swap->ResizeBuffers(FrameCount, NewSize.Width, NewSize.Height, DXGI_FORMAT_R8G8B8A8_UNORM, 0));
-        FrameIndex = 0;
-
-        VALIDATE(CommandList->Close());
-        ID3D12CommandList* Commands[] = { CommandList.Get() };
-        CommandQueue->ExecuteCommandLists(_countof(Commands), Commands);
-    }
-
-    void DX12::FlushGPU()
-    {
-        for(U32 I = 0; I < FrameCount; I++)
-        {
-            U64 FenceSignal = ++FenceValues[I];
-            CommandQueue->Signal(Fence.Get(), FenceSignal);
-            if(Fence->GetCompletedValue() < FenceValues[I])
-            {
-                Fence->SetEventOnCompletion(FenceSignal, FenceEvent);
-                WaitForSingleObjectEx(FenceEvent, INFINITE, false);
-            }
-        }
-
-        FrameIndex = 0;
     }
 
     void DX12::PopulateCommandList()
@@ -212,8 +185,8 @@ namespace Volts::RSX
             DXGI_SWAP_CHAIN_DESC1 SCD = {};
             SCD.BufferCount = FrameCount;
             auto Size = Frame->GetSize();
-            SCD.Width = Size.Width * 2;
-            SCD.Height = Size.Height * 2;
+            SCD.Width = Size.Width;
+            SCD.Height = Size.Height;
             SCD.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
             SCD.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
             SCD.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
