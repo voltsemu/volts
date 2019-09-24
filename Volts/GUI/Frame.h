@@ -68,10 +68,7 @@ namespace Volts::GUI
         using FrameHandle = void*; // IDK
 #endif
 
-#if !OS_APPLE
-        // apple only supports metal so we dont need a pointer to a renderer
         static RSX::Render* CurrentRender;
-#endif
 
         std::chrono::time_point<std::chrono::high_resolution_clock> LastFrame = std::chrono::high_resolution_clock::now();
 
