@@ -273,6 +273,21 @@ namespace Volts::GUI
 
     Frame& Frame::Title(const String& T) { this->T = T; return *this; }
 
+    void Frame::Borderless()
+    {
+
+    }
+
+    void Frame::Windowed()
+    {
+
+    }
+
+    void Frame::Fullscreen()
+    {
+        
+    }
+
     Size Frame::GetSize() const
     {
         CGSize S = [WINDOW(CFBridgingRelease(Handle)) contentView].frame.size;

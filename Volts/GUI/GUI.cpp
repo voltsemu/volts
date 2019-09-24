@@ -98,12 +98,15 @@ namespace Volts::GUI
         ImGui::End();
     }
 
+    bool Demo = true;
+
     void Frame::GUILoop(Frame* F)
     {
         if(ShowSettings) Settings(F);
         if(ShowMetrics) Metrics(F);
         if(ShowOptions) Options(F);
         if(ShowLogs) LogWindow(F);
+        if(Demo) ImGui::ShowDemoWindow();
 
         ImGui::Begin("UNSELF");
         if(ImGui::Button("Do the thing"))
