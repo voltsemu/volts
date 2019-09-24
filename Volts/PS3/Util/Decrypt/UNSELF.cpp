@@ -974,7 +974,7 @@ namespace Volts::PS3
 #if UNSELFDEBUG
         void PrintData()
         {
-            VINFO("SCE::Header Magic %u", SCEHead.Magic);
+            VINFO("SCE::Header Magic {}", SCEHead.Magic);
         }
 #endif
     };
