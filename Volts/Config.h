@@ -1,5 +1,8 @@
 #pragma once
 
+// unself debugging
+#define UNSELFDEBUG 1
+
 // enable directx 12 debug stuff
 #define VDXDEBUG 1
 

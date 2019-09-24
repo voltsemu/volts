@@ -1,8 +1,12 @@
 #include "Render.h"
 
+#include "imgui/examples/imgui_impl_osx.h"
+#include "imgui/examples/imgui_impl_metal.h"
+
 namespace Volts::RSX
 {
     Metal::Metal()
+        : IO(ImGui::GetIO())
     {
 
     }
@@ -14,12 +18,13 @@ namespace Volts::RSX
 
     void Metal::Detach()
     {
-
+        ImGui_ImplMetal_Shutdown();
+        ImGui_ImplOSX_Shutdown();
     }
 
     Device* Metal::Devices(U32* Count)
     {
-
+        return nullptr;
     }
 
     void Metal::Windowed()
@@ -44,7 +49,7 @@ namespace Volts::RSX
 
     void Metal::BeginRender()
     {
-
+        IO = ImGui::GetIO();
     }
 
     void Metal::PresentRender()

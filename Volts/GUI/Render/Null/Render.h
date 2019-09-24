@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Render/Render.h"
+
 namespace Volts::RSX
 {
     struct Null : Render
@@ -11,7 +13,7 @@ namespace Volts::RSX
 
         virtual const String Name() const override { return "Null"; }
         virtual const String Description() const override { return "Null"; }
-        virtual Device* Devices(U32* Count) override {}
+        virtual Device* Devices(U32* Count) override { return nullptr; }
 
         virtual void Windowed() override {}
         virtual void Fullscreen() override {}

@@ -2,6 +2,8 @@
 
 #include "Support.h"
 
+#include "imgui/imgui.h"
+
 namespace Volts::RSX
 {
     struct Metal : Render
@@ -25,6 +27,8 @@ namespace Volts::RSX
         virtual void PresentRender() override;
     private:
         GUI::Frame* Frame;
+        ImGuiIO& IO;
+
         void* Handle;
     };
 }

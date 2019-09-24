@@ -157,8 +157,12 @@
     ImGui_ImplOSX_HandleEvent(event, self);
 }
 
-
 - (void)keyUp:(NSEvent*)event
+{
+    ImGui_ImplOSX_HandleEvent(event, self);
+}
+
+- (void)flagsChanged:(NSEvent*)event
 {
     ImGui_ImplOSX_HandleEvent(event, self);
 }
@@ -200,7 +204,7 @@
                 styleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable
                 backing:NSBackingStoreBuffered
                 defer:NO
-        ];
+    ];
 
     // move it around and decorate it
     [Window setTitle:@"Volts"];
@@ -285,7 +289,7 @@ namespace Volts::GUI
 
     void Frame::Fullscreen()
     {
-        
+
     }
 
     Size Frame::GetSize() const

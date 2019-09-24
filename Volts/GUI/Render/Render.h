@@ -15,6 +15,7 @@ namespace Volts::RSX
 
     struct Device
     {
+        virtual ~Device() {}
         virtual std::wstring Name() const = 0;
     };
 

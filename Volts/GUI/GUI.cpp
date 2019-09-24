@@ -23,7 +23,7 @@ namespace Volts::GUI
         auto Now = std::chrono::high_resolution_clock::now();
         ImGui::SetNextWindowPos(ImVec2(25, 25), ImGuiCond_FirstUseEver);
         ImGui::Begin("Metrics", &ShowMetrics);
-        ImGui::Text("FPS: %f.2ms", ((double)std::chrono::duration_cast<std::chrono::nanoseconds>(Now - F->LastFrame).count())/1e6);
+        ImGui::Text("FrameTime: %.1fms", ((double)std::chrono::duration_cast<std::chrono::nanoseconds>(Now - F->LastFrame).count())/1e6);
         ImGui::End();
 
         F->LastFrame = Now;

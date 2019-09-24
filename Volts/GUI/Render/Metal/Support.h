@@ -8,6 +8,7 @@ namespace Volts::MetalSupport
     {
         MetalDevice() {}
         MetalDevice(void* Dev) : Handle(Dev) {}
+        virtual ~MetalDevice() {}
 
         std::wstring Name() const override;
     private:

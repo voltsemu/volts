@@ -10,76 +10,24 @@
 
 #include <zlib.h>
 
-
-// SELF files have massive, somewhat overly complex headers that need parsing
-// SELFs are usually called EBOOT.bin and contain the entire game executable
-// this table is the header layout byte by byte as i understand it
-// this is based on the ps3 dev wiki, rpcs3's self parser and the parser
-// made by fail0verflow before sony forced them to take the source down
-//
-// Bytes 0..32 SCE::Header
-//  0..4   Magic
-//      - always "SCE\0" or 4539219ULL
-//
-//  5..8   HeaderVersion
-//      - 2 = PS3 game
-//      - 3 = PSVita game
-//
-//  9..10  KeyType
-//      - we only care about this if its 0x8000
-//        if its 0x8000 the self file is a debug file
-//        if its a debug file nothing is encrypted
-//
-//  11..12 FileCategory
-//      - 1 = SELF file, signed-elf. we need to decrypt this
-//      - 2 = signed-revoke-list used by the ps3 hypervisor, we dont care about this
-//      - 3 = signed-package are firmware packages used to update the ps3, we dont care about these
-//      - 4 = secutiry-policy-profile used for internal ps3 files,
-//            we dont really need to care about this
-//
-//  13..16 MetadataStart
-//      - the offset of the start of the metadata headers
-//        this offset is relative to the end of the SCE::Header end byte
-//        so the real offset is MetaDataStart + sizeof(SCE::Header)
-//
-//  17..24 MetadataEnd
-//      - the offset of the last byte of the metadata headers
-//        this can be used to calculate the length of the headers
-//        with Size = MetadataEnd - sizeof(SCE::Header) - MetadataStart - sizeof(MetaData::Info)
-//
-//  25..32 DataLength
-//      - This is the length of the data inside the file
-//
-// Bytes 33..112
-//  33..40 Type
-//      - Should always be 3
-//
-//  41..48 InfoOffset
-//      - the absolute offset of the AppInfo struct
-//
-//  49..56 ELFOffset
-//      - the absolute offset of the ELF header
-//
-// TODO the rest of these fields
-//
-
+#include "Config.h"
 
 namespace Volts::PS3
 {
     using namespace Cthulhu;
 
     using Pad = Byte;
-
+#if 0
     namespace SCE
     {
         struct Header
         {
             U32 Magic;
             Big<U32> Version;
-            Big<U16> Type; //
+            Big<U16> Type;
             Big<U16> Category;
-            Big<U32> MetadataStart; //
-            Big<U64> MetadataEnd; //
+            Big<U32> MetadataStart;
+            Big<U64> MetadataEnd;
             Big<U64> Size;
         };
 
@@ -707,6 +655,329 @@ namespace Volts::PS3
             return Bin;
         }
     };
+#endif
+
+    namespace SCE
+    {
+        struct Header
+        {
+            U32 Magic;
+            Big<U32> Version;
+            Big<U16> Type;
+            Big<U16> Category;
+            Big<U32> MetadataStart;
+            Big<U64> MetadataEnd;
+            Big<U64> Size;
+        };
+
+        static_assert(sizeof(Header) == 32);
+    }
+
+    namespace SELF
+    {
+        struct Header
+        {
+            Big<U64> Type;
+            Big<U64> AInfoOffset;
+            Big<U64> ELFOffset;
+            Big<U64> PHeaderOffset;
+            Big<U64> SHeaderOffset;
+            Big<U64> SInfoOffset;
+            Big<U64> VersionOffset;
+            Big<U64> ControlOffset;
+            Big<U64> ControlLength;
+            Pad Padding[8];
+        };
+
+        static_assert(sizeof(Header) == 80);
+
+        struct ControlInfo
+        {
+            U32 Type;
+            U32 Size;
+            U64 Next;
+            union
+            {
+                struct
+                {
+                    Big<U32> ControlFlag;
+                    Pad Padding[28];
+                } ControlFlags;
+
+                static_assert(sizeof(ControlFlags) == 32);
+
+                struct
+                {
+                    U8 Constant[20];
+                    U8 ELFDigest[20];
+                    Big<U64> RequiredSystemVersion;
+                } ELFDigest40;
+
+                static_assert(sizeof(ELFDigest40) == 48);
+
+                struct
+                {
+                    U8 ConstOrDigest[20];
+                    Pad Padding[12];
+                } ELFDigest30;
+
+                static_assert(sizeof(ELFDigest30) == 32);
+
+                struct
+                {
+                    U32 Magic; // always "NPD\0"
+                    Big<U32> Version;
+                    Big<U32> DRMType;
+                    Big<U32> AppType;
+                    Byte ContentID[48];
+                    Byte Digest[16];
+                    Byte INVDigest[16];
+                    Byte XORDigest[16];
+                    Pad Padding[16];
+                } NPDRMInfo;
+
+                static_assert(sizeof(NPDRMInfo) == 128);
+            };
+        };
+    }
+
+    struct AppInfo
+    {
+        Big<U64> AuthID;
+        Big<U32> VendorID;
+        Big<U32> Type;
+        Big<U64> Version;
+        Pad Padding[8];
+    };
+
+    static_assert(sizeof(AppInfo) == 32);
+
+
+    namespace ELF
+    {
+        struct Header
+        {
+            U32 Magic;
+
+            U8 Class;
+            U8 Endian;
+            U8 SVersion;
+            U8 ABI;
+            U8 ABIVersion;
+            Pad Padding[7];
+
+            Big<U16> Type;
+            Big<U16> Machine;
+            Big<U32> Version;
+
+            Big<U64> Entry;
+            Big<U64> PHOffset;
+            Big<U64> SHOffset;
+
+            Big<U32> Flags;
+            Big<U16> HeaderSize;
+
+            Big<U16> PHEntrySize;
+            Big<U16> PHCount;
+
+            Big<U16> SHEntrySize;
+            Big<U16> SHCount;
+
+            Big<U16> StringIndex;
+        };
+
+        static_assert(sizeof(Header) == 64);
+
+        struct SectionHeader
+        {
+            Big<U32> StringOffset;
+            Big<U32> Type;
+
+            Big<U64> Flags;
+            Big<U64> VirtualAddress;
+            Big<U64> Offset;
+            Big<U64> Size;
+
+            Big<U32> Link;
+            Big<U32> Info;
+
+            Big<U64> Align;
+            Big<U64> EntrySize;
+        };
+
+        static_assert(sizeof(SectionHeader) == 64);
+
+        struct ProgramHeader
+        {
+            Big<U32> Type;
+
+            Big<U32> Flags;
+            Big<U64> Offset;
+            Big<U64> VirtualAddress;
+            Big<U64> PhysicalAddress;
+            Big<U64> FileSize;
+            Big<U64> MemorySize;
+
+            Big<U64> Align;
+        };
+
+        static_assert(sizeof(ProgramHeader) == 56);
+    }
+
+    namespace MetaData
+    {
+        struct Info
+        {
+            Byte Key[16];
+            Pad KeyPad[16];
+
+            Byte IV[16];
+            Pad IVPad[16];
+        };
+
+        static_assert(sizeof(Info) == 64);
+
+        struct Header
+        {
+            Big<U64> SignatureLength;
+            Big<U32> AlgorithmType; // always 1 (ECSDA)
+            Big<U32> SectionCount;
+            Big<U32> KeyCount;
+            Big<U32> HeaderSize;
+            Pad Padding[8];
+        };
+
+        static_assert(sizeof(Header) == 32);
+
+        struct Section
+        {
+            Big<U64> Offset;
+            Big<U64> Size;
+            Big<U32> Type; // 1 = SectionHeader, 2 = ProgramHeader, 3 = SCEVersion
+            Big<U32> Index;
+            Big<U32> HashAlgo; // 2 = SHA1_HMAC, 3 = SHA1
+            Big<U32> HashIndex;
+            Big<U32> Encrypted; // 3 = yes, 1 = no
+
+            // these may be Limits<U32>::Max()
+            // but only when Encrypted != 3
+            // so big numbers in here are not something to worry about
+            Big<U32> KeyIndex;
+            Big<U32> IVIndex;
+
+            Big<U32> Compressed; // 2 = yes, 1 = no
+        };
+
+        static_assert(sizeof(Section) == 48);
+    }
+
+    struct SELFDecryptor
+    {
+        // input file
+        FileSystem::BufferedFile* File;
+
+        //internal data
+        // headers
+        SCE::Header SCEHead;
+        SELF::Header SELFHead;
+        ELF::Header ELFHead;
+        Array<ELF::ProgramHeader> PHead;
+        Array<ELF::SectionHeader> SHead;
+        Array<SELF::ControlInfo> Controls;
+
+        AppInfo Info;
+
+        SELFDecryptor(FileSystem::BufferedFile* F)
+            : File(F)
+        {
+            File->Seek(0);
+        }
+
+        SELF::ControlInfo ReadControlInfo()
+        {
+            SELF::ControlInfo Ctrl;
+
+            Ctrl.Type = File->Read<Big<U32>>();
+            Ctrl.Size = File->Read<Big<U32>>();
+            Ctrl.Next = File->Read<Big<U64>>();
+
+            if(Ctrl.Type == 1)
+                Ctrl.ControlFlags = File->Read<decltype(SELF::ControlInfo::ControlFlags)>();
+            else if(Ctrl.Type == 2 && Ctrl.Size == 48)
+                Ctrl.ELFDigest40 = File->Read<decltype(SELF::ControlInfo::ELFDigest40)>();
+            else if(Ctrl.Type == 2 && Ctrl.Size == 64)
+                Ctrl.ELFDigest30 = File->Read<decltype(SELF::ControlInfo::ELFDigest30)>();
+            else if(Ctrl.Type == 3)
+                Ctrl.NPDRMInfo = File->Read<decltype(SELF::ControlInfo::NPDRMInfo)>();
+            else
+                VERROR("Invalid control type of %u", Ctrl.Type);
+
+            return Ctrl;
+        }
+
+        bool ReadHeaders()
+        {
+            SCEHead = File->Read<SCE::Header>();
+
+            if(SCEHead.Magic != "SCE\0"_U32)
+            {
+                VERROR("Invalid SCE magic");
+                return false;
+            }
+
+            SELFHead = File->Read<SELF::Header>();
+            Info = File->Read<AppInfo>();
+            ELFHead = File->Read<ELF::Header>();
+
+            if(ELFHead.Magic != "\177ELF"_U32)
+            {
+                VERROR("Invalid ELF magic");
+                return false;
+            }
+
+            for(U32 I = 0; I < ELFHead.PHCount; I++)
+                PHead.Append(File->Read<ELF::ProgramHeader>());
+
+            File->Seek(SELFHead.ControlOffset);
+
+            U32 C = 0;
+            while(C < SELFHead.ControlLength)
+            {
+                auto Ctrl = ReadControlInfo();
+                C += Ctrl.Size;
+
+                Controls.Append(Ctrl);
+            }
+
+            File->Seek(SELFHead.SHeaderOffset);
+
+            for(U32 I = 0; I < ELFHead.SHCount; I++)
+                SHead.Append(File->Read<ELF::SectionHeader>());
+
+            return true;
+        }
+
+        bool ReadMetadata(Byte* Key)
+        {
+            return false;
+        }
+
+        void DecryptData()
+        {
+
+        }
+
+        ELF::Binary MakeELF()
+        {   
+            return {};
+        }
+#if UNSELFDEBUG
+        void PrintData()
+        {
+            VINFO("SCE::Header Magic %u", SCEHead.Magic);
+        }
+#endif
+    };
 
     namespace UNSELF
     {
@@ -722,6 +993,10 @@ namespace Volts::PS3
                 VERROR("Failed to read headers");
                 return None<ELF::Binary>();
             }
+
+#if UNSELFDEBUG
+            Decrypt.PrintData();
+#endif
 
             // if we cant read the metadata log it and back out
             if(!Decrypt.ReadMetadata(Key))
