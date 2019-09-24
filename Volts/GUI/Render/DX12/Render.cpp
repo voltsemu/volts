@@ -12,6 +12,22 @@
 
 namespace Volts::RSX
 {
+    DX12::DX12()
+    {
+        UINT FactoryFlags = 0;
+
+#if VDXDEBUG
+        {
+            Ptr<ID3D12Debug> Debugger;
+            VALIDATE(D3D12GetDebugInterface(IID_PPV_ARGS(&Debugger)));
+            Debugger->EnableDebugLayer();
+            FactoryFlags |= DXGI_CREATE_FACTORY_DEBUG;
+        }
+#endif
+
+        VALIDATE(CreateDXGIFactory2(FactoryFlags, IID_PPV_ARGS(&Factory)));
+    }
+
     void DX12::Attach(GUI::Frame* Handle)
     {
         Frame = Handle;
@@ -68,6 +84,12 @@ namespace Volts::RSX
     void DX12::Resize(GUI::Size NewSize)
     {
 
+    }
+
+    Device* DX12::Devices(U32* Count)
+    {
+        *Count = (U32)DeviceList.size();
+        return DeviceList.data();
     }
 
     void DX12::PopulateCommandList()
@@ -137,27 +159,10 @@ namespace Volts::RSX
 
     void DX12::LoadPipeline()
     {
-        UINT FactoryFlags = 0;
-
-#if VDXDEBUG
-        {
-            Ptr<ID3D12Debug> Debugger;
-            VALIDATE(D3D12GetDebugInterface(IID_PPV_ARGS(&Debugger)));
-            Debugger->EnableDebugLayer();
-            FactoryFlags |= DXGI_CREATE_FACTORY_DEBUG;
-        }
-#endif
-
-        Ptr<IDXGIFactory4> Factory;
-        VALIDATE(CreateDXGIFactory2(FactoryFlags, IID_PPV_ARGS(&Factory)));
-
         Ptr<IDXGIAdapter1> Adapter;
-        std::vector<Ptr<IDXGIAdapter1>> Adapters;
 
         for(U32 I = 0; Factory->EnumAdapters1(I, &Adapter) != DXGI_ERROR_NOT_FOUND; I++)
-        {
-            Adapters.push_back(Adapter);
-        }
+            DeviceList.push_back(DX12Support::DX12Device(Adapter));
 
         VALIDATE(D3D12CreateDevice(
             Adapter.Get(),
@@ -181,7 +186,6 @@ namespace Volts::RSX
 #endif
         {
             Tear = DX12Support::CanTear();
-            DX_DEBUG(DebugQueue, "Before SwapChain");
             DXGI_SWAP_CHAIN_DESC1 SCD = {};
             SCD.BufferCount = FrameCount;
             auto Size = Frame->GetSize();
@@ -211,7 +215,6 @@ namespace Volts::RSX
         FrameIndex = Swap->GetCurrentBackBufferIndex();
 
         {
-            DX_DEBUG(DebugQueue, "Before RTV");
             D3D12_DESCRIPTOR_HEAP_DESC DHD = {};
             DHD.NumDescriptors = FrameCount;
             DHD.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
@@ -222,7 +225,6 @@ namespace Volts::RSX
         }
 
         {
-            DX_DEBUG(DebugQueue, "Before CommandAllocator");
             D3D12_CPU_DESCRIPTOR_HANDLE CDH = RTVHeap->GetCPUDescriptorHandleForHeapStart();
 
             for(U32 I = 0; I < FrameCount; I++)
@@ -239,7 +241,6 @@ namespace Volts::RSX
         }
 
         {
-            DX_DEBUG(DebugQueue, "Before SRV");
             D3D12_DESCRIPTOR_HEAP_DESC DHD = {};
             DHD.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
             DHD.NumDescriptors = 1;

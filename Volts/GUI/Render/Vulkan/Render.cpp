@@ -1,12 +1,21 @@
 #include "Render.h"
 
-#define VALIDATE(...) if((__VA_ARGS__)) return false;
-
 namespace Volts::RSX
 {
-    void Vulkan::Attach(GUI::Frame* Handle)
+    Vulkan::Vulkan()
     {
         CreateInstance();
+        QueryDevices();
+    }
+
+    Vulkan::~Vulkan()
+    {
+        delete[] RenderDevices;
+    }
+
+    void Vulkan::Attach(GUI::Frame* Handle)
+    {
+        Frame = Handle;
     }
 
     void Vulkan::Detach()
@@ -44,50 +53,51 @@ namespace Volts::RSX
 
     }
 
+    Device* Vulkan::Devices(U32* Count)
+    {
+        *Count = DeviceCount;
+        return RenderDevices;
+    }
+
     void Vulkan::CreateInstance()
     {
-        VkApplicationInfo Info = { VK_STRUCTURE_TYPE_APPLICATION_INFO };
-        Info.pApplicationName = "Volts";
-        Info.pEngineName = "RSX";
-        Info.apiVersion = 1;
+        VkApplicationInfo AppInfo = { VK_STRUCTURE_TYPE_APPLICATION_INFO };
+        AppInfo.pApplicationName = "Volts";
+        AppInfo.pEngineName = "RSX";
+        AppInfo.apiVersion = VK_MAKE_VERSION(1, 0, 3);
 
         VkInstanceCreateInfo CreateInfo = { VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO };
-        CreateInfo.pApplicationInfo = &Info;
+        CreateInfo.pApplicationInfo = &AppInfo;
 
         const char* Extensions[] = {
             VK_KHR_SURFACE_EXTENSION_NAME,
 #if OS_WINDOWS
             VK_KHR_WIN32_SURFACE_EXTENSION_NAME,
 #elif OS_LINUX
-            VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME,
+            VK_KHR_XCB_SURFACE_EXTENSION_NAME,
 #elif OS_APPLE
-            VK_MVK_MACOS_SURFACE_EXTENSION_NAME,
-#endif
-
-#if VVKDEBUG
-            VK_EXT_DEBUG_REPORT_EXTENSION_NAME,
+            VK_EXT_metal_surface
 #endif
         };
-        CreateInfo.ppEnabledExtensionNames = Extensions;
-        CreateInfo.enabledExtensionCount = sizeof(Extensions) / sizeof(const char*);
 
-#if VVKDEBUG
-        const char* Layers[] = { "VK_LAYER_LUNARG_standard_validation" };
-        CreateInfo.ppEnabledLayerNames = Layers;
-        CreateInfo.enabledLayerCount = 1;
-#endif
+        CreateInfo.enabledExtensionCount = 2;
+        CreateInfo.ppEnabledExtensionNames = Extensions;
 
         VK_VALIDATE(vkCreateInstance(&CreateInfo, nullptr, &Instance));
+    }
 
-        U32 GPUCount = 0;
-        VK_VALIDATE(vkEnumeratePhysicalDevices(Instance, &GPUCount, nullptr));
+    void Vulkan::QueryDevices()
+    {
+        vkEnumeratePhysicalDevices(Instance, &DeviceCount, nullptr);
+        VkPhysicalDevice* PhysicalDevices = new VkPhysicalDevice[DeviceCount];
+        RenderDevices = new VulkanSupport::VulkanDevice[DeviceCount];
+        vkEnumeratePhysicalDevices(Instance, &DeviceCount, PhysicalDevices);
 
-        VkPhysicalDevice* Devices = new VkPhysicalDevice[GPUCount];
-        VK_VALIDATE(vkEnumeratePhysicalDevices(Instance, &GPUCount, Devices));
-
-        for(U32 I = 0; I < GPUCount; I++)
+        for(U32 I = 0; I < DeviceCount; I++)
         {
-
+            RenderDevices[I] = VulkanSupport::VulkanDevice(PhysicalDevices[I]);
         }
+
+        delete[] PhysicalDevices;
     }
 }
