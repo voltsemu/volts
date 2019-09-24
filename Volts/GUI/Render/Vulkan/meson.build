@@ -13,4 +13,8 @@ else
     links += res.stdout().strip() / 'Lib' / 'vulkan-1.lib'
 
     sources += 'Volts/GUI/Render/Vulkan/Render.cpp'
+
+    if host_machine.system() == 'windows'
+        args += '-DVK_USE_PLATFORM_WIN32_KHR'
+    endif
 endif

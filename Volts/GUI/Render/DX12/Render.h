@@ -1,32 +1,22 @@
 #pragma once
 
-#include "Render/Render.h"
-
 #include "Support.h"
 
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-
-#include <d3d12.h>
-#include <dxgi1_4.h>
-#include <d3dcompiler.h>
-#include <DirectXMath.h>
-
-#include <wrl.h>
-#include <shellapi.h>
+#include <vector>
 
 namespace Volts::RSX
 {
-    template<typename T>
-    using Ptr = Microsoft::WRL::ComPtr<T>;
+    using DX12Support::Ptr;
 
     struct DX12 : Render
     {
+        DX12();
         virtual ~DX12() {}
         virtual void Attach(GUI::Frame* Handle) override;
         virtual void Detach() override;
         virtual const String Name() const override { return "DX12"; }
         virtual const String Description() const override { return "DirectX12"; }
+        virtual Device* Devices(U32* Count) override;
 
         virtual void Resize(GUI::Size NewSize) override;
 
@@ -49,10 +39,13 @@ namespace Volts::RSX
         void LoadData();
         void PopulateCommandList();
         void WaitForGPU();
-        void FlushGPU();
         void AdvanceFrame();
 
         static constexpr U32 FrameCount = 2;
+
+        // creation objects
+        Ptr<IDXGIFactory4> Factory;
+        std::vector<DX12Support::DX12Device> DeviceList;
 
         // Pipeline state objects
         D3D12_VIEWPORT Viewport;
