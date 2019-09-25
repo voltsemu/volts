@@ -8,7 +8,7 @@ namespace Volts::RSX
     Metal::Metal()
         : IO(ImGui::GetIO())
     {
-        Frame::Renders.Append((void*)this);
+        GUI::Frame::Renders.Append((void*)this);
     }
 
     void Metal::Attach(GUI::Frame* F)

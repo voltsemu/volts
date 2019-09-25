@@ -1,6 +1,7 @@
 #include "Frame.h"
 
 #include "Core/Logger/Logger.h"
+#include "Render/Render.h"
 
 #import <Cocoa/Cocoa.h>
 #import <Metal/Metal.h>
@@ -274,6 +275,9 @@ namespace Volts::GUI
     {
 
     }
+
+    Array<void*> Frame::Renders = {};
+    RSX::Render* Frame::CurrentRender = nullptr;
 
     Frame& Frame::Title(const String& T) { this->T = T; return *this; }
 

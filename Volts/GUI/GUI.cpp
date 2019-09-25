@@ -9,6 +9,8 @@
 #include <cstdlib>
 #include <locale>
 #include <codecvt>
+#include <iostream>
+#include <fstream>
 
 namespace Volts::GUI
 {
@@ -128,7 +130,12 @@ namespace Volts::GUI
         {
             Cthulhu::FileSystem::BufferedFile F{"/Users/student/Documents/GitHub/Volts/Build/EBOOT.BIN"};
             VINFO("Decrypting file");
-            auto I = PS3::UNSELF::DecryptSELF(F);
+            auto I = PS3::UNSELF::DecryptSELF(F).Get();
+            auto Out = fopen("VOLTS.TXT", "w");
+            for(U32 L = 0; L < I.Len(); L++)
+                fprintf(Out, "%u ", I.GetData()[L]);
+            
+            fclose(Out);
         }
         ImGui::End();
 
