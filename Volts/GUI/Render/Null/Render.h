@@ -1,12 +1,13 @@
 #pragma once
 
 #include "Render/Render.h"
+#include "Frame.h"
 
 namespace Volts::RSX
 {
     struct Null : Render
     {
-        Null() {}
+        Null() { GUI::Frame::Renders.Append((void*)this); }
         virtual ~Null() {}
         virtual void Attach(GUI::Frame* Frame) override {}
         virtual void Detach() override {}
@@ -14,6 +15,7 @@ namespace Volts::RSX
         virtual const String Name() const override { return "Null"; }
         virtual const String Description() const override { return "Null"; }
         virtual Device* Devices(U32* Count) override { return nullptr; }
+        virtual void UpdateVSync(bool Enabled) override {}
 
         virtual void Windowed() override {}
         virtual void Fullscreen() override {}

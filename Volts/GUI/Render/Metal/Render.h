@@ -2,6 +2,8 @@
 
 #include "Support.h"
 
+#include "Frame.h"
+
 #include "imgui/imgui.h"
 
 namespace Volts::RSX

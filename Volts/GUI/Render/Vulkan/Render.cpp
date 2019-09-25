@@ -1,9 +1,14 @@
 #include "Render.h"
 
+#include "Frame.h"
+
 namespace Volts::RSX
 {
+    static Vulkan* Singleton = new Vulkan();
+
     Vulkan::Vulkan()
     {
+        GUI::Frame::Renders.Append((void*)this);
         CreateInstance();
         QueryDevices();
     }
@@ -57,6 +62,11 @@ namespace Volts::RSX
     {
         *Count = DeviceCount;
         return RenderDevices;
+    }
+
+    void Vulkan::UpdateVSync(bool NewMode)
+    {
+        VSyncMode = NewMode ? VK_PRESENT_MODE_MAILBOX_KHR : VK_PRESENT_MODE_IMMEDIATE_KHR;
     }
 
     void Vulkan::CreateInstance()

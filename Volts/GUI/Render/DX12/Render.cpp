@@ -12,8 +12,10 @@
 
 namespace Volts::RSX
 {
+
     DX12::DX12()
     {
+        GUI::Frame::Renders.Append((void*)this);
         UINT FactoryFlags = 0;
 
 #if VDXDEBUG
@@ -88,7 +90,7 @@ namespace Volts::RSX
 
     Device* DX12::Devices(U32* Count)
     {
-        *Count = (U32)DeviceList.size();
+        *Count = static_cast<U32>(DeviceList.size());
         return DeviceList.data();
     }
 
@@ -152,7 +154,7 @@ namespace Volts::RSX
 
         UINT PresentFlags = Tear ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
 
-        VALIDATE(Swap->Present(Frame->VSync, PresentFlags));
+        VALIDATE(Swap->Present(VSyncMode, PresentFlags));
 
         AdvanceFrame();
     }

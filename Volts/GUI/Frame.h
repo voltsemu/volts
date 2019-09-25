@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Core/Collections/CthulhuString.h>
+#include <Core/Collections/Array.h>
 #include <Core/Types/Lambda.h>
 
 #include "imgui/imgui.h"
@@ -68,6 +69,8 @@ namespace Volts::GUI
         using FrameHandle = void*; // IDK
 #endif
 
+        static Array<void*> Renders;
+
         static RSX::Render* CurrentRender;
 
         std::chrono::time_point<std::chrono::high_resolution_clock> LastFrame = std::chrono::high_resolution_clock::now();
@@ -76,7 +79,6 @@ namespace Volts::GUI
 
         AspectRatio Aspect = { 16, 9 };
 
-        U32 VSync = false;
         FrameHandle Handle;
         String T;
     };

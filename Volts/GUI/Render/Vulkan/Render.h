@@ -18,6 +18,7 @@ namespace Volts::RSX
         virtual const String Name() const override { return "Vulkan"; }
         virtual const String Description() const override { return "Vulkan3D"; }
         virtual Device* Devices(U32* Count) override;
+        virtual void UpdateVSync(bool NewMode) override;
 
         virtual void BeginRender() override;
         virtual void PresentRender() override;
@@ -29,6 +30,7 @@ namespace Volts::RSX
         virtual void Fullscreen() override;
     private:
         GUI::Frame* Frame;
+        VkPresentModeKHR VSyncMode;
 
         void CreateInstance();
         VkInstance Instance;

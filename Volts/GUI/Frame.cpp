@@ -58,6 +58,8 @@ namespace Volts::GUI
         return DefWindowProc(Window, Msg, W, L);
     }
 
+    Array<void*> Frame::Renders = {};
+
     RSX::Render* Frame::CurrentRender = nullptr;
 
     void Frame::Fullscreen()

@@ -28,6 +28,8 @@ namespace Volts::RSX
         // this detaches the renderer from the window and shuts down the backend
         virtual void Detach() = 0;
 
+        virtual void UpdateVSync(bool Enabled) = 0;
+
         virtual const String Name() const = 0;
         virtual const String Description() const = 0;
         virtual Device* Devices(U32* Count) = 0;

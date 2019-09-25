@@ -1,12 +1,14 @@
 #include "Frame.h"
-
+#include "Render/Render.h"
 #include "imgui/imgui.h"
 
 #include "Core/Logger/Logger.h"
 
 #include "PS3/Util/Decrypt/UNSELF.h"
-#include <deque>
-#include <string>
+#include <vector>
+#include <cstdlib>
+#include <locale>
+#include <codecvt>
 
 namespace Volts::GUI
 {
@@ -18,12 +20,27 @@ namespace Volts::GUI
 
     bool ShowMetrics = true;
 
+    void HelpMarker(const char* Text)
+    {
+        ImGui::TextDisabled("(?)");
+        if(ImGui::IsItemHovered())
+        {
+            ImGui::BeginTooltip();
+            ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.f);
+            ImGui::TextUnformatted(Text);
+            ImGui::PopTextWrapPos();
+            ImGui::EndTooltip();
+        }
+    }
+
     void Metrics(Frame* F)
     {
         auto Now = std::chrono::high_resolution_clock::now();
         ImGui::SetNextWindowPos(ImVec2(25, 25), ImGuiCond_FirstUseEver);
         ImGui::Begin("Metrics", &ShowMetrics);
-        ImGui::Text("FrameTime: %.1fms", ((double)std::chrono::duration_cast<std::chrono::nanoseconds>(Now - F->LastFrame).count())/1e6);
+        double FrameTime = (double)std::chrono::duration_cast<std::chrono::nanoseconds>(Now - F->LastFrame).count() / 1e6;
+        ImGui::Text("FrameTime: %.1fms", FrameTime);
+        ImGui::Text("FPS: %f", 1000 / FrameTime);
         ImGui::End();
 
         F->LastFrame = Now;
@@ -58,20 +75,20 @@ namespace Volts::GUI
     {
         ImGui::Begin("Options", &ShowOptions);
 
-        static const char* VSyncOptions[] = { "Disabled", "Single Buffered", "Double Buffered", "Triple Buffered" };
-        static const char* CurrentItem = nullptr;
-        if(ImGui::BeginCombo("##vsync", "VSync"))
-        {
-            for(U32 I = 0; I < IM_ARRAYSIZE(VSyncOptions); I++)
-            {
-                bool IsSelected = (CurrentItem = VSyncOptions[I]);
-                if(ImGui::Selectable(VSyncOptions[I], IsSelected))
-                    CurrentItem = VSyncOptions[I];
-                if(IsSelected)
-                    ImGui::SetItemDefaultFocus();
-            }
-            ImGui::EndCombo();
-        }
+        static bool EnabledVsync = false;
+        ImGui::Checkbox("VSync", &EnabledVsync);
+        ImGui::SameLine(); HelpMarker("Change vertical sync options (vsync)");
+        F->CurrentRender->UpdateVSync(EnabledVsync);
+
+        U32 DeviceCount = 0;
+        auto* Devs = Frame::CurrentRender->Devices(&DeviceCount);
+        DeviceCount -= 1;
+        std::vector<const char*> Names;
+        for(U32 I = 0; I < DeviceCount; I++)
+            Names.push_back(std::wstring_convert<std::codecvt_utf8<wchar_t>>().to_bytes(Devs[I].Name()).c_str());
+
+        static int CurrentDevice = 0;
+        ImGui::Combo("device", &CurrentDevice, (const char**)Names.data(), DeviceCount);
 
         ImGui::End();
     }

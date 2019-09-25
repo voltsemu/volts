@@ -20,6 +20,8 @@ namespace Volts::RSX
 
         virtual void Resize(GUI::Size NewSize) override;
 
+        virtual void UpdateVSync(bool NewMode) override { VSyncMode = NewMode ? 1 : 0; }
+
         virtual void BeginRender() override;
         virtual void PresentRender() override;
 
@@ -81,6 +83,8 @@ namespace Volts::RSX
 
         // extra data
         bool Tear;
+
+        U32 VSyncMode = 0;
 
         // External data
         GUI::Frame* Frame;
