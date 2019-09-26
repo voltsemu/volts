@@ -9,29 +9,19 @@
 
 #include <codecvt>
 #include <locale>
+#include <vector>
 
 namespace Volts::RSX::VulkanSupport
 {
-    struct SwapChain
-    {
-
-    };
-
     struct VulkanDevice : Device
     {
-        VulkanDevice() {}
-        VulkanDevice(VkPhysicalDevice Dev)
-        {
-            Handle = Dev;
-            vkGetPhysicalDeviceProperties(Handle, &Props);
-        }
+        virtual ~VulkanDevice() { }
+
+        VulkanDevice() { }
 
         virtual std::wstring Name() const override
         {
-            return std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t>().from_bytes(Props.deviceName);
+            return std::wstring();
         }
-    private:
-        VkPhysicalDevice Handle;
-        VkPhysicalDeviceProperties Props;
     };
 }

@@ -30,13 +30,8 @@ namespace Volts::RSX
         virtual void Fullscreen() override;
     private:
         GUI::Frame* Frame;
-        VkPresentModeKHR VSyncMode;
 
         void CreateInstance();
         VkInstance Instance;
-
-        void QueryDevices();
-        U32 DeviceCount = 0;
-        VulkanSupport::VulkanDevice* RenderDevices = nullptr;
     };
 }
