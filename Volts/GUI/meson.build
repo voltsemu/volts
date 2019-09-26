@@ -10,6 +10,8 @@ subdir('Render/Null')
 # get the vulkan renderer
 subdir('Render/Vulkan')
 
+subdir('Render/OpenGL')
+
 if host_machine.system() == 'darwin'
     # metal is only on mac
     subdir('Render/Metal')

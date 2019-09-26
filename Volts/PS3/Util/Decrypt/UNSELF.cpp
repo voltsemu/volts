@@ -124,8 +124,8 @@ namespace Volts::PS3
             U8 Endian;
             U8 SVersion;
             U8 ABI;
-            U8 ABIVersion;
-            Pad Padding[7];
+            
+            U64 ABIVersion;
 
             Big<U16> Type;
             Big<U16> Machine;
@@ -479,11 +479,15 @@ namespace Volts::PS3
             ELF::Binary Bin;
 
             Bin.Write(ELFHead);
+            VINFO("ELFHead: {}", Bin.Tell());
 
             Bin.Seek(ELFHead.PHOffset);
+            VINFO("PHOffset: {}", Bin.Tell());
 
             for(auto Program : PHead)
                 Bin.Write(Program);
+
+            VINFO("Programs: {}", Bin.Tell());
 
             U32 BufferOffset = 0;
 
@@ -504,8 +508,18 @@ namespace Volts::PS3
                 }
             }
 
-            for(auto Section : SHead)
-                Bin.Write(Section);
+            VINFO("Sections: {}", Bin.Tell());
+
+            if(SELFHead.SHeaderOffset)
+            {
+                Bin.Seek(SELFHead.SHeaderOffset);
+                for(auto Section : SHead)
+                {
+                    Bin.Write(Section);
+                }
+            }
+
+            VINFO("SHeader: {}", Bin.Tell());
 
             Bin.Seek(0);
             return Bin;

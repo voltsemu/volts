@@ -23,11 +23,11 @@
 namespace Volts
 {
     using namespace Cthulhu;
-    Level LogLevel = Level::Warning;
+    Level LogLevel = Level::Info;
 
     void Print(Level L, std::string Msg)
     {
-        if(L >= LogLevel)
+        //if(L >= LogLevel)
         {
             GUI::Frame::Log(Msg + "\n");
         }

@@ -14,7 +14,7 @@
 
 namespace Volts::GUI
 {
-    ImGuiTextBuffer Frame::Logs = {};
+    ImGuiTextBuffer Frame::Logs = ImGuiTextBuffer();
     void Frame::Log(std::string Msg)
     {
         Logs.append(Msg.c_str());
@@ -132,9 +132,7 @@ namespace Volts::GUI
             VINFO("Decrypting file");
             auto I = PS3::UNSELF::DecryptSELF(F).Get();
             auto Out = fopen("VOLTS.TXT", "w");
-            for(U32 L = 0; L < I.Len(); L++)
-                fprintf(Out, "%u ", I.GetData()[L]);
-            
+            fwrite(I.GetData(), I.Len(), 1, Out);
             fclose(Out);
         }
         ImGui::End();
