@@ -46,6 +46,7 @@ namespace Volts::RSX
         VulkanSupport::VulkanDevice CurrentDevice;
         VkDevice LogicalDevice;
 
+        VkDescriptorPool DescriptorPool;
         VkQueue Queue = VK_NULL_HANDLE;
     };
 }

@@ -50,7 +50,6 @@ namespace Volts::RSX
         LoadPipeline();
         LoadData();
 
-        ImGui_ImplWin32_Init(Frame->Handle);
         ImGui_ImplDX12_Init(
             Device.Get(),
             FrameCount,
@@ -64,7 +63,6 @@ namespace Volts::RSX
     {
         WaitForGPU();
         ImGui_ImplDX12_Shutdown();
-        ImGui_ImplWin32_Shutdown();
 
         CloseHandle(FenceEvent);
     }

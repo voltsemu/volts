@@ -139,6 +139,8 @@ namespace Volts::GUI
 
         Frame::CurrentRender->Attach(this);
 
+        ImGui_ImplWin32_Init(Handle);
+
         MSG Message = {};
         while(Message.message != WM_QUIT)
         {
@@ -157,6 +159,7 @@ namespace Volts::GUI
         }
 
         Frame::CurrentRender->Detach();
+        ImGui_ImplWin32_Shutdown();
         ImGui::DestroyContext();
 
         DestroyWindow(Handle);

@@ -76,9 +76,22 @@ This extends to design patterns as well as just the formatting of the code itsel
 Even if a specific Linux distro, Windows version, or MacOSX version is not listed here it does not mean it will not work.
 If you successfully build & boot the emulator on your system please provide a pull request with detailed steps to update the README.
 
+#### Prerequisites
+
+* Python >= 3.5.x
+* Meson >= 0.50.x
+* Vulkan SDK >= 1.0.3 (set the enviroment variable "VULKAN_SDK" to the path to the installed sdk)
+
 #### Windows
 
-not sure really
+* Install visual studio C++ compiler (C++17 support or later)
+
+```sh
+meson Build
+cd Build
+ninja
+volt.exe
+```
 
 #### MacOSX
 

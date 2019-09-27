@@ -152,5 +152,26 @@ namespace Volts::RSX
         CreateInfo.ppEnabledExtensionNames = Extensions;
         VK_VALIDATE(vkCreateDevice(CurrentDevice.PhysicalDevice, &CreateInfo, nullptr, &LogicalDevice));
         VK_VALIDATE(vkGetDeviceQueue(LogicalDevice, GraphicsIndex, 0, &Queue));
+
+        VkDescriptorPoolSize PoolSizes[] = {
+            { VK_DESCRIPTOR_TYPE_SAMPLER, 1000 },
+            { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000 },
+            { VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000 },
+            { VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000 },
+            { VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000 },
+            { VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000 },
+            { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000 },
+            { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000 },
+            { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000 },
+            { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000 },
+            { VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000 }
+        };
+
+        VkDescriptorPoolCreateInfo PoolInfo = { VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO };
+        PoolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+        PoolInfo.maxSets = 1000 * (sizeof(PoolSizes) / sizeof(VkDescriptorPoolSize));
+        PoolInfo.poolSizeCount = sizeof(PoolSizes) / sizeof(VkDescriptorPoolSize);
+        PoolInfo.pPoolSizes = PoolSizes;
+        VK_VALIDATE(vkCreateDescriptorPool(LogicalDevice, &PoolInfo, nullptr, &DescriptorPool));
     }
 }
