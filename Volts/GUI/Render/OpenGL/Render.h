@@ -3,9 +3,9 @@
 #include "Render/Render.h"
 
 #if OS_WINDOWS
-#   include <GL/glew.h>
+#   include <GL/gl.h>
 #elif OS_LINUX
-#   include <GL/glew.h>
+#   include <GL/gl.h>
 #elif OS_APPLE
 #   include <OpenGL/gl.h>
 #endif

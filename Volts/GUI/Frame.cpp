@@ -7,10 +7,7 @@
 #include "Render/DX12/Render.h"
 
 #if OS_WINDOWS
-#   include "imgui/examples/imgui_impl_dx12.h"
 #   include "imgui/examples/imgui_impl_win32.h"
-#else
-#   include <imgui/examples/imgui_impl_vulkan.h>
 #endif
 
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND, UINT, WPARAM, LPARAM);
