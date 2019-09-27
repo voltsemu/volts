@@ -16,7 +16,7 @@ namespace Volts::RSX
     struct Device
     {
         virtual ~Device() {}
-        virtual std::wstring Name() const = 0;
+        virtual const char* Name() const = 0;
     };
 
     // each renderer can be fed a window that it will render to

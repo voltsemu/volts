@@ -14,6 +14,7 @@
 
 #include <wrl.h>
 #include <shellapi.h>
+#include <comdef.h>
 
 #define VALIDATE(...) if(FAILED(__VA_ARGS__)) { VFATAL("[%s]:%s DX12 Call failed", __FILE__, __LINE__); exit(1); }
 
@@ -30,15 +31,17 @@ namespace Volts::DX12Support
             : Handle(Dev)
         {
             Dev->GetDesc(&Desc);
+            wcstombs(DeviceName, Desc.Description, 128);
         }
 
-        virtual std::wstring Name() const override
+        virtual const char* Name() const override
         {
-            return Desc.Description;
+            return DeviceName;
         }
     private:
         Ptr<IDXGIAdapter1> Handle;
         DXGI_ADAPTER_DESC Desc;
+        char DeviceName[128];
     };
 
     bool CanTear();

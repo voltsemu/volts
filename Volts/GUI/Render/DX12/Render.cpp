@@ -16,6 +16,11 @@ namespace Volts::RSX
     DX12::DX12()
     {
         GUI::Frame::Renders.Append((void*)this);
+    }
+
+    void DX12::Attach(GUI::Frame* Handle)
+    {
+        Frame = Handle;
         UINT FactoryFlags = 0;
 
 #if VDXDEBUG
@@ -28,11 +33,7 @@ namespace Volts::RSX
 #endif
 
         VALIDATE(CreateDXGIFactory2(FactoryFlags, IID_PPV_ARGS(&Factory)));
-    }
 
-    void DX12::Attach(GUI::Frame* Handle)
-    {
-        Frame = Handle;
         GUI::Size S = Handle->GetSize();
         Viewport = {
             0.0f,

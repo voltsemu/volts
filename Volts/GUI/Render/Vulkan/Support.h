@@ -19,9 +19,11 @@ namespace Volts::RSX::VulkanSupport
 
         VulkanDevice() { }
 
-        virtual std::wstring Name() const override
+        virtual const char* Name() const override
         {
-            return std::wstring();
+            return "";
         }
+
+        VkPhysicalDevice PhysicalDevice;
     };
 }

@@ -83,14 +83,15 @@ namespace Volts::GUI
         F->CurrentRender->UpdateVSync(EnabledVsync);
 
         U32 DeviceCount = 0;
-        auto* Devs = Frame::CurrentRender->Devices(&DeviceCount);
+        auto* Devices = F->CurrentRender->Devices(&DeviceCount);
         DeviceCount -= 1;
-        std::vector<const char*> Names;
+        const char** Names = new const char*[DeviceCount];
         for(U32 I = 0; I < DeviceCount; I++)
-            Names.push_back(std::wstring_convert<std::codecvt_utf8<wchar_t>>().to_bytes(Devs[I].Name()).c_str());
+            Names[I] = Devices[I].Name();
 
         static int CurrentDevice = 0;
-        ImGui::Combo("device", &CurrentDevice, (const char**)Names.data(), DeviceCount);
+        ImGui::Combo("device", &CurrentDevice, Names, DeviceCount);
+        delete[] Names;
 
         ImGui::End();
     }
