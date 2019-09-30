@@ -15,7 +15,11 @@ extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND, UINT, WPARAM, LPARAM);
 namespace Volts::GUI
 {
 #if OS_WINDOWS
+    Frame* FrameSingleton = nullptr;
     HINSTANCE Instance = {};
+    Array<void*> Frame::Renders = {};
+
+    RSX::Render* Frame::CurrentRender = nullptr;
 
     Frame::Frame() {}
 
@@ -33,6 +37,11 @@ namespace Volts::GUI
 
         switch(Msg)
         {
+            case WM_CREATE:
+                // todo: lets not hardcode this shall we
+                Frame::CurrentRender = new RSX::DX12();
+                Frame::CurrentRender->Attach(FrameSingleton);
+                return 0;
             case WM_SIZE:
             {
                 if(Frame::CurrentRender)
@@ -54,10 +63,6 @@ namespace Volts::GUI
 
         return DefWindowProc(Window, Msg, W, L);
     }
-
-    Array<void*> Frame::Renders = {};
-
-    RSX::Render* Frame::CurrentRender = nullptr;
 
     void Frame::Fullscreen()
     {
@@ -111,7 +116,7 @@ namespace Volts::GUI
             WS_EX_APPWINDOW | WS_EX_WINDOWEDGE
         );
 
-        Handle = CreateWindowEx(
+        FrameSingleton->Handle = CreateWindowEx(
             0,
             T.CStr(),
             T.CStr(),
@@ -130,17 +135,13 @@ namespace Volts::GUI
         SetForegroundWindow(Handle);
         SetFocus(Handle);
 
-        // todo: lets not hardcode this shall we
-        Frame::CurrentRender = new RSX::DX12();
-
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
         ImGui::StyleColorsDark();
 
-        Frame::CurrentRender->Attach(this);
+        ImGui_ImplWin32_Init(FrameSingleton->Handle);
 
-        ImGui_ImplWin32_Init(Handle);
-
+        FrameSingleton = this;
         MSG Message = {};
         while(Message.message != WM_QUIT)
         {

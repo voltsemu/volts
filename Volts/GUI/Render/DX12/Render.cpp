@@ -16,6 +16,7 @@ namespace Volts::RSX
         GUI::Frame::Renders.Append((void*)this);
     }
 
+
     void DX12::CreateChildWindow()
     {
         WNDCLASSEX WC = {};
@@ -24,6 +25,8 @@ namespace Volts::RSX
         WC.hCursor = reinterpret_cast<HCURSOR>(LoadImage(0, IDC_ARROW, IMAGE_CURSOR, 0, 0, LR_SHARED));
         WC.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_BTNFACE + 1);
         WC.lpszClassName = "DX12Class";
+        WC.lpfnWndProc = DefWindowProc;
+        WC.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
 
         if(!RegisterClassEx(&WC))
             DX_DEBUG(DebugQueue, "Registering class failed {}", GetLastError());
@@ -32,7 +35,7 @@ namespace Volts::RSX
             0,
             "DX12Class",
             "DX12",
-            WS_CHILDWINDOW,
+            WS_CHILDWINDOW | WS_VISIBLE,
             0, 0,
             CW_USEDEFAULT, CW_USEDEFAULT,
             Frame->Handle,
@@ -42,15 +45,13 @@ namespace Volts::RSX
         )))
             DX_DEBUG(DebugQueue, "Creating child window failed {}", GetLastError());
 
-
-
         ShowWindow(Child, SW_SHOW);
         UpdateWindow(Child);
     }
 
     void DX12::CleanupChildWindow()
     {
-
+        CloseWindow(Child);
     }
 
     void DX12::Attach(GUI::Frame* Handle)
@@ -98,6 +99,7 @@ namespace Volts::RSX
     void DX12::Detach()
     {
         WaitForGPU();
+        CleanupChildWindow();
         ImGui_ImplDX12_Shutdown();
 
         CloseHandle(FenceEvent);
