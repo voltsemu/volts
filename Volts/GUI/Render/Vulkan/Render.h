@@ -30,23 +30,5 @@ namespace Volts::RSX
         virtual void Fullscreen() override;
     private:
         GUI::Frame* Frame;
-
-        void CreateInstance();
-        VkInstance Instance;
-
-        void QueryDevices();
-        Array<VulkanSupport::VulkanDevice> Devices;
-
-        // Queue family indecies
-        U32 GraphicsIndex = 0;
-        U32 ComputeIndex = 0;
-        U32 TransferIndex = 0;
-
-        void SetDevice(VulkanSupport::VulkanDevice NewDevice);
-        VulkanSupport::VulkanDevice CurrentDevice;
-        VkDevice LogicalDevice;
-
-        VkDescriptorPool DescriptorPool;
-        VkQueue Queue = VK_NULL_HANDLE;
     };
 }

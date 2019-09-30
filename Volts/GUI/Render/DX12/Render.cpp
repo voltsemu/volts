@@ -8,8 +8,6 @@
 #include "imgui/examples/imgui_impl_win32.h"
 #include "imgui/examples/imgui_impl_dx12.h"
 
-#define DX_DEBUG(Queue, Message) Queue->AddApplicationMessage(D3D12_MESSAGE_SEVERITY_MESSAGE, Message)
-
 namespace Volts::RSX
 {
 
@@ -18,9 +16,47 @@ namespace Volts::RSX
         GUI::Frame::Renders.Append((void*)this);
     }
 
+    void DX12::CreateChildWindow()
+    {
+        WNDCLASSEX WC = {};
+        WC.cbSize = sizeof(WNDCLASSEX);
+        WC.hInstance = GUI::Instance;
+        WC.hCursor = reinterpret_cast<HCURSOR>(LoadImage(0, IDC_ARROW, IMAGE_CURSOR, 0, 0, LR_SHARED));
+        WC.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_BTNFACE + 1);
+        WC.lpszClassName = "DX12Class";
+
+        if(!RegisterClassEx(&WC))
+            DX_DEBUG(DebugQueue, "Registering class failed {}", GetLastError());
+
+        if(!(Child = CreateWindowEx(
+            0,
+            "DX12Class",
+            "DX12",
+            WS_CHILDWINDOW,
+            0, 0,
+            CW_USEDEFAULT, CW_USEDEFAULT,
+            Frame->Handle,
+            nullptr,
+            (HINSTANCE)GetWindowLongPtr(Frame->Handle, GWLP_HINSTANCE),
+            nullptr
+        )))
+            DX_DEBUG(DebugQueue, "Creating child window failed {}", GetLastError());
+
+
+
+        ShowWindow(Child, SW_SHOW);
+        UpdateWindow(Child);
+    }
+
+    void DX12::CleanupChildWindow()
+    {
+
+    }
+
     void DX12::Attach(GUI::Frame* Handle)
     {
         Frame = Handle;
+
         UINT FactoryFlags = 0;
 
 #if VDXDEBUG
@@ -185,6 +221,9 @@ namespace Volts::RSX
 #if VDXDEBUG
         VALIDATE(Device->QueryInterface(IID_PPV_ARGS(&DebugQueue)));
 #endif
+
+        CreateChildWindow();
+
         {
             Tear = DX12Support::CanTear();
             DXGI_SWAP_CHAIN_DESC1 SCD = {};
@@ -201,14 +240,14 @@ namespace Volts::RSX
             Ptr<IDXGISwapChain1> SwapChain;
             VALIDATE(Factory->CreateSwapChainForHwnd(
                 CommandQueue.Get(),
-                Frame->Handle,
+                Child,
                 &SCD,
                 nullptr,
                 nullptr,
                 &SwapChain
             ));
 
-            VALIDATE(Factory->MakeWindowAssociation(Frame->Handle, DXGI_MWA_NO_ALT_ENTER));
+            VALIDATE(Factory->MakeWindowAssociation(Child, DXGI_MWA_NO_ALT_ENTER));
 
             VALIDATE(SwapChain.As(&Swap));
         }

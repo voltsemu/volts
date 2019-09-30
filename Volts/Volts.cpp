@@ -5,14 +5,13 @@
 
 #include "GUI/Frame.h"
 
-#include <imgui.h>
-
 using namespace Volts;
 using namespace Cthulhu;
 
 int main(int Argc, const char** Argv)
 {
 	LogLevel = Level::Info;
+
 	GUI::Frame()
 		.Title("Volts")
 		.Run();

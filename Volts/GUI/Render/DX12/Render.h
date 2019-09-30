@@ -45,6 +45,10 @@ namespace Volts::RSX
 
         static constexpr U32 FrameCount = 2;
 
+        void CreateChildWindow();
+        void CleanupChildWindow();
+        HWND Child;
+
         // creation objects
         Ptr<IDXGIFactory4> Factory;
         std::vector<DX12Support::DX12Device> DeviceList;
