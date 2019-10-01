@@ -13,7 +13,7 @@ int main(int Argc, const char** Argv)
 	LogLevel = Level::Info;
 
 	GUI::Frame()
-		.Title("Volts")
+		.SetTitle("Volts")
 		.Run();
 }
 

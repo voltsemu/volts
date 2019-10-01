@@ -30,7 +30,7 @@ namespace Volts::RSX
         virtual void PresentRender() override;
     private:
         GUI::Frame* Frame;
-        ImGuiIO& IO;
+        MetalSupport::MetalDevice* DeviceList;
 
         void* Handle;
     };

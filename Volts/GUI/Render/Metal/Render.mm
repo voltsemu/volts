@@ -3,12 +3,20 @@
 #include "imgui/examples/imgui_impl_osx.h"
 #include "imgui/examples/imgui_impl_metal.h"
 
+#import <Metal/Metal.h>
+
 namespace Volts::RSX
 {
     Metal::Metal()
-        : IO(ImGui::GetIO())
     {
-        GUI::Frame::Renders.Append((void*)this);
+        GUI::Frame::GetSingleton()->Renders.Append(this);
+
+        NSArray<id<MTLDevice>>* MTLDevices = MTLCopyAllDevices();
+
+        DeviceList = new MetalSupport::MetalDevice[[MTLDevices count]];
+
+        for(U32 I = 0; I < [MTLDevices count]; I++)
+            DeviceList[I] = MetalSupport::MetalDevice((__bridge void*)MTLDevices[I]);
     }
 
     void Metal::Attach(GUI::Frame* F)
@@ -51,7 +59,7 @@ namespace Volts::RSX
 
     void Metal::BeginRender()
     {
-        //IO = ImGui::GetIO();
+
     }
 
     void Metal::PresentRender()

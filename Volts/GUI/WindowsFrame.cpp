@@ -5,22 +5,13 @@
 #include "Render/Render.h"
 
 #include "Render/DX12/Render.h"
-
-#if OS_WINDOWS
-#   include "imgui/examples/imgui_impl_win32.h"
-#endif
+#include "imgui/examples/imgui_impl_win32.h"
 
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND, UINT, WPARAM, LPARAM);
 
 namespace Volts::GUI
 {
-#if OS_WINDOWS
-    Frame* FrameSingleton = nullptr;
     HINSTANCE Instance = {};
-    Array<void*> Frame::Renders = {};
-
-    RSX::Render* Frame::CurrentRender = nullptr;
-
     Frame::Frame() {}
 
     Frame& Frame::Title(const String& T) { this->T = T; return *this; }
@@ -39,16 +30,16 @@ namespace Volts::GUI
         {
             case WM_CREATE:
                 // todo: lets not hardcode this shall we
-                Frame::CurrentRender = new RSX::DX12();
-                Frame::CurrentRender->Attach(FrameSingleton);
+                Frame::Singleton->CurrentRender = new RSX::DX12();
+                Frame::Singleton->CurrentRender->Attach(Frame::Singleton);
                 return 0;
             case WM_SIZE:
             {
-                if(Frame::CurrentRender)
+                if(Frame::Singleton->CurrentRender)
                 {
                     RECT Rect;
                     GetWindowRect(Window, &Rect);
-                    Frame::CurrentRender->Resize({
+                    Frame::Singleton->CurrentRender->Resize({
                         static_cast<U32>(Rect.right - Rect.left),
                         static_cast<U32>(Rect.bottom - Rect.top)
                     });
@@ -66,17 +57,17 @@ namespace Volts::GUI
 
     void Frame::Fullscreen()
     {
-        Frame::CurrentRender->Fullscreen();
+        CurrentRender->Fullscreen();
     }
 
     void Frame::Borderless()
     {
-        Frame::CurrentRender->Borderless();
+        CurrentRender->Borderless();
     }
 
     void Frame::Windowed()
     {
-        Frame::CurrentRender->Windowed();
+        CurrentRender->Windowed();
     }
 
     Size Frame::GetSize() const
@@ -116,7 +107,7 @@ namespace Volts::GUI
             WS_EX_APPWINDOW | WS_EX_WINDOWEDGE
         );
 
-        FrameSingleton->Handle = CreateWindowEx(
+        Handle = CreateWindowEx(
             0,
             T.CStr(),
             T.CStr(),
@@ -139,9 +130,10 @@ namespace Volts::GUI
         ImGui::CreateContext();
         ImGui::StyleColorsDark();
 
-        ImGui_ImplWin32_Init(FrameSingleton->Handle);
+        ImGui_ImplWin32_Init(Handle);
 
-        FrameSingleton = this;
+        Frame::Singleton = this;
+
         MSG Message = {};
         while(Message.message != WM_QUIT)
         {
@@ -151,12 +143,12 @@ namespace Volts::GUI
                 DispatchMessage(&Message);
             }
 
-            Frame::CurrentRender->BeginRender();
+            CurrentRender->BeginRender();
             ImGui::NewFrame();
 
-            Frame::GUILoop(this);
+            GUILoop(this);
 
-            Frame::CurrentRender->PresentRender();
+            CurrentRender->PresentRender();
         }
 
         Frame::CurrentRender->Detach();
@@ -166,7 +158,4 @@ namespace Volts::GUI
         DestroyWindow(Handle);
         UnregisterClass(WC.lpszClassName, WC.hInstance);
     }
-#else
-
-#endif
 }

@@ -48,18 +48,34 @@ namespace Volts::GUI
     struct Frame
     {
         static Frame* Singleton;
+        static Frame* GetSingleton();
 
         Frame();
-        Frame& Title(const String& T);
         void Run();
+
+        Frame& SetTitle(const String& T);
+        String GetTitle() const;
+
+        ImGuiTextBuffer LogBuffer;
+        void Log(std::string Msg);
+
+        void GUILoop();
 
 #if OS_WINDOWS
         using FrameHandle = HWND;
 #elif OS_LINUX
         using FrameHandle = void*; // ???
-#elif OS_APLE
+#elif OS_APPLE
         using FrameHandle = void*; // NSView*
 #endif
+
+        Array<RSX::Render*> Renders = {};
+        RSX::Render* CurrentRender = nullptr;
+
+
+        Size GetSize() const;
+        AspectRatio Aspect = { 16, 9 };
+        FrameHandle Handle;
     };
 
 #if 0
@@ -78,14 +94,6 @@ namespace Volts::GUI
         static ImGuiTextBuffer Logs;
         static void GUILoop(Frame* F);
         static void Log(std::string Msg);
-
-#if OS_WINDOWS
-        using FrameHandle = HWND;
-#elif OS_APPLE
-        using FrameHandle = void*; // NSWindow
-#elif OS_LINUX
-        using FrameHandle = void*; // IDK
-#endif
 
         static Array<void*> Renders;
 

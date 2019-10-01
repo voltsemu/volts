@@ -7,7 +7,7 @@ namespace Volts::RSX
 {
     struct Null : Render
     {
-        Null() { GUI::Frame::Renders.Append((void*)this); }
+        Null() { GUI::Frame::GetSingleton()->Renders.Append(this); }
         virtual ~Null() {}
         virtual void Attach(GUI::Frame* Frame) override {}
         virtual void Detach() override {}

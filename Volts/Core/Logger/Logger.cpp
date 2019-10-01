@@ -29,7 +29,7 @@ namespace Volts
     {
         //if(L >= LogLevel)
         {
-            GUI::Frame::Log(Msg + "\n");
+            GUI::Frame::Singleton->Log(Msg + "\n");
         }
     }
 }

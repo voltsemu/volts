@@ -96,7 +96,7 @@
         ImGui::NewFrame();
 
         // run the main UI
-        Volts::GUI::Frame::GUILoop(F);
+        Volts::GUI::Frame::Singleton->GUILoop();
 
         ImGui::Render();
         ImDrawData* Draw = ImGui::GetDrawData();
@@ -279,25 +279,7 @@ namespace Volts::GUI
 
     }
 
-    Array<void*> Frame::Renders = {};
-    RSX::Render* Frame::CurrentRender = nullptr;
-
-    Frame& Frame::Title(const String& T) { this->T = T; return *this; }
-
-    void Frame::Borderless()
-    {
-
-    }
-
-    void Frame::Windowed()
-    {
-
-    }
-
-    void Frame::Fullscreen()
-    {
-
-    }
+    Frame& Frame::SetTitle(const String& T) { return *this; }
 
     Size Frame::GetSize() const
     {
@@ -308,13 +290,9 @@ namespace Volts::GUI
         };
     }
 
-    void Frame::SetBackground(const String& Path)
-    {
-
-    }
-
     void Frame::Run()
     {
+        Frame::Singleton->CurrentRender = new RSX::Metal();
         // run the application
         [VApp sharedApplication];
         [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
