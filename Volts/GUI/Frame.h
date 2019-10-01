@@ -47,6 +47,24 @@ namespace Volts::GUI
 
     struct Frame
     {
+        static Frame* Singleton;
+
+        Frame();
+        Frame& Title(const String& T);
+        void Run();
+
+#if OS_WINDOWS
+        using FrameHandle = HWND;
+#elif OS_LINUX
+        using FrameHandle = void*; // ???
+#elif OS_APLE
+        using FrameHandle = void*; // NSView*
+#endif
+    };
+
+#if 0
+    struct Frame
+    {
         Frame();
         Frame& Title(const String& T);
         void Run();
@@ -82,4 +100,5 @@ namespace Volts::GUI
         FrameHandle Handle;
         String T;
     };
+#endif
 }

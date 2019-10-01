@@ -30,8 +30,8 @@ namespace Volts::RSX
 
         virtual void UpdateVSync(bool Enabled) = 0;
 
-        virtual const String Name() const = 0;
-        virtual const String Description() const = 0;
+        virtual const char* Name() const = 0;
+        virtual const char* Description() const = 0;
         virtual Device* Devices(U32* Count) = 0;
 
         virtual void Windowed() = 0;

@@ -15,8 +15,8 @@ namespace Volts::RSX
         virtual ~Vulkan();
         virtual void Attach(GUI::Frame* Handle) override;
         virtual void Detach() override;
-        virtual const String Name() const override { return "Vulkan"; }
-        virtual const String Description() const override { return "Vulkan3D"; }
+        virtual const char* Name() const override { return "Vulkan"; }
+        virtual const char* Description() const override { return "Vulkan3D"; }
         virtual Device* Devices(U32* Count) override;
         virtual void UpdateVSync(bool NewMode) override;
 

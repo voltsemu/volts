@@ -15,9 +15,10 @@ namespace Volts::RSX
         virtual void Attach(GUI::Frame* Frame) override;
         virtual void Detach() override;
 
-        virtual const String Name() const override { return "Metal"; }
-        virtual const String Description() const override { return "MetalKit"; }
+        virtual const char* Name() const override { return "Metal"; }
+        virtual const char* Description() const override { return "MetalKit"; }
         virtual Device* Devices(U32* Count) override;
+        virtual void UpdateVSync(bool Enable) override;
 
         virtual void Windowed() override;
         virtual void Fullscreen() override;

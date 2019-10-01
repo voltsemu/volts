@@ -2,6 +2,7 @@
 
 #include "Core/Logger/Logger.h"
 #include "Render/Render.h"
+#include "Render/Metal/Render.h"
 
 #import <Cocoa/Cocoa.h>
 #import <Metal/Metal.h>
@@ -253,6 +254,8 @@
 
     ImGui_ImplMetal_Init(MetalDevice);
     ImGui_ImplOSX_Init();
+
+    F->CurrentRender = new Volts::RSX::Metal();
 }
 
 - (void)applicationWillTerminate:(NSNotification*)notify

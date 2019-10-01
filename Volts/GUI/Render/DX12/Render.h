@@ -14,8 +14,8 @@ namespace Volts::RSX
         virtual ~DX12() {}
         virtual void Attach(GUI::Frame* Handle) override;
         virtual void Detach() override;
-        virtual const String Name() const override { return "DX12"; }
-        virtual const String Description() const override { return "DirectX12"; }
+        virtual const char* Name() const override { return "DX12"; }
+        virtual const char* Description() const override { return "DirectX12"; }
         virtual Device* Devices(U32* Count) override;
 
         virtual void Resize(GUI::Size NewSize) override;

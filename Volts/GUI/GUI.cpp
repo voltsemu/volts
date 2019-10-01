@@ -79,20 +79,28 @@ namespace Volts::GUI
 
         static bool EnabledVsync = false;
         ImGui::Checkbox("VSync", &EnabledVsync);
-        ImGui::SameLine(); HelpMarker("Change vertical sync options (vsync)");
+        ImGui::SameLine(); HelpMarker("Enable/Disable vertical sync");
         F->CurrentRender->UpdateVSync(EnabledVsync);
+
+        ImGui::Separator();
 
         U32 DeviceCount = 0;
         auto* Devices = F->CurrentRender->Devices(&DeviceCount);
-        DeviceCount -= 1;
-        const char** Names = new const char*[DeviceCount];
-        for(U32 I = 0; I < DeviceCount; I++)
-            Names[I] = Devices[I].Name();
+        if(DeviceCount != 0)
+        {
+            const char** Names = (const char**)alloca(DeviceCount * sizeof(const char*));
+            for(U32 I = 0; I < DeviceCount; I++)
+                Names[I] = Devices[I].Name();
 
-        static int CurrentDevice = 0;
-        ImGui::Combo("device", &CurrentDevice, Names, DeviceCount);
-        delete[] Names;
-
+            static int CurrentDevice = 0;
+            ImGui::Combo("device", &CurrentDevice, Names, DeviceCount);
+            ImGui::SameLine(); HelpMarker("Select which rendering device to use");
+        }
+        else
+        {
+            ImGui::TextDisabled("Current renderer does not require a device");
+        }
+        
         ImGui::End();
     }
 

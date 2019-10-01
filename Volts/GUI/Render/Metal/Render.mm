@@ -27,6 +27,8 @@ namespace Volts::RSX
         return nullptr;
     }
 
+    void Metal::UpdateVSync(bool NewMode) {}
+
     void Metal::Windowed()
     {
 
@@ -49,7 +51,7 @@ namespace Volts::RSX
 
     void Metal::BeginRender()
     {
-        IO = ImGui::GetIO();
+        //IO = ImGui::GetIO();
     }
 
     void Metal::PresentRender()

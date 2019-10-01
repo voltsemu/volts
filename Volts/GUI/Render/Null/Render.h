@@ -12,8 +12,8 @@ namespace Volts::RSX
         virtual void Attach(GUI::Frame* Frame) override {}
         virtual void Detach() override {}
 
-        virtual const String Name() const override { return "Null"; }
-        virtual const String Description() const override { return "Null"; }
+        virtual const char* Name() const override { return "Null"; }
+        virtual const char* Description() const override { return "Null"; }
         virtual Device* Devices(U32* Count) override { return nullptr; }
         virtual void UpdateVSync(bool Enabled) override {}
 

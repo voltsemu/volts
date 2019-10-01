@@ -7,7 +7,7 @@
 
 namespace Volts::MetalSupport
 {
-    std::wstring MetalDevice::Name() const
+    const char* MetalDevice::Name() const
     {
         return [(__bridge id<MTLDevice>)Handle name].UTF8String;
     }
