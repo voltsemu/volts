@@ -18,7 +18,7 @@ namespace Volts::GUI
     void GPUOptions()
     {
         ImGui::Begin("GPU Options", &ShowGPUOptions);
-        
+
         /// Show renderer options, TODO: make this do stuff
         const char* RenderOptions[] = { "Vulkan", "Metal", "OpenGL", "DirectX12", "Null" };
         static int CurrentRenderer = 0;
@@ -50,6 +50,16 @@ namespace Volts::GUI
         ImGui::End();
     }
 
+    double LastFrame = 0;
+    bool ShowMetrics = true;
+    void Metrics()
+    {
+        ImGui::Begin("Metrics", &ShowMetrics);
+
+
+        ImGui::End();
+    }
+
     bool ShowWindows = true;
     void Windows()
     {
@@ -75,7 +85,7 @@ namespace Volts::GUI
     void Frame::GUILoop()
     {
         if(ShowWindows) Windows();
-        
+
         if(static bool Demo = true; Demo) ImGui::ShowDemoWindow(&Demo);
     }
 }
