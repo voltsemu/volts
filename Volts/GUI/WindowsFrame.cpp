@@ -40,8 +40,6 @@ namespace Volts::GUI
         LPARAM L
     )
     {
-        if(ImGui_ImplWin32_WndProcHandler(Window, Msg, W, L))
-            return true;
 
         switch(Msg)
         {
@@ -118,37 +116,5 @@ namespace Volts::GUI
 
         DestroyWindow(Handle);
         UnregisterClass(WC.lpszClassName, WC.hInstance);
-#if 0
-
-        CurrentRender->Attach(Frame::Singleton);
-
-        Frame::Singleton = this;
-
-        MSG Message = {};
-        while(Message.message != WM_QUIT)
-        {
-            if(PeekMessage(&Message, nullptr, 0, 0, PM_REMOVE))
-            {
-                TranslateMessage(&Message);
-                DispatchMessage(&Message);
-            }
-
-            CurrentRender->BeginRender();
-            ImGui_ImplWin32_NewFrame();
-
-            ImGui::NewFrame();
-
-            GUILoop();
-
-            CurrentRender->PresentRender();
-        }
-
-        Frame::CurrentRender->Detach();
-        ImGui_ImplWin32_Shutdown();
-        ImGui::DestroyContext();
-
-        DestroyWindow(Handle);
-        UnregisterClass(WC.lpszClassName, WC.hInstance);
-#endif
     }
 }

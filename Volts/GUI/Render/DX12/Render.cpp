@@ -25,6 +25,9 @@ namespace Volts::RSX
         LPARAM L
     )
     {
+        if(ImGui_ImplWin32_WndProcHandler(Window, Msg, W, L))
+            return true;
+
         return DefWindowProc(Window, Msg, W, L);
     }
 
@@ -32,7 +35,7 @@ namespace Volts::RSX
     {
         WNDCLASSEX WC = { sizeof(WNDCLASSEX) };
         WC.style = CS_HREDRAW | CS_VREDRAW;
-        WC.lpfnWndProc = DefWindowProc;
+        WC.lpfnWndProc = DX12FrameProc;
         WC.hInstance = GUI::Instance;
         WC.hCursor = LoadCursor(nullptr, IDC_ARROW);
         WC.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
@@ -55,8 +58,11 @@ namespace Volts::RSX
             GUI::Instance,
             nullptr
         );
+
         Frame->SetChild(Child);
         ShowWindow(Child, SW_SHOW);
+        SetForegroundWindow(Child);
+        SetFocus(Child);
         UpdateWindow(Child);
     }
 
