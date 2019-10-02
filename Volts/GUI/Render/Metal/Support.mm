@@ -9,6 +9,6 @@ namespace Volts::MetalSupport
 {
     const char* MetalDevice::Name() const
     {
-        return [(__bridge id<MTLDevice>)Handle name].UTF8String;
+        return [(id<MTLDevice>)Handle name].UTF8String;
     }
 }

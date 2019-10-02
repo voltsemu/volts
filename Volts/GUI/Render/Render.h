@@ -9,6 +9,15 @@ namespace Volts::GUI
     struct Frame;
 }
 
+#if OS_APPLE
+namespace Volts::RSX 
+{
+    using ViewHandle = void*; // metal requires a view to be passed around when rendering
+}
+
+#define VIEW_ARG(Name) Volts::RSX::ViewHandle Name
+#endif
+
 namespace Volts::RSX
 {
     using namespace Cthulhu;
@@ -40,7 +49,7 @@ namespace Volts::RSX
 
         virtual void Resize(GUI::Size NewSize) = 0;
 
-        virtual void BeginRender() = 0;
+        virtual void BeginRender(VIEW_ARG(_)) = 0;
         virtual void PresentRender() = 0;
     };
 }

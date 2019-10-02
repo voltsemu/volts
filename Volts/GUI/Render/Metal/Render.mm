@@ -1,10 +1,5 @@
 #include "Render.h"
 
-#include "imgui/examples/imgui_impl_osx.h"
-#include "imgui/examples/imgui_impl_metal.h"
-
-#import <Metal/Metal.h>
-
 namespace Volts::RSX
 {
     Metal::Metal()
@@ -12,11 +7,12 @@ namespace Volts::RSX
         GUI::Frame::GetSingleton()->Renders.Append(this);
 
         NSArray<id<MTLDevice>>* MTLDevices = MTLCopyAllDevices();
+        DeviceCount = [MTLDevices count];
 
-        DeviceList = new MetalSupport::MetalDevice[[MTLDevices count]];
+        DeviceList = new MetalSupport::MetalDevice[DeviceCount];
 
-        for(U32 I = 0; I < [MTLDevices count]; I++)
-            DeviceList[I] = MetalSupport::MetalDevice((__bridge void*)MTLDevices[I]);
+        for(U32 I = 0; I < DeviceCount; I++)
+            DeviceList[I] = MetalSupport::MetalDevice(MTLDevices[I]);
     }
 
     void Metal::Attach(GUI::Frame* F)
@@ -26,16 +22,19 @@ namespace Volts::RSX
 
     void Metal::Detach()
     {
-        ImGui_ImplMetal_Shutdown();
-        ImGui_ImplOSX_Shutdown();
+        
     }
 
     Device* Metal::Devices(U32* Count)
     {
-        return nullptr;
+        *Count = DeviceCount;
+        return DeviceList;
     }
 
-    void Metal::UpdateVSync(bool NewMode) {}
+    void Metal::UpdateVSync(bool NewMode) 
+    {
+
+    }
 
     void Metal::Windowed()
     {
@@ -57,9 +56,9 @@ namespace Volts::RSX
 
     }
 
-    void Metal::BeginRender()
+    void Metal::BeginRender(VIEW_ARG(V))
     {
-
+        View = (__bridge MTKView*)V;
     }
 
     void Metal::PresentRender()

@@ -23,7 +23,7 @@ namespace Volts::RSX
 
         virtual void Resize(GUI::Size NewSize) override {}
 
-        virtual void BeginRender() override {}
+        virtual void BeginRender(VIEW_ARG(_)) override {}
         virtual void PresentRender() override {}
     };
 }

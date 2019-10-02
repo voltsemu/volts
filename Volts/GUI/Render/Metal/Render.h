@@ -5,6 +5,11 @@
 #include "Frame.h"
 
 #include "imgui/imgui.h"
+#include "imgui/examples/imgui_impl_osx.h"
+#include "imgui/examples/imgui_impl_metal.h"
+
+#import <Metal/Metal.h>
+#import <MetalKit/MetalKit.h>
 
 namespace Volts::RSX
 {
@@ -26,12 +31,13 @@ namespace Volts::RSX
 
         virtual void Resize(GUI::Size NewSize) override;
 
-        virtual void BeginRender() override;
+        virtual void BeginRender(VIEW_ARG(_)) override;
         virtual void PresentRender() override;
     private:
         GUI::Frame* Frame;
         MetalSupport::MetalDevice* DeviceList;
+        U32 DeviceCount;
 
-        void* Handle;
+        MTKView* View;
     };
 }

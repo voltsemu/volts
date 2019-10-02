@@ -8,28 +8,68 @@
 #import <Metal/Metal.h>
 #import <MetalKit/MetalKit.h>
 
-#include "imgui/imgui.h"
-#include "imgui/examples/imgui_impl_osx.h"
-#include "imgui/examples/imgui_impl_metal.h"
+#pragma mark Application delegate subclass
 
-#define WINDOW(W) ((NSWindow*)W)
+#pragma mark Application subclass
 
-// application that fixes some bugs in metal
 @interface VApp : NSApplication
 @end
 
 @implementation VApp
-- (void)sendEvent:(NSEvent*)event
+
+- (void)sendEvent:(NSEvent*) event 
 {
-    if([event type] == NSEventTypeKeyUp && ([event modifierFlags] & NSEventModifierFlagCommand))
+    if ([event type] == NSEventTypeKeyUp && ([event modifierFlags] & NSEventModifierFlagCommand))
         [[self keyWindow] sendEvent:event];
     else
         [super sendEvent:event];
 }
+
 @end
 
+#pragma mark Public interface
 
 
+namespace Volts::GUI
+{
+    Frame::Frame() {}
+    
+    Frame& Frame::SetTitle(const String& T) 
+    { 
+        Title = T;
+        return *this;
+    }
+
+    String Frame::GetTitle() const 
+    { 
+        return Title;
+    }
+
+    Size Frame::GetSize() const
+    {
+        CGSize S = [(__bridge NSWindow*)Handle contentView].frame.size;
+        return {
+            static_cast<U32>(S.width),
+            static_cast<U32>(S.height)
+        };
+    }
+
+    void Frame::Run()
+    {
+        [VApp sharedApplication];
+        [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
+        [NSApp setDelegate:[VAppDelegate new]];
+        [NSApp activateIgnoringOtherApps:YES];
+        [NSApp run];
+    }
+
+}
+
+#if 0
+
+#include "imgui/imgui.h"
+#include "imgui/examples/imgui_impl_osx.h"
+#include "imgui/examples/imgui_impl_metal.h"
 
 @interface VWindowDelegate : NSObject<NSWindowDelegate>
 @end
@@ -44,246 +84,87 @@
 @end
 
 
-
-
-@interface VViewDelegate : NSObject<MTKViewDelegate>
-{
-    Volts::GUI::Frame* F;
-}
-
-@property(nonatomic, strong) id Queue;
-
+@interface VApp : NSApplication
 @end
 
-@implementation VViewDelegate
+@implementation VApp
 
-- (instancetype)initWithFrame:(Volts::GUI::Frame*)frame
+- (void)sendEvent:(NSEvent*)event
 {
-    self = [super init];
-    F = frame;
-    return self;
-}
-
-- (void)mtkView:(nonnull MTKView*)view drawableSizeWillChange:(CGSize)size
-{
-}
-
-- (void)drawInMTKView:(nonnull MTKView*)view
-{
-    ImGuiIO& IO = ImGui::GetIO();
-    IO.DisplaySize.x = view.bounds.size.width;
-    IO.DisplaySize.y = view.bounds.size.height;
-
-    CGFloat BufferScale = view.window.screen.backingScaleFactor ?: NSScreen.mainScreen.backingScaleFactor;
-
-    IO.DisplayFramebufferScale = ImVec2(BufferScale, BufferScale);
-
-    IO.DeltaTime = float(1.f / 60.f);
-
-    id<MTLCommandBuffer> Buffer = [self.Queue commandBuffer];
-
-    MTLRenderPassDescriptor* RenderPass = view.currentRenderPassDescriptor;
-    if(RenderPass != nil)
-    {
-        RenderPass.colorAttachments[0].clearColor = MTLClearColorMake(0.28f, 0.36f, 0.5f, 1.0f);
-
-        id<MTLRenderCommandEncoder> Encoder = [Buffer renderCommandEncoderWithDescriptor:RenderPass];
-        [Encoder pushDebugGroup:@"Imgui layer"];
-
-        ImGui_ImplMetal_NewFrame(RenderPass);
-        ImGui_ImplOSX_NewFrame(view);
-
-        ImGui::NewFrame();
-
-        // run the main UI
-        Volts::GUI::Frame::Singleton->GUILoop();
-
-        ImGui::Render();
-        ImDrawData* Draw = ImGui::GetDrawData();
-        ImGui_ImplMetal_RenderDrawData(Draw, Buffer, Encoder);
-
-        [Encoder popDebugGroup];
-        [Encoder endEncoding];
-
-        [Buffer presentDrawable:view.currentDrawable];
-    }
-
-    [Buffer commit];
-}
-@end
-
-
-
-@interface VMTKView : MTKView
-@end
-
-@implementation VMTKView
-
-- (BOOL)isOpaque
-{
-    return YES;
-}
-
-- (BOOL)acceptsFirstResponder
-{
-    return YES;
-}
-
-- (void)mouseDown:(NSEvent*)event
-{
-    ImGui_ImplOSX_HandleEvent(event, self);
-}
-
-- (void)mouseUp:(NSEvent*)event
-{
-    ImGui_ImplOSX_HandleEvent(event, self);
-}
-
-- (void)mouseMoved:(NSEvent*)event
-{
-    ImGui_ImplOSX_HandleEvent(event, self);
-}
-
-- (void)mouseDragged:(NSEvent*)event
-{
-    ImGui_ImplOSX_HandleEvent(event, self);
-}
-
-- (void)scrollWheel:(NSEvent*)event
-{
-    ImGui_ImplOSX_HandleEvent(event, self);
-}
-
-- (void)keyDown:(NSEvent*)event
-{
-    ImGui_ImplOSX_HandleEvent(event, self);
-}
-
-- (void)keyUp:(NSEvent*)event
-{
-    ImGui_ImplOSX_HandleEvent(event, self);
-}
-
-- (void)flagsChanged:(NSEvent*)event
-{
-    ImGui_ImplOSX_HandleEvent(event, self);
+    if([event type] == NSEventTypeKeyUp && ([event modifierFlags] & NSEventModifierFlagCommand))
+        [[self keyWindow] sendEvent:event];
+    else
+        [super sendEvent:event];
 }
 
 @end
-
 
 
 
 @interface VAppDelegate : NSObject<NSApplicationDelegate>
-{
-    NSWindow* Window;
-    id WindowDelegate;
-    VViewDelegate* ViewDelegate;
-    id MetalDevice;
-    VMTKView* MetalView;
-    Volts::GUI::Frame* F;
-}
 @end
 
 @implementation VAppDelegate
 
-- (instancetype)initWithFrame:(Volts::GUI::Frame*)frame
-{
-    self = [super init];
-    F = frame;
-    return self;
-}
-
-// this is essentially main() for mac
 - (void)applicationDidFinishLaunching:(NSNotification*)notify
 {
-    // create the delegate
-    WindowDelegate = [[VWindowDelegate alloc] init];
-    // crate the window
-    Window = [
-            [NSWindow alloc]
-            initWithContentRect:NSMakeRect(0, 0, 500, 500)
-                styleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable
-                backing:NSBackingStoreBuffered
-                defer:NO
-    ];
-
-    // move it around and decorate it
-    // TODO: proper setting of title
-    [Window setTitle:@"Volts"];
-    [Window setAcceptsMouseMovedEvents:YES];
-    [Window center];
-    [Window setRestorable:YES];
-    // use the delegate
-    [Window setDelegate:WindowDelegate];
-
-    /// set the view delegate and metal device
-
-    ViewDelegate = [[VViewDelegate alloc] initWithFrame:F];
-    MetalDevice = MTLCreateSystemDefaultDevice();
-    if(MetalDevice == nil)
-    {
-        NSAlert* Alert = [[NSAlert alloc] init];
-        [Alert setMessageText:@"Metal device not found"];
-        [Alert setInformativeText:@"This device does not support the metal API. Metal was introduced in OSX 10.11"];
-        [Alert beginSheetModalForWindow:Window completionHandler:^(NSModalResponse resp) {
-            [NSApp terminate:nil];
-        }];
-
-        return;
-    }
-    MetalView = [[VMTKView alloc] init];
-
-    [MetalView setDelegate:ViewDelegate];
-    [MetalView setDevice:MetalDevice];
-    [MetalView setColorPixelFormat:MTLPixelFormatBGRA8Unorm];
-    [MetalView setDepthStencilPixelFormat:MTLPixelFormatDepth32Float_Stencil8];
-
-    [Window setContentView:MetalView];
-    CGSize Space = { (CGFloat)500, (CGFloat)500 };
-    [MetalView setDrawableSize:Space];
-    [[MetalView layer] setMagnificationFilter:kCAFilterNearest];
-    [Window makeKeyAndOrderFront:nil];
-
-    ViewDelegate.Queue = [MetalDevice newCommandQueue];
-
-    F->Handle = (__bridge void*)Window;
-
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGui::StyleColorsDark();
 
-    ImGui_ImplMetal_Init(MetalDevice);
-    ImGui_ImplOSX_Init();
+    NSWindow* Window = [
+        [NSWindow alloc]
+        initWithContentRect:NSMakeRect(0, 0, 500, 500)
+            styleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable
+            backing:NSBackingStoreBuffered
+            defer:NO
+    ];
 
-    F->CurrentRender = new Volts::RSX::Metal();
+    [Window setTitle:[NSString stringWithUTF8String:Volts::GUI::Frame::Singleton->GetTitle().CStr()]];
+    [Window setAcceptsMouseMovedEvents:YES];
+    [Window center];
+    [Window setRestorable:YES];
+
+    [Window setDelegate:[VWindowDelegate new]];
+
+    Volts::GUI::Frame::Singleton->Handle = (__bridge void*)Window;
+
+    Volts::GUI::Frame::Singleton->CurrentRender = new Volts::RSX::Metal();
+    Volts::GUI::Frame::Singleton->CurrentRender->Attach(Volts::GUI::Frame::Singleton);
+
+    [Window makeKeyAndOrderFront:nil];
 }
 
 - (void)applicationWillTerminate:(NSNotification*)notify
 {
-    ImGui_ImplMetal_Shutdown();
-    ImGui_ImplOSX_Shutdown();
+    Volts::GUI::Frame::Singleton->CurrentRender->Detach();
 }
 
 - (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication*)app
 {
     return YES;
 }
+
 @end
-
-
 
 namespace Volts::GUI
 {
     Frame::Frame() {}
 
-    // TODO: proper title setting
-    Frame& Frame::SetTitle(const String& T) { return *this; }
-    String Frame::GetTitle() const { return ""; }
+    Frame& Frame::SetTitle(const String& T) 
+    { 
+        Title = T;
+        return *this; 
+    }
+
+    String Frame::GetTitle() const 
+    { 
+        return Title;
+    }
 
     Size Frame::GetSize() const
     {
-        CGSize S = [WINDOW(CFBridgingRelease(Handle)) contentView].frame.size;
+        CGSize S = [(__bridge NSWindow*)Handle contentView].frame.size;
         return {
             static_cast<U32>(S.width),
             static_cast<U32>(S.height)
@@ -296,8 +177,10 @@ namespace Volts::GUI
         // run the application
         [VApp sharedApplication];
         [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
-        [NSApp setDelegate:[[VAppDelegate alloc] initWithFrame:this]];
+        [NSApp setDelegate:[[VAppDelegate alloc] init]];
         [NSApp activateIgnoringOtherApps:YES];
         [NSApp run];
     }
 }
+
+#endif
