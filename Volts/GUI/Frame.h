@@ -55,6 +55,9 @@ namespace Volts::GUI
 
         Frame& SetTitle(const String& T);
         String GetTitle() const;
+    private:
+        String Title;
+    public:
 
         ImGuiTextBuffer LogBuffer;
         void Log(std::string Msg);
@@ -63,6 +66,8 @@ namespace Volts::GUI
 
 #if OS_WINDOWS
         using FrameHandle = HWND;
+
+        void SetChild(HWND C);
 #elif OS_LINUX
         using FrameHandle = void*; // ???
 #elif OS_APPLE
@@ -77,36 +82,4 @@ namespace Volts::GUI
         AspectRatio Aspect = { 16, 9 };
         FrameHandle Handle;
     };
-
-#if 0
-    struct Frame
-    {
-        Frame();
-        Frame& Title(const String& T);
-        void Run();
-
-        void SetBackground(const String& Path);
-
-        void Fullscreen();
-        void Borderless();
-        void Windowed();
-
-        static ImGuiTextBuffer Logs;
-        static void GUILoop(Frame* F);
-        static void Log(std::string Msg);
-
-        static Array<void*> Renders;
-
-        static RSX::Render* CurrentRender;
-
-        std::chrono::time_point<std::chrono::high_resolution_clock> LastFrame = std::chrono::high_resolution_clock::now();
-
-        Size GetSize() const;
-
-        AspectRatio Aspect = { 16, 9 };
-
-        FrameHandle Handle;
-        String T;
-    };
-#endif
 }

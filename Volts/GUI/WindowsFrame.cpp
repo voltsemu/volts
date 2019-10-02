@@ -14,7 +14,24 @@ namespace Volts::GUI
     HINSTANCE Instance = {};
     Frame::Frame() {}
 
-    Frame& Frame::Title(const String& T) { this->T = T; return *this; }
+    // TODO: proper title setting
+    Frame& Frame::SetTitle(const String& T)
+    {
+        Title = T;
+        return *this;
+    }
+
+    String Frame::GetTitle() const
+    {
+        return Title;
+    }
+
+    HWND Child = {};
+
+    void Frame::SetChild(HWND C)
+    {
+        Child = C;
+    }
 
     LRESULT CALLBACK FrameProc(
         HWND Window,
@@ -28,46 +45,11 @@ namespace Volts::GUI
 
         switch(Msg)
         {
-            case WM_CREATE:
-                // todo: lets not hardcode this shall we
-                Frame::Singleton->CurrentRender = new RSX::DX12();
-                Frame::Singleton->CurrentRender->Attach(Frame::Singleton);
-                return 0;
-            case WM_SIZE:
-            {
-                if(Frame::Singleton->CurrentRender)
-                {
-                    RECT Rect;
-                    GetWindowRect(Window, &Rect);
-                    Frame::Singleton->CurrentRender->Resize({
-                        static_cast<U32>(Rect.right - Rect.left),
-                        static_cast<U32>(Rect.bottom - Rect.top)
-                    });
-                }
-            }
-            return 0;
-
             case WM_DESTROY:
                 PostQuitMessage(0);
                 return 0;
         }
-
         return DefWindowProc(Window, Msg, W, L);
-    }
-
-    void Frame::Fullscreen()
-    {
-        CurrentRender->Fullscreen();
-    }
-
-    void Frame::Borderless()
-    {
-        CurrentRender->Borderless();
-    }
-
-    void Frame::Windowed()
-    {
-        CurrentRender->Windowed();
     }
 
     Size Frame::GetSize() const
@@ -82,55 +64,63 @@ namespace Volts::GUI
 
     void Frame::Run()
     {
-        WNDCLASSEX WC = {};
-        WC.cbSize = sizeof(WNDCLASSEX);
+        WNDCLASSEX WC = { sizeof(WNDCLASSEX) };
         WC.style = CS_HREDRAW | CS_VREDRAW;
         WC.lpfnWndProc = FrameProc;
-        WC.hInstance = Instance;
-        WC.hIcon = LoadIcon(nullptr, IDI_APPLICATION);
+        WC.hInstance = GUI::Instance;
         WC.hCursor = LoadCursor(nullptr, IDC_ARROW);
         WC.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
-        WC.lpszClassName = T.CStr();
-        WC.hIconSm = LoadIcon(nullptr, IDI_WINLOGO);
+        WC.lpszClassName = "VoltsWindowClass";
 
         RegisterClassEx(&WC);
 
-        LONG Width = GetSystemMetrics(SM_CXSCREEN);
-        LONG Height = GetSystemMetrics(SM_CYSCREEN);
-
-        RECT Space = { 0L, 0L, Width, Height };
-
-        AdjustWindowRectEx(
-            &Space,
-            WS_OVERLAPPEDWINDOW | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
-            false,
-            WS_EX_APPWINDOW | WS_EX_WINDOWEDGE
-        );
-
         Handle = CreateWindowEx(
             0,
-            T.CStr(),
-            T.CStr(),
-            WS_OVERLAPPEDWINDOW | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
-            0,
-            0,
-            Space.right - Space.left,
-            Space.bottom - Space.top,
+            "VoltsWindowClass",
+            "Volts",
+            WS_OVERLAPPEDWINDOW,
+            0, 0,
+            CW_USEDEFAULT, CW_USEDEFAULT,
             nullptr,
             nullptr,
             GUI::Instance,
-            this
+            nullptr
         );
 
         ShowWindow(Handle, SW_SHOW);
-        SetForegroundWindow(Handle);
-        SetFocus(Handle);
+        UpdateWindow(Handle);
 
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
         ImGui::StyleColorsDark();
 
-        ImGui_ImplWin32_Init(Handle);
+        CurrentRender = new RSX::DX12();
+        CurrentRender->Attach(Frame::Singleton);
+        MSG Message = {};
+        while(Message.message != WM_QUIT)
+        {
+            if(PeekMessage(&Message, nullptr, 0, 0, PM_REMOVE))
+            {
+                TranslateMessage(&Message);
+                DispatchMessage(&Message);
+            }
+
+            CurrentRender->BeginRender();
+            ImGui::NewFrame();
+
+            GUILoop();
+
+            CurrentRender->PresentRender();
+        }
+
+        ImGui_ImplWin32_Shutdown();
+        ImGui::DestroyContext();
+
+        DestroyWindow(Handle);
+        UnregisterClass(WC.lpszClassName, WC.hInstance);
+#if 0
+
+        CurrentRender->Attach(Frame::Singleton);
 
         Frame::Singleton = this;
 
@@ -144,9 +134,11 @@ namespace Volts::GUI
             }
 
             CurrentRender->BeginRender();
+            ImGui_ImplWin32_NewFrame();
+
             ImGui::NewFrame();
 
-            GUILoop(this);
+            GUILoop();
 
             CurrentRender->PresentRender();
         }
@@ -157,5 +149,6 @@ namespace Volts::GUI
 
         DestroyWindow(Handle);
         UnregisterClass(WC.lpszClassName, WC.hInstance);
+#endif
     }
 }

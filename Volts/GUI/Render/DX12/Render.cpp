@@ -8,43 +8,54 @@
 #include "imgui/examples/imgui_impl_win32.h"
 #include "imgui/examples/imgui_impl_dx12.h"
 
+extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND, UINT, WPARAM, LPARAM);
+
 namespace Volts::RSX
 {
 
     DX12::DX12()
     {
-        GUI::Frame::Renders.Append((void*)this);
+        GUI::Frame::GetSingleton()->Renders.Append(this);
     }
 
+    LRESULT CALLBACK DX12FrameProc(
+        HWND Window,
+        UINT Msg,
+        WPARAM W,
+        LPARAM L
+    )
+    {
+        return DefWindowProc(Window, Msg, W, L);
+    }
 
     void DX12::CreateChildWindow()
     {
-        WNDCLASSEX WC = {};
-        WC.cbSize = sizeof(WNDCLASSEX);
-        WC.hInstance = GUI::Instance;
-        WC.hCursor = reinterpret_cast<HCURSOR>(LoadImage(0, IDC_ARROW, IMAGE_CURSOR, 0, 0, LR_SHARED));
-        WC.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_BTNFACE + 1);
-        WC.lpszClassName = "DX12Class";
+        WNDCLASSEX WC = { sizeof(WNDCLASSEX) };
+        WC.style = CS_HREDRAW | CS_VREDRAW;
         WC.lpfnWndProc = DefWindowProc;
+        WC.hInstance = GUI::Instance;
+        WC.hCursor = LoadCursor(nullptr, IDC_ARROW);
         WC.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
+        WC.lpszClassName = "VoltsWindowSubClass";
 
-        if(!RegisterClassEx(&WC))
-            DX_DEBUG(DebugQueue, "Registering class failed {}", GetLastError());
+        RegisterClassEx(&WC);
 
-        if(!(Child = CreateWindowEx(
+        RECT Size;
+        GetWindowRect(Frame->Handle, &Size);
+
+        Child = CreateWindowEx(
             0,
-            "DX12Class",
-            "DX12",
-            WS_CHILDWINDOW | WS_VISIBLE,
-            0, 0,
-            CW_USEDEFAULT, CW_USEDEFAULT,
+            "VoltsWindowSubClass",
+            "Volts",
+            WS_CHILD | WS_BORDER | WS_VISIBLE,
+            Size.top, Size.left,
+            Size.right, Size.bottom,
             Frame->Handle,
             nullptr,
-            (HINSTANCE)GetWindowLongPtr(Frame->Handle, GWLP_HINSTANCE),
+            GUI::Instance,
             nullptr
-        )))
-            DX_DEBUG(DebugQueue, "Creating child window failed {}", GetLastError());
-
+        );
+        Frame->SetChild(Child);
         ShowWindow(Child, SW_SHOW);
         UpdateWindow(Child);
     }
@@ -87,6 +98,7 @@ namespace Volts::RSX
         LoadPipeline();
         LoadData();
 
+        ImGui_ImplWin32_Init(Child);
         ImGui_ImplDX12_Init(
             Device.Get(),
             FrameCount,

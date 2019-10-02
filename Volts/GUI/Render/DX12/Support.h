@@ -17,7 +17,7 @@
 #include <comdef.h>
 
 #define DX_DEBUG(Queue, ...) Queue->AddApplicationMessage(D3D12_MESSAGE_SEVERITY_MESSAGE, fmt::format(__VA_ARGS__).c_str())
-#define VALIDATE(...) if(FAILED(__VA_ARGS__)) { VFATAL("[%s]:%s DX12 Call failed", __FILE__, __LINE__); exit(1); }
+#define VALIDATE(...) if(FAILED(__VA_ARGS__)) { DX_DEBUG(DebugQueue, "DX12 Error {}", GetLastError()); VFATAL("[%s]:%s DX12 Call failed", __FILE__, __LINE__); exit(1); }
 
 
 namespace Volts::DX12Support

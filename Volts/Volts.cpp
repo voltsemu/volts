@@ -12,8 +12,8 @@ int main(int Argc, const char** Argv)
 {
 	LogLevel = Level::Info;
 
-	GUI::Frame()
-		.SetTitle("Volts")
+	GUI::Frame::Singleton
+		->SetTitle("Volts")
 		.Run();
 }
 

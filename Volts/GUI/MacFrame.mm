@@ -209,6 +209,7 @@
     ];
 
     // move it around and decorate it
+    // TODO: proper setting of title
     [Window setTitle:@"Volts"];
     [Window setAcceptsMouseMovedEvents:YES];
     [Window center];
@@ -274,18 +275,17 @@
 
 namespace Volts::GUI
 {
-    Frame::Frame()
-    {
+    Frame::Frame() {}
 
-    }
-
+    // TODO: proper title setting
     Frame& Frame::SetTitle(const String& T) { return *this; }
+    String Frame::GetTitle() const { return ""; }
 
     Size Frame::GetSize() const
     {
         CGSize S = [WINDOW(CFBridgingRelease(Handle)) contentView].frame.size;
-        return { 
-            static_cast<U32>(S.width), 
+        return {
+            static_cast<U32>(S.width),
             static_cast<U32>(S.height)
         };
     }
