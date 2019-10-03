@@ -1,1 +1,0 @@
-sources += 'Volts/GUI/Render/Null/Render.cpp'

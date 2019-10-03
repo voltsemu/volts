@@ -4,8 +4,6 @@ incs += include_directories('.')
 
 sources += 'Volts/GUI/GUI.cpp'
 
-# everything supports these (sort of)
-subdir('Render/Null')
 # mac doesnt support Vulkan but moltenVK is a thing so we might as well try that
 subdir('Render/Vulkan')
 # mac deprecated OpenGL a while ago but it still works so what the hell
