@@ -8,9 +8,7 @@
 #import <Metal/Metal.h>
 #import <MetalKit/MetalKit.h>
 
-#pragma mark Application delegate subclass
-
-#pragma mark Application subclass
+using Volts::GUI::Frame;
 
 @interface VApp : NSApplication
 @end
@@ -27,24 +25,68 @@
 
 @end
 
-#pragma mark Public interface
 
+@interface VWindowDelegate : NSObject<NSWindowDelegate>
+@end
+
+@implementation VWindowDelegate
+
+- (BOOL)windowShouldClose:(id)sender
+{
+    return YES;
+}
+
+- (void)windowWillClose:(NSNotification*)notify
+{
+    puts("Closed");
+    Frame::Singleton->CurrentRender->Detach();
+}
+
+@end
+
+
+@interface VAppDelegate : NSObject<NSApplicationDelegate>
+@end
+
+@implementation VAppDelegate
+
+- (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication*)sender 
+{
+    return YES;
+}
+
+// basically main on mac
+- (void)applicationDidFinishLaunching:(NSNotification*)notify
+{
+    NSWindow* Window = [
+        [NSWindow alloc]
+        initWithContentRect:NSMakeRect(0, 0, 720, 480)
+            styleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable
+            backing:NSBackingStoreBuffered
+            defer:NO
+    ];
+
+    [Window setTitle:[NSString stringWithUTF8String:Frame::Singleton->GetTitle()]];
+    [Window setAcceptsMouseMovedEvents:YES];
+    [Window center];
+    [Window setRestorable:YES];
+    [Window setDelegate:[VWindowDelegate new]];
+
+    // this fixes ARC trying to cleanup the window memory after its already been cleaned up
+    [Window setReleasedWhenClosed:NO];
+
+    Frame::Singleton->Handle = (__bridge void*)Window;
+
+    [Window makeKeyAndOrderFront:nil];
+}
+
+@end
+
+
+#pragma mark Public interface
 
 namespace Volts::GUI
 {
-    Frame::Frame() {}
-
-    Frame& Frame::SetTitle(const String& T)
-    {
-        Title = T;
-        return *this;
-    }
-
-    String Frame::GetTitle() const
-    {
-        return Title;
-    }
-
     Size Frame::GetSize() const
     {
         CGSize S = [(__bridge NSWindow*)Handle contentView].frame.size;

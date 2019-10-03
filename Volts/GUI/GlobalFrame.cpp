@@ -14,6 +14,19 @@ namespace Volts::GUI
         return Frame::Singleton;
     }
 
+    Frame::Frame() {}
+
+    Frame* Frame::SetTitle(const char* T)
+    {
+        Title = T;
+        return this;
+    }
+
+    const char* Frame::GetTitle() const
+    {
+        return Title;
+    }
+
     void Frame::Log(std::string Msg)
     {
         LogBuffer.append(Msg.c_str());
@@ -30,12 +43,15 @@ namespace Volts::GUI
     void Frame::FinalizeDevices()
     {
         delete[] DeviceNames;
-        auto* Devices = CurrentRender->Devices(&DeviceCount);
-        if(!!Devices)
-            return;
+        if(!!CurrentRender)
+        {
+            auto* Devices = CurrentRender->Devices(&DeviceCount);
+            if(!!Devices)
+                return;
 
-        DeviceNames = new const char*[DeviceCount]();
-        for(U32 I = 0; I < DeviceCount; I++)
-            DeviceNames[I] = "";
+            DeviceNames = new const char*[DeviceCount]();
+            for(U32 I = 0; I < DeviceCount; I++)
+                DeviceNames[I] = "";
+        }
     }
 }

@@ -51,10 +51,10 @@ namespace Volts::GUI
         Frame();
         void Run();
 
-        Frame& SetTitle(const String& T);
-        String GetTitle() const;
+        Frame* SetTitle(const char* T);
+        const char* GetTitle() const;
     private:
-        String Title;
+        const char* Title = nullptr;
     public:
 
         ImGuiTextBuffer LogBuffer;

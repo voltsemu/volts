@@ -8,6 +8,11 @@
 
 #include <chrono>
 
+#if CC_CLANG
+#   pragma clang diagnostic push
+#   pragma clang diagnostic ignored "-Wformat-security"
+#endif
+
 namespace Volts::GUI
 {
     bool ShowGPUOptions = true;
@@ -96,3 +101,8 @@ namespace Volts::GUI
         if(static bool Demo = true; Demo) ImGui::ShowDemoWindow(&Demo);
     }
 }
+
+
+#if CC_CLANG
+#   pragma clang diagnostic pop
+#endif
