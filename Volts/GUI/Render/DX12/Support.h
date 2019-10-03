@@ -37,7 +37,7 @@ namespace Volts::DX12Support
 
         virtual const char* Name() const override
         {
-            return "aaa";
+            return DeviceName;
         }
     private:
         IDXGIAdapter1* Handle;

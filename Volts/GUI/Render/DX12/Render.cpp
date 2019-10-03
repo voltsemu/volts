@@ -146,7 +146,7 @@ namespace Volts::RSX
 
     Device* DX12::Devices(U32* Count)
     {
-        *Count = static_cast<U32>(DeviceList.size());
+        *Count = static_cast<U32>(DeviceList.size() - 1);
         return DeviceList.data();
     }
 
