@@ -48,14 +48,20 @@ namespace Volts::GUI
 
     void Frame::SetRender(const char* Name)
     {
-        CurrentRender = new RSX::DX12(); //Renders[1];
+        CurrentRender = new RSX::DX12();
         CurrentRender->Attach(this);
     }
 
-    void Frame::FinalizeDevices()
+    void Frame::UpdateDevices()
     {
         delete[] DeviceNames;
-        if(!!CurrentRender)
+        auto* Devices = CurrentRender->Devices(&DeviceCount);
+        DeviceNames = new const char*[DeviceCount]();
+        for(U32 I = 0; I < DeviceCount; I++)
+            DeviceNames[I] = Devices[I].Name();
+        //DeviceNames[0] = "null";
+        //DeviceNames[1] = "Radeon VII";
+        /* if(!!CurrentRender)
         {
             auto* Devices = CurrentRender->Devices(&DeviceCount);
             if(!!Devices)
@@ -64,6 +70,6 @@ namespace Volts::GUI
             DeviceNames = new const char*[DeviceCount]();
             for(U32 I = 0; I < DeviceCount; I++)
                 DeviceNames[I] = "";
-        }
+        } */
     }
 }

@@ -28,7 +28,7 @@ namespace Volts::DX12Support
     struct DX12Device : RSX::Device
     {
         DX12Device() {}
-        DX12Device(Ptr<IDXGIAdapter1> Dev)
+        DX12Device(IDXGIAdapter1* Dev)
             : Handle(Dev)
         {
             Dev->GetDesc(&Desc);
@@ -37,10 +37,10 @@ namespace Volts::DX12Support
 
         virtual const char* Name() const override
         {
-            return "";
+            return "aaa";
         }
     private:
-        Ptr<IDXGIAdapter1> Handle;
+        IDXGIAdapter1* Handle;
         DXGI_ADAPTER_DESC Desc;
         char DeviceName[128];
     };

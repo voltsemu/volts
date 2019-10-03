@@ -26,7 +26,6 @@ namespace Volts::GUI
         LPARAM L
     )
     {
-
         switch(Msg)
         {
             case WM_DESTROY:
@@ -79,8 +78,8 @@ namespace Volts::GUI
         ImGui::CreateContext();
         ImGui::StyleColorsDark();
 
-        CurrentRender = new RSX::DX12();
-        CurrentRender->Attach(this);
+        SetRender("DX12");
+        UpdateDevices();
 
         MSG Message = {};
         while(Message.message != WM_QUIT)

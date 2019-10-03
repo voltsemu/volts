@@ -216,13 +216,13 @@ namespace Volts::RSX
 
     void DX12::LoadPipeline()
     {
-        Ptr<IDXGIAdapter1> Adapter;
+        IDXGIAdapter1* Adapter;
 
         for(U32 I = 0; Factory->EnumAdapters1(I, &Adapter) != DXGI_ERROR_NOT_FOUND; I++)
             DeviceList.push_back(DX12Support::DX12Device(Adapter));
 
         VALIDATE(D3D12CreateDevice(
-            Adapter.Get(),
+            Adapter,
             D3D_FEATURE_LEVEL_12_0,
             IID_PPV_ARGS(&Device)
         ));

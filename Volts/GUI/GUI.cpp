@@ -21,13 +21,11 @@ namespace Volts::GUI
         ImGui::Begin("GPU Options", &ShowGPUOptions);
 
         /// Show renderer options, TODO: make this do stuff
-        static int CurrentRenderer = 0;
-        ImGui::Combo("Renderer", &CurrentRenderer, Frame::Singleton->RenderNames, Frame::Singleton->RenderCount);
-
+        ImGui::Combo("Renderer", &Frame::Singleton->RenderIndex, Frame::Singleton->RenderNames, Frame::Singleton->RenderCount);
+        //Frame::Singleton->SetRender(Frame::Singleton->RenderNames[Frame::Singleton->RenderIndex]);
 
         // this crashes for mysterious reasons
-        static int CurrentDevice = 0;
-        ImGui::Combo("Device", &CurrentDevice, Frame::Singleton->DeviceNames, Frame::Singleton->DeviceCount);
+        ImGui::Combo("Device", &Frame::Singleton->DeviceIndex, Frame::Singleton->DeviceNames, Frame::Singleton->DeviceCount);
 
         static bool EnableVSync = false;
         ImGui::Checkbox("VSync", &EnableVSync);

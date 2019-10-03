@@ -76,11 +76,13 @@ namespace Volts::GUI
         void AddRender(RSX::Render* R);
         Array<RSX::Render*> Renders = {};
 
+        I32 RenderIndex = 0;
         const char** RenderNames = nullptr;
         U32 RenderCount = 0;
 
 
-        void FinalizeDevices();
+        void UpdateDevices();
+        I32 DeviceIndex = 0;
         const char** DeviceNames = nullptr;
         U32 DeviceCount = 0;
 
