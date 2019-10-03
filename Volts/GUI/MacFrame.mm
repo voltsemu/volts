@@ -17,7 +17,7 @@
 
 @implementation VApp
 
-- (void)sendEvent:(NSEvent*) event 
+- (void)sendEvent:(NSEvent*) event
 {
     if ([event type] == NSEventTypeKeyUp && ([event modifierFlags] & NSEventModifierFlagCommand))
         [[self keyWindow] sendEvent:event];
@@ -33,15 +33,15 @@
 namespace Volts::GUI
 {
     Frame::Frame() {}
-    
-    Frame& Frame::SetTitle(const String& T) 
-    { 
+
+    Frame& Frame::SetTitle(const String& T)
+    {
         Title = T;
         return *this;
     }
 
-    String Frame::GetTitle() const 
-    { 
+    String Frame::GetTitle() const
+    {
         return Title;
     }
 
@@ -56,6 +56,8 @@ namespace Volts::GUI
 
     void Frame::Run()
     {
+        FinalizeRenders();
+        FinalizeDevices();
         [VApp sharedApplication];
         [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
         [NSApp setDelegate:[VAppDelegate new]];
@@ -151,14 +153,14 @@ namespace Volts::GUI
 {
     Frame::Frame() {}
 
-    Frame& Frame::SetTitle(const String& T) 
-    { 
+    Frame& Frame::SetTitle(const String& T)
+    {
         Title = T;
-        return *this; 
+        return *this;
     }
 
-    String Frame::GetTitle() const 
-    { 
+    String Frame::GetTitle() const
+    {
         return Title;
     }
 

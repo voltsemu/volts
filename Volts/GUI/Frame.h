@@ -6,8 +6,6 @@
 
 #include "imgui/imgui.h"
 
-#include <chrono>
-#include <deque>
 #include <string>
 
 #if OS_WINDOWS
@@ -74,9 +72,17 @@ namespace Volts::GUI
         using FrameHandle = void*; // NSView*
 #endif
 
+        void FinalizeRenders();
         Array<RSX::Render*> Renders = {};
-        RSX::Render* CurrentRender = nullptr;
+        const char** RenderNames = nullptr;
+        U32 RenderCount = 0;
 
+
+        void FinalizeDevices();
+        const char** DeviceNames = nullptr;
+        U32 DeviceCount = 0;
+
+        RSX::Render* CurrentRender = nullptr;
 
         Size GetSize() const;
         AspectRatio Aspect = { 16, 9 };

@@ -15,7 +15,7 @@ namespace Volts::RSX
     struct OpenGL : Render
     {
         OpenGL();
-
+        virtual bool Supported() const override { return true; }
     private:
     };
 }

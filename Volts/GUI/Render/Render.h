@@ -10,12 +10,14 @@ namespace Volts::GUI
 }
 
 #if OS_APPLE
-namespace Volts::RSX 
+namespace Volts::RSX
 {
     using ViewHandle = void*; // metal requires a view to be passed around when rendering
 }
 
-#define VIEW_ARG(Name) Volts::RSX::ViewHandle Name
+#   define VIEW_ARG(Name) Volts::RSX::ViewHandle Name
+#else
+#   define VIEW_ARG(_)
 #endif
 
 namespace Volts::RSX
@@ -41,6 +43,8 @@ namespace Volts::RSX
 
         virtual const char* Name() const = 0;
         virtual const char* Description() const = 0;
+        virtual bool Supported() const = 0;
+
         virtual Device* Devices(U32* Count) = 0;
 
         virtual void Windowed() = 0;

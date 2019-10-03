@@ -5,12 +5,8 @@
 #include "Core/Logger/Logger.h"
 
 #include "PS3/Util/Decrypt/UNSELF.h"
-#include <vector>
-#include <cstdlib>
-#include <locale>
-#include <codecvt>
-#include <iostream>
-#include <fstream>
+
+#include <chrono>
 
 namespace Volts::GUI
 {
@@ -20,9 +16,13 @@ namespace Volts::GUI
         ImGui::Begin("GPU Options", &ShowGPUOptions);
 
         /// Show renderer options, TODO: make this do stuff
-        const char* RenderOptions[] = { "Vulkan", "Metal", "OpenGL", "DirectX12", "Null" };
         static int CurrentRenderer = 0;
-        ImGui::Combo("Renderer", &CurrentRenderer, RenderOptions, IM_ARRAYSIZE(RenderOptions));
+        ImGui::Combo("Renderer", &CurrentRenderer, Frame::Singleton->RenderNames, Frame::Singleton->RenderCount);
+
+
+        // this crashes for mysterious reasons
+        static int CurrentDevice = 0;
+        ImGui::Combo("Device", &CurrentDevice, Frame::Singleton->DeviceNames, Frame::Singleton->DeviceCount);
 
         static bool EnableVSync = false;
         ImGui::Checkbox("VSync", &EnableVSync);
@@ -50,13 +50,18 @@ namespace Volts::GUI
         ImGui::End();
     }
 
-    double LastFrame = 0;
+    using TimePoint = decltype(std::chrono::high_resolution_clock::now());
+    TimePoint LastFrame;
     bool ShowMetrics = true;
     void Metrics()
     {
         ImGui::Begin("Metrics", &ShowMetrics);
+        TimePoint Now = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double, std::milli> FrameTime = Now - LastFrame;
+        ImGui::Text(fmt::format("FrameTime: {:.2f}ms", FrameTime.count()).c_str());
+        ImGui::Text(fmt::format("FPS: {:.2f}", 1000 / FrameTime.count()).c_str());
 
-
+        LastFrame = Now;
         ImGui::End();
     }
 
@@ -71,6 +76,7 @@ namespace Volts::GUI
             {
                 ImGui::MenuItem("GPU Settings", nullptr, &ShowGPUOptions);
                 ImGui::MenuItem("CPU Settings", nullptr, &ShowCPUOptions);
+                ImGui::MenuItem("Metrics", nullptr, &ShowMetrics);
                 ImGui::EndMenu();
             }
             ImGui::EndMenuBar();
@@ -80,6 +86,7 @@ namespace Volts::GUI
 
         if(ShowGPUOptions) GPUOptions();
         if(ShowCPUOptions) CPUOptions();
+        if(ShowMetrics) Metrics();
     }
 
     void Frame::GUILoop()

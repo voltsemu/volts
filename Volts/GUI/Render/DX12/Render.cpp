@@ -12,6 +12,7 @@ extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND, UINT, WPARAM, LPARAM);
 
 namespace Volts::RSX
 {
+    static DX12* Singleton = new DX12();
 
     DX12::DX12()
     {

@@ -62,6 +62,7 @@ namespace Volts::GUI
 
     void Frame::Run()
     {
+        FinalizeRenders();
         WNDCLASSEX WC = { sizeof(WNDCLASSEX) };
         WC.style = CS_HREDRAW | CS_VREDRAW;
         WC.lpfnWndProc = FrameProc;
@@ -94,6 +95,7 @@ namespace Volts::GUI
 
         CurrentRender = new RSX::DX12();
         CurrentRender->Attach(Frame::Singleton);
+
         MSG Message = {};
         while(Message.message != WM_QUIT)
         {
