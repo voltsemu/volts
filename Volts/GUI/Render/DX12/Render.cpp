@@ -207,7 +207,6 @@ namespace Volts::RSX
         ID3D12CommandList* Commands[] = { CommandList.Get() };
         CommandQueue->ExecuteCommandLists(_countof(Commands), Commands);
 
-
         UINT PresentFlags = Tear ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
 
         VALIDATE(Swap->Present(VSyncMode, PresentFlags));

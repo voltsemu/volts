@@ -12,20 +12,6 @@ extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND, UINT, WPARAM, LPARAM);
 namespace Volts::GUI
 {
     HINSTANCE Instance = {};
-    Frame::Frame() {}
-
-    // TODO: proper title setting
-    Frame& Frame::SetTitle(const String& T)
-    {
-        Title = T;
-        return *this;
-    }
-
-    String Frame::GetTitle() const
-    {
-        return Title;
-    }
-
     HWND Child = {};
 
     void Frame::SetChild(HWND C)
