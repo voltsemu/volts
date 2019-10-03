@@ -1,6 +1,7 @@
 #include "Frame.h"
 
 #include "Render/Render.h"
+#include "Render/DX12/Render.h"
 
 namespace Volts::GUI
 {
@@ -25,6 +26,17 @@ namespace Volts::GUI
         RenderNames = new const char*[RenderCount];
         for(U32 I = 0; I < RenderCount; I++)
             RenderNames[I] = Renders[I]->Name();
+    }
+
+    void Frame::AddRender(RSX::Render* R)
+    {
+        Renders.Append(R);
+    }
+
+    void Frame::SetRender(const char* Name)
+    {
+        CurrentRender = new RSX::DX12(); //Renders[1];
+        CurrentRender->Attach(this);
     }
 
     void Frame::FinalizeDevices()

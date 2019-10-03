@@ -8,7 +8,7 @@ namespace Volts::RSX
 
     Vulkan::Vulkan()
     {
-        GUI::Frame::GetSingleton()->Renders.Append(this);
+        GUI::Frame::GetSingleton()->AddRender(this);
     }
 
     Vulkan::~Vulkan()

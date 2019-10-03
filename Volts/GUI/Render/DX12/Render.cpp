@@ -16,7 +16,7 @@ namespace Volts::RSX
 
     DX12::DX12()
     {
-        GUI::Frame::GetSingleton()->Renders.Append(this);
+        GUI::Frame::GetSingleton()->AddRender(this);
     }
 
     LRESULT CALLBACK DX12FrameProc(

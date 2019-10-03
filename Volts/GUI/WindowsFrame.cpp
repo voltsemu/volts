@@ -94,7 +94,7 @@ namespace Volts::GUI
         ImGui::StyleColorsDark();
 
         CurrentRender = new RSX::DX12();
-        CurrentRender->Attach(Frame::Singleton);
+        CurrentRender->Attach(this);
 
         MSG Message = {};
         while(Message.message != WM_QUIT)

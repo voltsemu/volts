@@ -61,7 +61,7 @@ subdir('Volts/Core')
 # from trying to use either feature at all so people dont """accidentally"""
 # use these slow features for convenience sake
 if meson.get_compiler('cpp').get_id() == 'msvc'
-    args += ['/GR-', '/arch:AVX2']
+    args += ['/GR-', '/arch:AVX2', '/GF'] #GF enables string pooling, we abuse this for performance reasons
 else
     args += ['-fno-rtti', '-fno-exceptions', '-march=native']
 endif

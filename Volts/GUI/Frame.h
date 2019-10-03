@@ -73,7 +73,9 @@ namespace Volts::GUI
 #endif
 
         void FinalizeRenders();
+        void AddRender(RSX::Render* R);
         Array<RSX::Render*> Renders = {};
+
         const char** RenderNames = nullptr;
         U32 RenderCount = 0;
 
@@ -82,6 +84,7 @@ namespace Volts::GUI
         const char** DeviceNames = nullptr;
         U32 DeviceCount = 0;
 
+        void SetRender(const char* Name);
         RSX::Render* CurrentRender = nullptr;
 
         Size GetSize() const;

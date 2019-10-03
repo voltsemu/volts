@@ -4,7 +4,7 @@ namespace Volts::RSX
 {
     Metal::Metal()
     {
-        GUI::Frame::GetSingleton()->Renders.Append(this);
+        GUI::Frame::GetSingleton()->AddRender(this);
 
         NSArray<id<MTLDevice>>* MTLDevices = MTLCopyAllDevices();
         DeviceCount = [MTLDevices count];
@@ -22,7 +22,7 @@ namespace Volts::RSX
 
     void Metal::Detach()
     {
-        
+
     }
 
     Device* Metal::Devices(U32* Count)
@@ -31,7 +31,7 @@ namespace Volts::RSX
         return DeviceList;
     }
 
-    void Metal::UpdateVSync(bool NewMode) 
+    void Metal::UpdateVSync(bool NewMode)
     {
 
     }
