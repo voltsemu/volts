@@ -10,9 +10,12 @@ if res.returncode() != 0
 else
     # if we do then we should use it
     incs += res.stdout().strip() / 'Include'
-    links += res.stdout().strip() / 'Lib' / 'vulkan-1.lib'
+    #links += res.stdout().strip() / 'Lib' / 'vulkan-1.lib'
 
-    sources += 'Volts/GUI/Render/Vulkan/Render.cpp'
+    sources += [
+        'Volts/GUI/Render/Vulkan/Render.cpp',
+        'Volts/GUI/Render/Vulkan/VulkanCommon.cpp'
+    ]
 
     if host_machine.system() == 'windows'
         args += '-DVK_USE_PLATFORM_WIN32_KHR'

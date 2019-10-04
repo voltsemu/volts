@@ -210,7 +210,6 @@ namespace Volts::RSX
         UINT PresentFlags = Tear ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
 
         VALIDATE(Swap->Present(VSyncMode, PresentFlags));
-
         AdvanceFrame();
     }
 

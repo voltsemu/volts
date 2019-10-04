@@ -27,9 +27,6 @@ namespace Volts
 
     void Print(Level L, std::string Msg)
     {
-        //if(L >= LogLevel)
-        {
-            GUI::Frame::Singleton->Log(Msg + "\n");
-        }
+        GUI::Frame::Singleton->Log(L, (Msg + "\n").c_str());
     }
 }

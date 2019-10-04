@@ -3,6 +3,8 @@
 #include <Meta/Macros.h>
 #include <Meta/Aliases.h>
 
+#include <chrono>
+
 // for concatenating tokens at compile time
 // eg CAT(__, AA) expands into __AA
 // this also works for macros such as __LINE__
@@ -77,6 +79,9 @@ namespace Volts
 {
     // signifies padding in a structure
     using Pad = Cthulhu::Byte;
+    using TimePoint = decltype(std::chrono::high_resolution_clock::now());
+    using TimeDiff = std::chrono::duration<double, std::milli>;
+
 }
 
 #define VMAJOR 0

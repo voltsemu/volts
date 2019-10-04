@@ -2,9 +2,6 @@
 
 #include "Render/Render.h"
 
-#include "imgui/imgui.h"
-#include "imgui/examples/imgui_impl_vulkan.h"
-
 #include "Support.h"
 
 namespace Volts::RSX
@@ -18,7 +15,7 @@ namespace Volts::RSX
 
         virtual const char* Name() const override { return "Vulkan"; }
         virtual const char* Description() const override { return "Vulkan3D"; }
-        virtual bool Supported() const override { return true; }
+        virtual bool Supported() const override { return SupportFound; }
 
         virtual Device* Devices(U32* Count) override;
         virtual void UpdateVSync(bool NewMode) override;
@@ -33,5 +30,7 @@ namespace Volts::RSX
         virtual void Fullscreen() override;
     private:
         GUI::Frame* Frame;
+        bool SupportFound;
+        VkInstance Instance;
     };
 }

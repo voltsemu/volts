@@ -28,9 +28,30 @@ namespace Volts::GUI
         return Title;
     }
 
-    void Frame::Log(std::string Msg)
+    void Frame::Log(Level L, const char* Msg)
     {
-        LogBuffer.append(Msg.c_str());
+        if(L >= CurrentLevel)
+        {
+            switch(L)
+            {
+                case Level::Info:
+                    LogBuffer.append("[info] ");
+                    break;
+                case Level::Warning:
+                    LogBuffer.append("[warn] ");
+                    break;
+                case Level::Error:
+                    LogBuffer.append("[error] ");
+                    break;
+                case Level::Fatal:
+                    LogBuffer.append("[fatal] ");
+                    break;
+                default:
+                    LogBuffer.append("[other] ");
+                    break;
+            }
+            LogBuffer.append(Msg);
+        }
     }
 
     void Frame::FinalizeRenders()
@@ -43,13 +64,22 @@ namespace Volts::GUI
 
     void Frame::AddRender(RSX::Render* R)
     {
-        Renders.Append(R);
+        if(R->Supported())
+            Renders.Append(R);
     }
 
     void Frame::SetRender(const char* Name)
     {
         CurrentRender = new RSX::DX12();
         CurrentRender->Attach(this);
+        for(U32 I = 0; I < RenderCount; I++)
+        {
+            if(RenderNames[I] == Name)
+            {
+                RenderIndex = I;
+                break;
+            }
+        }
     }
 
     void Frame::UpdateDevices()
@@ -59,17 +89,5 @@ namespace Volts::GUI
         DeviceNames = new const char*[DeviceCount]();
         for(U32 I = 0; I < DeviceCount; I++)
             DeviceNames[I] = Devices[I].Name();
-        //DeviceNames[0] = "null";
-        //DeviceNames[1] = "Radeon VII";
-        /* if(!!CurrentRender)
-        {
-            auto* Devices = CurrentRender->Devices(&DeviceCount);
-            if(!!Devices)
-                return;
-
-            DeviceNames = new const char*[DeviceCount]();
-            for(U32 I = 0; I < DeviceCount; I++)
-                DeviceNames[I] = "";
-        } */
     }
 }

@@ -4,9 +4,13 @@
 #include <Core/Collections/Array.h>
 #include <Core/Types/Lambda.h>
 
+#include "Core/Macros.h"
+
+#include "Core/Logger/Logger.h"
+
 #include "imgui/imgui.h"
 
-#include <string>
+#include <chrono>
 
 #if OS_WINDOWS
 #   include <Windows.h>
@@ -58,7 +62,8 @@ namespace Volts::GUI
     public:
 
         ImGuiTextBuffer LogBuffer;
-        void Log(std::string Msg);
+        Level CurrentLevel = Level::Info;
+        void Log(Level L, const char* Msg);
 
         void GUILoop();
 
@@ -80,6 +85,10 @@ namespace Volts::GUI
         const char** RenderNames = nullptr;
         U32 RenderCount = 0;
 
+        struct
+        {
+            TimePoint LastFrame;
+        } Metrics;
 
         void UpdateDevices();
         I32 DeviceIndex = 0;

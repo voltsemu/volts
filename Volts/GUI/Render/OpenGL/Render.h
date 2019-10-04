@@ -24,7 +24,9 @@ namespace Volts::RSX
 
         virtual const char* Name() const override { return "OpenGL"; }
         virtual const char* Description() const override { return "OpenGL"; }
-        virtual bool Supported() const override { return true; }
+
+        // TODO: for now opengl isnt working
+        virtual bool Supported() const override { return false; }
 
         virtual Device* Devices(U32* Count) override;
 

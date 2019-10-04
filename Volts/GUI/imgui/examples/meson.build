@@ -13,7 +13,4 @@ if host_machine.system() == 'darwin'
         'Volts/GUI/imgui/examples/imgui_impl_metal.mm',
         'Volts/GUI/imgui/examples/imgui_impl_osx.mm'
     ]
-else
-    # only darwin doesnt support vulkan
-    sources += 'Volts/GUI/imgui/examples/imgui_impl_vulkan.cpp'
 endif
