@@ -15,15 +15,9 @@ namespace Volts::RSX
 
         virtual const char* Name() const override { return "Vulkan"; }
         virtual const char* Description() const override { return "Vulkan3D"; }
-        virtual bool Supported() const override { return true; }
 
         virtual Device* Devices(U32* Count) override;
         virtual void SetDevice(RSX::Device* Device) override;
-
-#if OS_APPLE
-        // TODO: figure this out
-        virtual void* GetDevice() const override { return nullptr; }
-#endif
 
         virtual void UpdateVSync(bool NewMode) override;
 

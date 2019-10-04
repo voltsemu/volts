@@ -75,9 +75,7 @@ namespace Volts::GUI
 #elif OS_LINUX
         using FrameHandle = void*; // ???
 #elif OS_APPLE
-        using FrameHandle = void*; // CALayer
-        void* DisplayLink;
-        void* Window;
+        using FrameHandle = void*; // ???
 #endif
 
         void FinalizeRenders();

@@ -26,11 +26,9 @@ namespace Volts::RSX
 
         virtual const char* Name() const override { return "Metal"; }
         virtual const char* Description() const override { return "MetalKit"; }
-        virtual bool Supported() const override { return true; }
 
         virtual Device* Devices(U32* Count) override;
         virtual void SetDevice(RSX::Device* Device) override;
-        virtual void* GetDevice() const override { return (__bridge void*)CurrentDevice(); }
         virtual void UpdateVSync(bool Enable) override;
 
         virtual void Windowed() override;

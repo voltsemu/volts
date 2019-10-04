@@ -16,7 +16,6 @@ namespace Volts::RSX
         virtual void Detach() override;
         virtual const char* Name() const override { return "DX12"; }
         virtual const char* Description() const override { return "DirectX12"; }
-        virtual bool Supported() const override { return true; }
 
         virtual Device* Devices(U32* Count) override;
         virtual void SetDevice(RSX::Device* Device) override;

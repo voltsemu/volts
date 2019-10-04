@@ -78,7 +78,7 @@ namespace Volts::GUI
         ImGui::CreateContext();
         ImGui::StyleColorsDark();
         ImGui_ImplWin32_Init(Handle);
-        
+
         SetRender("DX12");
         UpdateDevices();
 
@@ -92,15 +92,15 @@ namespace Volts::GUI
             }
 
             CurrentRender->BeginRender();
-            ImGui::NewFrame();
 
+            ImGui::NewFrame();
             GUILoop();
+            ImGui::Render();
 
             CurrentRender->PresentRender();
         }
 
         ImGui_ImplWin32_Shutdown();
-        ImGui::DestroyContext();
 
         DestroyWindow(Handle);
         UnregisterClass(WC.lpszClassName, WC.hInstance);

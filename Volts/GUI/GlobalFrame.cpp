@@ -14,7 +14,17 @@ namespace Volts::GUI
         return Frame::Singleton;
     }
 
-    Frame::Frame() {}
+    Frame::Frame()
+    {
+        IMGUI_CHECKVERSION();
+        ImGui::CreateContext();
+        ImGui::StyleColorsDark();
+    }
+
+    Frame::~Frame()
+    {
+        ImGui::DestroyContext();
+    }
 
     Frame* Frame::SetTitle(const char* T)
     {
@@ -63,8 +73,8 @@ namespace Volts::GUI
 
     void Frame::AddRender(RSX::Render* R)
     {
-        if(R->Supported())
-            Renders.Append(R);
+        VINFO("Registered {} backend", R->Name());
+        Renders.Append(R);
     }
 
     void Frame::SetRender(const char* Name)
@@ -76,6 +86,7 @@ namespace Volts::GUI
                 RenderIndex = I;
                 CurrentRender = Renders[I];
                 CurrentRender->Attach(this);
+                VINFO("Attached {} as the current renderer", CurrentRender->Name());
                 break;
             }
         }
@@ -85,7 +96,7 @@ namespace Volts::GUI
     {
         if(!CurrentRender)
             return;
-            
+
         delete[] DeviceNames;
         auto* Devices = CurrentRender->Devices(&DeviceCount);
         DeviceNames = new const char*[DeviceCount]();

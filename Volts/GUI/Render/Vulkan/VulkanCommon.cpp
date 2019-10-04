@@ -41,7 +41,7 @@ namespace Volts::RSX::Vk
 
 
     VkInstance GlobalInstance;
-    bool CreateGlobalInstance()
+    VkInstance Instance()
     {
         VkApplicationInfo AppInfo = { VK_STRUCTURE_TYPE_APPLICATION_INFO };
         AppInfo.pApplicationName = ApplicationName;
@@ -58,11 +58,8 @@ namespace Volts::RSX::Vk
         CreateInfo.enabledLayerCount = LayerCount;
         CreateInfo.ppEnabledLayerNames = LayerNames;
 #endif
-        return vkCreateInstance(&CreateInfo, nullptr, &GlobalInstance) == VK_SUCCESS;
-    }
+        VK_VALIDATE(vkCreateInstance(&CreateInfo, nullptr, &GlobalInstance));
 
-    VkInstance Instance()
-    {
         return GlobalInstance;
     }
 }

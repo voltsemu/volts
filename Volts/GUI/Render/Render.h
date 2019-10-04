@@ -32,14 +32,9 @@ namespace Volts::RSX
 
         virtual const char* Name() const = 0;
         virtual const char* Description() const = 0;
-        virtual bool Supported() const = 0;
 
         virtual Device* Devices(U32* Count) = 0;
         virtual void SetDevice(RSX::Device* Device) = 0;
-
-#if OS_APPLE
-        virtual void* GetDevice() const = 0;
-#endif
 
         // override this to specifiy any extra options the render backend may have
         virtual void Options() {}

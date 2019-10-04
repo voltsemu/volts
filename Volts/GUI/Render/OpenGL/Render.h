@@ -25,16 +25,11 @@ namespace Volts::RSX
         virtual const char* Name() const override { return "OpenGL"; }
         virtual const char* Description() const override { return "OpenGL"; }
 
-        // TODO: for now opengl isnt working
-        virtual bool Supported() const override { return false; }
-
         virtual Device* Devices(U32* Count) override;
 
         // opengl doesnt need a device so this can be stubbed
         virtual void SetDevice(RSX::Device* Device) override {}
-#if OS_APPLE
-        virtual void* GetDevice() const override { return nullptr; }
-#endif
+
         virtual void Windowed() override;
         virtual void Fullscreen() override;
         virtual void Borderless() override;
