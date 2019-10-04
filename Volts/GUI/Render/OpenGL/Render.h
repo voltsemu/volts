@@ -30,6 +30,9 @@ namespace Volts::RSX
 
         virtual Device* Devices(U32* Count) override;
 
+        // opengl doesnt need a device so this can be stubbed
+        virtual void SetDevice(RSX::Device* Device) override {}
+
         virtual void Windowed() override;
         virtual void Fullscreen() override;
         virtual void Borderless() override;

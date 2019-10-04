@@ -18,6 +18,7 @@ namespace Volts::RSX
         virtual bool Supported() const override { return SupportFound; }
 
         virtual Device* Devices(U32* Count) override;
+        virtual void SetDevice(RSX::Device* Device) override;
         virtual void UpdateVSync(bool NewMode) override;
 
         virtual void BeginRender() override;

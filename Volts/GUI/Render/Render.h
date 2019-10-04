@@ -46,6 +46,10 @@ namespace Volts::RSX
         virtual bool Supported() const = 0;
 
         virtual Device* Devices(U32* Count) = 0;
+        virtual void SetDevice(RSX::Device* Device) = 0;
+
+        // override this to specifiy any extra options the render backend may have
+        virtual void Options() {}
 
         virtual void Windowed() = 0;
         virtual void Fullscreen() = 0;

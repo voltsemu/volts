@@ -63,6 +63,11 @@ namespace Volts::RSX
         return nullptr;
     }
 
+    void Vulkan::SetDevice(RSX::Device* Device)
+    {
+        // TODO
+    }
+
     void Vulkan::UpdateVSync(bool NewMode)
     {
         // TODO

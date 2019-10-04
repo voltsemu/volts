@@ -3,6 +3,7 @@
 #include "Frame.h"
 
 #include "d3dx12.h"
+#include "dxgidebug.h"
 
 #include "imgui/imgui.h"
 #include "imgui/examples/imgui_impl_win32.h"
@@ -17,6 +18,24 @@ namespace Volts::RSX
     DX12::DX12()
     {
         GUI::Frame::GetSingleton()->AddRender(this);
+
+        UINT FactoryFlags = 0;
+
+#if VDXDEBUG
+        {
+            Ptr<ID3D12Debug> Debugger;
+            VALIDATE(D3D12GetDebugInterface(IID_PPV_ARGS(&Debugger)));
+            Debugger->EnableDebugLayer();
+            FactoryFlags |= DXGI_CREATE_FACTORY_DEBUG;
+        }
+#endif
+
+        VALIDATE(CreateDXGIFactory2(FactoryFlags, IID_PPV_ARGS(&Factory)));
+
+        IDXGIAdapter1* Adapter;
+
+        for(U32 I = 0; Factory->EnumAdapters1(I, &Adapter) != DXGI_ERROR_NOT_FOUND; I++)
+            DeviceList.push_back(DX12Support::DX12Device(Adapter));
     }
 
     LRESULT CALLBACK DX12FrameProc(
@@ -75,19 +94,6 @@ namespace Volts::RSX
     void DX12::Attach(GUI::Frame* Handle)
     {
         Frame = Handle;
-
-        UINT FactoryFlags = 0;
-
-#if VDXDEBUG
-        {
-            Ptr<ID3D12Debug> Debugger;
-            VALIDATE(D3D12GetDebugInterface(IID_PPV_ARGS(&Debugger)));
-            Debugger->EnableDebugLayer();
-            FactoryFlags |= DXGI_CREATE_FACTORY_DEBUG;
-        }
-#endif
-
-        VALIDATE(CreateDXGIFactory2(FactoryFlags, IID_PPV_ARGS(&Factory)));
 
         GUI::Size S = Handle->GetSize();
         Viewport = {
@@ -150,6 +156,53 @@ namespace Volts::RSX
         return DeviceList.data();
     }
 
+    void DX12::SetDevice(RSX::Device* Device)
+    {
+        for(U32 I = 0; I < DeviceList.size(); I++)
+        {
+            if(DeviceList[I].Name() == Device->Name())
+            {
+                CurrentDeviceIndex = I;
+
+                WaitForGPU();
+                ReleaseObjects();
+                LoadPipeline();
+                LoadData();
+
+                break;
+            }
+        }
+    }
+
+    void DX12::Options()
+    {
+        const char* ShaderOptions[] = { "Level 0", "Level 1", "Level 2", "Level 3", "Debug" };
+        static I32 CurrentLevel = 0;
+        ImGui::Combo("Shader Compile Speed", &CurrentLevel, ShaderOptions, IM_ARRAYSIZE(ShaderOptions));
+        ImGui::SameLine(); ImGui::HelpText("Set the optimization level of the shaders, the slower the option the faster the compiled shader.");
+
+        switch(CurrentLevel)
+        {
+        case 0:
+            ShaderOptimizationLevel = D3DCOMPILE_OPTIMIZATION_LEVEL0;
+            break;
+        case 1:
+            ShaderOptimizationLevel = D3DCOMPILE_OPTIMIZATION_LEVEL1;
+            break;
+        case 2:
+            ShaderOptimizationLevel = D3DCOMPILE_OPTIMIZATION_LEVEL2;
+            break;
+        case 3:
+            ShaderOptimizationLevel = D3DCOMPILE_OPTIMIZATION_LEVEL3;
+            break;
+        case 4:
+            ShaderOptimizationLevel = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
+            break;
+        default:
+            break;
+        }
+    }
+
     void DX12::PopulateCommandList()
     {
         VALIDATE(CommandAllocators[FrameIndex]->Reset());
@@ -195,6 +248,23 @@ namespace Volts::RSX
         VALIDATE(CommandList->Close());
     }
 
+    void DX12::ReleaseObjects()
+    {
+        Fence.Reset();
+        CommandQueue.Reset();
+        Swap.Reset();
+        Device.Reset();
+        Factory.Reset();
+
+#if VDXDEBUG
+        {
+            Ptr<IDXGIDebug1> Debug;
+            if(SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&Debug))))
+                Debug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_FLAGS(DXGI_DEBUG_RLO_SUMMARY | DXGI_DEBUG_RLO_IGNORE_INTERNAL));
+        }
+#endif
+    }
+
     void DX12::BeginRender()
     {
         ImGui_ImplDX12_NewFrame();
@@ -215,13 +285,8 @@ namespace Volts::RSX
 
     void DX12::LoadPipeline()
     {
-        IDXGIAdapter1* Adapter;
-
-        for(U32 I = 0; Factory->EnumAdapters1(I, &Adapter) != DXGI_ERROR_NOT_FOUND; I++)
-            DeviceList.push_back(DX12Support::DX12Device(Adapter));
-
         VALIDATE(D3D12CreateDevice(
-            Adapter,
+            DeviceList[CurrentDeviceIndex].Handle,
             D3D_FEATURE_LEVEL_12_0,
             IID_PPV_ARGS(&Device)
         ));
@@ -329,7 +394,7 @@ namespace Volts::RSX
             Ptr<ID3DBlob> VertexShader;
             Ptr<ID3DBlob> PixelShader;
 
-            UINT CompileFlags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
+            UINT CompileFlags = ShaderOptimizationLevel;
 
             VALIDATE(D3DCompileFromFile(
                 L"C:\\Users\\Elliot\\source\\repos\\RPCS3X\\Volts\\GUI\\Render\\DX12\\shaders.hlsl",

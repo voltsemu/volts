@@ -8,17 +8,35 @@
 
 #include <chrono>
 
+#include "GUIExtensions.h"
+
 #if CC_CLANG
 #   pragma clang diagnostic push
 #   pragma clang diagnostic ignored "-Wformat-security"
 #endif
+
+namespace ImGui
+{
+    void HelpText(const char* Text)
+    {
+        ImGui::TextDisabled("(?)");
+        if(ImGui::IsItemHovered())
+        {
+            ImGui::BeginTooltip();
+            ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35);
+            ImGui::TextUnformatted(Text);
+            ImGui::PopTextWrapPos();
+            ImGui::EndTooltip();
+        }
+    }
+}
 
 namespace Volts::GUI
 {
     bool ShowGPUOptions = true;
     void GPUOptions()
     {
-        ImGui::Begin("GPU Options", &ShowGPUOptions);
+        ImGui::Begin("GPU Options", &ShowGPUOptions, ImGuiWindowFlags_AlwaysAutoResize);
 
         /// Show renderer options, TODO: make this do stuff
         ImGui::Combo("Renderer", &Frame::Singleton->RenderIndex, Frame::Singleton->RenderNames, Frame::Singleton->RenderCount);
@@ -30,6 +48,9 @@ namespace Volts::GUI
         static bool EnableVSync = false;
         ImGui::Checkbox("VSync", &EnableVSync);
         Frame::Singleton->CurrentRender->UpdateVSync(EnableVSync);
+
+        ImGui::Separator();
+        Frame::Singleton->CurrentRender->Options();
 
         ImGui::End();
     }

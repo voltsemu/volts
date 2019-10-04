@@ -39,7 +39,7 @@ namespace Volts::DX12Support
         {
             return DeviceName;
         }
-    private:
+
         IDXGIAdapter1* Handle;
         DXGI_ADAPTER_DESC Desc;
         char DeviceName[128];

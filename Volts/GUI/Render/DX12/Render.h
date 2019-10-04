@@ -11,7 +11,7 @@ namespace Volts::RSX
     struct DX12 : Render
     {
         DX12();
-        virtual ~DX12() {}
+        virtual ~DX12() override {}
         virtual void Attach(GUI::Frame* Handle) override;
         virtual void Detach() override;
         virtual const char* Name() const override { return "DX12"; }
@@ -19,6 +19,9 @@ namespace Volts::RSX
         virtual bool Supported() const override { return true; }
 
         virtual Device* Devices(U32* Count) override;
+        virtual void SetDevice(RSX::Device* Device) override;
+
+        virtual void Options() override;
 
         virtual void Resize(GUI::Size NewSize) override;
 
@@ -41,6 +44,7 @@ namespace Volts::RSX
 
         void LoadPipeline();
         void LoadData();
+        void ReleaseObjects();
         void PopulateCommandList();
         void WaitForGPU();
         void AdvanceFrame();
@@ -54,6 +58,7 @@ namespace Volts::RSX
         // creation objects
         Ptr<IDXGIFactory4> Factory;
         std::vector<DX12Support::DX12Device> DeviceList;
+        U32 CurrentDeviceIndex = 0;
 
         // Pipeline state objects
         D3D12_VIEWPORT Viewport;
@@ -91,6 +96,7 @@ namespace Volts::RSX
         bool Tear;
 
         U32 VSyncMode = 0;
+        UINT ShaderOptimizationLevel = 0;
 
         // External data
         GUI::Frame* Frame;
