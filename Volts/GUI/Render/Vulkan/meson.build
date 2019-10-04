@@ -27,6 +27,7 @@ else
     else
         # if we do then we should use it
         incs += res.stdout().strip() / 'Include'
+        links += res.stdout().strip() / 'Lib' / 'vulkan-1.lib'
 
         sources += vk_sources
 

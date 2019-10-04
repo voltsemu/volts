@@ -111,7 +111,6 @@ namespace Volts::RSX
         LoadPipeline();
         LoadData();
 
-        ImGui_ImplWin32_Init(Child);
         ImGui_ImplDX12_Init(
             Device.Get(),
             FrameCount,

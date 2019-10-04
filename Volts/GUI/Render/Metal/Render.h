@@ -10,13 +10,17 @@
 
 #import <Metal/Metal.h>
 #import <MetalKit/MetalKit.h>
+#import <QuartzCore/CAMetalLayer.h>
+
+@class MTLBuffer;
+@class MTLRenderPipelineState;
 
 namespace Volts::RSX
 {
     struct Metal : Render
     {
         Metal();
-        virtual ~Metal() {}
+        virtual ~Metal() override {}
         virtual void Attach(GUI::Frame* Frame) override;
         virtual void Detach() override;
 
@@ -26,6 +30,7 @@ namespace Volts::RSX
 
         virtual Device* Devices(U32* Count) override;
         virtual void SetDevice(RSX::Device* Device) override;
+        virtual void* GetDevice() const override { return (__bridge void*)CurrentDevice(); }
         virtual void UpdateVSync(bool Enable) override;
 
         virtual void Windowed() override;
@@ -34,13 +39,25 @@ namespace Volts::RSX
 
         virtual void Resize(GUI::Size NewSize) override;
 
-        virtual void BeginRender(VIEW_ARG(_)) override;
+        virtual void BeginRender() override;
         virtual void PresentRender() override;
     private:
+
+        id<MTLDevice> CurrentDevice() const
+        {
+            return DeviceList[DeviceIndex].Handle;
+        }
         GUI::Frame* Frame;
         MetalSupport::MetalDevice* DeviceList;
+        U32 DeviceIndex = 0;
         U32 DeviceCount;
 
-        MTKView* View;
+        id<MTLBuffer> VertexBuffer;
+
+        void CreatePipelineState();
+        id<MTLRenderPipelineState> PipelineState;
+        id<MTLCommandQueue> CommandQueue;
+        id<MTLCommandBuffer> CommandBuffer;
+        id<MTLRenderCommandEncoder> Encoder;
     };
 }

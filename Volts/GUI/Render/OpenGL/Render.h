@@ -32,14 +32,16 @@ namespace Volts::RSX
 
         // opengl doesnt need a device so this can be stubbed
         virtual void SetDevice(RSX::Device* Device) override {}
-
+#if OS_APPLE
+        virtual void* GetDevice() const override { return nullptr; }
+#endif
         virtual void Windowed() override;
         virtual void Fullscreen() override;
         virtual void Borderless() override;
 
         virtual void Resize(GUI::Size NewSize) override;
 
-        virtual void BeginRender(VIEW_ARG(_)) override;
+        virtual void BeginRender() override;
         virtual void PresentRender() override;
     private:
         GUI::Frame* Frame;

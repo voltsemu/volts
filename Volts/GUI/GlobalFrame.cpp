@@ -71,7 +71,7 @@ namespace Volts::GUI
     {
         for(U32 I = 0; I < RenderCount; I++)
         {
-            if(RenderNames[I] == Name)
+            if(strcmp(RenderNames[I], Name) == 0)
             {
                 RenderIndex = I;
                 CurrentRender = Renders[I];

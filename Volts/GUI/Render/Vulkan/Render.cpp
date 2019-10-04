@@ -9,12 +9,6 @@ namespace Volts::RSX
     Vulkan::Vulkan()
     {
         GUI::Frame::GetSingleton()->AddRender(this);
-        SupportFound = Vk::Load();
-    }
-
-    Vulkan::~Vulkan()
-    {
-        Vk::Unload();
     }
 
     void Vulkan::Attach(GUI::Frame* Handle)
@@ -27,7 +21,7 @@ namespace Volts::RSX
 
     }
 
-    void Vulkan::BeginRender(VIEW_ARG(_))
+    void Vulkan::BeginRender()
     {
 
     }

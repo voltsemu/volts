@@ -77,7 +77,8 @@ namespace Volts::GUI
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
         ImGui::StyleColorsDark();
-
+        ImGui_ImplWin32_Init(Handle);
+        
         SetRender("DX12");
         UpdateDevices();
 

@@ -44,7 +44,7 @@ namespace Volts::RSX
 
     }
 
-    void OpenGL::BeginRender(VIEW_ARG(_))
+    void OpenGL::BeginRender()
     {
 
     }

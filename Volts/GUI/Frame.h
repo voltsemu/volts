@@ -53,6 +53,7 @@ namespace Volts::GUI
         static Frame* GetSingleton();
 
         Frame();
+        ~Frame();
         void Run();
 
         Frame* SetTitle(const char* T);
@@ -74,7 +75,9 @@ namespace Volts::GUI
 #elif OS_LINUX
         using FrameHandle = void*; // ???
 #elif OS_APPLE
-        using FrameHandle = void*; // NSView*
+        using FrameHandle = void*; // CALayer
+        void* DisplayLink;
+        void* Window;
 #endif
 
         void FinalizeRenders();

@@ -12,8 +12,5 @@
 
 namespace Volts::RSX::Vk
 {
-    bool Load();
-    void Unload();
-
     VkInstance Instance();
 }
