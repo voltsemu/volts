@@ -1,7 +1,6 @@
 #include "Frame.h"
 
 #include "Render/Render.h"
-#include "Render/DX12/Render.h"
 
 namespace Volts::GUI
 {
@@ -70,13 +69,13 @@ namespace Volts::GUI
 
     void Frame::SetRender(const char* Name)
     {
-        CurrentRender = new RSX::DX12();
-        CurrentRender->Attach(this);
         for(U32 I = 0; I < RenderCount; I++)
         {
             if(RenderNames[I] == Name)
             {
                 RenderIndex = I;
+                CurrentRender = Renders[I];
+                CurrentRender->Attach(this);
                 break;
             }
         }
@@ -84,6 +83,9 @@ namespace Volts::GUI
 
     void Frame::UpdateDevices()
     {
+        if(!CurrentRender)
+            return;
+            
         delete[] DeviceNames;
         auto* Devices = CurrentRender->Devices(&DeviceCount);
         DeviceNames = new const char*[DeviceCount]();

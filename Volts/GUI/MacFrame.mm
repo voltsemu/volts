@@ -99,7 +99,8 @@ namespace Volts::GUI
     void Frame::Run()
     {
         FinalizeRenders();
-        FinalizeDevices();
+        SetRender("Metal");
+        UpdateDevices();
         [VApp sharedApplication];
         [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
         [NSApp setDelegate:[VAppDelegate new]];

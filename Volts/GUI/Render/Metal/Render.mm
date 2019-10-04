@@ -2,6 +2,7 @@
 
 namespace Volts::RSX
 {
+    static Metal* Singleton = new Metal();
     Metal::Metal()
     {
         GUI::Frame::GetSingleton()->AddRender(this);
@@ -29,6 +30,11 @@ namespace Volts::RSX
     {
         *Count = DeviceCount;
         return DeviceList;
+    }
+
+    void Metal::SetDevice(RSX::Device* Device) 
+    {
+        
     }
 
     void Metal::UpdateVSync(bool NewMode)

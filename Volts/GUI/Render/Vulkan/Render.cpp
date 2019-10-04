@@ -27,7 +27,7 @@ namespace Volts::RSX
 
     }
 
-    void Vulkan::BeginRender()
+    void Vulkan::BeginRender(VIEW_ARG(_))
     {
 
     }
