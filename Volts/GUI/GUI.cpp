@@ -2,6 +2,8 @@
 #include "Render/Render.h"
 #include "imgui/imgui.h"
 
+#include "Config.h"
+
 #include "Core/Logger/Logger.h"
 
 #include "PS3/Util/Decrypt/UNSELF.h"
@@ -148,7 +150,9 @@ namespace Volts::GUI
     {
         if(ShowWindows) Windows();
 
+#if GUIDEBUG
         if(static bool Demo = true; Demo) ImGui::ShowDemoWindow(&Demo);
+#endif
     }
 }
 

@@ -1,5 +1,7 @@
 #pragma once
 
+#define GUIDEBUG 1
+
 // unself debugging
 #define UNSELFDEBUG 1
 
