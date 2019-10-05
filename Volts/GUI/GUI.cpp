@@ -44,14 +44,15 @@ namespace Volts::GUI
         ImGui::Combo("Renderer", &Frame::Singleton->RenderIndex, Frame::Singleton->RenderNames, Frame::Singleton->RenderCount);
         //Frame::Singleton->SetRender(Frame::Singleton->RenderNames[Frame::Singleton->RenderIndex]);
 
-        // this crashes for mysterious reasons
-        ImGui::Combo("Device", &Frame::Singleton->DeviceIndex, Frame::Singleton->DeviceNames, Frame::Singleton->DeviceCount);
+        if(!!Frame::Singleton->DeviceNames)
+            ImGui::Combo("Device", &Frame::Singleton->DeviceIndex, Frame::Singleton->DeviceNames, Frame::Singleton->DeviceCount);
+        else
+            ImGui::Text("Current Renderer does not require a device");
 
         static bool EnableVSync = false;
         ImGui::Checkbox("VSync", &EnableVSync);
         Frame::Singleton->CurrentRender->UpdateVSync(EnableVSync);
 
-        ImGui::Separator();
         Frame::Singleton->CurrentRender->Options();
 
         ImGui::End();

@@ -176,6 +176,7 @@ namespace Volts::RSX
 
     void DX12::Options()
     {
+        ImGui::Separator();
         const char* ShaderOptions[] = { "Level 0", "Level 1", "Level 2", "Level 3", "Debug" };
         static I32 CurrentLevel = 0;
         ImGui::Combo("Shader Compile Speed", &CurrentLevel, ShaderOptions, IM_ARRAYSIZE(ShaderOptions));

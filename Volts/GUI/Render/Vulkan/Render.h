@@ -13,7 +13,14 @@ namespace Volts::RSX
         virtual void Attach(GUI::Frame* Handle) override;
         virtual void Detach() override;
 
-        virtual const char* Name() const override { return "Vulkan"; }
+        virtual const char* Name() const override 
+        { 
+#if OS_APPLE
+            return "MoltenVK";
+#else
+            return "Vulkan"; 
+#endif
+        }
         virtual const char* Description() const override { return "Vulkan3D"; }
 
         virtual Device* Devices(U32* Count) override;

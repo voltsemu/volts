@@ -21,7 +21,17 @@ namespace Volts::RSX
     void Metal::Attach(GUI::Frame* F)
     {
         Frame = F;
+
+        View = [VView new];
+        [View setDevice:CurrentDevice()];
+        [View setColorPixelFormat:MTLPixelFormatBGRA8Unorm];
+        [View setDepthStencilPixelFormat:MTLPixelFormatDepth32Float_Stencil8];
+        [[View layer] setMagnificationFilter:kCAFilterNearest];
+
+        [(__bridge NSWindow*)Frame->Handle setContentView:View];
         ImGui_ImplMetal_Init(CurrentDevice());
+
+        CreatePipeline();
     }
 
     void Metal::Detach()
@@ -49,7 +59,7 @@ namespace Volts::RSX
 
     void Metal::UpdateVSync(bool NewMode)
     {
-
+        // TODO: figure out vsync for metal
     }
 
     void Metal::Windowed()
@@ -74,16 +84,43 @@ namespace Volts::RSX
 
     void Metal::BeginRender()
     {
-        // TODO
+        ImGuiIO& IO = ImGui::GetIO();
+        MTKView* CurrentView = (MTKView*)[(__bridge NSWindow*)Frame->Handle contentView];
+
+        IO.DisplaySize.x = CurrentView.bounds.size.width;
+        IO.DisplaySize.y = CurrentView.bounds.size.height;
+
+        CGFloat BufferScale = CurrentView.window.screen.backingScaleFactor ?: NSScreen.mainScreen.backingScaleFactor;
+
+        IO.DisplayFramebufferScale = ImVec2(BufferScale, BufferScale);
+
+        CommandBuffer = [CommandQueue commandBuffer];
+        RenderPass = CurrentView.currentRenderPassDescriptor;
+        RenderPass.colorAttachments[0].clearColor = MTLClearColorMake(0.28f, 0.36f, 0.5f, 1.0f);
+
+        Encoder = [CommandBuffer renderCommandEncoderWithDescriptor:RenderPass];
+
+        [Encoder pushDebugGroup:@"Imgui"];
+
+        ImGui_ImplMetal_NewFrame(RenderPass);
     }
 
     void Metal::PresentRender()
     {
-        // TODO
+        ImDrawData* DrawData = ImGui::GetDrawData();
+        ImGui_ImplMetal_RenderDrawData(DrawData, CommandBuffer, Encoder);
+        
+        [Encoder popDebugGroup];
+        [Encoder endEncoding];
+
+        MTKView* CurrentView = (MTKView*)[(__bridge NSWindow*)Frame->Handle contentView];
+        [CommandBuffer presentDrawable:CurrentView.currentDrawable];
+
+        [CommandBuffer commit];
     }
 
-    void Metal::CreatePipelineState()
+    void Metal::CreatePipeline()
     {
-        // TODO
+        CommandQueue = [CurrentDevice() newCommandQueue];
     }
 }

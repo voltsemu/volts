@@ -99,6 +99,13 @@ namespace Volts::GUI
 
         delete[] DeviceNames;
         auto* Devices = CurrentRender->Devices(&DeviceCount);
+        
+        if(!Devices)
+        {
+            DeviceNames = nullptr;
+            return;
+        }
+
         DeviceNames = new const char*[DeviceCount]();
         for(U32 I = 0; I < DeviceCount; I++)
             DeviceNames[I] = Devices[I].Name();

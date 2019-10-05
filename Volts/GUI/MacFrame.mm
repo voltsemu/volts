@@ -2,12 +2,11 @@
 
 #include "Core/Logger/Logger.h"
 #include "Render/Render.h"
-#include "Render/Metal/Render.h"
+
+#include "imgui/imgui.h"
+#include "imgui/examples/imgui_impl_osx.h"
 
 #import <Cocoa/Cocoa.h>
-#import <Metal/Metal.h>
-#import <MetalKit/MetalKit.h>
-#import <QuartzCore/CAMetalLayer.h>
 
 using Volts::GUI::Frame;
 
@@ -28,7 +27,17 @@ the general interface flow we want is
 - shutdown
 */
 
-@implementation VAppDelegate
+OBJC_CLASS(VApp, NSApplication)
+- (void)sendEvent:(NSEvent*)event
+{
+    if([event type] == NSEventTypeKeyUp && ([event modifierFlags] & NSEventModifierFlagCommand))
+        [[self keyWindow] sendEvent:event];
+    else
+        [super sendEvent:event];
+}
+@end
+
+OBJC_CLASS(VAppDelegate, NSObject<NSApplicationDelegate>)
 
 - (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication*)sender
 {
@@ -59,25 +68,44 @@ the general interface flow we want is
     // step 2: show window
     [Window makeKeyAndOrderFront:nil];
 
+    // step 3: attach renderer
     Frame::Singleton->Handle = (__bridge void*)Window;
-    Frame::Singleton->CurrentRender->Attach(Frame::Singleton);
+    Frame::Singleton->SetRender("Metal");
+    Frame::Singleton->UpdateDevices();
 
-    while(bool StayOpen = true; StayOpen)
+    ImGui_ImplOSX_Init();
+
+    // step 4: main loop
+    bool StayOpen = true; 
+    NSEvent* Event = nil;
+
+    while(StayOpen)
     {
-        NSEvent* Event = [Window nextEventMatchingMask:NSEventMaskAny];
-        ImGui_ImplOSX_HandleEvent(Event, [Window contentView]);
+        // get input
+        Event = [NSApp nextEventMatchingMask:NSEventMaskAny
+                                    untilDate:nil
+                                    inMode:NSDefaultRunLoopMode
+                                    dequeue:YES];
+        if(Event) 
+        {
+            [NSApp sendEvent:Event];
+            ImGui_ImplOSX_HandleEvent(Event, [Window contentView]);
+        }
 
+        // begin render
         Frame::Singleton->CurrentRender->BeginRender();
         ImGui_ImplOSX_NewFrame([Window contentView]);
 
-
+        // do imgui
         ImGui::NewFrame();
         Frame::Singleton->GUILoop();
         ImGui::Render();
 
+        // present render
         Frame::Singleton->CurrentRender->PresentRender();
     }
 
+    // detach
     Frame::Singleton->CurrentRender->Detach();
 }
 
@@ -98,9 +126,6 @@ namespace Volts::GUI
     void Frame::Run()
     {
         FinalizeRenders();
-
-        SetRender("Metal");
-        UpdateDevices();
 
         [VApp sharedApplication];
         [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];

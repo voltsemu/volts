@@ -20,6 +20,8 @@
 // TODO: linux includes
 #endif
 
+#define OBJC_CLASS(Name, Super) @interface Name : Super @end @implementation Name
+
 namespace Volts::RSX
 {
     struct Render;

@@ -10,10 +10,23 @@
 
 #import <Metal/Metal.h>
 #import <MetalKit/MetalKit.h>
-#import <QuartzCore/CAMetalLayer.h>
 
 @class MTLBuffer;
 @class MTLRenderPipelineState;
+
+OBJC_CLASS(VView, MTKView)
+
+- (BOOL)isOpaque
+{
+    return YES;
+}
+
+- (BOOL)acceptsFirstResponder
+{
+    return YES;
+}
+
+@end
 
 namespace Volts::RSX
 {
@@ -50,12 +63,12 @@ namespace Volts::RSX
         U32 DeviceIndex = 0;
         U32 DeviceCount;
 
-        id<MTLBuffer> VertexBuffer;
+        VView* View;
 
-        void CreatePipelineState();
-        id<MTLRenderPipelineState> PipelineState;
+        void CreatePipeline();
         id<MTLCommandQueue> CommandQueue;
         id<MTLCommandBuffer> CommandBuffer;
         id<MTLRenderCommandEncoder> Encoder;
+        MTLRenderPassDescriptor* RenderPass;
     };
 }
