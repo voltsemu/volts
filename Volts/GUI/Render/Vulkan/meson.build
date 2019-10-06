@@ -1,7 +1,6 @@
 
 vk_sources = [
-    'Volts/GUI/Render/Vulkan/Render.cpp',
-    'Volts/GUI/Render/Vulkan/VulkanCommon.cpp'
+    'Volts/GUI/Render/Vulkan/Render.cpp'
 ]
 
 if host_machine.system() == 'darwin'

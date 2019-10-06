@@ -9,16 +9,16 @@ namespace Volts::RSX
     struct Vulkan : Render
     {
         Vulkan();
-        virtual ~Vulkan() override {}
+        virtual ~Vulkan() override;
         virtual void Attach(GUI::Frame* Handle) override;
         virtual void Detach() override;
 
-        virtual const char* Name() const override 
-        { 
+        virtual const char* Name() const override
+        {
 #if OS_APPLE
             return "MoltenVK";
 #else
-            return "Vulkan"; 
+            return "Vulkan";
 #endif
         }
         virtual const char* Description() const override { return "Vulkan3D"; }
@@ -37,7 +37,33 @@ namespace Volts::RSX
         virtual void Borderless() override;
         virtual void Fullscreen() override;
     private:
+        // global data
         GUI::Frame* Frame;
+
+        void CreateInstance();
+        void DeleteInstance();
         VkInstance Instance;
+
+        void CreateDevices();
+        void DeleteDevices();
+        VulkanSupport::VulkanDevice* DeviceList;
+        U32 DeviceCount;
+        U32 DeviceIndex = 0;
+
+        void CreateSurface();
+        void DeleteSurface();
+        VkSurfaceKHR Surface;
+
+        // device specific data
+        void CreateQueue();
+        void DeleteQueue();
+        VkQueue Queue;
+
+        void CreateSwapchain();
+        void DeleteSwapchain();
+        VkSwapchainKHR Swap;
+
+        void SetupVulkan();
+        void CreatePipeline();
     };
 }
