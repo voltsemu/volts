@@ -43,6 +43,10 @@ namespace Volts::RSX
         void CreateInstance();
         void DeleteInstance();
         VkInstance Instance;
+        
+#if VVKDEBUG && !OS_APPLE
+        VkDebugUtilsMessengerEXT DebugMessenger;
+#endif
 
         void CreateDevices();
         void DeleteDevices();
