@@ -4,14 +4,16 @@
 
 namespace Volts::RSX
 {
-
     static Vulkan* Singleton = new Vulkan();
 
     Vulkan::Vulkan()
     {
-        GUI::Frame::GetSingleton()->AddRender(this);
+        Init();
 
-        SetupVulkan();
+        if(DeviceCount > 0)
+            GUI::Frame::GetSingleton()->AddRender(this);
+        else
+            VWARN("No vulkan devices detected. Disabling vulkan");
     }
 
     Vulkan::~Vulkan()
@@ -168,7 +170,7 @@ namespace Volts::RSX
     void Vulkan::CreateDevices()
     {
         vkEnumeratePhysicalDevices(Instance, &DeviceCount, nullptr);
-        auto* PhsyicalDevices = (VKPhysicalDevice*)alloca(sizeof(VkPhysicalDevice) * DeviceCount);
+        auto* PhysicalDevices = (VkPhysicalDevice*)alloca(sizeof(VkPhysicalDevice) * DeviceCount);
         vkEnumeratePhysicalDevices(Instance, &DeviceCount, PhysicalDevices);
 
         for(U32 I = 0; I < DeviceCount; I++)
@@ -183,6 +185,16 @@ namespace Volts::RSX
 
     }
 
+    void Vulkan::CreateLogicalDevice(VulkanSupport::VulkanDevice Dev)
+    {
+        PhysicalDevice = Dev.PhysicalDevice;
+    }
+
+    void Vulkan::DeleteLogicalDevice()
+    {
+
+    }
+
     void Vulkan::CreateSurface()
     {
         // TODO: support all platforms
@@ -192,11 +204,20 @@ namespace Volts::RSX
         CreateInfo.hwnd = Frame->Handle;
         VK_VALIDATE(vkCreateWin32SurfaceKHR(Instance, &CreateInfo, nullptr, &Surface));
 #elif defined(VK_USE_PLATFORM_MACOS_MVK)
-        VkOSXSurfaceCreateInfoMVK CreateInfo;
+        VkMacOSSurfaceCreateInfoMVK CreateInfo = { VK_STRUCTURE_TYPE_MACOS_SURFACE_CREATE_INFO_MVK };
+        CreateInfo.pView = [[(__bridge NSWindow*)Frame->Handle contentView] layer];
+        VK_VALIDATE(vkCreateMacOSSurfaceMVK(Instance, &CreateInfo, nullptr, &Surface));
 #elif defined(VK_USE_PLATFORM_WAYLAND_KHR)
-
+        VkWaylandSurfaceCreateInfoKHR CreateInfo = { VK_STRUCTURE_TYPE_WAYLAND_SURFACE_CREATE_INFO_KHR };
+        // TODO
+        // CreateInfo.display;
+        // CreateInfo.surface;
+        VK_VALIDATE(vkCreateWaylandSurfaceKHR(Instance, &CreateInfo, nullptr, &Surface));
 #elif defined(VK_USE_PLATFORM_XCB_KHR)
-
+        VkXcbSufraceCreateInfoKHR CreateInfo = { VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR };
+        // TODO
+        // CreateInfo.connection;
+        // CreateInfo.window;
 #endif
     }
 
@@ -205,10 +226,32 @@ namespace Volts::RSX
         vkDestroySurfaceKHR(Instance, Surface, nullptr);
     }
 
-    void Vulkan::SetupVulkan()
+    void Vulkan::CreateQueue()
+    {
+
+    }
+
+    void Vulkan::DeleteQueue()
+    {
+
+    }
+
+    void Vulkan::CreateSwapchain()
+    {
+
+    }
+
+    void Vulkan::DeleteSwapchain()
+    {
+
+    }
+
+    void Vulkan::Init()
     {
         // create the vulkan instance, we need this to do everything
         CreateInstance();
+
+        CreateDevices();
     }
 
     void Vulkan::CreatePipeline()

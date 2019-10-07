@@ -11,9 +11,9 @@ namespace Volts::RSX::VulkanSupport
 {
     struct VulkanDevice : Device
     {
-        virtual ~VulkanDevice() { }
+        virtual ~VulkanDevice() {}
 
-        VulkanDevice() { }
+        VulkanDevice() {}
         VulkanDevice(VkPhysicalDevice Dev)
             : PhysicalDevice(Dev)
         {

@@ -43,7 +43,7 @@ namespace Volts::RSX
         void CreateInstance();
         void DeleteInstance();
         VkInstance Instance;
-        
+
 #if VVKDEBUG && !OS_APPLE
         VkDebugUtilsMessengerEXT DebugMessenger;
 #endif
@@ -53,6 +53,11 @@ namespace Volts::RSX
         VulkanSupport::VulkanDevice* DeviceList;
         U32 DeviceCount;
         U32 DeviceIndex = 0;
+
+        void CreateLogicalDevice(VulkanSupport::VulkanDevice Dev);
+        void DeleteLogicalDevice();
+        VkPhysicalDevice PhysicalDevice;
+        VkDevice Device;
 
         void CreateSurface();
         void DeleteSurface();
@@ -67,7 +72,7 @@ namespace Volts::RSX
         void DeleteSwapchain();
         VkSwapchainKHR Swap;
 
-        void SetupVulkan();
+        void Init();
         void CreatePipeline();
     };
 }
