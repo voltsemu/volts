@@ -136,7 +136,15 @@ namespace Volts::RSX
 
     void Vulkan::CreateDevices()
     {
+        vkEnumeratePhysicalDevices(Instance, &DeviceCount, nullptr);
+        auto* PhsyicalDevices = (VKPhysicalDevice*)alloca(sizeof(VkPhysicalDevice) * DeviceCount);
+        vkEnumeratePhysicalDevices(Instance, &DeviceCount, PhysicalDevices);
 
+        for(U32 I = 0; I < DeviceCount; I++)
+        {
+            VkPhysicalDeviceProperties DeviceProps;
+            vkGetPhysicalDeviceProperties(PhysicalDevices[I], &DeviceProps);
+        }
     }
 
     void Vulkan::DeleteDevices()
@@ -153,7 +161,7 @@ namespace Volts::RSX
         CreateInfo.hwnd = Frame->Handle;
         VK_VALIDATE(vkCreateWin32SurfaceKHR(Instance, &CreateInfo, nullptr, &Surface));
 #elif defined(VK_USE_PLATFORM_MACOS_MVK)
-
+        VkOSXSurfaceCreateInfoMVK CreateInfo;
 #elif defined(VK_USE_PLATFORM_WAYLAND_KHR)
 
 #elif defined(VK_USE_PLATFORM_XCB_KHR)
