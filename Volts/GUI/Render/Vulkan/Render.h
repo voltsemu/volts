@@ -44,10 +44,6 @@ namespace Volts::RSX
         void DeleteInstance();
         VkInstance Instance;
 
-#if VVKDEBUG && !OS_APPLE
-        VkDebugUtilsMessengerEXT DebugMessenger;
-#endif
-
         void CreateDevices();
         void DeleteDevices();
         VulkanSupport::VulkanDevice* DeviceList;

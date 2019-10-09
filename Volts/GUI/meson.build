@@ -1,5 +1,3 @@
-subdir('imgui')
-
 incs += include_directories('.')
 
 sources += 'Volts/GUI/GUI.cpp'

@@ -92,17 +92,13 @@ namespace Volts::RSX
 #elif defined(VK_USE_PLATFORM_XCB_KHR)
         VK_KHR_XCB_SURFACE_EXTENSION_NAME,
 #endif
-
-#if VVKDEBUG
-        VK_EXT_DEBUG_UTILS_EXTENSION_NAME,
-#endif
     };
 
     constexpr U32 ExtensionCount = sizeof(ExtensionNames) / sizeof(const char*);
 
 #if VVKDEBUG
     constexpr const char* LayerNames[] = {
-        "VK_LAYER_KHRONOS_validation"
+        "VK_LAYER_LUNARG_standard_validation"
     };
 
     constexpr U32 LayerCount = sizeof(LayerNames) / sizeof(const char*);
@@ -113,21 +109,6 @@ namespace Volts::RSX
     };
 
     constexpr U32 DeviceExtensionCount = sizeof(DeviceExtensionNames) / sizeof(const char*);
-
-#if VVKDEBUG && !OS_APPLE
-    VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
-        VkDebugUtilsMessageSeverityFlagBitsEXT Severity,
-        VkDebugUtilsMessageTypeFlagsEXT Type,
-        const VkDebugUtilsMessengerCallbackDataEXT* CallbackData,
-        void* UserData
-    )
-    {
-        if(Severity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
-            printf("Validation layer: %s\n", CallbackData->pMessage);
-
-        return VK_FALSE;
-    }
-#endif
 
     void Vulkan::CreateInstance()
     {
@@ -146,24 +127,11 @@ namespace Volts::RSX
         CreateInfo.enabledLayerCount = LayerCount;
         CreateInfo.ppEnabledLayerNames = LayerNames;
 #endif
-
-        // moltenvk doesnt support this
-#if VVKDEBUG && !OS_APPLE
-        VkDebugUtilsMessengerCreateInfoEXT DebugInfo = { VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT };
-        DebugInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-        DebugInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-        DebugInfo.pfnUserCallback = DebugCallback;
-        CreateInfo.pNext = &DebugInfo;
-#endif
-
         VK_VALIDATE(vkCreateInstance(&CreateInfo, nullptr, &Instance));
     }
 
     void Vulkan::DeleteInstance()
     {
-#if VVKDEBUG && !OS_APPLE
-        vkDestroyDebugUtilsMessengerEXT(Instance, DebugMessenger, nullptr);
-#endif
         vkDestroyInstance(Instance, nullptr);
     }
 

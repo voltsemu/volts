@@ -1,11 +1,11 @@
 #include "Frame.h"
 
-#include "imgui/imgui.h"
+#include "imgui.h"
 
 #include "Render/Render.h"
 
 #include "Render/DX12/Render.h"
-#include "imgui/examples/imgui_impl_win32.h"
+#include "examples/imgui_impl_win32.h"
 
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND, UINT, WPARAM, LPARAM);
 
@@ -49,7 +49,7 @@ namespace Volts::GUI
     {
         FinalizeRenders();
         PreInit();
-        
+
         WNDCLASSEX WC = { sizeof(WNDCLASSEX) };
         WC.style = CS_HREDRAW | CS_VREDRAW;
         WC.lpfnWndProc = FrameProc;

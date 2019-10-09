@@ -7,6 +7,3 @@
 [submodule "subprojects/fmt"]
 	path = subprojects/fmt
 	url = https://github.com/Apache-HB/fmt.git
-[submodule "subprojects/gason"]
-	path = subprojects/gason
-	url = https://github.com/Apache-HB/gason

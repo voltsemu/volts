@@ -5,7 +5,7 @@
 
 #include <vulkan/vulkan.h>
 
-#define VK_VALIDATE(...) { if((__VA_ARGS__) != VK_SUCCESS) exit(25); }
+#define VK_VALIDATE(...) { if(auto Err = (__VA_ARGS__); Err != VK_SUCCESS) { MessageBox(nullptr, fmt::format("Err {}", Err).c_str(), "Vulkan error", 0); exit(25); } }
 
 namespace Volts::RSX::VulkanSupport
 {

@@ -1,10 +1,9 @@
 #pragma once
 
-#include <gason.h>
-
 namespace Volts::Config
 {
-    bool Load();
+    void Load();
+    const char* CurrentRender();
 }
 
 #define GUIDEBUG 1

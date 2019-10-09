@@ -1,5 +1,8 @@
 project('Volts', ['cpp'],
-    default_options : [ 'cpp_std=c++17' ],
+    default_options : [
+        'cpp_std=c++17',
+        'cpp_eh=none'
+    ],
     version : '0.2.0',
     license : 'Apache'
 )
@@ -15,7 +18,6 @@ cthulhu = subproject('Cthulhu')
 zlib = subproject('zlib')
 
 fmt = subproject('fmt')
-json = subproject('gason')
 
 # get all the needed cthulhu projects
 libs = [
@@ -48,8 +50,7 @@ incs = [
 
 deps = [
     zlib.get_variable('zlib_dep'),
-    fmt.get_variable('fmt_dep'),
-    json.get_variable('gason_dep')
+    fmt.get_variable('fmt_dep')
 ]
 
 links = []
@@ -58,6 +59,7 @@ links = []
 subdir('Volts/PS3')
 subdir('Volts/GUI')
 subdir('Volts/Core')
+subdir('Volts/External')
 
 # disable run time type id and exceptions in the hope of generating smaller code
 # i know you dont pay for features you dont use but this also stops people
