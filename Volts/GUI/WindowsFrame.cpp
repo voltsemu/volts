@@ -75,10 +75,6 @@ namespace Volts::GUI
 
         ShowWindow(Handle, SW_SHOW);
         UpdateWindow(Handle);
-
-        IMGUI_CHECKVERSION();
-        ImGui::CreateContext();
-        ImGui::StyleColorsDark();
         ImGui_ImplWin32_Init(Handle);
 
         PostInit();

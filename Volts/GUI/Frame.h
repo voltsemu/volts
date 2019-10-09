@@ -9,7 +9,7 @@
 #include "Core/Logger/Logger.h"
 
 #include "GUIExtensions.h"
-
+#include "imfilebrowser.h"
 #include <chrono>
 
 #if OS_WINDOWS
@@ -17,7 +17,7 @@
 #   include <d3d12.h>
 #   include <dxgi1_4.h>
 #elif OS_LINUX
-// TODO: linux includes
+#   include <X11/Xlib.h>
 #endif
 
 #define OBJC_CLASS(Name, Super) @interface Name : Super @end @implementation Name
@@ -57,6 +57,7 @@ namespace Volts::GUI
         Frame();
         ~Frame();
         void Run();
+        void InitGUI();
         void PreInit();
         void PostInit();
 
@@ -77,9 +78,9 @@ namespace Volts::GUI
 
         void SetChild(HWND C);
 #elif OS_LINUX
-        using FrameHandle = void*; // ???
+        using FrameHandle = Window;
 #elif OS_APPLE
-        using FrameHandle = void*; // ???
+        using FrameHandle = void*; // NSWindow*
 #endif
 
         void FinalizeRenders();

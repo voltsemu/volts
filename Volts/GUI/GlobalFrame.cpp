@@ -19,6 +19,7 @@ namespace Volts::GUI
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
         ImGui::StyleColorsDark();
+        InitGUI();
     }
 
     Frame::~Frame()
@@ -110,7 +111,7 @@ namespace Volts::GUI
 
         delete[] DeviceNames;
         auto* Devices = CurrentRender->Devices(&DeviceCount);
-        
+
         if(!Devices)
         {
             DeviceNames = nullptr;

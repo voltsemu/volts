@@ -43,6 +43,12 @@ namespace Volts::Config
 
     const char* CurrentRender()
     {
-        return "Metal"; 
+#if OS_WINDOWS
+        return "DX12";
+#elif OS_APPLE
+        return "Metal";
+#else
+        return "Vulkan";
+#endif
     }
 }

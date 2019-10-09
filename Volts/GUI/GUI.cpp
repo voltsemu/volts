@@ -8,6 +8,7 @@
 #include "PS3/Util/Decrypt/UNSELF.h"
 
 #include <chrono>
+#include <thread>
 
 #include "GUIExtensions.h"
 
@@ -41,12 +42,9 @@ namespace Volts::GUI
 
         /// Show renderer options, TODO: make this do stuff
         ImGui::Combo("Renderer", &Frame::Singleton->RenderIndex, Frame::Singleton->RenderNames, Frame::Singleton->RenderCount);
-        //Frame::Singleton->SetRender(Frame::Singleton->RenderNames[Frame::Singleton->RenderIndex]);
 
         if(!!Frame::Singleton->DeviceNames)
             ImGui::Combo("Device", &Frame::Singleton->DeviceIndex, Frame::Singleton->DeviceNames, Frame::Singleton->DeviceCount);
-        else
-            ImGui::Text("Current Renderer does not require a device");
 
         static bool EnableVSync = false;
         ImGui::Checkbox("VSync", &EnableVSync);
@@ -58,6 +56,7 @@ namespace Volts::GUI
     }
 
     bool ShowCPUOptions = true;
+    U32 CoreCount = std::thread::hardware_concurrency();
     void CPUOptions()
     {
         ImGui::Begin("CPU Options", &ShowCPUOptions);
@@ -71,7 +70,7 @@ namespace Volts::GUI
         ImGui::Combo("PPU Runtime", &CurrentPPURuntime, PPURuntimeOptions, IM_ARRAYSIZE(PPURuntimeOptions));
 
         static int PPUThreads = 1;
-        ImGui::SliderInt("PPU Threads", &PPUThreads, 1, 4);
+        ImGui::SliderInt("PPU Threads", &PPUThreads, 1, CoreCount);
 
         ImGui::End();
     }
@@ -109,6 +108,7 @@ namespace Volts::GUI
     }
 
     bool ShowWindows = true;
+    ImGui::FileBrowser UNSELFDialog;
     void Windows()
     {
         ImGui::Begin("Windows", &ShowWindows, ImGuiWindowFlags_MenuBar);
@@ -126,12 +126,28 @@ namespace Volts::GUI
             ImGui::EndMenuBar();
         }
 
+        if(ImGui::Button("Do the thing"))
+            UNSELFDialog.Open();
+
         ImGui::End();
+
+        UNSELFDialog.Display();
+        if(UNSELFDialog.HasSelected())
+        {
+            Cthulhu::FileSystem::BufferedFile F{UNSELFDialog.GetSelected().string().c_str()};
+            PS3::UNSELF::DecryptSELF(F);
+            UNSELFDialog.ClearSelected();
+        }
 
         if(ShowGPUOptions) GPUOptions();
         if(ShowCPUOptions) CPUOptions();
         if(ShowMetrics) Metrics();
         if(ShowLogs) Logs();
+    }
+
+    void Frame::InitGUI()
+    {
+        UNSELFDialog.SetTitle("UNSELF");
     }
 
     void Frame::GUILoop()
