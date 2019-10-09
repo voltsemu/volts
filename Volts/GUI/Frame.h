@@ -57,6 +57,7 @@ namespace Volts::GUI
         Frame();
         ~Frame();
         void Run();
+        void PreInit();
 
         Frame* SetTitle(const char* T);
         const char* GetTitle() const;

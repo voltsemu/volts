@@ -26,6 +26,11 @@ namespace Volts::GUI
         ImGui::DestroyContext();
     }
 
+    void Frame::PreInit()
+    {
+        Config::Load();
+    }
+
     Frame* Frame::SetTitle(const char* T)
     {
         Title = T;

@@ -15,6 +15,7 @@ cthulhu = subproject('Cthulhu')
 zlib = subproject('zlib')
 
 fmt = subproject('fmt')
+json = subproject('gason')
 
 # get all the needed cthulhu projects
 libs = [
@@ -25,7 +26,8 @@ libs = [
 
 # get the very basic core sources
 sources = [
-    'Volts/Volts.cpp'
+    'Volts/Volts.cpp',
+    'Volts/Config.cpp'
 ]
 
 args = []
@@ -46,7 +48,8 @@ incs = [
 
 deps = [
     zlib.get_variable('zlib_dep'),
-    fmt.get_variable('fmt_dep')
+    fmt.get_variable('fmt_dep'),
+    json.get_variable('gason_dep')
 ]
 
 links = []

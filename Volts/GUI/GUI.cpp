@@ -127,18 +127,6 @@ namespace Volts::GUI
             ImGui::EndMenuBar();
         }
 
-        if(ImGui::Button("Test info"))
-            VINFO("test")
-
-        if(ImGui::Button("Test warn"))
-            VWARN("test")
-
-        if(ImGui::Button("Test error"))
-            VERROR("test")
-
-        if(ImGui::Button("Test fatal"))
-            VFATAL("test")
-
         ImGui::End();
 
         if(ShowGPUOptions) GPUOptions();

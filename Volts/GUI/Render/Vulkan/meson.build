@@ -4,15 +4,9 @@ vk_sources = [
 ]
 
 if host_machine.system() == 'darwin'
-    mvk_path = '/usr'/'local'/'Cellar'/'molten-vk'/'1.0.34'
-    if run_command('[', '-d', mvk_path, ']').returncode() != 0
-        message('molten-vk not detected, install with homebrew manually')
-    else
-        deps += dependency('appleframeworks', modules : [ 'IOSurface', 'IOKit' ])
-        sources += vk_sources
-        incs += include_directories(mvk_path/'libexec'/'include')
-        links += mvk_path/'lib'/'libMoltenVK.a'
-    endif
+    # TODO: moltenvk support that isnt scuffed
+    #deps += dependency('appleframeworks', modules : [ 'IOSurface', 'IOKit', 'vulkan' ])
+    #sources += vk_sources
 else
     pymodule = import('python3')
     python3 = pymodule.find_python()

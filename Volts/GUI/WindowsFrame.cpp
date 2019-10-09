@@ -48,6 +48,8 @@ namespace Volts::GUI
     void Frame::Run()
     {
         FinalizeRenders();
+        PreInit();
+        
         WNDCLASSEX WC = { sizeof(WNDCLASSEX) };
         WC.style = CS_HREDRAW | CS_VREDRAW;
         WC.lpfnWndProc = FrameProc;

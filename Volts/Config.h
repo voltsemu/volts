@@ -1,5 +1,12 @@
 #pragma once
 
+#include <gason.h>
+
+namespace Volts::Config
+{
+    bool Load();
+}
+
 #define GUIDEBUG 1
 
 // unself debugging

@@ -47,6 +47,7 @@ OBJC_CLASS(VAppDelegate, NSObject<NSApplicationDelegate>)
 // basically main on mac
 - (void)applicationDidFinishLaunching:(NSNotification*)notify
 {
+    Frame::Singleton->PreInit();
     // step 1: create window
     NSWindow* Window = [
         [NSWindow alloc]

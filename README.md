@@ -80,7 +80,7 @@ If you successfully build & boot the emulator on your system please provide a pu
 
 * Python >= 3.5.x
 * Meson >= 0.50.x
-* Vulkan SDK >= 1.0.3 (set the enviroment variable "VULKAN_SDK" to the path to the installed sdk)
+* Vulkan SDK >= 1.0.3 (on windows & linux set the enviroment variable "VULKAN_SDK" to the path to the installed sdk. on mac who really knows, just try and install the SDK. only god knows how to do this)
 
 #### Windows
 
