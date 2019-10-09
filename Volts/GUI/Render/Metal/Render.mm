@@ -99,6 +99,23 @@ namespace Volts::RSX
         RenderPass.colorAttachments[0].clearColor = MTLClearColorMake(0.28f, 0.36f, 0.5f, 1.0f);
 
         Encoder = [CommandBuffer renderCommandEncoderWithDescriptor:RenderPass];
+        
+        GUI::Size S = Frame->GetSize();
+        [Encoder setViewport:(MTLViewport){0.f, 0.f, (double)S.Width, (double)S.Height, 0.f, 1.f}];
+        [Encoder setRenderPipelineState:PipelineState];
+
+        static const Vertex Verts[] = 
+        {
+            { { 250, -250 }, { 1, 0, 0, 1 } },
+            { { -250, -250 }, { 0, 1, 0, 1 } },
+            { { 0, 250 }, { 0, 0, 1, 1 } }
+        };
+
+        vector_uint2 FrameSize = { S.Width, S.Height };
+
+        [Encoder setVertexBytes:Verts length:sizeof(Verts) atIndex:0];
+        [Encoder setVertexBytes:&FrameSize length:sizeof(FrameSize) atIndex:1];
+        [Encoder drawPrimitives:MTLPrimitiveTypeTriangle vertexStart:0 vertexCount:3];
 
         [Encoder pushDebugGroup:@"Imgui"];
 
@@ -121,6 +138,62 @@ namespace Volts::RSX
 
     void Metal::CreatePipeline()
     {
-        CommandQueue = [CurrentDevice() newCommandQueue];
+        id<MTLDevice> Dev = CurrentDevice();
+
+        NSError* Error = nil;
+        id<MTLLibrary> Lib = [Dev newLibraryWithSource:@(R"(
+            #include <metal_stdlib>
+            #include <simd/simd.h>
+
+            using namespace metal;
+
+            typedef struct {
+                float4 Position [[position]];
+                float4 Colour;
+            } RasterData;
+
+            typedef struct {
+                vector_float2 Position;
+                vector_float4 Colour;
+            } Vertex;
+
+            vertex RasterData VertShader(
+                uint ID [[vertex_id]],
+                constant Vertex* Verts [[buffer(0)]],
+                constant vector_uint2* Size [[buffer(1)]]
+            )
+            {
+                RasterData Out;
+
+                float2 PixelSpacePosition = Verts[ID].Position.xy;
+
+                Out.Position = vector_float4(0.f, 0.f, 0.f, 1.f);
+                Out.Position.xy = PixelSpacePosition / (vector_float2(*Size) / 2.f);
+
+                Out.Colour = Verts[ID].Colour;
+
+                return Out;
+            }
+
+            fragment float4 FragShader(RasterData Data [[stage_in]])
+            {
+                return Data.Colour;
+            }
+        )")
+                            options:[MTLCompileOptions new]
+                            error:&Error];
+
+        if(Lib == nil)
+        {
+            NSLog(@"Error %@", [Error localizedDescription]);
+        }
+
+        MTLRenderPipelineDescriptor* PipelineDescriptor = [MTLRenderPipelineDescriptor new];
+        PipelineDescriptor.vertexFunction = [Lib newFunctionWithName:@"VertShader"];
+        PipelineDescriptor.fragmentFunction = [Lib newFunctionWithName:@"FragShader"];
+        PipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatBGRA8Unorm;
+        PipelineState = [Dev newRenderPipelineStateWithDescriptor:PipelineDescriptor error:&Error];
+
+        CommandQueue = [Dev newCommandQueue];
     }
 }

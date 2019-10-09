@@ -8,6 +8,8 @@
 #include "imgui/examples/imgui_impl_osx.h"
 #include "imgui/examples/imgui_impl_metal.h"
 
+#include <simd/simd.h>
+
 #import <Metal/Metal.h>
 #import <MetalKit/MetalKit.h>
 
@@ -30,6 +32,12 @@ OBJC_CLASS(VView, MTKView)
 
 namespace Volts::RSX
 {
+    typedef struct
+    {
+        vector_float2 Position;
+        vector_float4 Colour;
+    } Vertex;
+
     struct Metal : Render
     {
         Metal();
@@ -66,7 +74,13 @@ namespace Volts::RSX
         VView* View;
 
         void CreatePipeline();
+
+        // persistent data
+        id<MTLRenderPipelineState> PipelineState;
         id<MTLCommandQueue> CommandQueue;
+
+
+        // frame data
         id<MTLCommandBuffer> CommandBuffer;
         id<MTLRenderCommandEncoder> Encoder;
         MTLRenderPassDescriptor* RenderPass;
