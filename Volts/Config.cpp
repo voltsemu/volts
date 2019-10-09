@@ -7,6 +7,8 @@
 
 #if OS_WINDOWS
 #   include <windows.h>
+#elif OS_APPLE
+#   include <mach-o/dyld.h>
 #else
 #   include <unistd.h>
 #endif
@@ -19,16 +21,46 @@ namespace Volts::Config
     using namespace rapidjson;
 
     Document ConfigData;
-    void Load()
+
+    std::string ConfigPath()
     {
         char Path[1024] = {};
 #if OS_WINDOWS
         GetModuleFileName(nullptr, Path, sizeof(Path));
+#elif OS_APPLE
+        U32 _;
+        _NSGetExecutablePath(Path, &_);
 #else
         readlink("/proc/self/exe", Path, sizeof(Path));
 #endif
 
-        FILE* Json = fopen(fmt::format("{}/config.json", Path).c_str(), "rb");
+        return fmt::format("{}/Data/config.json", Path);
+    }
+
+    const char* CreateFile()
+    {
+        
+    }
+    
+    const char* OpenFile()
+    {
+
+    }
+
+    void UpdateFile()
+    {
+        
+    }
+
+    void Load()
+    {
+        /* std::string Name = ConfigPath();
+        puts(Name.c_str());
+        FILE* Json = fopen(Name.c_str(), "rb");
+        if(!Json)
+        {
+            Json = fopen(Name.c_str(), "wb");
+        }
         fseek(Json, 0, SEEK_END);
         U32 Size = ftell(Json);
         fseek(Json, 0, SEEK_SET);
@@ -48,11 +80,11 @@ namespace Volts::Config
             VINFO("Config filed parsed");
         }
 
-        delete[] Data;
+        delete[] Data; */
     }
 
     const char* CurrentRender()
     {
-        return ConfigData["CurrentRender"].GetString();
+        return "Metal";// ConfigData["CurrentRender"].GetString();
     }
 }

@@ -71,8 +71,7 @@ OBJC_CLASS(VAppDelegate, NSObject<NSApplicationDelegate>)
 
     // step 3: attach renderer
     Frame::Singleton->Handle = (__bridge void*)Window;
-    Frame::Singleton->SetRender("Metal");
-    Frame::Singleton->UpdateDevices();
+    Frame::Singleton->PostInit();
 
     ImGui_ImplOSX_Init();
 

@@ -31,6 +31,12 @@ namespace Volts::GUI
         Config::Load();
     }
 
+    void Frame::PostInit()
+    {
+        SetRender(Config::CurrentRender());
+        UpdateDevices();
+    }
+
     Frame* Frame::SetTitle(const char* T)
     {
         Title = T;

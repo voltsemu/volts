@@ -81,8 +81,7 @@ namespace Volts::GUI
         ImGui::StyleColorsDark();
         ImGui_ImplWin32_Init(Handle);
 
-        SetRender("DX12");
-        UpdateDevices();
+        PostInit();
 
         MSG Message = {};
         while(Message.message != WM_QUIT)
