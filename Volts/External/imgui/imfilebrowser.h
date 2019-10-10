@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <vector>
 #include <filesystem>
 #include <functional>
 #include <memory>
@@ -398,11 +399,11 @@ inline bool ImGui::FileBrowser::HasSelected() const noexcept
 
 inline bool ImGui::FileBrowser::SetPwd(const std::filesystem::path &pwd)
 {
-    try
-    {
+    //try
+    //{
         SetPwdUncatched(pwd);
         return true;
-    }
+    /*}
     catch(const std::exception &err)
     {
         statusStr_ = std::string("last error: ") + err.what();
@@ -413,7 +414,7 @@ inline bool ImGui::FileBrowser::SetPwd(const std::filesystem::path &pwd)
     }
 
     SetPwdUncatched(std::filesystem::current_path());
-    return false;
+    return false;*/
 }
 
 inline std::filesystem::path ImGui::FileBrowser::GetSelected() const

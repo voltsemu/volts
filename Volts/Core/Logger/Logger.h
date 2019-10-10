@@ -34,8 +34,6 @@ namespace Volts
         Fatal = 3,
     };
 
-    extern Level LogLevel;
-
     void BeginLogs();
     void ClearLogs();
 

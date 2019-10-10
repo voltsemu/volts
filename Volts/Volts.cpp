@@ -8,10 +8,10 @@
 using namespace Volts;
 using namespace Cthulhu;
 
+// enter here
 int main(int Argc, const char** Argv)
 {
-	LogLevel = Level::Info;
-
+	// run the main window
 	GUI::Frame::GetSingleton()
 		->SetTitle("Volts")
 		->Run();
@@ -19,7 +19,7 @@ int main(int Argc, const char** Argv)
 
 
 #if OS_WINDOWS
-
+// on windows we need to use wWinMain to get an hInstance so we can make win32 windows and stuff
 int wWinMain(
 	HINSTANCE Instance,
 	HINSTANCE PrevInstance,

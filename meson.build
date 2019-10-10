@@ -35,10 +35,13 @@ sources = [
 args = []
 
 if host_machine.system() == 'darwin'
-    # we need C++ modules to use objc @import in objcpp
     args += [
+        # enable @import in objc++
         '-fmodules',
-        '-fobjc-arc'
+        # this fixes imgui metal backend
+        '-fobjc-arc',
+        # this allows filesystem to work
+        '-mmacosx-version-min=10.15'
     ]
 endif
 
@@ -76,7 +79,18 @@ if meson.get_compiler('cpp').get_id() == 'gcc'
 endif
 
 if meson.get_compiler('cpp').get_id() == 'clang'
-    args += '-std=c++17'
+    args += [ 
+        # meson doesnt set -std on clang
+        '-std=c++17', 
+        # link to libc++ instead of default
+        '-stdlib=libc++', 
+        # dont use default stdlib headers
+        '-nostdinc++',
+        # use these instead
+        '-I/usr/local/opt/llvm/include/c++/v1'
+    ]
+    # also link to the new stdlib
+    links += '-L/usr/local/opt/llvm/lib'
 endif
 
 executable('volt', sources,

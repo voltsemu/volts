@@ -40,15 +40,6 @@ namespace Volts::GUI
         U32 Width, Height;
     };
 
-    using AspectRatio = Size;
-
-    enum WindowState
-    {
-        Windowed,
-        Borderless,
-        Fullscreen
-    };
-
     struct Frame
     {
         static Frame* Singleton;
@@ -57,7 +48,6 @@ namespace Volts::GUI
         Frame();
         ~Frame();
         void Run();
-        void InitGUI();
         void PreInit();
         void PostInit();
 
@@ -67,12 +57,18 @@ namespace Volts::GUI
         const char* Title = nullptr;
     public:
 
+        // logging stuff
         ImGuiTextBuffer LogBuffer;
         Level CurrentLevel = Level::Info;
         void Log(Level L, const char* Msg);
 
+        // all the gui stuff happens in here, is called once per frame
         void GUILoop();
 
+        // this is called once to init all the gui data
+        void InitGUI();
+
+        // OS sepecfic stuff
 #if OS_WINDOWS
         using FrameHandle = HWND;
 
@@ -83,6 +79,11 @@ namespace Volts::GUI
         using FrameHandle = void*; // NSWindow*
 #endif
 
+        void FinalizePlayers();
+        Array<
+
+
+        // rendering stuff
         void FinalizeRenders();
         void AddRender(RSX::Render* R);
         Array<RSX::Render*> Renders = {};
@@ -105,7 +106,6 @@ namespace Volts::GUI
         RSX::Render* CurrentRender = nullptr;
 
         Size GetSize() const;
-        AspectRatio Aspect = { 16, 9 };
         FrameHandle Handle;
     };
 }

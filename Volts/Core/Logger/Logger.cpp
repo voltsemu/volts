@@ -23,7 +23,6 @@
 namespace Volts
 {
     using namespace Cthulhu;
-    Level LogLevel = Level::Info;
 
     void Print(Level L, std::string Msg)
     {
