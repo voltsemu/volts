@@ -9,7 +9,6 @@
 #include "Core/Logger/Logger.h"
 
 #include "GUIExtensions.h"
-#include "imfilebrowser.h"
 #include <chrono>
 
 #if OS_WINDOWS
@@ -78,11 +77,6 @@ namespace Volts::GUI
 #elif OS_APPLE
         using FrameHandle = void*; // NSWindow*
 #endif
-
-        void FinalizePlayers();
-        Array<
-
-
         // rendering stuff
         void FinalizeRenders();
         void AddRender(RSX::Render* R);

@@ -1,13 +1,7 @@
 #pragma once
 
-#include <Core/Collections/CthulhuString.h>
-
-#include "Frame.h"
-
-namespace Volts::GUI
-{
-    struct Frame;
-}
+#include <Meta/Aliases.h>
+#include "GUI/Frame.h"
 
 namespace Volts::RSX
 {

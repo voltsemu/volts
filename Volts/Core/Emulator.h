@@ -2,6 +2,11 @@
 
 #include <Core/Collections/Array.h>
 
+#include "GUI/Frame.h"
+#include "Render/Render.h"
+#include "Audio/Player.h"
+#include "Input/Controller.h"
+
 namespace Volts
 {
     using namespace Cthulhu;

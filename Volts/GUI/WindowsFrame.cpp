@@ -1,10 +1,8 @@
 #include "Frame.h"
+#include "Render/Render.h"
 
 #include "imgui.h"
 
-#include "Render/Render.h"
-
-#include "Render/DX12/Render.h"
 #include "examples/imgui_impl_win32.h"
 
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND, UINT, WPARAM, LPARAM);

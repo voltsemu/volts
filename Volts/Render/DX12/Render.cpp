@@ -397,7 +397,7 @@ namespace Volts::RSX
             UINT CompileFlags = ShaderOptimizationLevel;
 
             VALIDATE(D3DCompileFromFile(
-                L"C:\\Users\\Elliot\\source\\repos\\RPCS3X\\Volts\\GUI\\Render\\DX12\\shaders.hlsl",
+                L"C:\\Users\\Elliot\\source\\repos\\RPCS3X\\Volts\\Render\\DX12\\shaders.hlsl",
                 nullptr,
                 nullptr,
                 "VSMain",
@@ -409,7 +409,7 @@ namespace Volts::RSX
             ));
 
             VALIDATE(D3DCompileFromFile(
-                L"C:\\Users\\Elliot\\source\\repos\\RPCS3X\\Volts\\GUI\\Render\\DX12\\shaders.hlsl",
+                L"C:\\Users\\Elliot\\source\\repos\\RPCS3X\\Volts\\Render\\DX12\\shaders.hlsl",
                 nullptr,
                 nullptr,
                 "PSMain",

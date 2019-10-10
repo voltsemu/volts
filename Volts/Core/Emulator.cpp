@@ -2,13 +2,13 @@
 
 namespace Volts
 {
-    Emulator Emulator::Emu = {};
+    Emulator Emu = {};
 
     void Emulator::Run()
     {
-        Window = GUI::Frame()
-            .SetTitle("Volts")
-            .Run();
+        //Window = GUI::Frame()
+        //    .SetTitle("Volts")
+        //    .Run();
     }
 
     void Emulator::Register(RSX::Render* Backend)

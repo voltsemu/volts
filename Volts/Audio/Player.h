@@ -8,7 +8,7 @@ namespace Volts::Audio
 
     struct Player
     {
-        virtual ~Player() = 0;
+        virtual ~Player() {}
         virtual const char* Name() const = 0;
     };
 }

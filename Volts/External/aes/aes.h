@@ -28,8 +28,6 @@
  */
 #include <string.h>
 
-//TODO: remove all this at some point and write my own implementation of it
-
 #ifdef _MSC_VER
 #include <basetsd.h>
 typedef UINT32 uint32_t;
@@ -126,7 +124,7 @@ int aes_crypt_cbc( aes_context *ctx,
  * both encryption and decryption. So a context initialized with
  * aes_setkey_enc() for both AES_ENCRYPT and AES_DECRYPT.
  *
- * both 
+ * both
  * \param ctx      AES context
  * \param mode     AES_ENCRYPT or AES_DECRYPT
  * \param length   length of the input data

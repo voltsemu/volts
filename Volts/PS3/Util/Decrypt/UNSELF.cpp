@@ -5,7 +5,7 @@
 
 #include "Core/Convert.h"
 #include "Keys.h"
-#include "AES/aes.h"
+#include "aes/aes.h"
 #include "Core/AES/AES.h"
 
 #include <zlib.h>
@@ -124,7 +124,7 @@ namespace Volts::PS3
             U8 Endian;
             U8 SVersion;
             U8 ABI;
-            
+
             U64 ABIVersion;
 
             Big<U16> Type;
@@ -475,7 +475,7 @@ namespace Volts::PS3
         }
 
         ELF::Binary MakeELF()
-        {   
+        {
             ELF::Binary Bin;
 
             Bin.Write(ELFHead);
