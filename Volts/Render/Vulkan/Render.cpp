@@ -10,7 +10,7 @@ namespace Volts::RSX
         Init();
 
         if(DeviceCount > 0)
-            Emulator::Get()->Register(this);
+            Emulator::Get().Register(this);
         else
             VWARN("No vulkan devices detected. Disabling vulkan");
     }

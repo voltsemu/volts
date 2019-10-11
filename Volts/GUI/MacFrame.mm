@@ -1,7 +1,6 @@
 #include "Frame.h"
 
-#include "Core/Logger.h"
-#include "Render/Render.h"
+#include "Core/Emulator.h"
 
 #include "imgui/imgui.h"
 #include "imgui/examples/imgui_impl_osx.h"
@@ -9,6 +8,7 @@
 #import <Cocoa/Cocoa.h>
 
 using Volts::GUI::Frame;
+using namespace Volts;
 
 /**
 the general interface flow we want is
@@ -47,7 +47,7 @@ OBJC_CLASS(VAppDelegate, NSObject<NSApplicationDelegate>)
 // basically main on mac
 - (void)applicationDidFinishLaunching:(NSNotification*)notify
 {
-    Frame::Singleton->PreInit();
+    //Frame::Singleton->PreInit();
     // step 1: create window
     NSWindow* Window = [
         [NSWindow alloc]
@@ -57,8 +57,10 @@ OBJC_CLASS(VAppDelegate, NSObject<NSApplicationDelegate>)
             defer:NO
     ];
 
+    auto& Emu = Emulator::Get();
+
     // set basic display
-    [Window setTitle:[NSString stringWithUTF8String:Frame::Singleton->GetTitle()]];
+    [Window setTitle:[NSString stringWithUTF8String:Emulator::Get().Window.Title]];
     [Window setAcceptsMouseMovedEvents:YES];
     [Window center];
     [Window setRestorable:YES];
@@ -70,11 +72,16 @@ OBJC_CLASS(VAppDelegate, NSObject<NSApplicationDelegate>)
     [Window makeKeyAndOrderFront:nil];
 
     // step 3: attach renderer
-    Frame::Singleton->Handle = (__bridge void*)Window;
-    Frame::Singleton->PostInit();
+    Emu.Window.Handle = (__bridge void*)Window;
+    //Frame::Singleton->PostInit();
 
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGui::StyleColorsDark();
+
+    puts("here");
     ImGui_ImplOSX_Init();
-
+    puts("and here");
     // step 4: main loop
     bool StayOpen = true;
     NSEvent* Event = nil;
@@ -92,21 +99,30 @@ OBJC_CLASS(VAppDelegate, NSObject<NSApplicationDelegate>)
             ImGui_ImplOSX_HandleEvent(Event, [Window contentView]);
         }
 
+        auto& CurrentRender = Emu.CurrentRender();
+
         // begin render
-        Frame::Singleton->CurrentRender->BeginRender();
+        CurrentRender.BeginRender();
+        puts("before newframe");
         ImGui_ImplOSX_NewFrame([Window contentView]);
+        puts("after newframe");
 
         // do imgui
         ImGui::NewFrame();
-        Frame::Singleton->GUILoop();
-        ImGui::Render();
+        puts("after imgui newframe");
+        
+        ImGui::Begin("AAA");
+        ImGui::End();
 
+        puts("here");
+        ImGui::Render();
+        puts("past render");
         // present render
-        Frame::Singleton->CurrentRender->PresentRender();
+        CurrentRender.PresentRender();
     }
 
     // detach
-    Frame::Singleton->CurrentRender->Detach();
+    Emu.CurrentRender().Detach();
 }
 
 @end
@@ -125,7 +141,7 @@ namespace Volts::GUI
 
     void Frame::Run()
     {
-        FinalizeRenders();
+        //FinalizeRenders();
 
         [VApp sharedApplication];
         [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];

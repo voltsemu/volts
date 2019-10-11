@@ -1,22 +1,16 @@
 #include "Emulator.h"
 
-#include "debugapi.h"
-
 namespace Volts
 {
-    Emulator* Emulator::Global = nullptr;
     // static initialization trick
-    Emulator* Emulator::Get()
+    Emulator& Emulator::Get()
     {
-        if(!Emulator::Global)
-            Emulator::Global = new Emulator();
-
-        return Emulator::Global;
+        static Emulator Global;
+        return Global;
     }
 
     void Emulator::Run()
     {
-        Window = GUI::Frame();
         Window.SetTitle("Volts");
         Window.Run();
     }

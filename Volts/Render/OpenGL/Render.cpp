@@ -5,7 +5,7 @@ namespace Volts::RSX
     static OpenGL* Singleton = new OpenGL();
     OpenGL::OpenGL()
     {
-        Emulator::Get()->Register(this);
+        Emulator::Get().Register(this);
     }
 
     OpenGL::~OpenGL()

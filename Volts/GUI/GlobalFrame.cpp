@@ -4,9 +4,9 @@ namespace Volts::GUI
 {
     Frame::Frame()
     {
-        IMGUI_CHECKVERSION();
-        ImGui::CreateContext();
-        ImGui::StyleColorsDark();
+        //IMGUI_CHECKVERSION();
+        //ImGui::CreateContext();
+        //ImGui::StyleColorsDark();
     }
 
     Frame::~Frame()

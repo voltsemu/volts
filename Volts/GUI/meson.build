@@ -6,7 +6,6 @@ sources += 'Volts/GUI/GlobalFrame.cpp'
 
 if host_machine.system() == 'darwin'
     # metal is only on mac
-    subdir('Render/Metal')
     sources += 'Volts/GUI/MacFrame.mm'
 elif host_machine.system() == 'windows'
     sources += 'Volts/GUI/WindowsFrame.cpp'

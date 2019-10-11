@@ -12,7 +12,7 @@ using namespace Cthulhu;
 int main(int Argc, const char** Argv)
 {
 	// run the main window
-	Emulator::Get()->Run();
+	Emulator::Get().Run();
 }
 
 

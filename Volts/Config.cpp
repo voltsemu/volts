@@ -21,23 +21,6 @@ namespace Volts::Config
 {
     using namespace rapidjson;
 
-    Document ConfigData;
-
-    std::string ConfigPath()
-    {
-        char Path[1024] = {};
-#if OS_WINDOWS
-        GetModuleFileName(nullptr, Path, sizeof(Path));
-#elif OS_APPLE
-        U32 _;
-        _NSGetExecutablePath(Path, &_);
-#else
-        readlink("/proc/self/exe", Path, sizeof(Path));
-#endif
-
-        return fmt::format("{}/Data/config.json", Path);
-    }
-
     void Load()
     {
     }

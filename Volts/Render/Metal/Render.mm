@@ -1,11 +1,13 @@
 #include "Render.h"
 
+#include "Core/Emulator.h"
+
 namespace Volts::RSX
 {
     static Metal* Singleton = new Metal();
     Metal::Metal()
     {
-        Emulator::Get()->Register(this);
+        Emulator::Get().Register(this);
 
         NSArray<id<MTLDevice>>* MTLDevices = MTLCopyAllDevices();
         DeviceCount = [MTLDevices count];

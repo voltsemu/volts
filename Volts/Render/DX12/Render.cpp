@@ -18,7 +18,7 @@ namespace Volts::RSX
     DX12::DX12()
     {
         // TODO: assume we're running under windows 10 until i can figure out how to check
-        Emulator::Get()->Register(this);
+        Emulator::Get().Register(this);
 
         UINT FactoryFlags = 0;
 

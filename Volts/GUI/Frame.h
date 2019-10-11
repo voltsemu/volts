@@ -5,6 +5,8 @@
 
 #include "GUIExtensions.h"
 
+#define OBJC_CLASS(Name, Super) @interface Name : Super @end @implementation Name
+
 namespace Volts::GUI
 {
     using namespace Cthulhu;
@@ -64,8 +66,6 @@ namespace Volts::GUI
 #elif OS_LINUX
 #   include <X11/Xlib.h>
 #endif
-
-#define OBJC_CLASS(Name, Super) @interface Name : Super @end @implementation Name
 
 namespace Volts::RSX
 {

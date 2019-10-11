@@ -75,7 +75,7 @@ namespace Volts::GUI
         ImGui_ImplWin32_Init(Handle);
 
         MSG Message = {};
-        auto* Emu = Emulator::Get();
+        auto& Emu = Emulator::Get();
         while(Message.message != WM_QUIT)
         {
             if(PeekMessage(&Message, nullptr, 0, 0, PM_REMOVE))

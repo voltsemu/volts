@@ -15,11 +15,10 @@ namespace Volts
 
     struct Emulator
     {
-        static Emulator* Global;
-        static Emulator* Get();
+        static Emulator& Get();
         void Run();
 
-        GUI::Frame Window;
+        GUI::Frame Window = {};
 
         void GUI();
 
@@ -32,7 +31,7 @@ namespace Volts
         Array<RSX::Render*> RenderBackends = {};
         const char** RenderNames = nullptr;
         U32 RenderIndex = 0;
-        RSX::Render* CurrentRender() { return RenderBackends[RenderIndex]; }
+        RSX::Render& CurrentRender() { return *RenderBackends[RenderIndex]; }
 
 
         // audio backends
@@ -40,7 +39,7 @@ namespace Volts
         Array<Audio::Player*> AudioBackends = {};
         const char** AudioNames = nullptr;
         U32 AudioIndex = 0;
-        Audio::Player* CurrentPlayer() { return AudioBackends[AudioIndex]; }
+        Audio::Player& CurrentPlayer() { return *AudioBackends[AudioIndex]; }
 
 
         // input device backends
@@ -48,6 +47,6 @@ namespace Volts
         Array<Input::Controller*> InputBackends = {};
         const char** InputNames = nullptr;
         U32 InputIndex = 0;
-        Input::Controller* CurrentController() { return InputBackends[InputIndex]; }
+        Input::Controller& CurrentController() { return *InputBackends[InputIndex]; }
     };
 }
