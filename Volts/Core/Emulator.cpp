@@ -1,12 +1,17 @@
 #include "Emulator.h"
 
+#include "debugapi.h"
+
 namespace Volts
 {
+    Emulator* Emulator::Global = nullptr;
     // static initialization trick
     Emulator* Emulator::Get()
     {
-        static Emulator E = {};
-        return &E;
+        if(!Emulator::Global)
+            Emulator::Global = new Emulator();
+
+        return Emulator::Global;
     }
 
     void Emulator::Run()
@@ -16,25 +21,35 @@ namespace Volts
         Window.Run();
     }
 
-    bool ShowCPUOptions = true;
-    void CPUOptions()
-    {
-        // this is empty for now
-        ImGui::Begin("CPU Options", &ShowCPUOptions);
-        ImGui::End();
-    }
-
-    bool ShowRenderOptions = true;
-    void RenderOptions()
-    {
-        ImGui::Begin("Rendering options", &ShowRenderOptions);
-
-        ImGui::End();
-    }
-
     void Emulator::GUI()
     {
 
+    }
+
+    void Emulator::Log(Level L, std::string&& Message)
+    {
+        if(L >= CurrentLevel)
+        {
+            switch(L)
+            {
+                case Level::Info:
+                    LogBuffer.append("[info] ");
+                    break;
+                case Level::Warning:
+                    LogBuffer.append("[warn] ");
+                    break;
+                case Level::Error:
+                    LogBuffer.append("[error] ");
+                    break;
+                case Level::Fatal:
+                    LogBuffer.append("[fatal] ");
+                    break;
+                default:
+                    LogBuffer.append("[other] ");
+                    break;
+            }
+            LogBuffer.append(Message.c_str());
+        }
     }
 
     void Emulator::Register(RSX::Render* Backend)

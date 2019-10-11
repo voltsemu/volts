@@ -2,6 +2,8 @@
 
 #include <Core/Collections/Array.h>
 
+#include "Logger.h"
+
 #include "GUI/Frame.h"
 #include "Render/Render.h"
 #include "Audio/Player.h"
@@ -13,12 +15,17 @@ namespace Volts
 
     struct Emulator
     {
+        static Emulator* Global;
         static Emulator* Get();
         void Run();
 
         GUI::Frame Window;
 
         void GUI();
+
+        ImGuiTextBuffer LogBuffer;
+        Level CurrentLevel = Level::Info;
+        void Log(Level L, std::string&& Message);
 
         // render backends
         void Register(RSX::Render* Backend);

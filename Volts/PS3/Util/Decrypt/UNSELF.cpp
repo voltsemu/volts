@@ -1,12 +1,11 @@
 #include "UNSELF.h"
 
-#include "Core/Logger.h"
+#include "Core/Emulator.h"
 #include "Core/Macros.h"
 
 #include "Core/Convert.h"
 #include "Keys.h"
 #include "aes/aes.h"
-#include "Core/AES/AES.h"
 
 #include <zlib.h>
 

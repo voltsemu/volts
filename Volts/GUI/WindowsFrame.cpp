@@ -1,6 +1,8 @@
 #include "Frame.h"
 #include "Render/Render.h"
 
+#include "Core/Emulator.h"
+
 #include "imgui.h"
 
 #include "examples/imgui_impl_win32.h"
@@ -45,9 +47,6 @@ namespace Volts::GUI
 
     void Frame::Run()
     {
-        FinalizeRenders();
-        PreInit();
-
         WNDCLASSEX WC = { sizeof(WNDCLASSEX) };
         WC.style = CS_HREDRAW | CS_VREDRAW;
         WC.lpfnWndProc = FrameProc;
@@ -75,9 +74,8 @@ namespace Volts::GUI
         UpdateWindow(Handle);
         ImGui_ImplWin32_Init(Handle);
 
-        PostInit();
-
         MSG Message = {};
+        auto* Emu = Emulator::Get();
         while(Message.message != WM_QUIT)
         {
             if(PeekMessage(&Message, nullptr, 0, 0, PM_REMOVE))
@@ -86,13 +84,13 @@ namespace Volts::GUI
                 DispatchMessage(&Message);
             }
 
-            CurrentRender->BeginRender();
+            Emu->CurrentRender()->BeginRender();
 
             ImGui::NewFrame();
-            GUILoop();
+            //GUILoop();
             ImGui::Render();
 
-            CurrentRender->PresentRender();
+            Emu->CurrentRender()->PresentRender();
         }
 
         ImGui_ImplWin32_Shutdown();

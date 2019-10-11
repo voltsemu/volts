@@ -1,5 +1,7 @@
 #include "Config.h"
 
+#include <Meta/Macros.h>
+
 #include "Core/Logger.h"
 
 #include <string.h>
@@ -17,7 +19,6 @@
 
 namespace Volts::Config
 {
-    using namespace Cthulhu;
     using namespace rapidjson;
 
     Document ConfigData;

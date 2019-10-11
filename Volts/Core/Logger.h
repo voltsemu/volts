@@ -25,7 +25,7 @@ namespace Volts
     };
 }
 
-#define VINFO(...) { Emulator::Get()->Window.Log(Volts::Level::Info, fmt::format(__VA_ARGS__)); }
-#define VWARN(...) { Emulator::Get()->Window.Log(Volts::Level::Warning, fmt::format(__VA_ARGS__)); }
-#define VERROR(...) { Emulator::Get()->Window.Log(Volts::Level::Error, fmt::format(__VA_ARGS__)); }
-#define VFATAL(...) { Emulator::Get()->Window.Log(Volts::Level::Fatal, fmt::format(__VA_ARGS__)); }
+#define VINFO(...) { Emulator::Get()->Log(Volts::Level::Info, fmt::format(__VA_ARGS__)); }
+#define VWARN(...) { Emulator::Get()->Log(Volts::Level::Warning, fmt::format(__VA_ARGS__)); }
+#define VERROR(...) { Emulator::Get()->Log(Volts::Level::Error, fmt::format(__VA_ARGS__)); }
+#define VFATAL(...) { Emulator::Get()->Log(Volts::Level::Fatal, fmt::format(__VA_ARGS__)); }

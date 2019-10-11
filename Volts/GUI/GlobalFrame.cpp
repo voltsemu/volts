@@ -2,52 +2,22 @@
 
 namespace Volts::GUI
 {
-#if OS_WINDOWS
-    HINSTANCE Instance = {};
-#endif
     Frame::Frame()
     {
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
         ImGui::StyleColorsDark();
-        InitGUI();
     }
 
     Frame::~Frame()
     {
-
+        ImGui::DestroyContext();
     }
 
     Frame& Frame::SetTitle(const char* NewTitle)
     {
         Title = NewTitle;
         return *this;
-    }
-
-    void Frame::Log(Level L, std::string Message)
-    {
-        if(L >= CurrentLevel)
-        {
-            switch(L)
-            {
-                case Level::Info:
-                    LogBuffer.append("[info] ");
-                    break;
-                case Level::Warning:
-                    LogBuffer.append("[warn] ");
-                    break;
-                case Level::Error:
-                    LogBuffer.append("[error] ");
-                    break;
-                case Level::Fatal:
-                    LogBuffer.append("[fatal] ");
-                    break;
-                default:
-                    LogBuffer.append("[other] ");
-                    break;
-            }
-            LogBuffer.append(Message);
-        }
     }
 }
 

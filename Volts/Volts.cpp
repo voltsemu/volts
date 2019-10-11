@@ -1,8 +1,6 @@
 ﻿
 #include "Volts.h"
 
-#include "Core/IO/File.h"
-
 #include "GUI/Frame.h"
 
 #include "Core/Emulator.h"
@@ -14,7 +12,7 @@ using namespace Cthulhu;
 int main(int Argc, const char** Argv)
 {
 	// run the main window
-	Emulator::Get().Run();
+	Emulator::Get()->Run();
 }
 
 

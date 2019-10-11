@@ -33,6 +33,8 @@ namespace ImGui
     }
 }
 
+#if 0
+
 namespace Volts::GUI
 {
     bool ShowGPUOptions = true;
@@ -160,6 +162,7 @@ namespace Volts::GUI
     }
 }
 
+#endif
 
 #if CC_CLANG
 #   pragma clang diagnostic pop

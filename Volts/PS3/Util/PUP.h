@@ -6,7 +6,7 @@
 #include "Core/Endian.h"
 #include "Core/Convert.h"
 #include "Core/Macros.h"
-#include "Core/Logger.h"
+#include "Core/Emulator.h"
 
 namespace Volts::PS3::PUP
 {

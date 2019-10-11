@@ -3,8 +3,6 @@
 #include <Meta/Aliases.h>
 #include <Meta/Macros.h>
 
-#include "Core/Logger.h"
-
 #include "GUIExtensions.h"
 
 namespace Volts::GUI
@@ -32,14 +30,8 @@ namespace Volts::GUI
         void PreInit();
         void PostInit();
 
-        void InitGUI();
-
         Frame& SetTitle(const char* NewTitle);
         void Run();
-
-        ImGuiTextBuffer LogBuffer;
-        Level CurrentLevel = Level::Info;
-        void Log(Level L, std::string Message);
 
 #if OS_WINDOWS
         void SetChild(HWND Window);
