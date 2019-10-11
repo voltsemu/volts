@@ -1,6 +1,6 @@
 #include "Frame.h"
 
-#include "Core/Logger/Logger.h"
+#include "Core/Logger.h"
 #include "Render/Render.h"
 
 #include "imgui/imgui.h"
@@ -76,7 +76,7 @@ OBJC_CLASS(VAppDelegate, NSObject<NSApplicationDelegate>)
     ImGui_ImplOSX_Init();
 
     // step 4: main loop
-    bool StayOpen = true; 
+    bool StayOpen = true;
     NSEvent* Event = nil;
 
     while(StayOpen)
@@ -86,7 +86,7 @@ OBJC_CLASS(VAppDelegate, NSObject<NSApplicationDelegate>)
                                     untilDate:nil
                                     inMode:NSDefaultRunLoopMode
                                     dequeue:YES];
-        if(Event) 
+        if(Event)
         {
             [NSApp sendEvent:Event];
             ImGui_ImplOSX_HandleEvent(Event, [Window contentView]);

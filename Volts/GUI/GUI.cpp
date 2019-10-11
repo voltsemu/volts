@@ -3,7 +3,7 @@
 
 #include "Config.h"
 
-#include "Core/Logger/Logger.h"
+#include "Core/Logger.h"
 
 #include "PS3/Util/Decrypt/UNSELF.h"
 

@@ -1,6 +1,6 @@
 #include "Config.h"
 
-#include "Core/Logger/Logger.h"
+#include "Core/Logger.h"
 
 #include <string.h>
 #include <stdio.h>

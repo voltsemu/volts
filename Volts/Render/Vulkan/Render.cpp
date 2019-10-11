@@ -1,6 +1,5 @@
 #include "Render.h"
-
-#include "Frame.h"
+#include "Core/Emulator.h"
 
 namespace Volts::RSX
 {
@@ -11,7 +10,7 @@ namespace Volts::RSX
         Init();
 
         if(DeviceCount > 0)
-            GUI::Frame::GetSingleton()->AddRender(this);
+            Emulator::Get()->Register(this);
         else
             VWARN("No vulkan devices detected. Disabling vulkan");
     }

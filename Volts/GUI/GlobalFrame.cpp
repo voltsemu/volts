@@ -1,5 +1,58 @@
 #include "Frame.h"
 
+namespace Volts::GUI
+{
+#if OS_WINDOWS
+    HINSTANCE Instance = {};
+#endif
+    Frame::Frame()
+    {
+        IMGUI_CHECKVERSION();
+        ImGui::CreateContext();
+        ImGui::StyleColorsDark();
+        InitGUI();
+    }
+
+    Frame::~Frame()
+    {
+
+    }
+
+    Frame& Frame::SetTitle(const char* NewTitle)
+    {
+        Title = NewTitle;
+        return *this;
+    }
+
+    void Frame::Log(Level L, std::string Message)
+    {
+        if(L >= CurrentLevel)
+        {
+            switch(L)
+            {
+                case Level::Info:
+                    LogBuffer.append("[info] ");
+                    break;
+                case Level::Warning:
+                    LogBuffer.append("[warn] ");
+                    break;
+                case Level::Error:
+                    LogBuffer.append("[error] ");
+                    break;
+                case Level::Fatal:
+                    LogBuffer.append("[fatal] ");
+                    break;
+                default:
+                    LogBuffer.append("[other] ");
+                    break;
+            }
+            LogBuffer.append(Message);
+        }
+    }
+}
+
+#if 0
+
 #include "Render/Render.h"
 
 namespace Volts::GUI
@@ -123,3 +176,5 @@ namespace Volts::GUI
             DeviceNames[I] = Devices[I].Name();
     }
 }
+
+#endif

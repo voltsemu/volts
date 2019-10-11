@@ -1,11 +1,11 @@
 #include "Render.h"
 #include <Core/Memory/Memory.h>
-#include "Frame.h"
+
+#include "Core/Emulator.h"
 
 #include "d3dx12.h"
 #include "dxgidebug.h"
 
-#include "imgui.h"
 #include "examples/imgui_impl_win32.h"
 #include "examples/imgui_impl_dx12.h"
 
@@ -18,7 +18,7 @@ namespace Volts::RSX
     DX12::DX12()
     {
         // TODO: assume we're running under windows 10 until i can figure out how to check
-        GUI::Frame::GetSingleton()->AddRender(this);
+        Emulator::Get()->Register(this);
 
         UINT FactoryFlags = 0;
 

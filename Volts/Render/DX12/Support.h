@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Volts/Core/Logger/Logger.h"
+#include "Volts/Core/Logger.h"
 #include "Config.h"
 #include "Render/Render.h"
 

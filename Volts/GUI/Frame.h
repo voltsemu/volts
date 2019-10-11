@@ -1,12 +1,66 @@
 #pragma once
 
+#include <Meta/Aliases.h>
+#include <Meta/Macros.h>
+
+#include "Core/Logger.h"
+
+#include "GUIExtensions.h"
+
+namespace Volts::GUI
+{
+    using namespace Cthulhu;
+#if OS_WINDOWS
+    using FrameHandle = HWND;
+    extern HINSTANCE Instance;
+#elif OS_APPLE
+    using FrameHandle = void*;
+#else
+    using FrameHandle = Window;
+#endif
+
+    struct Size
+    {
+        U32 Width, Height;
+    };
+
+    struct Frame
+    {
+        Frame();
+        ~Frame();
+
+        void PreInit();
+        void PostInit();
+
+        void InitGUI();
+
+        Frame& SetTitle(const char* NewTitle);
+        void Run();
+
+        ImGuiTextBuffer LogBuffer;
+        Level CurrentLevel = Level::Info;
+        void Log(Level L, std::string Message);
+
+#if OS_WINDOWS
+        void SetChild(HWND Window);
+#endif
+
+        Size GetSize() const;
+
+        FrameHandle Handle;
+        const char* Title = nullptr;
+    };
+}
+
+#if 0
+
 #include <Core/Collections/CthulhuString.h>
 #include <Core/Collections/Array.h>
 #include <Core/Types/Lambda.h>
 
 #include "Core/Macros.h"
 
-#include "Core/Logger/Logger.h"
+#include "Core/Logger.h"
 
 #include "GUIExtensions.h"
 #include <chrono>
@@ -103,3 +157,5 @@ namespace Volts::GUI
         FrameHandle Handle;
     };
 }
+
+#endif

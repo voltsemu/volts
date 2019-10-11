@@ -5,6 +5,8 @@
 
 #include "GUI/Frame.h"
 
+#include "Core/Emulator.h"
+
 using namespace Volts;
 using namespace Cthulhu;
 
@@ -12,9 +14,7 @@ using namespace Cthulhu;
 int main(int Argc, const char** Argv)
 {
 	// run the main window
-	GUI::Frame::GetSingleton()
-		->SetTitle("Volts")
-		->Run();
+	Emulator::Get().Run();
 }
 
 

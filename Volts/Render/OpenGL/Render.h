@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Render/Render.h"
+#include "Core/Emulator.h"
 
 #if OS_WINDOWS
 #   include <GL/gl.h>

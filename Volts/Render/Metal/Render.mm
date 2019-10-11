@@ -5,7 +5,7 @@ namespace Volts::RSX
     static Metal* Singleton = new Metal();
     Metal::Metal()
     {
-        GUI::Frame::GetSingleton()->AddRender(this);
+        Emulator::Get()->Register(this);
 
         NSArray<id<MTLDevice>>* MTLDevices = MTLCopyAllDevices();
         DeviceCount = [MTLDevices count];
@@ -99,12 +99,12 @@ namespace Volts::RSX
         RenderPass.colorAttachments[0].clearColor = MTLClearColorMake(0.28f, 0.36f, 0.5f, 1.0f);
 
         Encoder = [CommandBuffer renderCommandEncoderWithDescriptor:RenderPass];
-        
+
         GUI::Size S = Frame->GetSize();
         [Encoder setViewport:(MTLViewport){0.f, 0.f, (double)S.Width, (double)S.Height, 0.f, 1.f}];
         [Encoder setRenderPipelineState:PipelineState];
 
-        static const Vertex Verts[] = 
+        static const Vertex Verts[] =
         {
             { { 250, -250 }, { 1, 0, 0, 1 } },
             { { -250, -250 }, { 0, 1, 0, 1 } },
@@ -126,7 +126,7 @@ namespace Volts::RSX
     {
         ImDrawData* DrawData = ImGui::GetDrawData();
         ImGui_ImplMetal_RenderDrawData(DrawData, CommandBuffer, Encoder);
-        
+
         [Encoder popDebugGroup];
         [Encoder endEncoding];
 
