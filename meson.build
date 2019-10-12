@@ -27,10 +27,7 @@ libs = [
 ]
 
 # get the very basic core sources
-sources = [
-    'Volts/Volts.cpp',
-    'Volts/Config.cpp'
-]
+sources = []
 
 args = []
 
@@ -58,17 +55,7 @@ deps = [
 
 links = []
 
-# include the main stuff
-subdir('Volts/PS3')
-subdir('Volts/Core')
-subdir('Volts/External')
-
-# include the gui
-subdir('Volts/GUI')
-
-subdir('Volts/Audio')
-subdir('Volts/Render')
-subdir('Volts/Input')
+subdir('Volts')
 
 # disable run time type id and exceptions in the hope of generating smaller code
 # i know you dont pay for features you dont use but this also stops people

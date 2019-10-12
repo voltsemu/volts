@@ -1,18 +1,7 @@
-﻿
-#include "Volts.h"
-
-#include "GUI/Frame.h"
-
-#include "Core/Emulator.h"
-
-using namespace Volts;
-using namespace Cthulhu;
-
-// enter here
+﻿// enter here
 int main(int Argc, const char** Argv)
 {
-	// run the main window
-	Emulator::Get().Run();
+	// run the main window	
 }
 
 
@@ -25,7 +14,6 @@ int wWinMain(
 	int ShowCmd
 )
 {
-	GUI::Instance = Instance;
 	int Argc;
 	wchar_t** Argv = CommandLineToArgvW(GetCommandLineW(), &Argc);
 
