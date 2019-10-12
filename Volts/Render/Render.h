@@ -18,7 +18,7 @@ namespace Volts::RSX
     {
         virtual ~Render() {}
         // this starts the renderer and gives it the window handle it needs
-        virtual void Attach(GUI::Frame* Handle) = 0;
+        virtual void Attach() = 0;
         // this detaches the renderer from the window and shuts down the backend
         virtual void Detach() = 0;
 

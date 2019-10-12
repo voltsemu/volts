@@ -18,7 +18,7 @@ namespace Volts
         static Emulator& Get();
         void Run();
 
-        GUI::Frame Window = {};
+        GUI::Frame* Window = nullptr;
 
         void GUI();
 
@@ -30,7 +30,7 @@ namespace Volts
         void Register(RSX::Render* Backend);
         Array<RSX::Render*> RenderBackends = {};
         const char** RenderNames = nullptr;
-        U32 RenderIndex = 0;
+        U32 RenderIndex = 1;
         RSX::Render& CurrentRender() { return *RenderBackends[RenderIndex]; }
 
 

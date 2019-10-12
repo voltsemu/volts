@@ -20,10 +20,9 @@ namespace Volts::RSX
         // TODO
     }
 
-    void Metal::Attach(GUI::Frame* F)
+    void Metal::Attach()
     {
-        Frame = F;
-
+        auto* Frame = Emulator::Get().Window;
         View = [VView new];
         [View setDevice:CurrentDevice()];
         [View setColorPixelFormat:MTLPixelFormatBGRA8Unorm];
@@ -86,6 +85,7 @@ namespace Volts::RSX
 
     void Metal::BeginRender()
     {
+        auto* Frame = Emulator::Get().Window;
         ImGuiIO& IO = ImGui::GetIO();
         MTKView* CurrentView = (MTKView*)[(__bridge NSWindow*)Frame->Handle contentView];
 
@@ -132,7 +132,10 @@ namespace Volts::RSX
         [Encoder popDebugGroup];
         [Encoder endEncoding];
 
+        auto* Frame = Emulator::Get().Window;
+
         MTKView* CurrentView = (MTKView*)[(__bridge NSWindow*)Frame->Handle contentView];
+        fmt::print("Buffer {} View {} Draw {}\n", (__bridge void*)CommandBuffer, (__bridge void*)CurrentView, (__bridge void*)CurrentView.currentDrawable);
         [CommandBuffer presentDrawable:CurrentView.currentDrawable];
 
         [CommandBuffer commit];

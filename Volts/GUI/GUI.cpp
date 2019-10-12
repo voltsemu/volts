@@ -12,11 +12,6 @@
 
 #include "GUIExtensions.h"
 
-#if CC_CLANG
-#   pragma clang diagnostic push
-#   pragma clang diagnostic ignored "-Wformat-security"
-#endif
-
 namespace ImGui
 {
     void HelpText(const char* Text)
@@ -164,6 +159,3 @@ namespace Volts::GUI
 
 #endif
 
-#if CC_CLANG
-#   pragma clang diagnostic pop
-#endif

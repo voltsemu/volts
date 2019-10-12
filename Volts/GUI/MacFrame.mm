@@ -44,6 +44,63 @@ OBJC_CLASS(VAppDelegate, NSObject<NSApplicationDelegate>)
     return YES;
 }
 
+- (void)applicationDidFinishLaunching:(NSNotification*)notify
+{
+    NSWindow* Window = [
+        [NSWindow alloc]
+        initWithContentRect:NSMakeRect(0, 0, 720, 480)
+            styleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable
+            backing:NSBackingStoreBuffered
+            defer:NO
+    ];
+
+    auto& Emu = Emulator::Get();
+
+    [Window setTitle:[NSString stringWithUTF8String:Emu.Window->Title]];
+    [Window setAcceptsMouseMovedEvents:YES];
+    [Window center];
+    [Window setRestorable:YES];
+
+    [Window setReleasedWhenClosed:NO];
+
+    [Window makeKeyAndOrderFront:nil];
+
+    Emu.Window->Handle = (__bridge void*)Window;
+
+    ImGui_ImplOSX_Init();
+    Emu.CurrentRender().Attach();
+    NSEvent* Event = nil;
+
+    for(;;)
+    {
+        Event = [NSApp nextEventMatchingMask:NSEventMaskAny
+                                    untilDate:nil
+                                    inMode:NSDefaultRunLoopMode
+                                    dequeue:YES];
+        if(Event)
+        {
+            [NSApp sendEvent:Event];
+            ImGui_ImplOSX_HandleEvent(Event, [Window contentView]);
+        }
+
+        auto& Draw = Emu.CurrentRender();
+
+        Draw.BeginRender();
+        ImGui_ImplOSX_NewFrame([Window contentView]);
+
+        ImGui::NewFrame();
+
+        Emu.GUI();
+
+        ImGui::Render();
+
+        Draw.PresentRender();
+    }
+
+    Emu.CurrentRender().Detach();
+}
+
+#if 0
 // basically main on mac
 - (void)applicationDidFinishLaunching:(NSNotification*)notify
 {
@@ -124,6 +181,7 @@ OBJC_CLASS(VAppDelegate, NSObject<NSApplicationDelegate>)
     // detach
     Emu.CurrentRender().Detach();
 }
+#endif
 
 @end
 
@@ -141,8 +199,6 @@ namespace Volts::GUI
 
     void Frame::Run()
     {
-        //FinalizeRenders();
-
         [VApp sharedApplication];
         [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
         [NSApp setDelegate:[VAppDelegate new]];

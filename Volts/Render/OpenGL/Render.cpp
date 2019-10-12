@@ -13,10 +13,9 @@ namespace Volts::RSX
 
     }
 
-    void OpenGL::Attach(GUI::Frame* Handle)
+    void OpenGL::Attach()
     {
         // TODO: figure out how to get glew working at all
-        Frame = Handle;
     }
 
     void OpenGL::Detach()

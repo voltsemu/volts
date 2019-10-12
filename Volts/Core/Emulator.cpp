@@ -11,13 +11,18 @@ namespace Volts
 
     void Emulator::Run()
     {
-        Window.SetTitle("Volts");
-        Window.Run();
+        Window = new GUI::Frame();
+        Window->SetTitle("Volts");
+        Window->Run();
     }
 
     void Emulator::GUI()
     {
+        ImGui::Begin("Logs");
 
+        ImGui::TextUnformatted(LogBuffer.c_str());
+
+        ImGui::End();
     }
 
     void Emulator::Log(Level L, std::string&& Message)
@@ -42,7 +47,7 @@ namespace Volts
                     LogBuffer.append("[other] ");
                     break;
             }
-            LogBuffer.append(Message.c_str());
+            LogBuffer.append((Message + "\n").c_str());
         }
     }
 

@@ -18,7 +18,7 @@ namespace Volts::RSX
         OpenGL();
         virtual ~OpenGL() override;
 
-        virtual void Attach(GUI::Frame* Handle) override;
+        virtual void Attach() override;
         virtual void Detach() override;
 
         virtual void UpdateVSync(bool Enabled) override;
@@ -39,7 +39,5 @@ namespace Volts::RSX
 
         virtual void BeginRender() override;
         virtual void PresentRender() override;
-    private:
-        GUI::Frame* Frame;
     };
 }

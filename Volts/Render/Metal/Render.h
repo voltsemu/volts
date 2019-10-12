@@ -42,7 +42,7 @@ namespace Volts::RSX
     {
         Metal();
         virtual ~Metal() override {}
-        virtual void Attach(GUI::Frame* Frame) override;
+        virtual void Attach() override;
         virtual void Detach() override;
 
         virtual const char* Name() const override { return "Metal"; }
@@ -62,11 +62,7 @@ namespace Volts::RSX
         virtual void PresentRender() override;
     private:
 
-        id<MTLDevice> CurrentDevice() const
-        {
-            return DeviceList[DeviceIndex].Handle;
-        }
-        GUI::Frame* Frame;
+        id<MTLDevice> CurrentDevice() const { return DeviceList[DeviceIndex].Handle; }
         MetalSupport::MetalDevice* DeviceList;
         U32 DeviceIndex = 0;
         U32 DeviceCount;
