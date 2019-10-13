@@ -11,20 +11,11 @@ if host_machine.system() == 'darwin'
     add_languages('objcpp')
 endif
 
-# get cthulhu for the standard library
-cthulhu = subproject('Cthulhu')
-
 # get zlib for decompressing files
 zlib = subproject('zlib')
 
 fmt = subproject('fmt')
 
-# get all the needed cthulhu projects
-libs = [
-    cthulhu.get_variable('metalib'),
-    cthulhu.get_variable('corelib'),
-    cthulhu.get_variable('fslib')
-]
 
 # get the very basic core sources
 sources = []
@@ -44,8 +35,7 @@ endif
 
 incs = [
     include_directories('Volts'),
-    include_directories('Volts/PS3'),
-    cthulhu.get_variable('inc')
+    include_directories('Volts/PS3')
 ]
 
 deps = [
@@ -67,10 +57,6 @@ else
     args += ['-fno-rtti', '-fno-exceptions', '-march=native']
 endif
 
-if meson.get_compiler('cpp').get_id() == 'gcc'
-    args += '-DGCC_WORKAROUND_BULLSHIT'
-endif
-
 if meson.get_compiler('cpp').get_id() == 'clang'
     args += [
         # meson doesnt set -std on clang
@@ -88,7 +74,6 @@ endif
 
 executable('volt', sources,
     include_directories : incs,
-    link_with : libs,
     install : true,
     cpp_args : args,
     objcpp_args : args,
