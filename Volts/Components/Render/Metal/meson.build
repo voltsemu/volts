@@ -1,0 +1,1 @@
+deps += dependency('appleframeworks', modules : [ 'Metal', 'MetalKit' ])
