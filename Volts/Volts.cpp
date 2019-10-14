@@ -19,6 +19,7 @@ int wWinMain(
 	int ShowCmd
 )
 {
+	Volts::Emulator::Get()->Frame.Instance = Instance;
 	int Argc;
 	wchar_t** Argv = CommandLineToArgvW(GetCommandLineW(), &Argc);
 

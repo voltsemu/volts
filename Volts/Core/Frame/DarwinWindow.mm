@@ -2,6 +2,12 @@
 
 #import <Cocoa/Cocoa.h>
 
+@interface VApp : NSApplication
+@end
+
+@implementation VApp
+@end
+
 namespace Volts
 {
     void Window::CreateFrame()
@@ -11,6 +17,7 @@ namespace Volts
 
     void Window::Show()
     {
-
+        [VApp sharedApplication];
+        [NSApp run];
     }
 }

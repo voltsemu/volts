@@ -26,5 +26,19 @@ namespace Volts
                 "name": "jeff"
             }
         )");
+
+        Frame.Open();
+
+        MSG Message = {};
+        while(Message.message != WM_QUIT)
+        {
+            if(PeekMessage(&Message, nullptr, 0, 0, PM_REMOVE))
+            {
+                TranslateMessage(&Message);
+                DispatchMessage(&Message);
+            }
+        }
+
+        Frame.Close();
     }
 }
