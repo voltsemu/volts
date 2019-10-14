@@ -29,7 +29,7 @@ namespace Volts
 
         Frame.Open();
 
-        MSG Message = {};
+        /*MSG Message = {};
         while(Message.message != WM_QUIT)
         {
             if(PeekMessage(&Message, nullptr, 0, 0, PM_REMOVE))
@@ -37,7 +37,7 @@ namespace Volts
                 TranslateMessage(&Message);
                 DispatchMessage(&Message);
             }
-        }
+        }*/
 
         Frame.Close();
     }

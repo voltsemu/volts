@@ -15,7 +15,12 @@ namespace Volts
 
     }
 
-    void Window::Show()
+    void Window::Close()
+    {
+        
+    }
+
+    void Window::Open()
     {
         [VApp sharedApplication];
         [NSApp run];

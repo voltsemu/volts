@@ -10,6 +10,7 @@
 #include "Frame/Window.h"
 
 #include <vector>
+#include <filesystem>
 
 #include "rapidjson/document.h"
 

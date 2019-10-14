@@ -27,15 +27,12 @@ if host_machine.system() == 'darwin'
         # enable @import in objc++
         '-fmodules',
         # this fixes imgui metal backend
-        '-fobjc-arc',
-        # this allows filesystem to work
-        '-mmacosx-version-min=10.15'
+        '-fobjc-arc'
     ]
 endif
 
 incs = [
-    include_directories('Volts'),
-    include_directories('Volts/PS3')
+    include_directories('Volts')
 ]
 
 deps = [
@@ -58,18 +55,7 @@ else
 endif
 
 if meson.get_compiler('cpp').get_id() == 'clang'
-    args += [
-        # meson doesnt set -std on clang
-        '-std=c++17',
-        # link to libc++ instead of default
-        '-stdlib=libc++',
-        # dont use default stdlib headers
-        '-nostdinc++',
-        # use these instead
-        '-I/usr/local/opt/llvm/include/c++/v1'
-    ]
-    # also link to the new stdlib
-    links += '-L/usr/local/opt/llvm/lib'
+    args += '-std=c++17' 
 endif
 
 executable('volt', sources,
