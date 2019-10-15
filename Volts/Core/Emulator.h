@@ -14,17 +14,29 @@
 
 #include "rapidjson/document.h"
 
+#define VINFO(...)
+#define VWARN(...)
+#define VERROR(...)
+#define VFATAL(...)
+
 namespace Volts
 {
     template<typename T>
     struct Backends
     {
-        void Register(T* Backend);
-        T* Current() const { return Backends[Index]; }
+        Backends(const char* M) : RegisterMessage(M) {}
+        void Register(T* Backend)
+        {
+            BackendList.push_back(Backend);
+            VINFO(RegisterMessage, Backend->Name());
+        }
+
+        T* Current() const { return BackendList[Index]; }
         U32 Index = 0;
         const char** Names = nullptr;
     private:
-        std::vector<T*> Backends;
+        std::vector<T*> BackendList;
+        const char* RegisterMessage;
     };
 
     struct Emulator
@@ -38,8 +50,8 @@ namespace Volts
 
         Window Frame;
 
-        Backends<Audio::Audio> Audio;
-        Backends<Input::Input> Input;
-        Backends<Render::Render> Render;
+        Backends<Audio::Audio> Audio{"Registered {} audio backend"};
+        Backends<Input::Input> Input{"Registered {} input backend"};
+        Backends<Render::Render> Render{"Registered {} render backend"};
     };
 }

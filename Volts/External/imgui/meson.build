@@ -9,3 +9,7 @@ sources += [
 
 subdir('examples')
 
+if host_machine.system() == 'darwin'
+    deps += dependency('appleframeworks', modules : [ 'Foundation', 'Cocoa' ])
+endif
+
