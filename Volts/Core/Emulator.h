@@ -9,15 +9,17 @@
 
 #include "Frame/Window.h"
 
+#define FMT_EXCEPTIONS 0
+#include <fmt/format.h>
 #include <vector>
 #include <filesystem>
 
 #include "rapidjson/document.h"
 
-#define VINFO(...)
-#define VWARN(...)
-#define VERROR(...)
-#define VFATAL(...)
+#define VINFO(Fmt, ...) fmt::print("[info]: {}\n", fmt::format(Fmt, __VA_ARGS__));
+#define VWARN(Fmt, ...) fmt::print("[warn]: {}\n", fmt::format(Fmt, __VA_ARGS__));
+#define VERROR(Fmt, ...) fmt::print("[error]: {}\n", fmt::format(Fmt, __VA_ARGS__));
+#define VFATAL(Fmt, ...) fmt::print("[fatal]: {}\n", fmt::format(Fmt, __VA_ARGS__));
 
 namespace Volts
 {

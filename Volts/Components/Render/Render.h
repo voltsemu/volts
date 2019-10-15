@@ -1,6 +1,6 @@
 #pragma once
 
-#include <vector>
+#include "Meta/Macros.h"
 
 namespace Volts::Render
 {
@@ -15,7 +15,6 @@ namespace Volts::Render
         virtual ~Render() {}
         virtual const char* Name() const = 0;
 
-        virtual bool RequiresDevice() const = 0;
-        virtual std::vector<Device> Devices() const = 0;
+        virtual const Device* Devices(U32* Count) const = 0;
     };
 }

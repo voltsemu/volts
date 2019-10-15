@@ -21,9 +21,6 @@ namespace Volts
 
         if(!glfwInit())
             return;
-
-        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-        Handle = glfwCreateWindow(720, 480, "Volts", nullptr, nullptr);
     }
 
     Window::~Window()
@@ -33,7 +30,8 @@ namespace Volts
 
     void Window::Open()
     {
-
+        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+        Handle = glfwCreateWindow(720, 480, "Volts", nullptr, nullptr);
     }
 
     void Window::Close()
