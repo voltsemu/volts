@@ -6,9 +6,11 @@
 
 #if OS_APPLE
 #   define GLFW_EXPOSE_NATIVE_COCOA
+#elif OS_WIN
+#   define GLFW_EXPOSE_NATIVE_WIN32
 #endif
 
-#import <GLFW/glfw3native.h>
+#include <GLFW/glfw3native.h>
 
 namespace Volts
 {

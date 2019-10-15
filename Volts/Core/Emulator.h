@@ -9,6 +9,10 @@
 
 #include "Frame/Window.h"
 
+#if OS_WIN
+#   include <windows.h>
+#endif
+
 #define FMT_EXCEPTIONS 0
 #include <fmt/format.h>
 #include <vector>
@@ -27,7 +31,7 @@ namespace Volts
     struct Backends
     {
         Backends(const char* M) : RegisterMessage(M) {}
-        
+
         template<typename TOther>
         void Register(TOther* Backend)
         {
@@ -57,5 +61,9 @@ namespace Volts
         Backends<Audio::Audio> Audio{"Registered {} audio backend"};
         Backends<Input::Input> Input{"Registered {} input backend"};
         Backends<Render::Render> Render{"Registered {} render backend"};
+
+#if OS_WIN
+        HINSTANCE Instance;
+#endif
     };
 }

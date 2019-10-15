@@ -7,3 +7,6 @@
 [submodule "subprojects/fmt"]
 	path = subprojects/fmt
 	url = https://github.com/Apache-HB/fmt.git
+[submodule "subprojects/glfw"]
+	path = subprojects/glfw
+	url = https://github.com/henry4k/glfw-meson.git

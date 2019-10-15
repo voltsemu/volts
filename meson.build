@@ -16,6 +16,8 @@ zlib = subproject('zlib')
 
 fmt = subproject('fmt')
 
+glfw = subproject('glfw')
+
 
 # get the very basic core sources
 sources = []
@@ -37,7 +39,8 @@ incs = [
 
 deps = [
     zlib.get_variable('zlib_dep'),
-    fmt.get_variable('fmt_dep')
+    fmt.get_variable('fmt_dep'),
+    glfw.get_variable('glfw_dep')
 ]
 
 links = []
@@ -55,7 +58,7 @@ else
 endif
 
 if meson.get_compiler('cpp').get_id() == 'clang'
-    args += '-std=c++17' 
+    args += '-std=c++17'
 endif
 
 executable('volt', sources,

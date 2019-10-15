@@ -7,19 +7,19 @@ int main(int Argc, const char** Argv)
 }
 
 
-#if OS_WINDOWS
+#if OS_WIN
 
 #include <windows.h>
 
 // on windows we need to use wWinMain to get an hInstance so we can make win32 windows and stuff
-int wWinMain(
+int APIENTRY wWinMain(
 	HINSTANCE Instance,
 	HINSTANCE PrevInstance,
 	LPWSTR CmdLine,
 	int ShowCmd
 )
 {
-	Volts::Emulator::Get()->Frame.Instance = Instance;
+	Volts::Emulator::Get()->Instance = Instance;
 	int Argc;
 	wchar_t** Argv = CommandLineToArgvW(GetCommandLineW(), &Argc);
 

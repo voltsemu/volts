@@ -2,16 +2,16 @@
 
 #include <stdint.h>
 
-#ifdef _WIN32
-#   define OS_WINDOWS 1
+#if defined(_WIN32) || defined(WIN32)
+#   define OS_WIN 1
 #elif defined(__APPLE__)
 #   define OS_APPLE 1
 #elif defined(__linux__)
 #   define OS_LINUX 1
 #endif
 
-#ifndef OS_WINDOWS
-#   define OS_WINDOWS 0
+#ifndef OS_WIN
+#   define OS_WIN 0
 #endif
 
 #ifndef OS_APPLE
