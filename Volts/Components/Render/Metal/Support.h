@@ -2,6 +2,7 @@
 
 #include "Core/Emulator.h"
 
+#import <Cocoa/Cocoa.h>
 #import <Metal/Metal.h>
 
 namespace Volts::Render

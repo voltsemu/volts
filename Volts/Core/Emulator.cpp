@@ -3,6 +3,9 @@
 #include <iostream>
 #include <filesystem>
 
+#include "imgui.h"
+#include "imgui/examples/imgui_impl_glfw.h"
+
 namespace Volts
 {
     using namespace std;
@@ -15,12 +18,6 @@ namespace Volts
 
     void Emulator::Run()
     {
-        /*if(!filesystem::is_directory("Config") || !filesystem::exists("Config"))
-            filesystem::create_directory("Config");
-
-        ifstream ConfigFile("Config/Config.json");
-        Config.ParseStream<0>(ConfigFile);*/
-
         Config.Parse(R"(
             {
                 "name": "jeff"
@@ -29,15 +26,26 @@ namespace Volts
 
         Frame.Open();
 
-        /*MSG Message = {};
-        while(Message.message != WM_QUIT)
+        ImGui_ImplGlfw_InitForOpenGL(Frame, true);
+        Render.Current()->Attach();
+
+        while(!glfwWindowShouldClose(Frame))
         {
-            if(PeekMessage(&Message, nullptr, 0, 0, PM_REMOVE))
-            {
-                TranslateMessage(&Message);
-                DispatchMessage(&Message);
-            }
-        }*/
+            auto* RenderBackend = Render.Current();
+            RenderBackend->Begin();
+            ImGui_ImplGlfw_NewFrame();
+
+            ImGui::NewFrame();
+            ImGui::Begin("AAA");
+            ImGui::End();
+            ImGui::Render();
+
+            RenderBackend->End();
+            glfwPollEvents();
+        }
+
+        Render.Current()->Detach();
+        ImGui_ImplGlfw_Shutdown();
 
         Frame.Close();
     }

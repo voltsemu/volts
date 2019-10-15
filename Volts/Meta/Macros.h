@@ -36,9 +36,4 @@ namespace Volts
 
     using F32 = float;
     using F64 = double;
-
-    struct Size
-    {
-        U64 Width, Height;
-    };
 }

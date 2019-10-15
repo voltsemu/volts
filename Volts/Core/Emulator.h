@@ -27,9 +27,11 @@ namespace Volts
     struct Backends
     {
         Backends(const char* M) : RegisterMessage(M) {}
-        void Register(T* Backend)
+        
+        template<typename TOther>
+        void Register(TOther* Backend)
         {
-            BackendList.push_back(Backend);
+            BackendList.push_back((T*)Backend);
             VINFO(RegisterMessage, Backend->Name());
         }
 
