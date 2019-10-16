@@ -1,12 +1,6 @@
-[submodule "subprojects/Cthulhu"]
-	path = subprojects/Cthulhu
-	url = https://github.com/Apache-HB/CTULib
 [submodule "subprojects/zlib"]
 	path = subprojects/zlib
 	url = https://github.com/Apache-HB/zlib.git
 [submodule "subprojects/fmt"]
 	path = subprojects/fmt
 	url = https://github.com/Apache-HB/fmt.git
-[submodule "subprojects/glfw"]
-	path = subprojects/glfw
-	url = https://github.com/henry4k/glfw-meson.git
