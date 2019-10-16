@@ -40,6 +40,17 @@ namespace Volts
         }
 
         T* Current() const { return BackendList[Index]; }
+        void Set(const char* N)
+        {
+            for(U32 I = 0; I < BackendList.size(); I++)
+            {
+                if(strcmp(BackendList[I]->Name(), N) == 0)
+                {
+                    Index = I;
+                    break;
+                }
+            }
+        }
         U32 Index = 0;
         const char** Names = nullptr;
     private:

@@ -21,6 +21,10 @@ namespace Volts
 
         if(!glfwInit())
             return;
+
+        glm::mat4 Matrix;
+        glm::vec4 Vec;
+        auto T = Matrix * Vec;
     }
 
     Window::~Window()

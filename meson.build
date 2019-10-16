@@ -16,8 +16,17 @@ zlib = subproject('zlib')
 
 fmt = subproject('fmt')
 
-glfw = subproject('glfw')
+glfw_pack = dependency('glfw3', required : false)
 
+deps = []
+
+if glfw_pack.found()
+    message('found glfw3, ignoring git submodule')
+    deps += glfw_pack
+else
+    message('glfw3 not found in system, using git submodule instead')
+    deps += subproject('glfw').get_variable('glfw_dep')
+endif
 
 # get the very basic core sources
 sources = []
@@ -37,10 +46,9 @@ incs = [
     include_directories('Volts')
 ]
 
-deps = [
+deps += [
     zlib.get_variable('zlib_dep'),
-    fmt.get_variable('fmt_dep'),
-    glfw.get_variable('glfw_dep')
+    fmt.get_variable('fmt_dep')
 ]
 
 links = []
