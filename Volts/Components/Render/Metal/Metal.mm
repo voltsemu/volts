@@ -23,7 +23,7 @@ namespace Volts::Render
         *Count = DeviceList.size();
         return DeviceList.data();
     }
-    
+
     void Metal::SetDevice(U32 Index)
     {
         if(Index != DeviceIndex)
@@ -36,7 +36,6 @@ namespace Volts::Render
 
     void Metal::CreatePipeline()
     {
-        printf("Init\n");
         NSWindow* Win = glfwGetCocoaWindow(Emulator::Get()->Frame);
         Layer = [CAMetalLayer layer];
         Layer.device = CurrentDevice();
@@ -69,7 +68,7 @@ namespace Volts::Render
             options:CompileOptions
             error:&Error
         ];
-        
+
         if(!Library)
         {
             NSLog(@"Cant create library %@", Error);
@@ -97,7 +96,7 @@ namespace Volts::Render
     }
 
     void Metal::Detach()
-    {  
+    {
         ImGui_ImplMetal_Shutdown();
     }
 
@@ -127,7 +126,7 @@ namespace Volts::Render
         [Encoder setVertexBytes:(vector_float4[]){
             { 0, 0, 0, 1 },
             { -1, 1, 0, 1 },
-            { 1, 1, 0, 1 } 
+            { 1, 1, 0, 1 }
         } length:3 * sizeof(vector_float4) atIndex:0];
         [Encoder drawPrimitives:MTLPrimitiveTypeTriangle vertexStart:0 vertexCount:3];
 

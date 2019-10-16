@@ -36,4 +36,6 @@ namespace Volts
 
     using F32 = float;
     using F64 = double;
+
+    using Byte = U8;
 }
