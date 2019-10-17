@@ -24,16 +24,31 @@ namespace Volts::Render
         virtual void End() override;
 
     private:
+
+        struct Vertex
+        {
+            F32 Pos[3];
+            F32 Colour[4];
+        };
         // global state
         Ptr<IDXGIFactory4> Factory;
         std::vector<DX12Device> DeviceList;
         U32 DeviceIndex = 0;
+        IDXGIAdapter1* CurrentDevice() const { return DeviceList[DeviceIndex].Handle; }
 
         // helper functions
-        void LoadPipeline();
+        void LoadDeviceData();
         void LoadData();
 
+        void WaitForGPU();
+
+        void AdvanceFrame();
+        void PopulateCommandList();
+
         static constexpr U32 FrameCount = 2;
+
+        // debug
+        Ptr<ID3D12InfoQueue> DebugQueue;
 
         // pipeline state
         D3D12_VIEWPORT Viewport;

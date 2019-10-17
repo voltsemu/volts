@@ -27,7 +27,7 @@ namespace Volts
         Frame.Open();
 
         ImGui_ImplGlfw_InitForOpenGL(Frame, true);
-        Render.Set("Metal");
+        //Render.Set("Metal");
         Render.Current()->Attach();
 
         while(!glfwWindowShouldClose(Frame))
