@@ -16,15 +16,11 @@ namespace Volts
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
         ImGui::StyleColorsDark();
-        
+
         glfwSetErrorCallback(error_callback);
 
         if(!glfwInit())
             return;
-
-        glm::mat4 Matrix;
-        glm::vec4 Vec;
-        auto T = Matrix * Vec;
     }
 
     Window::~Window()

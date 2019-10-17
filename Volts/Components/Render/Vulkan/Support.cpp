@@ -1,9 +1,6 @@
 #include "Support.h"
 
-namespace Volts::Render::Vk
+namespace Volts::Render
 {
-    bool Init()
-    {
-        DLL_FILE Handle = DLOPEN("libvulkan.1.dylib")
-    }
+
 }
