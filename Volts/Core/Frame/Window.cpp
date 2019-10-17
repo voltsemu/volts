@@ -30,7 +30,11 @@ namespace Volts
 
     void Window::Open()
     {
+        // we might not use opengl
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+        // disable vsync
+        glfwWindowHint(GLFW_DOUBLEBUFFER, GL_FALSE);
+        
         Handle = glfwCreateWindow(720, 480, "Volts", nullptr, nullptr);
     }
 

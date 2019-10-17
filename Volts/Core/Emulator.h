@@ -20,10 +20,10 @@
 #include "imgui/imgui.h"
 #include "rapidjson/document.h"
 
-#define VINFO(Fmt, ...) Volts::Info(fmt::format(Fmt, __VA_ARGS__).c_str());
-#define VWARN(Fmt, ...) Volts::Warn(fmt::format(Fmt, __VA_ARGS__).c_str());
-#define VERROR(Fmt, ...) Volts::Error(fmt::format(Fmt, __VA_ARGS__).c_str());
-#define VFATAL(Fmt, ...) Volts::Fatal(fmt::format(Fmt, __VA_ARGS__).c_str());
+#define VINFO(...) Volts::Info(fmt::format(__VA_ARGS__).c_str());
+#define VWARN(...) Volts::Warn(fmt::format(__VA_ARGS__).c_str());
+#define VERROR(...) Volts::Error(fmt::format(__VA_ARGS__).c_str());
+#define VFATAL(...) Volts::Fatal(fmt::format(__VA_ARGS__).c_str());
 
 namespace Volts
 {
