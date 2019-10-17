@@ -7,3 +7,6 @@
 [submodule "subprojects/glfw"]
 	path = subprojects/glfw
 	url = https://github.com/Apache-HB/glfw-meson
+[submodule "subprojects/cthulhu"]
+	path = subprojects/cthulhu
+	url = https://github.com/Apache-HB/CTULib

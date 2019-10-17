@@ -4,6 +4,8 @@
 
 namespace Volts::Render
 {
+    using namespace Cthulhu;
+    
     struct Device
     {
         virtual ~Device() {}

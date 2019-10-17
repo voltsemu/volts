@@ -2,15 +2,10 @@
 
 #include "Meta/Macros.h"
 
-
 #define GLFW_INCLUE_VULKAN
 #include <GLFW/glfw3.h>
 
-#if OS_APPLE
-#   define GLFW_EXPOSE_NATIVE_COCOA
-#elif OS_WIN
-#   define GLFW_EXPOSE_NATIVE_WIN32
-#endif
+#define GLFW_EXPOSE_NATIVE_COCOA
 
 #include <GLFW/glfw3native.h>
 

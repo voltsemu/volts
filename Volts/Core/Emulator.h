@@ -1,6 +1,7 @@
 #pragma once
 
-#include "Meta/Macros.h"
+#include <Meta/Macros.h>
+#include <Meta/Aliases.h>
 
 #include "Components/Audio/Audio.h"
 #include "Components/Input/Input.h"
@@ -27,6 +28,8 @@
 
 namespace Volts
 {
+    using namespace Cthulhu;
+
     void Info(const char*);
     void Warn(const char*);
     void Error(const char*);

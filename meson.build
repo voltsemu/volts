@@ -16,9 +16,15 @@ zlib = subproject('zlib')
 
 fmt = subproject('fmt')
 
+ctu = subproject('cthulhu')
+
 glfw_pack = dependency('glfw3', required : false)
 
-deps = []
+deps = [
+    ctu.get_variable('fs_dep'),
+    ctu.get_variable('meta_dep'),
+    ctu.get_variable('core_dep')
+]
 
 if glfw_pack.found()
     message('found glfw3, ignoring git submodule')
@@ -33,6 +39,7 @@ sources = []
 
 args = []
 
+
 if host_machine.system() == 'darwin'
     args += [
         # enable @import in objc++
@@ -43,7 +50,8 @@ if host_machine.system() == 'darwin'
 endif
 
 incs = [
-    include_directories('Volts')
+    include_directories('Volts'),
+    ctu.get_variable('inc')
 ]
 
 deps += [
@@ -67,6 +75,10 @@ endif
 
 if meson.get_compiler('cpp').get_id() == 'clang'
     args += '-std=c++17'
+endif
+
+if meson.get_compiler('cpp').get_id() == 'gcc'
+    args += '-DGCC_WORKAROUND_BULLSHIT'
 endif
 
 executable('volt', sources,
