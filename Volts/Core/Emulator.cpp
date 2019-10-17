@@ -2,12 +2,46 @@
 
 #include <iostream>
 #include <filesystem>
+#include <chrono>
 
 #include "imgui.h"
 #include "imgui/examples/imgui_impl_glfw.h"
+#include "imfilebrowser.h"
 
 namespace Volts
 {
+    void Info(const char* M)
+    {
+        auto* Emu = Emulator::Get();
+        if(Emu->Level < LogLevel::Info)
+            return;
+
+        Emu->LogBuffer.append(fmt::format("[info] {}\n", M).c_str());
+    }
+
+    void Warn(const char* M)
+    {
+        auto* Emu = Emulator::Get();
+        if(Emu->Level < LogLevel::Warn)
+            return;
+
+        Emu->LogBuffer.append(fmt::format("[info] {}\n", M).c_str());
+    }
+
+    void Error(const char* M)
+    {
+        auto* Emu = Emulator::Get();
+        if(Emu->Level < LogLevel::Error)
+            return;
+
+        Emu->LogBuffer.append(fmt::format("[error] %s\n", M).c_str());
+    }
+
+    void Fatal(const char* M)
+    {
+        Emulator::Get()->LogBuffer.append(fmt::format("[fatal] %s\n", M).c_str());
+    }
+
     using namespace std;
     using namespace rapidjson;
     Emulator* Emulator::Get()
@@ -16,18 +50,80 @@ namespace Volts
         return Singleton;
     }
 
+    using TimePoint = decltype(std::chrono::high_resolution_clock::now());
+    using TimeDiff = std::chrono::duration<double, std::milli>;
+
+    ImGui::FileBrowser FileDialog;
+    TimePoint LastFrame = std::chrono::high_resolution_clock::now();
+    void Emulator::GUI()
+    {
+        ImGui::Begin("Metrics");
+        {
+            auto Now = std::chrono::high_resolution_clock::now();
+
+            TimeDiff Count = (Now - LastFrame);
+
+            ImGui::Text("%s", fmt::format("FrameTime: {:.2f}ms", Count.count()).c_str());
+            ImGui::Text("%s", fmt::format("FPS: {:.2f}", 1000 / Count.count()).c_str());
+
+            LastFrame = Now;
+        }
+        ImGui::End();
+
+        ImGui::Begin("Backends");
+        {
+            ImGui::Combo("Renders", &Render.Index, Render.Names, Render.Count);
+            if(ImGui::Checkbox("VSync"))
+            ImGui::Combo("Audio", &Audio.Index, Audio.Names, Audio.Count);
+            ImGui::Combo("Input", &Input.Index, Input.Names, Input.Count);
+        }
+        ImGui::End();
+
+        ImGui::Begin("Logs");
+        {
+            const char* LevelOptions[] = { "Info", "Warn", "Error" };
+            ImGui::Combo("Filter", (I32*)&Level, LevelOptions, IM_ARRAYSIZE(LevelOptions));
+
+            ImGui::SameLine();
+            if(ImGui::Button("Clear"))
+                LogBuffer.clear();
+
+            ImGui::Separator();
+            ImGui::TextUnformatted(LogBuffer.c_str());
+        }
+        ImGui::End();
+
+        ImGui::Begin("Decrypt");
+        {
+            if(ImGui::Button("Decrypt EBOOT"))
+            {
+                FileDialog.SetTitle("UNSELF");
+                FileDialog.Open();
+            }
+
+            FileDialog.Display();
+
+            if(FileDialog.HasSelected())
+            {
+                Info(fmt::format("Selected {}", FileDialog.GetSelected().string()).c_str());
+                FileDialog.ClearSelected();
+            }
+        }
+        ImGui::End();
+    }
+
     void Emulator::Run()
     {
-        Config.Parse(R"(
-            {
-                "name": "jeff"
-            }
-        )");
+        // TODO: stupid hack
+        Render.Index = 1;
+        Render.Finalize();
+        Input.Finalize();
+        Audio.Finalize();
 
         Frame.Open();
 
         ImGui_ImplGlfw_InitForOpenGL(Frame, true);
-        Render.Set("Metal");
+        
         Render.Current()->Attach();
 
         while(!glfwWindowShouldClose(Frame))
@@ -37,8 +133,7 @@ namespace Volts
             ImGui_ImplGlfw_NewFrame();
 
             ImGui::NewFrame();
-            ImGui::Begin("AAA");
-            ImGui::End();
+            GUI();
             ImGui::Render();
 
             RenderBackend->End();

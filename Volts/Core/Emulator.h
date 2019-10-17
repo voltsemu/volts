@@ -17,16 +17,21 @@
 #include <fmt/format.h>
 #include <vector>
 #include <filesystem>
-
+#include "imgui/imgui.h"
 #include "rapidjson/document.h"
 
-#define VINFO(Fmt, ...) fmt::print("[info]: {}\n", fmt::format(Fmt, __VA_ARGS__));
-#define VWARN(Fmt, ...) fmt::print("[warn]: {}\n", fmt::format(Fmt, __VA_ARGS__));
-#define VERROR(Fmt, ...) fmt::print("[error]: {}\n", fmt::format(Fmt, __VA_ARGS__));
-#define VFATAL(Fmt, ...) fmt::print("[fatal]: {}\n", fmt::format(Fmt, __VA_ARGS__));
+#define VINFO(Fmt, ...) Volts::Info(fmt::format(Fmt, __VA_ARGS__).c_str());
+#define VWARN(Fmt, ...) Volts::Warn(fmt::format(Fmt, __VA_ARGS__).c_str());
+#define VERROR(Fmt, ...) Volts::Error(fmt::format(Fmt, __VA_ARGS__).c_str());
+#define VFATAL(Fmt, ...) Volts::Fatal(fmt::format(Fmt, __VA_ARGS__).c_str());
 
 namespace Volts
 {
+    void Info(const char*);
+    void Warn(const char*);
+    void Error(const char*);
+    void Fatal(const char*);
+
     template<typename T>
     struct Backends
     {
@@ -40,22 +45,41 @@ namespace Volts
         }
 
         T* Current() const { return BackendList[Index]; }
-        void Set(const char* N)
+
+        void Finalize()
         {
-            for(U32 I = 0; I < BackendList.size(); I++)
+            Count = BackendList.size();
+            Names = new const char*[Count];
+            for(U32 I = 0; I < Count; I++)
             {
-                if(strcmp(BackendList[I]->Name(), N) == 0)
-                {
-                    Index = I;
-                    break;
-                }
+                Names[I] = BackendList[I]->Name();
             }
         }
-        U32 Index = 0;
+
+        void Update(U32 NewIndex)
+        {
+            if(NewIndex != Index)
+            {
+                Current()->Detach();
+                Index = NewIndex;
+                Current()->Attach();
+            }
+        }
+
+        I32 Index = 0;
+        I32 Count = 0;
         const char** Names = nullptr;
     private:
         std::vector<T*> BackendList;
         const char* RegisterMessage;
+    };
+
+    enum class LogLevel : U8
+    {
+        Info = 0,
+        Warn = 1,
+        Error = 2,
+        Fatal = 3,
     };
 
     struct Emulator
@@ -76,5 +100,10 @@ namespace Volts
 #if OS_WIN
         HINSTANCE Instance;
 #endif
+
+        ImGuiTextBuffer LogBuffer;
+        LogLevel Level = LogLevel::Info;
+    private:
+        void GUI();
     };
 }
