@@ -3,6 +3,8 @@
 #include <Meta/Macros.h>
 #include <Meta/Aliases.h>
 
+#include "Macros.h"
+
 #include "Components/Audio/Audio.h"
 #include "Components/Input/Input.h"
 #include "Components/Files/FileSystem.h"

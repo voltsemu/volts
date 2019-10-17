@@ -8,8 +8,11 @@
 #include "imgui/examples/imgui_impl_glfw.h"
 #include "imfilebrowser.h"
 
+#include "Utils/SFO.h"
+
 namespace Volts
 {
+    using namespace Utils;
     bool LogScrollToBottom = false;
 
     void Info(const char* M)
@@ -101,7 +104,10 @@ namespace Volts
 
             ImGui::Separator();
             ImGui::BeginChild("LogBox");
+            
+            ImGui::PushTextWrapPos();
             ImGui::TextUnformatted(LogBuffer.c_str());
+            ImGui::PopTextWrapPos();
             
             if(LogScrollToBottom)
                 ImGui::SetScrollHere(1.f);
@@ -111,11 +117,11 @@ namespace Volts
         }
         ImGui::End();
 
-        ImGui::Begin("Decrypt");
+        ImGui::Begin("Files");
         {
-            if(ImGui::Button("Decrypt EBOOT"))
+            if(ImGui::Button("Decrypt PARAM.SFO"))
             {
-                FileDialog.SetTitle("UNSELF");
+                FileDialog.SetTitle("SFO");
                 FileDialog.Open();
             }
 
@@ -124,6 +130,27 @@ namespace Volts
             if(FileDialog.HasSelected())
             {
                 Info(fmt::format("Selected {}", FileDialog.GetSelected().string()).c_str());
+                FS::BufferedFile F{FileDialog.GetSelected().string().c_str()};
+                auto Obj = LoadSFO(F);
+
+                for(auto& [Key, Val] : Obj)
+                {
+                    std::string ValStr;
+                    switch(Val.Type)
+                    {
+                        case Format::String:
+                            ValStr = (char*)Val.Data.data();
+                            break;
+                        case Format::Array:
+                            for(auto E : Val.Data)
+                                ValStr += std::to_string(E) + " ";
+                            break;
+                        case Format::Integer:
+                            ValStr = std::to_string(*(U32*)Val.Data.data());
+                            break;
+                    }
+                    VINFO("{}: {}", Key, ValStr);
+                }
                 FileDialog.ClearSelected();
             }
         }

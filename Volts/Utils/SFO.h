@@ -26,5 +26,7 @@ namespace Volts::Utils
         std::vector<Byte> Data;
     };
 
-    std::map<std::string, SFOValue> LoadSFO(FS::BufferedFile& Stream);
+    using SFO = std::map<std::string, SFOValue>;
+
+    SFO LoadSFO(FS::BufferedFile& Stream);
 }
