@@ -28,5 +28,5 @@ namespace Volts::Utils
 
     using SFO = std::map<std::string, SFOValue>;
 
-    SFO LoadSFO(FS::BufferedFile& Stream);
+    SFO LoadSFO(FS::BufferedFile&& File);
 }

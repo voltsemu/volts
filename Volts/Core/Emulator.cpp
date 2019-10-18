@@ -130,8 +130,7 @@ namespace Volts
             if(FileDialog.HasSelected())
             {
                 Info(fmt::format("Selected {}", FileDialog.GetSelected().string()).c_str());
-                FS::BufferedFile F{FileDialog.GetSelected().string().c_str()};
-                auto Obj = LoadSFO(F);
+                auto Obj = LoadSFO({FileDialog.GetSelected().string().c_str()});
 
                 for(auto& [Key, Val] : Obj)
                 {

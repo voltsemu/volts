@@ -44,7 +44,7 @@ namespace Volts::Utils
         Little<U32> TotalEntries;
     };
 
-    std::map<std::string, SFOValue> LoadSFO(FS::BufferedFile& File)
+    std::map<std::string, SFOValue> LoadSFO(FS::BufferedFile&& File)
     {
         if(!File.Valid())
         {
