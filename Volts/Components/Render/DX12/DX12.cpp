@@ -3,6 +3,7 @@
 #include "imgui/imgui.h"
 
 #include "imgui/examples/imgui_impl_dx12.h"
+#include "imgui/examples/imgui_impl_win32.h"
 
 namespace Volts::Render
 {
@@ -68,7 +69,7 @@ namespace Volts::Render
 
     void DX12::Detach()
     {
-
+        ImGui_ImplDX12_Shutdown();
     }
 
     void DX12::Begin()

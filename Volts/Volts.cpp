@@ -7,7 +7,7 @@ int main(int Argc, const char** Argv)
 }
 
 
-#if OS_WIN
+#if OS_WINDOWS
 
 #include <windows.h>
 
@@ -19,7 +19,6 @@ int APIENTRY wWinMain(
 	int ShowCmd
 )
 {
-	Volts::Emulator::Get()->Instance = Instance;
 	int Argc;
 	wchar_t** Argv = CommandLineToArgvW(GetCommandLineW(), &Argc);
 
