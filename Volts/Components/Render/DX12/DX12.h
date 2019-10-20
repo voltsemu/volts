@@ -25,6 +25,8 @@ namespace Volts::Render
 
         virtual void Resize(U32 Width, U32 Height) override;
 
+        virtual void UpdateVSync(bool Enabled) override;
+
     private:
 
         struct Vertex
@@ -38,20 +40,19 @@ namespace Volts::Render
         U32 DeviceIndex = 0;
         IDXGIAdapter1* CurrentDevice() const { return DeviceList[DeviceIndex].Handle; }
 
-        // load data that is independant of device or framesize
-        void LoadData();
+        // creates the device and the command queue
+        void CreateDeviceData();
 
-        // load data that is dependant on device & framesize
         void LoadDeviceData();
 
-        // reset state that is frame size dependant
-        void ResetData();
+        void LoadSizedResources();
 
-        // wait for gpu to do its stuff
+        void LoadData();
+
         void WaitForGPU();
-
-        // go to the next frame
         void AdvanceFrame();
+
+        void CreateBackBuffer();
 
         // add the stuff we need to the command list
         void PopulateCommandList();

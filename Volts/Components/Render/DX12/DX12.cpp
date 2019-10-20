@@ -91,7 +91,65 @@ namespace Volts::Render
 
     void DX12::Resize(U32 Width, U32 Height)
     {
+        WaitForGPU();
 
+        for(U8 I = 0; I < FrameCount; I++)
+        {
+            RenderTargets[I].Reset();
+            FenceValues[I] = FenceValues[FrameIndex];
+        }
+
+        DXGI_SWAP_CHAIN_DESC Desc = {};
+        Swap->GetDesc(&Desc);
+
+        VALIDATE(Swap->ResizeBuffers(FrameCount, Width, Height, Desc.BufferDesc.Format, Desc.Flags));
+
+        Viewport = {
+            0.f, 0.f,
+            (F32)Width, (F32)Height
+        };
+
+        Scissor = {
+            0, 0,
+            (LONG)Width, (LONG)Height
+        };
+
+        FrameIndex = Swap->GetCurrentBackBufferIndex();
+
+        LoadSizedResources();
+    }
+
+    void DX12::UpdateVSync(bool Enabled)
+    {
+        VSyncMode = Enabled ? 1 : 0;
+    }
+
+    void DX12::LoadSizedResources()
+    {
+        I32 Width, Height;
+        glfwGetFramebufferSize(Emulator::Get()->Frame, &Width, &Height);
+        Viewport = {
+            0.f, 0.f,
+            (F32)Width, (F32)Height
+        };
+
+        Scissor = {
+            0, 0,
+            (LONG)Width, (LONG)Height
+        };
+
+        {
+            CD3DX12_CPU_DESCRIPTOR_HANDLE RTVHandle(RTVHeap->GetCPUDescriptorHandleForHeapStart());
+
+            for(U32 I = 0; I < FrameCount; I++)
+            {
+                VALIDATE(Swap->GetBuffer(I, IID_PPV_ARGS(&RenderTargets[I])));
+                Device->CreateRenderTargetView(RenderTargets[I].Get(), nullptr, RTVHandle);
+                RTVHandle.Offset(1, RTVDescriptorSize);
+
+                VALIDATE(Device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&CommandAllocators[I])));
+            }
+        }
     }
 
     void DX12::PopulateCommandList()
@@ -138,7 +196,41 @@ namespace Volts::Render
         VALIDATE(CommandList->Close());
     }
 
-    void DX12::LoadDeviceData()
+    void DX12::CreateBackBuffer()
+    {
+        {
+            D3D12_DESCRIPTOR_HEAP_DESC DHD = {};
+            DHD.NumDescriptors = FrameCount;
+            DHD.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+            DHD.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+            VALIDATE(Device->CreateDescriptorHeap(&DHD, IID_PPV_ARGS(&RTVHeap)));
+
+            RTVDescriptorSize = Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+        }
+
+        {
+            CD3DX12_CPU_DESCRIPTOR_HANDLE RTVHandle(RTVHeap->GetCPUDescriptorHandleForHeapStart());
+
+            for(U32 I = 0; I < FrameCount; I++)
+            {
+                VALIDATE(Swap->GetBuffer(I, IID_PPV_ARGS(&RenderTargets[I])));
+                Device->CreateRenderTargetView(RenderTargets[I].Get(), nullptr, RTVHandle);
+                RTVHandle.Offset(1, RTVDescriptorSize);
+
+                VALIDATE(Device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&CommandAllocators[I])));
+            }
+        }
+
+        {
+            D3D12_DESCRIPTOR_HEAP_DESC DHD = {};
+            DHD.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+            DHD.NumDescriptors = 1;
+            DHD.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+            VALIDATE(Device->CreateDescriptorHeap(&DHD, IID_PPV_ARGS(&SRVHeap)));
+        }
+    }
+
+    void DX12::CreateDeviceData()
     {
         VALIDATE(D3D12CreateDevice(
             CurrentDevice(),
@@ -156,6 +248,11 @@ namespace Volts::Render
                 IID_PPV_ARGS(&Queue)
             ));
         }
+    }
+
+    void DX12::LoadDeviceData()
+    {
+        CreateDeviceData();
 
         {
             DXGI_SWAP_CHAIN_DESC1 SCD = {};
@@ -188,36 +285,7 @@ namespace Volts::Render
 
         FrameIndex = Swap->GetCurrentBackBufferIndex();
 
-        {
-            D3D12_DESCRIPTOR_HEAP_DESC DHD = {};
-            DHD.NumDescriptors = FrameCount;
-            DHD.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-            DHD.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-            VALIDATE(Device->CreateDescriptorHeap(&DHD, IID_PPV_ARGS(&RTVHeap)));
-
-            RTVDescriptorSize = Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-        }
-
-        {
-            CD3DX12_CPU_DESCRIPTOR_HANDLE RTVHandle(RTVHeap->GetCPUDescriptorHandleForHeapStart());
-
-            for(U32 I = 0; I < FrameCount; I++)
-            {
-                VALIDATE(Swap->GetBuffer(I, IID_PPV_ARGS(&RenderTargets[I])));
-                Device->CreateRenderTargetView(RenderTargets[I].Get(), nullptr, RTVHandle);
-                RTVHandle.Offset(1, RTVDescriptorSize);
-
-                VALIDATE(Device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&CommandAllocators[I])));
-            }
-        }
-
-        {
-            D3D12_DESCRIPTOR_HEAP_DESC DHD = {};
-            DHD.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-            DHD.NumDescriptors = 1;
-            DHD.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-            VALIDATE(Device->CreateDescriptorHeap(&DHD, IID_PPV_ARGS(&SRVHeap)));
-        }
+        CreateBackBuffer();
     }
 
     void DX12::LoadData()
@@ -299,7 +367,7 @@ namespace Volts::Render
             };
 
             D3D12_GRAPHICS_PIPELINE_STATE_DESC PSO = {};
-            PSO.InputLayout = {IED, _countof(IED) };
+            PSO.InputLayout = { IED, _countof(IED) };
             PSO.pRootSignature = RootSignature.Get();
             PSO.VS = CD3DX12_SHADER_BYTECODE(VertexShader.Get());
             PSO.PS = CD3DX12_SHADER_BYTECODE(PixelShader.Get());
@@ -402,11 +470,6 @@ namespace Volts::Render
                 WaitForGPU();
             }
         }
-    }
-
-    void DX12::ResetData()
-    {
-
     }
 
     void DX12::WaitForGPU()

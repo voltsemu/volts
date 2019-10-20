@@ -21,6 +21,8 @@ namespace Volts::Render
         virtual void Detach() override;
 
         virtual void Resize(U32 Width, U32 Height) override;
+
+        virtual void UpdateVSync(bool Enabled) override;
     private:
         U32 DeviceIndex = 0;
         VkDevice CurrentDevice() const;

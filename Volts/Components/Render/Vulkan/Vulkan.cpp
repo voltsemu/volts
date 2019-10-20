@@ -44,4 +44,9 @@ namespace Volts::Render
     {
 
     }
+
+    void Vulkan::UpdateVSync(bool Enabled)
+    {
+
+    }
 }

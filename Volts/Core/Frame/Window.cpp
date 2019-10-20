@@ -15,6 +15,7 @@ namespace Volts
 
     static void ResizeCallback(GLFWwindow* Window, int NewWidth, int NewHeight)
     {
+        VTRACE("Resizing window to {}x{}", NewWidth, NewHeight);
         Emulator::Get()
             ->Render.Current()
             ->Resize((U32)NewWidth, (U32)NewHeight);

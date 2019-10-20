@@ -107,7 +107,7 @@ namespace Volts
             static bool VSyncEnabled = true;
             ImGui::Checkbox("VSync", &VSyncEnabled);
 
-            // Render.Current()->SetVSync(VSyncEnabled);
+            Render.Current()->UpdateVSync(VSyncEnabled);
 
             ImGui::Combo("Audio", &Audio.Index, Audio.Names, Audio.Count);
             ImGui::Combo("Input", &Input.Index, Input.Names, Input.Count);
@@ -160,7 +160,7 @@ namespace Volts
             {
                 // TODO: all this is debug code
                 Info(fmt::format("Selected {}", FileDialog.GetSelected().string()).c_str());
-                
+
                 if(CurrentDialog == DialogType::PARAM)
                 {
                     auto Obj = LoadSFO({FileDialog.GetSelected().string().c_str()});
@@ -188,7 +188,7 @@ namespace Volts
                 {
                     auto Obj = LoadSELF({FileDialog.GetSelected().string().c_str()});
 
-                    
+
                 }
                 FileDialog.ClearSelected();
             }

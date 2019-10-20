@@ -31,5 +31,7 @@ namespace Volts::Render
 
         // Window interaction
         virtual void Resize(U32 Width, U32 Height) = 0;
+
+        virtual void UpdateVSync(bool Enabled) = 0;
     };
 }
