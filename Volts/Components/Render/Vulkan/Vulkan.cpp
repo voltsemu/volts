@@ -3,10 +3,10 @@
 namespace Volts::Render
 {
     static Vulkan* Singleton = new Vulkan();
-    
+
     Vulkan::Vulkan()
     {
-        Emulator::Get()->Render.Register(this);
+        //Emulator::Get()->Render.Register(this);
     }
 
     const Device* Vulkan::Devices(U32* Count) const
@@ -15,7 +15,7 @@ namespace Volts::Render
         return nullptr;
     }
 
-    void Vulkan::SetDevice(U32 Index) 
+    void Vulkan::SetDevice(U32 Index)
     {
 
     }
@@ -36,6 +36,11 @@ namespace Volts::Render
     }
 
     void Vulkan::Detach()
+    {
+
+    }
+
+    void Vulkan::Resize(U32 Width, U32 Height)
     {
 
     }

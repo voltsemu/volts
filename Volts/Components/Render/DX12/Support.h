@@ -18,8 +18,9 @@
 
 #include "d3dx12.h"
 
-#define DX_DEBUG(Queue, ...) Queue->AddApplicationMessage(D3D12_MESSAGE_SEVERITY_MESSAGE, fmt::format(__VA_ARGS__).c_str())
-#define VALIDATE(...) if(FAILED(__VA_ARGS__)) { DX_DEBUG(DebugQueue, "DX12 Error {}", GetLastError()); VFATAL("[%s]:%s DX12 Call failed", __FILE__, __LINE__); exit(1); }
+#include "debugapi.h"
+
+#define VALIDATE(...) { auto HR = (__VA_ARGS__); if(FAILED(HR)) { OutputDebugString(fmt::format("Oh shit: {0:#x}\n", HR).c_str()); VFATAL("[%s]:%s DX12 Call failed", __FILE__, __LINE__); exit(1); } }
 
 namespace Volts::Render
 {

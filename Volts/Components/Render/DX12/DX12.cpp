@@ -89,6 +89,11 @@ namespace Volts::Render
         AdvanceFrame();
     }
 
+    void DX12::Resize(U32 Width, U32 Height)
+    {
+
+    }
+
     void DX12::PopulateCommandList()
     {
         VALIDATE(CommandAllocators[FrameIndex]->Reset());
@@ -142,6 +147,17 @@ namespace Volts::Render
         ));
 
         {
+            // create the command queue
+            D3D12_COMMAND_QUEUE_DESC CQD = {};
+            CQD.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
+            CQD.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
+            VALIDATE(Device->CreateCommandQueue(
+                &CQD,
+                IID_PPV_ARGS(&Queue)
+            ));
+        }
+
+        {
             DXGI_SWAP_CHAIN_DESC1 SCD = {};
             SCD.BufferCount = FrameCount;
             glfwGetWindowSize(Emulator::Get()->Frame, (int*)&SCD.Width, (int*)&SCD.Height);
@@ -162,7 +178,10 @@ namespace Volts::Render
                 &SwapChain
             ));
 
-            VALIDATE(Factory->MakeWindowAssociation(glfwGetWin32Window(Emulator::Get()->Frame), DXGI_MWA_NO_ALT_ENTER));
+            VALIDATE(Factory->MakeWindowAssociation(
+                glfwGetWin32Window(Emulator::Get()->Frame),
+                DXGI_MWA_NO_ALT_ENTER
+            ));
 
             VALIDATE(SwapChain.As(&Swap));
         }
@@ -191,6 +210,14 @@ namespace Volts::Render
                 VALIDATE(Device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&CommandAllocators[I])));
             }
         }
+
+        {
+            D3D12_DESCRIPTOR_HEAP_DESC DHD = {};
+            DHD.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+            DHD.NumDescriptors = 1;
+            DHD.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+            VALIDATE(Device->CreateDescriptorHeap(&DHD, IID_PPV_ARGS(&SRVHeap)));
+        }
     }
 
     void DX12::LoadData()
@@ -202,13 +229,19 @@ namespace Volts::Render
             Ptr<ID3DBlob> Signature;
             Ptr<ID3DBlob> Error;
             VALIDATE(D3D12SerializeRootSignature(&RSD, D3D_ROOT_SIGNATURE_VERSION_1, &Signature, &Error));
+            VALIDATE(Device->CreateRootSignature(
+                0,
+                Signature->GetBufferPointer(),
+                Signature->GetBufferSize(),
+                IID_PPV_ARGS(&RootSignature)
+            ));
         }
 
         {
             Ptr<ID3DBlob> VertexShader;
             Ptr<ID3DBlob> PixelShader;
 
-            UINT CompileFlags = 0;
+            UINT CompileFlags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
 
             const char* Source = R"(
                 struct PSInput
@@ -219,10 +252,10 @@ namespace Volts::Render
 
                 PSInput VSMain(float4 Pos : POSITION, float4 Colour : COLOR)
                 {
-                    return {
-                        Pos,
-                        Colour
-                    };
+                    PSInput Out;
+                    Out.Position = Pos;
+                    Out.Colour = Colour;
+                    return Out;
                 }
 
                 float4 PSMain(PSInput Input) : SV_TARGET
@@ -369,6 +402,11 @@ namespace Volts::Render
                 WaitForGPU();
             }
         }
+    }
+
+    void DX12::ResetData()
+    {
+
     }
 
     void DX12::WaitForGPU()

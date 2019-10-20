@@ -4,11 +4,20 @@
 
 #include <stdio.h>
 
+#include "Core/Emulator.h"
+
 namespace Volts
 {
-    static void error_callback(int error, const char* description)
+    static void ErrCallback(int Err, const char* Desc)
     {
-        puts(description);
+        VERROR("GLFW Error {} {}", Err, Desc);
+    }
+
+    static void ResizeCallback(GLFWwindow* Window, int NewWidth, int NewHeight)
+    {
+        Emulator::Get()
+            ->Render.Current()
+            ->Resize((U32)NewWidth, (U32)NewHeight);
     }
 
     Window::Window()
@@ -17,7 +26,7 @@ namespace Volts
         ImGui::CreateContext();
         ImGui::StyleColorsDark();
 
-        glfwSetErrorCallback(error_callback);
+        glfwSetErrorCallback(ErrCallback);
 
         if(!glfwInit())
             return;
@@ -34,8 +43,10 @@ namespace Volts
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         // disable vsync
         glfwWindowHint(GLFW_DOUBLEBUFFER, GL_FALSE);
-        
+
         Handle = glfwCreateWindow(720, 480, "Volts", nullptr, nullptr);
+
+        glfwSetFramebufferSizeCallback(Handle, ResizeCallback);
     }
 
     void Window::Close()

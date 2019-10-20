@@ -23,6 +23,7 @@
 #include "imgui/imgui.h"
 #include "rapidjson/document.h"
 
+#define VTRACE(...) Volts::Trace(fmt::format(__VA_ARGS__).c_str());
 #define VINFO(...) Volts::Info(fmt::format(__VA_ARGS__).c_str());
 #define VWARN(...) Volts::Warn(fmt::format(__VA_ARGS__).c_str());
 #define VERROR(...) Volts::Error(fmt::format(__VA_ARGS__).c_str());
@@ -32,6 +33,7 @@ namespace Volts
 {
     using namespace Cthulhu;
 
+    void Trace(const char*);
     void Info(const char*);
     void Warn(const char*);
     void Error(const char*);
@@ -81,10 +83,11 @@ namespace Volts
 
     enum class LogLevel : U8
     {
-        Info = 0,
-        Warn = 1,
-        Error = 2,
-        Fatal = 3,
+        Trace = 0,
+        Info = 1,
+        Warn = 2,
+        Error = 3,
+        Fatal = 4,
     };
 
     struct Emulator

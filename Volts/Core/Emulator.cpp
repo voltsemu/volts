@@ -6,6 +6,7 @@
 
 #include "imgui.h"
 #include "imgui/examples/imgui_impl_glfw.h"
+#include "imgui/examples/imgui_impl_win32.h"
 #include "imfilebrowser.h"
 
 #include "Utils/SFO.h"
@@ -14,6 +15,16 @@ namespace Volts
 {
     using namespace Utils;
     bool LogScrollToBottom = false;
+
+    void Trace(const char* M)
+    {
+        auto* Emu = Emulator::Get();
+        if(Emu->Level > LogLevel::Trace)
+            return;
+
+        Emu->LogBuffer.append(fmt::format("[trace] {}\n", M).c_str());
+        LogScrollToBottom = true;
+    }
 
     void Info(const char* M)
     {
@@ -95,7 +106,7 @@ namespace Volts
 
         ImGui::Begin("Logs");
         {
-            const char* LevelOptions[] = { "Info", "Warn", "Error", "Fatal" };
+            const char* LevelOptions[] = { "Trace", "Info", "Warn", "Error", "Fatal" };
             ImGui::Combo("Filter", (I32*)&Level, LevelOptions, IM_ARRAYSIZE(LevelOptions));
 
             ImGui::SameLine();
@@ -104,11 +115,11 @@ namespace Volts
 
             ImGui::Separator();
             ImGui::BeginChild("LogBox");
-            
+
             ImGui::PushTextWrapPos();
             ImGui::TextUnformatted(LogBuffer.c_str());
             ImGui::PopTextWrapPos();
-            
+
             if(LogScrollToBottom)
                 ImGui::SetScrollHere(1.f);
             LogScrollToBottom = false;
@@ -167,7 +178,7 @@ namespace Volts
         Frame.Open();
 
         ImGui_ImplGlfw_InitForOpenGL(Frame, true);
-        
+
         Render.Current()->Attach();
 
         while(!glfwWindowShouldClose(Frame))
