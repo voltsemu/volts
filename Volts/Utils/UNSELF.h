@@ -6,7 +6,6 @@
 namespace Volts::Utils
 {
     namespace FS = Cthulhu::FileSystem;
-    using ELF = Cthulhu::Binary;
 
-    ELF LoadSELF(FS::BufferedFile&& File);
+    Cthulhu::Binary LoadSELF(FS::BufferedFile&& File);
 }

@@ -9,6 +9,7 @@
 #include "imfilebrowser.h"
 
 #include "Utils/SFO.h"
+#include "Utils/UNSELF.h"
 
 namespace Volts
 {
@@ -53,15 +54,24 @@ namespace Volts
 
     using namespace std;
     using namespace rapidjson;
+
     Emulator* Emulator::Get()
     {
         static Emulator* Singleton = new Emulator();
         return Singleton;
     }
 
+    enum class DialogType : U8
+    {
+        None,
+        PARAM,
+        UNSELF,
+    };
+
     using TimePoint = decltype(std::chrono::high_resolution_clock::now());
     using TimeDiff = std::chrono::duration<double, std::milli>;
 
+    DialogType CurrentDialog;
     ImGui::FileBrowser FileDialog;
     TimePoint LastFrame = std::chrono::high_resolution_clock::now();
     void Emulator::GUI()
@@ -119,9 +129,17 @@ namespace Volts
 
         ImGui::Begin("Files");
         {
-            if(ImGui::Button("Decrypt PARAM.SFO"))
+            if(ImGui::Button("Parse PARAM.SFO"))
             {
+                CurrentDialog = DialogType::PARAM;
                 FileDialog.SetTitle("SFO");
+                FileDialog.Open();
+            }
+
+            if(ImGui::Button("Decrypt EBOOT"))
+            {
+                CurrentDialog = DialogType::UNSELF;
+                FileDialog.SetTitle("UNSELF");
                 FileDialog.Open();
             }
 
@@ -129,26 +147,35 @@ namespace Volts
 
             if(FileDialog.HasSelected())
             {
+                // TODO: all this is debug code
                 Info(fmt::format("Selected {}", FileDialog.GetSelected().string()).c_str());
-                auto Obj = LoadSFO({FileDialog.GetSelected().string().c_str()});
-
-                for(auto& [Key, Val] : Obj)
+                
+                if(CurrentDialog == DialogType::PARAM)
                 {
-                    std::string ValStr;
-                    switch(Val.Type)
+                    auto Obj = LoadSFO({FileDialog.GetSelected().string().c_str()});
+
+                    for(auto& [Key, Val] : Obj)
                     {
-                        case Format::String:
-                            ValStr = (char*)Val.Data.data();
-                            break;
-                        case Format::Array:
-                            for(auto E : Val.Data)
-                                ValStr += std::to_string(E) + " ";
-                            break;
-                        case Format::Integer:
-                            ValStr = std::to_string(*(U32*)Val.Data.data());
-                            break;
+                        std::string ValStr;
+                        switch(Val.Type)
+                        {
+                            case Format::String:
+                                ValStr = (char*)Val.Data.data();
+                                break;
+                            case Format::Array:
+                                for(auto E : Val.Data)
+                                    ValStr += std::to_string(E) + " ";
+                                break;
+                            case Format::Integer:
+                                ValStr = std::to_string(*(U32*)Val.Data.data());
+                                break;
+                        }
+                        VINFO("{}: {}", Key, ValStr);
                     }
-                    VINFO("{}: {}", Key, ValStr);
+                }
+                else if(CurrentDialog == DialogType::UNSELF)
+                {
+                    auto Obj = LoadSELF({FileDialog.GetSelected().string().c_str()});
                 }
                 FileDialog.ClearSelected();
             }
@@ -159,7 +186,6 @@ namespace Volts
     void Emulator::Run()
     {
         // TODO: stupid hack
-        // Render.Index = 1;
         Render.Finalize();
         Input.Finalize();
         Audio.Finalize();
