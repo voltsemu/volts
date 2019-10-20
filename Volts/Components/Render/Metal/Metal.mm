@@ -125,8 +125,8 @@ namespace Volts::Render
         [Encoder setRenderPipelineState:PipelineState];
         [Encoder setVertexBytes:(vector_float4[]){
             { 0, 0, 0, 1 },
-            { -1, 1, 0, 1 },
-            { 1, 1, 0, 1 }
+            { 0, 0.5, 0, 1 },
+            { 0, 0.5, 0, 1 }
         } length:3 * sizeof(vector_float4) atIndex:0];
         [Encoder drawPrimitives:MTLPrimitiveTypeTriangle vertexStart:0 vertexCount:3];
 
