@@ -187,6 +187,8 @@ namespace Volts
                 else if(CurrentDialog == DialogType::UNSELF)
                 {
                     auto Obj = LoadSELF({FileDialog.GetSelected().string().c_str()});
+
+                    
                 }
                 FileDialog.ClearSelected();
             }

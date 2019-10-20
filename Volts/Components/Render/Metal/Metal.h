@@ -3,9 +3,16 @@
 #import <QuartzCore/QuartzCore.h>
 #include "Support.h"
 #include <vector>
+#include <simd/simd.h>
 
 namespace Volts::Render
-{
+{    
+    struct Vertex
+    {
+        vector_float2 Position;
+        vector_float4 Colour;
+    };
+
     struct Metal : Render
     {
         Metal();
@@ -20,6 +27,8 @@ namespace Volts::Render
 
         virtual void Begin() override;
         virtual void End() override;
+
+        virtual void Resize(U32 Width, U32 Height) override;
 
     private:
         // api data

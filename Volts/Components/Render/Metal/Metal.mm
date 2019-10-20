@@ -50,19 +50,43 @@ namespace Volts::Render
         id<MTLLibrary> Library = [CurrentDevice() newLibraryWithSource:
             @(R"(
                 #include <metal_stdlib>
+                #include <simd/simd.h>
+
                 using namespace metal;
 
-                vertex float4 VertShader(
-                    constant float4* In [[buffer(0)]],
-                    uint ID [[vertex_id]]
+                struct RasterData
+                {
+                    float4 Position [[position]];
+                    float4 Colour;
+                };
+
+                struct Vertex
+                {
+                    vector_float2 Position;
+                    vector_float4 Colour;
+                };
+
+                vertex RasterData VertShader(
+                    uint ID [[vertex_id]],
+                    constant Vertex* Verts [[buffer(0)]],
+                    constant vector_uint2* Size [[buffer(1)]]
                 )
                 {
-                    return In[ID];
+                    RasterData Out;
+
+                    float2 PixelSpacePosition = Verts[ID].Position.xy;
+
+                    Out.Position = vector_float4(0.f, 0.f, 0.f, 1.f);
+                    Out.Position.xy = PixelSpacePosition / (vector_float2(*Size) / 2.f);
+
+                    Out.Colour = Verts[ID].Colour;
+
+                    return Out;
                 }
 
-                fragment float4 FragShader(float4 In [[stage_in]])
+                fragment float4 FragShader(RasterData Data [[stage_in]])
                 {
-                    return float4(1, 0, 0, 1);
+                    return Data.Colour;
                 }
             )")
             options:CompileOptions
@@ -102,12 +126,9 @@ namespace Volts::Render
 
     void Metal::Begin()
     {
-        float Ratio;
-        I32 Width, Height;
+        U32 Width, Height;
 
-        glfwGetFramebufferSize(Emulator::Get()->Frame, &Width, &Height);
-
-        Ratio = float(Width / Height);
+        glfwGetFramebufferSize(Emulator::Get()->Frame, (I32*)&Width, (I32*)&Height);
 
         Layer.drawableSize = CGSizeMake(Width, Height);
         CurrentDrawable = [Layer nextDrawable];
@@ -122,12 +143,20 @@ namespace Volts::Render
         Col.storeAction = MTLStoreActionStore;
         Encoder = [Buffer renderCommandEncoderWithDescriptor:RenderPass];
 
+        [Encoder setViewport:(MTLViewport){ 0.f, 0.f, (double)Width, (double)Height, 0.f, 1.f }];
         [Encoder setRenderPipelineState:PipelineState];
-        [Encoder setVertexBytes:(vector_float4[]){
-            { 0, 0, 0, 1 },
-            { 0, 0.5, 0, 1 },
-            { 0, 0.5, 0, 1 }
-        } length:3 * sizeof(vector_float4) atIndex:0];
+        
+        static const Vertex Verts[] = 
+        {
+            { { 250, -250 }, { 1, 0, 0, 1 } },
+            { { -250, -250 }, { 0, 1, 0, 1 } },
+            { { 0, 250 }, { 0, 0, 1, 1 } }
+        };
+
+        vector_uint2 FrameSize = { Width, Height };
+
+        [Encoder setVertexBytes:Verts length:sizeof(Verts) atIndex:0];
+        [Encoder setVertexBytes:&FrameSize length:sizeof(FrameSize) atIndex:1];
         [Encoder drawPrimitives:MTLPrimitiveTypeTriangle vertexStart:0 vertexCount:3];
 
         ImGui_ImplMetal_NewFrame(RenderPass);
@@ -139,5 +168,10 @@ namespace Volts::Render
         [Encoder endEncoding];
         [Buffer presentDrawable:CurrentDrawable];
         [Buffer commit];
+    }
+
+    void Metal::Resize(U32 Width, U32 Height)
+    {
+
     }
 }
