@@ -188,7 +188,9 @@ namespace Volts
                 {
                     auto Obj = LoadSELF({FileDialog.GetSelected().string().c_str()});
 
-
+                    auto* F = fopen("VOLTS.BIN", "wb");
+                    fwrite(Obj.GetData(), 1, Obj.Len(), F);
+                    fclose(F);
                 }
                 FileDialog.ClearSelected();
             }

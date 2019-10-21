@@ -209,6 +209,8 @@ Drives PhysicalDrives()
     char* Buf = new char[1024];
     GetLogicalDriveStrings(1024, Buf);
 
+    // is it ugly? yes
+    // does it work? yes
     static std::vector<char*> Items;
 
     char* SingleDrive = Buf;
@@ -240,6 +242,7 @@ inline void ImGui::FileBrowser::Display()
         SetNextWindowSize(ImVec2(700, 450));
     else
         SetNextWindowSize(ImVec2(700, 450), ImGuiCond_FirstUseEver);
+
     if(flags_ & ImGuiFileBrowserFlags_NoModal)
     {
         if(!BeginPopup(openLabel_.c_str()))

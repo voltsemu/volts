@@ -10,6 +10,8 @@
 
 #include "aes/aes.h"
 
+#include "debugapi.h"
+
 namespace Volts::Utils
 {
     namespace SCE
@@ -359,9 +361,9 @@ namespace Volts::Utils
 
             auto MetaInfo = File.Read<MetaData::Info>();
 
-            const U32 HeaderSize = SCEHead.MetadataEnd 
-                - sizeof(SCE::Header) 
-                - SCEHead.MetadataStart 
+            const U32 HeaderSize = SCEHead.MetadataEnd
+                - sizeof(SCE::Header)
+                - SCEHead.MetadataStart
                 - sizeof(MetaData::Info);
 
             Byte* Headers = new Byte[HeaderSize];
@@ -371,7 +373,6 @@ namespace Volts::Utils
             File.ReadN(Headers, HeaderSize);
 
             aes_context AES;
-            return false;
 
             SELF::Key MetaKey = GetSELFKey((KeyType)Info.Type.Get(), SCEHead.Type, Info.Version);
 
@@ -473,7 +474,45 @@ namespace Volts::Utils
         Cthulhu::Binary ToELF()
         {
             Cthulhu::Binary Bin;
-            return {};
+
+            Bin.Write(ELFHead);
+            Bin.Seek(ELFHead.PHOffset);
+
+            for(auto Program : PHeaders)
+                Bin.Write(Program);
+
+            U32 BufferOffset = 0;
+
+            for(auto& Section : MetaSections)
+            {
+                if(Section.Type == 2)
+                {
+                    Bin.Seek(PHeaders[Section.Index].Offset);
+
+                    if(Section.Compressed == 3)
+                    {
+                        VERROR("TODO");
+                        return {};
+                    }
+                    else
+                        Bin.WriteN(DataBuffer + BufferOffset, Section.Size);
+
+                    BufferOffset += Section.Size;
+                }
+            }
+
+            if(SELFHead.SHeaderOffset)
+            {
+                Bin.Seek(SELFHead.SHeaderOffset);
+                for(auto Section : SHeaders)
+                {
+                    Bin.Write(Section);
+                }
+            }
+
+            Bin.Seek(0);
+
+            return Bin;
         }
     };
 
@@ -496,5 +535,5 @@ namespace Volts::Utils
         Dec.Decrypt();
 
         return Dec.ToELF();
-    }   
+    }
 }
