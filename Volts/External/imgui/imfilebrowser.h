@@ -261,9 +261,8 @@ inline void ImGui::FileBrowser::Display()
 
     ImGui::SetNextItemWidth(30);
 
-    ImGui::Combo("", &CurrentDrive, Drives.Names, Drives.Count, -1, ImGuiComboFlags_NoArrowButton);
-
-    SetPwd(Drives.Names[CurrentDrive]);
+    if(ImGui::Combo("", &CurrentDrive, Drives.Names, Drives.Count, -1, ImGuiComboFlags_NoArrowButton))
+        SetPwd(Drives.Names[CurrentDrive]);
 
 #endif
 

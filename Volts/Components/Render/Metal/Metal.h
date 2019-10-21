@@ -29,7 +29,7 @@ namespace Volts::Render
         virtual void End() override;
 
         virtual void Resize(U32 Width, U32 Height) override;
-
+        virtual void UpdateVSync(bool Enabled) override;
     private:
         // api data
         U32 DeviceIndex = 0;

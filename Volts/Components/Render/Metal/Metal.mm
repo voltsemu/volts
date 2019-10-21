@@ -174,4 +174,9 @@ namespace Volts::Render
     {
 
     }
+
+    void Metal::UpdateVSync(bool Enabled)
+    {
+        
+    }
 }
