@@ -1,8 +1,11 @@
-﻿#include "Volts/Core/Emulator.h"
+﻿#include "Volts.h"
 
 // enter here
-int main(int Argc, const char** Argv)
+int main(int Argc, char** Argv)
 {
+	Volts::Args::CLI::Get()
+		->Build()
+		->Run(Argc, Argv);
 	Volts::Emulator::Get()->Run();
 }
 
