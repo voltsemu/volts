@@ -64,7 +64,6 @@ namespace Volts
     }
 
     using namespace std;
-    using namespace rapidjson;
 
     Emulator* Emulator::Get()
     {
@@ -117,7 +116,16 @@ namespace Volts
         ImGui::Begin("Logs");
         {
             const char* LevelOptions[] = { "Trace", "Info", "Warn", "Error", "Fatal" };
-            ImGui::Combo("Filter", (I32*)&Level, LevelOptions, IM_ARRAYSIZE(LevelOptions));
+            if(ImGui::Combo("Filter", (I32*)&Level, LevelOptions, IM_ARRAYSIZE(LevelOptions)))
+            {
+                std::string Opt = LevelOptions[(I32)Level];
+                std::for_each(Opt.begin(), Opt.end(), [](char& C){
+                    C = std::tolower(C);
+                });
+
+                Cfg.Data["log_level"] = Opt;
+                Cfg.Save();
+            }
 
             ImGui::SameLine();
             if(ImGui::Button("Clear"))
@@ -200,7 +208,9 @@ namespace Volts
 
     void Emulator::Run()
     {
-        // TODO: stupid hack
+        Cfg.Init();
+        auto& IO = ImGui::GetIO();
+        IO.IniFilename = "Config/imgui.ini";
         Render.Finalize();
         Input.Finalize();
         Audio.Finalize();
@@ -229,5 +239,7 @@ namespace Volts
         ImGui_ImplGlfw_Shutdown();
 
         Frame.Close();
+
+        Cfg.Save();
     }
 }

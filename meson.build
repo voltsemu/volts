@@ -11,6 +11,8 @@ if host_machine.system() == 'darwin'
     add_languages('objcpp')
 endif
 
+args = []
+
 # get zlib for decompressing files
 zlib = subproject('zlib')
 
@@ -18,12 +20,20 @@ fmt = subproject('fmt')
 
 ctu = subproject('cthulhu')
 
+args += '-DARGO_NOTHROW'
+
+json = subproject('argo')
+
+threads = dependency('threads')
+
 glfw_pack = dependency('glfw3', required : false)
 
 deps = [
     ctu.get_variable('fs_dep'),
     ctu.get_variable('meta_dep'),
-    ctu.get_variable('core_dep')
+    ctu.get_variable('core_dep'),
+    json.get_variable('argo_dep'),
+    threads
 ]
 
 if glfw_pack.found()
@@ -36,8 +46,6 @@ endif
 
 # get the very basic core sources
 sources = []
-
-args = []
 
 
 if host_machine.system() == 'darwin'

@@ -12,6 +12,8 @@
 
 #include "Frame/Window.h"
 
+#include "Config.h"
+
 #if OS_WIN
 #   include <windows.h>
 #endif
@@ -21,7 +23,6 @@
 #include <vector>
 #include <filesystem>
 #include "imgui/imgui.h"
-#include "rapidjson/document.h"
 
 #define VTRACE(...) Volts::Trace(fmt::format(__VA_ARGS__).c_str());
 #define VINFO(...) Volts::Info(fmt::format(__VA_ARGS__).c_str());
@@ -97,8 +98,6 @@ namespace Volts
 
         void Run();
 
-        rapidjson::Document Config;
-
         Window Frame;
 
         Backends<Audio::Audio> Audio{"Registered {} audio backend"};
@@ -111,6 +110,8 @@ namespace Volts
 
         ImGuiTextBuffer LogBuffer;
         LogLevel Level = LogLevel::Info;
+
+        Config Cfg = {};
     private:
         void GUI();
     };
