@@ -17,6 +17,20 @@ namespace Volts
         void Reload();
         void Save();
 
+        bool GetVSync()
+        {
+            if(!Data.has("vsync"))
+                UpdateVSync(false);
+            
+            return (bool)Data["vsync"];
+        }
+
+        void UpdateVSync(bool New)
+        {
+            Data["vsync"] = New;
+            Save();
+        }
+
         fs::path ConfigPath{};
         fs::path ConfigDir{};
         

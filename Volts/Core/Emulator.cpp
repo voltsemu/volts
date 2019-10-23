@@ -103,10 +103,12 @@ namespace Volts
         {
             ImGui::Combo("Renders", &Render.Index, Render.Names, Render.Count);
 
-            static bool VSyncEnabled = true;
-            ImGui::Checkbox("VSync", &VSyncEnabled);
-
-            Render.Current()->UpdateVSync(VSyncEnabled);
+            static bool VSyncEnabled = Cfg.GetVSync();
+            if(ImGui::Checkbox("VSync", &VSyncEnabled))
+            {
+                Render.Current()->UpdateVSync(VSyncEnabled);
+                Cfg.UpdateVSync(VSyncEnabled);
+            }
 
             ImGui::Combo("Audio", &Audio.Index, Audio.Names, Audio.Count);
             ImGui::Combo("Input", &Input.Index, Input.Names, Input.Count);
@@ -211,6 +213,14 @@ namespace Volts
         Cfg.Init();
         auto& IO = ImGui::GetIO();
         IO.IniFilename = "Config/imgui.ini";
+
+        // todo: the cursor dissapears when enabling scaling
+        // i dont know why
+        //ImGui::GetStyle().ScaleAllSizes(2.f);
+        //ImFontConfig FontCfg;
+        //FontCfg.SizePixels = 26.f;
+        //ImGui::GetIO().Fonts->AddFontDefault(&FontCfg)->DisplayOffset.y = 2.f;
+
         Render.Finalize();
         Input.Finalize();
         Audio.Finalize();
