@@ -25,7 +25,7 @@ int APIENTRY wWinMain(
 	int Argc;
 	wchar_t** Argv = CommandLineToArgvW(GetCommandLineW(), &Argc);
 
-	main(Argc, (const char**)Argv);
+	main(Argc, (char**)Argv);
 
 	LocalFree(Argv);
 }

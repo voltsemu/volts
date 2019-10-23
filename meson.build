@@ -26,7 +26,7 @@ json = subproject('argo')
 
 threads = dependency('threads')
 
-glfw_pack = dependency('glfw3', required : false)
+glfw_pack = subproject('glfw3', required : false)
 
 deps = [
     ctu.get_variable('fs_dep'),
@@ -76,7 +76,7 @@ subdir('Volts')
 # from trying to use either feature at all so people dont """accidentally"""
 # use these slow features for convenience sake
 if meson.get_compiler('cpp').get_id() == 'msvc'
-    args += ['/GR-', '/arch:AVX2', '/GF'] #GF enables string pooling, we abuse this for performance reasons
+    args += ['/GR-', '/arch:AVX2', '/GF', '/EHsc-'] #GF enables string pooling, we abuse this for performance reasons
 else
     args += ['-fno-rtti', '-fno-exceptions', '-march=native']
 endif

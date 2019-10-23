@@ -2,13 +2,19 @@
 
 #include "Volts/Core/Emulator.h"
 
+#include <filesystem>
+
+#include "Volts/Utils/SFO.h"
+
 #define CXXOPTS_NO_EXCEPTIONS
 #define CXXOPTS_NO_RTTI
 
 #include "cxxopts/cxxopts.h"
 
+#include <argo.hpp>
+
 namespace Volts::Args
-{   
+{
     struct CLI
     {
         cxxopts::Options Opts;
@@ -37,9 +43,19 @@ namespace Volts::Args
         void Run(int Argc, char** Argv)
         {
             auto Res = Opts.parse(Argc, Argv);
+
             if(Res.count("sfo"))
             {
                 auto Path = Res["sfo"].as<std::string>();
+                if(!fs::exists(Path))
+                {
+                    printf("SFO file at %s was not found\n", Path.c_str());
+                    exit(1);
+                }
+
+                auto SFO = Utils::LoadSFO({Path.c_str()});
+
+                MessageBox(nullptr, "Volts", "Errrrr", 0);
             }
 
             if(Res.count("help"))
