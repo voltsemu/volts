@@ -1,11 +1,14 @@
 ﻿#include "Volts.h"
 
+using namespace Cthulhu;
+
 // enter here
 int main(int Argc, char** Argv)
 {
 	Volts::Args::CLI::Get()
 		->Build()
 		->Run(Argc, Argv);
+
 	Volts::Emulator::Get()->Run();
 }
 
@@ -25,7 +28,17 @@ int APIENTRY wWinMain(
 	int Argc;
 	wchar_t** Argv = CommandLineToArgvW(GetCommandLineW(), &Argc);
 
-	main(Argc, (char**)Argv);
+	char** RealArgv = (char**)alloca(sizeof(char*) * Argc);
+
+	for(U32 I = 0; I < Argc; I++)
+	{
+		auto Len = wcslen(Argv[I]);
+		char* Arg = new char[Len + 1]();
+		wcstombs(Arg, Argv[I], Len);
+		RealArgv[I] = Arg;
+	}
+
+	main(Argc, (char**)RealArgv);
 
 	LocalFree(Argv);
 }

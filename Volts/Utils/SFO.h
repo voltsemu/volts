@@ -16,7 +16,7 @@ namespace Volts::Utils
     {
         String = 516,
         Array = 4,
-        Integer = 1024,
+        Integer = 1028,
     };
 
     struct SFOValue
