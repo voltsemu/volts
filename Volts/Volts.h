@@ -3,6 +3,7 @@
 #include "Volts/Core/Emulator.h"
 
 #include <filesystem>
+#include <fstream>
 
 #include "Volts/Utils/SFO.h"
 
@@ -29,7 +30,7 @@ namespace Volts::Args
         cxxopts::Options Opts;
 
         CLI()
-            : Opts("Volts", "Command line emulator interface")
+            : Opts("volt", "Command line emulator interface")
         {
 #if OS_WINDOWS
             if(AttachConsole(ATTACH_PARENT_PROCESS))
@@ -62,6 +63,17 @@ namespace Volts::Args
         void Run(int Argc, char** Argv)
         {
             auto Res = Opts.parse(Argc, Argv);
+
+            std::ostream* OutPipe = &std::cout;
+
+            if(Res.count("output"))
+            {
+                auto Path = Res["output"].as<std::string>();
+                
+                static auto Pipe = std::ofstream();
+                Pipe.open(Path, std::ofstream::out);
+                OutPipe = &Pipe;
+            }
 
             if(Res.count("help"))
             {
@@ -108,8 +120,7 @@ namespace Volts::Args
                     }
                 }
 
-                argo::unparser::unparse(std::cout, Output, " ", "\n", "    ", 1);
-                std::cout << std::endl;
+                argo::unparser::unparse(*OutPipe, Output, "", "\n", "    ", 1);
             }
 
             if(Res.count("nogui"))
