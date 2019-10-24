@@ -183,7 +183,7 @@ namespace Volts::Render
         CommandList->DrawInstanced(3, 1, 0, 0);
         // render stuff in here
 
-        //ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), CommandList.Get());
+        ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), CommandList.Get());
 
         CommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(
             RenderTargets[FrameIndex].Get(),

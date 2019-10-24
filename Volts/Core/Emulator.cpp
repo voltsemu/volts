@@ -84,128 +84,133 @@ namespace Volts
     DialogType CurrentDialog;
     ImGui::FileBrowser FileDialog;
     TimePoint LastFrame = std::chrono::high_resolution_clock::now();
+    
     void Emulator::GUI()
     {
-        ImGui::Begin("Metrics");
+        if(!ImGui::Begin("Volts"))
         {
-            auto Now = std::chrono::high_resolution_clock::now();
-
-            TimeDiff Count = (Now - LastFrame);
-
-            ImGui::Text("%s", fmt::format("FrameTime: {:.2f}ms", Count.count()).c_str());
-            ImGui::Text("%s", fmt::format("FPS: {:.2f}", 1000 / Count.count()).c_str());
-
-            LastFrame = Now;
+            ImGui::End();
         }
-        ImGui::End();
-
-        ImGui::Begin("Backends");
+        else
         {
-            ImGui::Combo("Renders", &Render.Index, Render.Names, Render.Count);
-
-            static bool VSyncEnabled = Cfg.GetVSync();
-            if(ImGui::Checkbox("VSync", &VSyncEnabled))
+            if(ImGui::CollapsingHeader("Metrics"))
             {
-                Render.Current()->UpdateVSync(VSyncEnabled);
-                Cfg.UpdateVSync(VSyncEnabled);
+                auto Now = std::chrono::high_resolution_clock::now();
+
+                TimeDiff Count = (Now - LastFrame);
+
+                ImGui::Text("%s", fmt::format("FrameTime: {:.2f}ms", Count.count()).c_str());
+                ImGui::Text("%s", fmt::format("FPS: {:.2f}", 1000 / Count.count()).c_str());
+
+                LastFrame = Now;
             }
 
-            ImGui::Combo("Audio", &Audio.Index, Audio.Names, Audio.Count);
-            ImGui::Combo("Input", &Input.Index, Input.Names, Input.Count);
-        }
-        ImGui::End();
-
-        ImGui::Begin("Logs");
-        {
-            const char* LevelOptions[] = { "Trace", "Info", "Warn", "Error", "Fatal" };
-            if(ImGui::Combo("Filter", (I32*)&Level, LevelOptions, IM_ARRAYSIZE(LevelOptions)))
+            if(ImGui::CollapsingHeader("Backends"))
             {
-                std::string Opt = LevelOptions[(I32)Level];
-                std::for_each(Opt.begin(), Opt.end(), [](char& C){
-                    C = std::tolower(C);
-                });
+                ImGui::Combo("Renders", &Render.Index, Render.Names, Render.Count);
 
-                Cfg.Data["log_level"] = Opt;
-                Cfg.Save();
-            }
-
-            ImGui::SameLine();
-            if(ImGui::Button("Clear"))
-                LogBuffer.clear();
-
-            ImGui::Separator();
-            ImGui::BeginChild("LogBox");
-
-            ImGui::PushTextWrapPos();
-            ImGui::TextUnformatted(LogBuffer.c_str());
-            ImGui::PopTextWrapPos();
-
-            if(LogScrollToBottom)
-                ImGui::SetScrollHere(1.f);
-            LogScrollToBottom = false;
-
-            ImGui::EndChild();
-        }
-        ImGui::End();
-
-        ImGui::Begin("Files");
-        {
-            if(ImGui::Button("Parse PARAM.SFO"))
-            {
-                CurrentDialog = DialogType::PARAM;
-                FileDialog.SetTitle("SFO");
-                FileDialog.Open();
-            }
-
-            if(ImGui::Button("Decrypt EBOOT"))
-            {
-                CurrentDialog = DialogType::UNSELF;
-                FileDialog.SetTitle("UNSELF");
-                FileDialog.Open();
-            }
-
-            FileDialog.Display();
-
-            if(FileDialog.HasSelected())
-            {
-                // TODO: all this is debug code
-                Info(fmt::format("Selected {}", FileDialog.GetSelected().string()).c_str());
-
-                if(CurrentDialog == DialogType::PARAM)
+                static bool VSyncEnabled = Cfg.GetVSync();
+                if(ImGui::Checkbox("VSync", &VSyncEnabled))
                 {
-                    auto Obj = LoadSFO({FileDialog.GetSelected().string().c_str()});
+                    Render.Current()->UpdateVSync(VSyncEnabled);
+                    Cfg.UpdateVSync(VSyncEnabled);
+                }
 
-                    for(auto& [Key, Val] : Obj)
+                ImGui::Combo("Audio", &Audio.Index, Audio.Names, Audio.Count);
+                ImGui::Combo("Input", &Input.Index, Input.Names, Input.Count);
+            }
+
+            if(ImGui::CollapsingHeader("Logs"))
+            {
+                const char* LevelOptions[] = { "Trace", "Info", "Warn", "Error", "Fatal" };
+                if(ImGui::Combo("Filter", (I32*)&Level, LevelOptions, IM_ARRAYSIZE(LevelOptions)))
+                {
+                    std::string Opt = LevelOptions[(I32)Level];
+                    std::for_each(Opt.begin(), Opt.end(), [](char& C){
+                        C = std::tolower(C);
+                    });
+
+                    Cfg.Data["log_level"] = Opt;
+                    Cfg.Save();
+                }
+
+                ImGui::SameLine();
+                if(ImGui::Button("Clear"))
+                    LogBuffer.clear();
+
+                ImGui::Separator();
+                ImGui::BeginChild("LogBox");
+
+                ImGui::PushTextWrapPos();
+                ImGui::TextUnformatted(LogBuffer.c_str());
+                ImGui::PopTextWrapPos();
+
+                if(LogScrollToBottom)
+                    ImGui::SetScrollHere(1.f);
+                LogScrollToBottom = false;
+
+                ImGui::EndChild();
+            }
+
+            if(ImGui::CollapsingHeader("Files"))
+            {
+                if(ImGui::Button("Parse PARAM.SFO"))
+                {
+                    CurrentDialog = DialogType::PARAM;
+                    FileDialog.SetTitle("SFO");
+                    FileDialog.Open();
+                }
+
+                if(ImGui::Button("Decrypt EBOOT"))
+                {
+                    CurrentDialog = DialogType::UNSELF;
+                    FileDialog.SetTitle("UNSELF");
+                    FileDialog.Open();
+                }
+
+                FileDialog.Display();
+
+                if(FileDialog.HasSelected())
+                {
+                    // TODO: all this is debug code
+                    Info(fmt::format("Selected {}", FileDialog.GetSelected().string()).c_str());
+
+                    if(CurrentDialog == DialogType::PARAM)
                     {
-                        std::string ValStr;
-                        switch(Val.Type)
-                        {
-                            case Format::String:
-                                ValStr = (char*)Val.Data.data();
-                                break;
-                            case Format::Array:
-                                for(auto E : Val.Data)
-                                    ValStr += std::to_string(E) + " ";
-                                break;
-                            case Format::Integer:
-                                ValStr = std::to_string(*(U32*)Val.Data.data());
-                                break;
-                        }
-                        VINFO("{}: {}", Key, ValStr);
-                    }
-                }
-                else if(CurrentDialog == DialogType::UNSELF)
-                {
-                    auto Obj = LoadSELF({FileDialog.GetSelected().string().c_str()});
+                        auto Obj = LoadSFO({FileDialog.GetSelected().string().c_str()});
 
-                    auto* F = fopen("VOLTS.BIN", "wb");
-                    fwrite(Obj.GetData(), 1, Obj.Len(), F);
-                    fclose(F);
+                        for(auto& [Key, Val] : Obj)
+                        {
+                            std::string ValStr;
+                            switch(Val.Type)
+                            {
+                                case Format::String:
+                                    ValStr = (char*)Val.Data.data();
+                                    break;
+                                case Format::Array:
+                                    for(auto E : Val.Data)
+                                        ValStr += std::to_string(E) + " ";
+                                    break;
+                                case Format::Integer:
+                                    ValStr = std::to_string(*(U32*)Val.Data.data());
+                                    break;
+                            }
+                            VINFO("{}: {}", Key, ValStr);
+                        }
+                    }
+                    else if(CurrentDialog == DialogType::UNSELF)
+                    {
+                        auto Obj = LoadSELF({FileDialog.GetSelected().string().c_str()});
+
+                        auto* F = fopen("VOLTS.BIN", "wb");
+                        fwrite(Obj.GetData(), 1, Obj.Len(), F);
+                        fclose(F);
+                    }
+                    FileDialog.ClearSelected();
                 }
-                FileDialog.ClearSelected();
             }
+            ImGui::End();
         }
-        ImGui::End();
     }
 
     void Emulator::Run()
@@ -230,6 +235,7 @@ namespace Volts
         ImGui_ImplGlfw_InitForOpenGL(Frame, true);
 
         Render.Current()->Attach();
+        Render.Current()->UpdateVSync(Cfg.GetVSync());
 
         while(!glfwWindowShouldClose(Frame))
         {

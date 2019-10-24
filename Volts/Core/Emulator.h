@@ -48,6 +48,7 @@ namespace Volts
         template<typename TOther>
         void Register(TOther* Backend)
         {
+            static_assert(std::is_base_of<T, TOther>::value);
             BackendList.push_back((T*)Backend);
             VINFO(RegisterMessage, Backend->Name());
         }

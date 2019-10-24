@@ -33,5 +33,7 @@ namespace Volts::Render
         virtual void Resize(U32 Width, U32 Height) = 0;
 
         virtual void UpdateVSync(bool Enabled) = 0;
+
+        virtual void GUI() {}
     };
 }
