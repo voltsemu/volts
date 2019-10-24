@@ -105,7 +105,7 @@ namespace Volts
                 LastFrame = Now;
             }
 
-            if(ImGui::CollapsingHeader("Backends"))
+            if(ImGui::CollapsingHeader("Settings"))
             {
                 ImGui::Combo("Renders", &Render.Index, Render.Names, Render.Count);
 
@@ -121,8 +121,23 @@ namespace Volts
                     Render.Current()->SetDevice(CurrentDevice);
                 }
 
+                ImGui::Separator();
+
                 ImGui::Combo("Audio", &Audio.Index, Audio.Names, Audio.Count);
                 ImGui::Combo("Input", &Input.Index, Input.Names, Input.Count);
+
+                ImGui::Separator();
+
+                static float Scale = Cfg.GetGuiScale();
+                if(ImGui::SliderFloat("GUI scale", &Scale, 0.1f, 5.0f, "scale %.3f"))
+                {
+                    ImGui::GetStyle().ScaleAllSizes(Scale);
+                    ImFontConfig FontCfg;
+                    FontCfg.SizePixels = 13.f * Scale;
+                    ImGui::GetIO().Fonts->AddFontDefault(&FontCfg)->DisplayOffset.y = Scale;
+
+                    Cfg.UpdateGuiScale(Scale);
+                }
             }
 
             if(ImGui::CollapsingHeader("Logs"))
@@ -237,10 +252,11 @@ namespace Volts
 
         // todo: the cursor dissapears when enabling scaling
         // i dont know why
-        //ImGui::GetStyle().ScaleAllSizes(2.f);
-        //ImFontConfig FontCfg;
-        //FontCfg.SizePixels = 26.f;
-        //ImGui::GetIO().Fonts->AddFontDefault(&FontCfg)->DisplayOffset.y = 2.f;
+        double Scale = Cfg.GetGuiScale();
+        ImGui::GetStyle().ScaleAllSizes(Scale);
+        ImFontConfig FontCfg;
+        FontCfg.SizePixels = 13.f * Scale;
+        ImGui::GetIO().Fonts->AddFontDefault(&FontCfg)->DisplayOffset.y = Scale;
 
         Render.Finalize();
         Input.Finalize();

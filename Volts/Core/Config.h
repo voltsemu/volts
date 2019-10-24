@@ -31,6 +31,20 @@ namespace Volts
             Save();
         }
 
+        double GetGuiScale()
+        {
+            if(!Data.has("gui_scale"))
+                UpdateGuiScale(1.0);
+
+            return (double)Data["gui_scale"];
+        }
+
+        void UpdateGuiScale(double D)
+        {
+            Data["gui_scale"] = D;
+            Save();
+        }
+
         fs::path ConfigPath{};
         fs::path ConfigDir{};
         
