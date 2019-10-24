@@ -53,7 +53,9 @@ namespace Volts::Args
             Opts.add_options()
                 ("H,help", "Display help message then exit")
                 ("N,nogui", "Disable emulator gui")
-                ("S,sfo", "Parse a SFO and dump to json", cxxopts::value<std::string>());
+                ("S,sfo", "Parse a SFO and dump to json", cxxopts::value<std::string>())
+                ("U,unself", "Decrypt a SELF and write to a file", cxxopts::value<std::string>())
+                ("O,output", "A location to output data to", cxxopts::value<std::string>());
             return this;
         }
 
