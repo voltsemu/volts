@@ -102,6 +102,9 @@ namespace Volts
         Window Frame;
 
         Backends<Audio::Audio> Audio{"Registered {} audio backend"};
+
+        void UpdateDeviceNames();
+
         Backends<Input::Input> Input{"Registered {} input backend"};
         Backends<Render::Render> Render{"Registered {} render backend"};
 
@@ -115,5 +118,8 @@ namespace Volts
         Config Cfg = {};
     private:
         void GUI();
+        char** DeviceNames = nullptr;
+        U32 DeviceCount = 0;
+        I32 CurrentDevice = 0;
     };
 }

@@ -36,7 +36,6 @@ namespace Volts::Render
         if(Index != DeviceIndex)
         {
             DeviceIndex = Index;
-
         }
     }
 

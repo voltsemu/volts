@@ -11,6 +11,7 @@ namespace Volts::Render
 
         virtual const Device* Devices(U32* Count) const
         {
+            fmt::print("size {} data {}", DeviceList.size(), (void*)DeviceList.data());
             *Count = DeviceList.size();
             return DeviceList.data();
         }

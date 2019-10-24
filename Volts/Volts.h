@@ -78,7 +78,7 @@ namespace Volts::Args
             if(Res.count("help"))
             {
                 // print help then exit
-                printf("%s", Opts.help().c_str());
+                *OutPipe << Opts.help();
                 exit(0);
             }
 
@@ -87,7 +87,7 @@ namespace Volts::Args
                 auto Path = Res["sfo"].as<std::string>();
                 if(!fs::exists(Path))
                 {
-                    printf("SFO file at %s was not found\n", Path.c_str());
+                    *OutPipe << "SFO File at " << Path.c_str() << " was not found" << std::endl;
                     exit(1);
                 }
 

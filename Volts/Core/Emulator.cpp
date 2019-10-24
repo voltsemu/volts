@@ -116,6 +116,11 @@ namespace Volts
                     Cfg.UpdateVSync(VSyncEnabled);
                 }
 
+                if(ImGui::Combo("Device", &CurrentDevice, DeviceNames, DeviceCount))
+                {
+                    Render.Current()->SetDevice(CurrentDevice);
+                }
+
                 ImGui::Combo("Audio", &Audio.Index, Audio.Names, Audio.Count);
                 ImGui::Combo("Input", &Input.Index, Input.Names, Input.Count);
             }
@@ -213,6 +218,17 @@ namespace Volts
         }
     }
 
+    void Emulator::UpdateDeviceNames()
+    {
+        auto* Devices = Render.Current()->Devices(&DeviceCount);
+        if(!Devices)
+            return;
+
+        DeviceNames = new char*[DeviceCount];
+        for(U32 I = 0; I < DeviceCount; I++)
+            DeviceNames[I] = strdup(Devices[I].Name());
+    }
+
     void Emulator::Run()
     {
         Cfg.Init();
@@ -236,6 +252,7 @@ namespace Volts
 
         Render.Current()->Attach();
         Render.Current()->UpdateVSync(Cfg.GetVSync());
+        //UpdateDeviceNames();
 
         while(!glfwWindowShouldClose(Frame))
         {
