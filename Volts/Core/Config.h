@@ -6,8 +6,11 @@
 
 #include <machineid/machineid.h>
 
+#include <Meta/Aliases.h>
+
 namespace Volts
 {
+    using namespace Cthulhu;
     namespace fs = std::filesystem;
 
     static std::string MachineHash = machineid::machineHash();
@@ -69,4 +72,42 @@ namespace Volts
 
         argo::json Data;
     };
+
+    struct Emulator;
+
+    namespace Cfg
+    {
+        template<typename T, const char* TName>
+        struct Var
+        {
+            Var(T Def) : Default(Def) {}
+
+            T operator T()
+            {
+                auto Cfg = Emulator::Get()->Cfg;
+                if(!Cfg.Data.has(TName))
+                {
+                    Cfg.Data[TName] = Default;
+                    Cfg.Save();
+                }
+
+                return (T)Cfg.Data[TName];
+            }
+
+            Var& operator=(T Data)
+            {
+                auto Cfg = Emulator::Get()->Cfg;
+                Cfg.Data[TName] = Data;
+                Cfg.Save();
+                return *this;
+            }
+        private:
+            T Default;
+        };
+
+        template<const char* TName> using String = Var<std::string, TName>;
+        template<const char* TName> using Int = Var<I32, TName>;
+        template<const char* TName> using Double = Var<double, TName>;
+        template<const char* TName> using Bool = Var<bool, TName>;
+    }
 }
