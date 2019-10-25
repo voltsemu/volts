@@ -69,7 +69,7 @@ namespace Volts::Args
             if(Res.count("output"))
             {
                 auto Path = Res["output"].as<std::string>();
-                
+
                 static auto Pipe = std::ofstream();
                 Pipe.open(Path, std::ofstream::out);
                 OutPipe = &Pipe;
@@ -124,9 +124,7 @@ namespace Volts::Args
             }
 
             if(Res.count("nogui"))
-            {
                 exit(0);
-            }
         }
     };
 }

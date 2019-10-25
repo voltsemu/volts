@@ -24,11 +24,11 @@
 #include <filesystem>
 #include "imgui/imgui.h"
 
-#define VTRACE(...) Volts::Trace(fmt::format(__VA_ARGS__).c_str());
-#define VINFO(...) Volts::Info(fmt::format(__VA_ARGS__).c_str());
-#define VWARN(...) Volts::Warn(fmt::format(__VA_ARGS__).c_str());
-#define VERROR(...) Volts::Error(fmt::format(__VA_ARGS__).c_str());
-#define VFATAL(...) Volts::Fatal(fmt::format(__VA_ARGS__).c_str());
+#define VTRACE(...) { Volts::Trace(fmt::format(__VA_ARGS__).c_str()); }
+#define VINFO(...) { Volts::Info(fmt::format(__VA_ARGS__).c_str()); }
+#define VWARN(...) { Volts::Warn(fmt::format(__VA_ARGS__).c_str()); }
+#define VERROR(...) { Volts::Error(fmt::format(__VA_ARGS__).c_str()); }
+#define VFATAL(...) { Volts::Fatal(fmt::format(__VA_ARGS__).c_str()); }
 
 namespace Volts
 {

@@ -42,13 +42,40 @@ namespace Volts
             Emulator::Get()->Level = LogLevel::Error;
         else if(Level == "fatal")
             Emulator::Get()->Level = LogLevel::Fatal;
-        else 
+        else
         {
             Emulator::Get()->Level = LogLevel::Info;
             VINFO("LogLevel in config was invalid, setting to default level");
             Data["log_level"] = "info";
         }
 
+        VINFO("Current machine hash {}", MachineHash);
+
+        if(UsingLocalConfig())
+            VINFO("Config is local")
+        else
+            VWARN("Config was not generated on this machine")
+
+        Save();
+    }
+
+    int Config::GetAspectRatio()
+    {
+        if(!Data.has("aspect"))
+            SetAspectRatio("16:9");
+
+        if(auto S = (std::string)Data["aspect"]; S != "16:9" && S != "4:3")
+        {
+            VERROR("Aspect ratio in config file was not 16:9 or 4:3, changing back to 16:9 default");
+            SetAspectRatio("16:9");
+        }
+
+        return ((std::string)Data["aspect"] == "4:3") ? 0 : 1;
+    }
+
+    void Config::SetAspectRatio(std::string N)
+    {
+        Data["aspect"] = N;
         Save();
     }
 

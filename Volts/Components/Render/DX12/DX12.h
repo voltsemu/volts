@@ -11,7 +11,6 @@ namespace Volts::Render
 
         virtual const Device* Devices(U32* Count) const
         {
-            fmt::print("size {} data {}", DeviceList.size(), (void*)DeviceList.data());
             *Count = DeviceList.size();
             return DeviceList.data();
         }
@@ -27,8 +26,34 @@ namespace Volts::Render
         virtual void Resize(U32 Width, U32 Height) override;
 
         virtual void UpdateVSync(bool Enabled) override;
+        virtual void UpdateFullscreen(bool Enabled) override;
+
+        virtual void GUI()
+        {
+            static bool AAA = false;
+            ImGui::Checkbox("AAA", &AAA);
+
+            if(AAA)
+            {
+                ClearColour[0] = 0.f;
+                Viewport = {
+                    0.f, 60.f,
+                    720, 360
+                };
+            }
+            else
+            {
+                ClearColour[0] = 1.f;
+                Viewport = {
+                    0.f, 0.f,
+                    720, 380
+                };
+            }
+        }
 
     private:
+
+        F32 ClearColour[4] = { 1.f, 1.f, 1.f, 1.f };
 
         struct Vertex
         {
@@ -93,6 +118,7 @@ namespace Volts::Render
 
         // extra data
         bool Tearing;
+        bool Fullscreen;
         U32 VSyncMode = 0;
     };
 }

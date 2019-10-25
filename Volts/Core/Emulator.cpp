@@ -84,7 +84,7 @@ namespace Volts
     DialogType CurrentDialog;
     ImGui::FileBrowser FileDialog;
     TimePoint LastFrame = std::chrono::high_resolution_clock::now();
-    
+
     void Emulator::GUI()
     {
         if(!ImGui::Begin("Volts"))
@@ -120,6 +120,15 @@ namespace Volts
                 {
                     Render.Current()->SetDevice(CurrentDevice);
                 }
+
+                static int CurrentAspectRatio = Cfg.GetAspectRatio();
+                static const char* AspectRatioOptions[] = { "4:3", "16:9" };
+                if(ImGui::Combo("Aspect ratio", &CurrentAspectRatio, AspectRatioOptions, 2))
+                {
+                    Cfg.SetAspectRatio(AspectRatioOptions[CurrentAspectRatio]);
+                }
+
+                Render.Current()->GUI();
 
                 ImGui::Separator();
 
@@ -268,7 +277,6 @@ namespace Volts
 
         Render.Current()->Attach();
         Render.Current()->UpdateVSync(Cfg.GetVSync());
-        //UpdateDeviceNames();
 
         while(!glfwWindowShouldClose(Frame))
         {

@@ -4,9 +4,13 @@
 
 #include <argo.hpp>
 
+#include <machineid/machineid.h>
+
 namespace Volts
 {
     namespace fs = std::filesystem;
+
+    static std::string MachineHash = machineid::machineHash();
 
     struct Config
     {
@@ -17,11 +21,26 @@ namespace Volts
         void Reload();
         void Save();
 
+        int GetAspectRatio();
+        void SetAspectRatio(std::string NewRatio);
+
+        bool UsingLocalConfig()
+        {
+            if(!Data.has("machid"))
+            {
+                Data["machid"] = MachineHash;
+                Save();
+                return false;
+            }
+
+            return (std::string)Data["machid"] == MachineHash;
+        }
+
         bool GetVSync()
         {
             if(!Data.has("vsync"))
                 UpdateVSync(false);
-            
+
             return (bool)Data["vsync"];
         }
 
@@ -47,7 +66,7 @@ namespace Volts
 
         fs::path ConfigPath{};
         fs::path ConfigDir{};
-        
+
         argo::json Data;
     };
 }

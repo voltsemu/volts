@@ -49,4 +49,9 @@ namespace Volts::Render
     {
 
     }
+
+    void Vulkan::UpdateFullscreen(bool Enabled)
+    {
+
+    }
 }

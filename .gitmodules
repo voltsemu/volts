@@ -13,3 +13,6 @@
 [submodule "subprojects/argo"]
 	path = subprojects/argo
 	url = https://github.com/Apache-HB/argo
+[submodule "subprojects/machineid"]
+	path = subprojects/machineid
+	url = https://github.com/Apache-HB/machineid

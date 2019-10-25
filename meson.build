@@ -24,6 +24,8 @@ args += '-DARGO_NOTHROW'
 
 json = subproject('argo')
 
+machid = subproject('machineid')
+
 threads = dependency('threads')
 
 glfw_pack = subproject('glfw3', required : false)
@@ -33,6 +35,7 @@ deps = [
     ctu.get_variable('meta_dep'),
     ctu.get_variable('core_dep'),
     json.get_variable('argo_dep'),
+    machid.get_variable('machid_dep'),
     threads
 ]
 
@@ -77,6 +80,7 @@ subdir('Volts')
 # use these slow features for convenience sake
 if meson.get_compiler('cpp').get_id() == 'msvc'
     args += ['/GR-', '/arch:AVX2', '/GF', '/EHsc-'] #GF enables string pooling, we abuse this for performance reasons
+    links += 'iphlpapi.lib'
 else
     args += ['-fno-rtti', '-fno-exceptions', '-march=native']
 endif

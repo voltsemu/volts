@@ -82,7 +82,7 @@ namespace Volts::Render
         ID3D12CommandList* Commands[] = { CommandList.Get() };
         Queue->ExecuteCommandLists(_countof(Commands), Commands);
 
-        UINT PresentFlags = Tearing ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
+        UINT PresentFlags = (Tearing && !Fullscreen) ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
 
         VALIDATE(Swap->Present(VSyncMode, PresentFlags));
         AdvanceFrame();
@@ -121,6 +121,12 @@ namespace Volts::Render
     void DX12::UpdateVSync(bool Enabled)
     {
         VSyncMode = Enabled ? 1 : 0;
+    }
+
+    void DX12::UpdateFullscreen(bool Enabled)
+    {
+        VALIDATE(Swap->SetFullscreenState(Enabled, nullptr));
+        Fullscreen = Enabled;
     }
 
     void DX12::LoadSizedResources()
@@ -174,7 +180,7 @@ namespace Volts::Render
 
         CommandList->SetDescriptorHeaps(1, SRV);
 
-        const F32 ClearColour[] = { 0.0f, 0.2f, 0.4f, 1.0f };
+        // const F32 ClearColour[] = { 1.0f, 1.0f, 1.0f, 0.0f };
 
         CommandList->ClearRenderTargetView(RTVHandle, ClearColour, 0, nullptr);
         CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -425,9 +431,9 @@ namespace Volts::Render
             {
                 Vertex Tris[] =
                 {
-                    { { 0.f, 0.25f * 2, 0.f }, { 1.f, 0.f, 0.f, 1.f } },
-                    { { 0.25f, -0.25f * 2, 0.f }, { 0.f, 1.f, 0.f, 1.f } },
-                    { { -0.25f, -0.25f * 2, 0.f }, { 0.f, 0.f, 1.f, 1.f } }
+                    { { 0.f, 1.f, 0.f }, { 1.f, 0.f, 0.f, 1.f } },
+                    { { 1.f, -1.f, 0.f }, { 0.f, 1.f, 0.f, 1.f } },
+                    { { -1.f, -1.f, 0.f }, { 0.f, 0.f, 1.f, 1.f } }
                 };
 
                 const U32 TrisSize = sizeof(Tris);
