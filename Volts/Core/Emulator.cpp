@@ -244,6 +244,12 @@ namespace Volts
 
     void Emulator::UpdateDeviceNames()
     {
+        if(DeviceNames)
+        {
+            delete[] DeviceNames;
+            DeviceNames = nullptr;
+        }
+        
         auto* Devices = Render.Current()->Devices(&DeviceCount);
         if(!Devices)
             return;
@@ -277,6 +283,8 @@ namespace Volts
 
         Render.Current()->Attach();
         Render.Current()->UpdateVSync(Cfg.GetVSync());
+
+        UpdateDeviceNames();
 
         while(!glfwWindowShouldClose(Frame))
         {

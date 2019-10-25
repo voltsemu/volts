@@ -28,7 +28,7 @@ machid = subproject('machineid')
 
 threads = dependency('threads')
 
-glfw_pack = subproject('glfw3', required : false)
+glfw_pack = dependency('glfw3', required : false)
 
 deps = [
     ctu.get_variable('fs_dep'),
