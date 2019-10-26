@@ -10,10 +10,6 @@
 #include "Components/Files/FileSystem.h"
 #include "Components/Render/Render.h"
 
-#include "Frame/Window.h"
-
-#include "Config.h"
-
 #if OS_WIN
 #   include <windows.h>
 #endif
@@ -99,8 +95,6 @@ namespace Volts
 
         void Run();
 
-        Window Frame;
-
         Backends<Audio::Audio> Audio{"Registered {} audio backend"};
 
         void UpdateDeviceNames();
@@ -115,7 +109,6 @@ namespace Volts
         ImGuiTextBuffer LogBuffer;
         LogLevel Level = LogLevel::Info;
 
-        Config Cfg = {};
     private:
         void GUI();
         char** DeviceNames = nullptr;

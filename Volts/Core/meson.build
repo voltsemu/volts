@@ -1,6 +1,4 @@
 sources += [
-    'Volts/Core/Emulator.cpp',
-    'Volts/Core/Config.cpp'
+    'Volts/Core/Emulator.cpp'
 ]
 
-subdir('Frame')

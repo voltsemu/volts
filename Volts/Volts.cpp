@@ -2,6 +2,8 @@
 
 using namespace Cthulhu;
 
+#include "ui.h"
+
 // enter here
 int main(int Argc, char** Argv)
 {
@@ -9,7 +11,28 @@ int main(int Argc, char** Argv)
 		->Build()
 		->Run(Argc, Argv);
 
-	Volts::Emulator::Get()->Run();
+	uiInitOptions Opts = {};
+	uiInit(&Opts);
+
+	auto* W = uiNewWindow("Volts", 720, 480, 1);
+	uiWindowSetMargined(W, 1);
+
+	uiWindowOnClosing(W, [](uiWindow*, void*){
+		uiQuit();
+		return 1;
+	}, nullptr);
+
+	uiOnShouldQuit([](void* Data){
+		uiControlDestroy(uiControl(uiWindow(Data)));
+		return 1;
+	}, W);
+
+	uiWindowCenter(W);
+
+	uiControlShow(uiControl(W));
+	uiMain();
+
+	//Volts::Emulator::Get()->Run();
 }
 
 

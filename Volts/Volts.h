@@ -25,6 +25,8 @@ namespace Volts::Args
 
     using namespace Utils;
 
+    namespace fs = std::filesystem;
+
     struct CLI
     {
         cxxopts::Options Opts;

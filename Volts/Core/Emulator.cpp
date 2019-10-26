@@ -109,23 +109,10 @@ namespace Volts
             {
                 ImGui::Combo("Renders", &Render.Index, Render.Names, Render.Count);
 
-                static bool VSyncEnabled = Cfg.GetVSync();
-                if(ImGui::Checkbox("VSync", &VSyncEnabled))
-                {
-                    Render.Current()->UpdateVSync(VSyncEnabled);
-                    Cfg.UpdateVSync(VSyncEnabled);
-                }
 
                 if(ImGui::Combo("Device", &CurrentDevice, DeviceNames, DeviceCount))
                 {
                     Render.Current()->SetDevice(CurrentDevice);
-                }
-
-                static int CurrentAspectRatio = Cfg.GetAspectRatio();
-                static const char* AspectRatioOptions[] = { "4:3", "16:9" };
-                if(ImGui::Combo("Aspect ratio", &CurrentAspectRatio, AspectRatioOptions, 2))
-                {
-                    Cfg.SetAspectRatio(AspectRatioOptions[CurrentAspectRatio]);
                 }
 
                 Render.Current()->GUI();
@@ -134,19 +121,6 @@ namespace Volts
 
                 ImGui::Combo("Audio", &Audio.Index, Audio.Names, Audio.Count);
                 ImGui::Combo("Input", &Input.Index, Input.Names, Input.Count);
-
-                ImGui::Separator();
-
-                static float Scale = Cfg.GetGuiScale();
-                if(ImGui::SliderFloat("GUI scale", &Scale, 0.1f, 5.0f, "scale %.3f"))
-                {
-                    ImGui::GetStyle().ScaleAllSizes(Scale);
-                    ImFontConfig FontCfg;
-                    FontCfg.SizePixels = 13.f * Scale;
-                    ImGui::GetIO().Fonts->AddFontDefault(&FontCfg)->DisplayOffset.y = Scale;
-
-                    Cfg.UpdateGuiScale(Scale);
-                }
             }
 
             if(ImGui::CollapsingHeader("Logs"))
@@ -154,13 +128,7 @@ namespace Volts
                 const char* LevelOptions[] = { "Trace", "Info", "Warn", "Error", "Fatal" };
                 if(ImGui::Combo("Filter", (I32*)&Level, LevelOptions, IM_ARRAYSIZE(LevelOptions)))
                 {
-                    std::string Opt = LevelOptions[(I32)Level];
-                    std::for_each(Opt.begin(), Opt.end(), [](char& C){
-                        C = std::tolower(C);
-                    });
-
-                    Cfg.Data["log_level"] = Opt;
-                    Cfg.Save();
+                    
                 }
 
                 ImGui::SameLine();
@@ -249,7 +217,7 @@ namespace Volts
             delete[] DeviceNames;
             DeviceNames = nullptr;
         }
-        
+
         auto* Devices = Render.Current()->Devices(&DeviceCount);
         if(!Devices)
             return;
@@ -261,50 +229,16 @@ namespace Volts
 
     void Emulator::Run()
     {
-        Cfg.Init();
         auto& IO = ImGui::GetIO();
         IO.IniFilename = "Config/imgui.ini";
 
         // todo: the cursor dissapears when enabling scaling
         // i dont know why
-        double Scale = Cfg.GetGuiScale();
-        ImGui::GetStyle().ScaleAllSizes(Scale);
-        ImFontConfig FontCfg;
-        FontCfg.SizePixels = 13.f * Scale;
-        ImGui::GetIO().Fonts->AddFontDefault(&FontCfg)->DisplayOffset.y = Scale;
 
         Render.Finalize();
         Input.Finalize();
         Audio.Finalize();
 
-        Frame.Open();
-
-        ImGui_ImplGlfw_InitForOpenGL(Frame, true);
-
-        Render.Current()->Attach();
-        Render.Current()->UpdateVSync(Cfg.GetVSync());
-
-        UpdateDeviceNames();
-
-        while(!glfwWindowShouldClose(Frame))
-        {
-            auto* RenderBackend = Render.Current();
-            RenderBackend->Begin();
-            ImGui_ImplGlfw_NewFrame();
-
-            ImGui::NewFrame();
-            GUI();
-            ImGui::Render();
-
-            RenderBackend->End();
-            glfwPollEvents();
-        }
-
-        Render.Current()->Detach();
-        ImGui_ImplGlfw_Shutdown();
-
-        Frame.Close();
-
-        Cfg.Save();
+        // TODO
     }
 }

@@ -16,3 +16,6 @@
 [submodule "subprojects/machineid"]
 	path = subprojects/machineid
 	url = https://github.com/Apache-HB/machineid
+[submodule "subprojects/libui"]
+	path = subprojects/libui
+	url = https://github.com/Apache-HB/libui
