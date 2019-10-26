@@ -75,6 +75,7 @@ namespace Volts
 
     struct Emulator;
 
+    /*
     namespace Cfg
     {
         template<typename T, const char* TName>
@@ -108,6 +109,6 @@ namespace Volts
         template<const char* TName> using String = Var<std::string, TName>;
         template<const char* TName> using Int = Var<I32, TName>;
         template<const char* TName> using Double = Var<double, TName>;
-        template<const char* TName> using Bool = Var<bool, TName>;
+        template<const char* TName> using Bool = Var<bool, TName>; */
     }
 }
