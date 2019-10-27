@@ -12,6 +12,8 @@
 #include "Utils/SFO.h"
 #include "Utils/UNSELF.h"
 
+#include "ui.h"
+
 namespace Volts
 {
     using namespace Utils;
@@ -128,7 +130,7 @@ namespace Volts
                 const char* LevelOptions[] = { "Trace", "Info", "Warn", "Error", "Fatal" };
                 if(ImGui::Combo("Filter", (I32*)&Level, LevelOptions, IM_ARRAYSIZE(LevelOptions)))
                 {
-                    
+
                 }
 
                 ImGui::SameLine();
@@ -227,18 +229,54 @@ namespace Volts
             DeviceNames[I] = strdup(Devices[I].Name());
     }
 
+    uiControl* MakeGamesList()
+    {
+        uiBox* VBox = uiNewVerticalBox();
+
+        return uiControl(VBox);
+    }
+
+    uiControl* MakeSettingsPage()
+    {
+        uiBox* HBox = uiNewHorizontalBox();
+        uiBoxSetPadded(HBox, 1);
+
+        auto* Group = uiNewGroup("Renderers");
+        uiGroupSetMargined(Group, 1);
+        uiBoxAppend(HBox, uiControl(Group), 1);
+    }
+
     void Emulator::Run()
     {
         auto& IO = ImGui::GetIO();
         IO.IniFilename = "Config/imgui.ini";
 
-        // todo: the cursor dissapears when enabling scaling
-        // i dont know why
-
         Render.Finalize();
         Input.Finalize();
         Audio.Finalize();
 
-        // TODO
+        uiInitOptions Opts = {};
+        uiInit(&Opts);
+
+        auto* W = uiNewWindow("Volts", 720, 480, 1);
+
+        uiWindowOnClosing(W, [](uiWindow*, void*){
+            uiQuit();
+            return 1;
+        }, nullptr);
+
+        uiOnShouldQuit([](void* Data){
+            uiControlDestroy(uiControl(uiWindow(Data)));
+            return 1;
+        }, W);
+
+        auto* Tab = uiNewTab();
+        uiWindowSetChild(W, uiControl(Tab));
+        uiWindowSetMargined(W, 1);
+
+        uiTabAppend(Tab, "Games")
+
+        uiControlShow(uiControl(W));
+        uiMain();
     }
 }

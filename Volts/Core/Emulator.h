@@ -102,10 +102,6 @@ namespace Volts
         Backends<Input::Input> Input{"Registered {} input backend"};
         Backends<Render::Render> Render{"Registered {} render backend"};
 
-#if OS_WIN
-        HINSTANCE Instance;
-#endif
-
         ImGuiTextBuffer LogBuffer;
         LogLevel Level = LogLevel::Info;
 

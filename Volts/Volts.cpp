@@ -11,31 +11,7 @@ int main(int Argc, char** Argv)
 		->Build()
 		->Run(Argc, Argv);
 
-	uiInitOptions Opts = {};
-	uiInit(&Opts);
-
-	auto* W = uiNewWindow("Volts", 720, 480, 1);
-
-	uiWindowOnClosing(W, [](uiWindow*, void*){
-		uiQuit();
-		return 1;
-	}, nullptr);
-
-	uiOnShouldQuit([](void* Data){
-		uiControlDestroy(uiControl(uiWindow(Data)));
-		return 1;
-	}, W);
-
-	auto* Tab = uiNewTab();
-	uiWindowSetChild(W, uiControl(Tab));
-	uiWindowSetMargined(W, 1);
-
-	//uiWindowCenter(W);
-
-	uiControlShow(uiControl(W));
-	uiMain();
-
-	//Volts::Emulator::Get()->Run();
+	Volts::Emulator::Get()->Run();
 }
 
 
