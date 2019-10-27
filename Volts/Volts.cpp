@@ -15,7 +15,6 @@ int main(int Argc, char** Argv)
 	uiInit(&Opts);
 
 	auto* W = uiNewWindow("Volts", 720, 480, 1);
-	uiWindowSetMargined(W, 1);
 
 	uiWindowOnClosing(W, [](uiWindow*, void*){
 		uiQuit();
@@ -27,7 +26,11 @@ int main(int Argc, char** Argv)
 		return 1;
 	}, W);
 
-	uiWindowCenter(W);
+	auto* Tab = uiNewTab();
+	uiWindowSetChild(W, uiControl(Tab));
+	uiWindowSetMargined(W, 1);
+
+	//uiWindowCenter(W);
 
 	uiControlShow(uiControl(W));
 	uiMain();
