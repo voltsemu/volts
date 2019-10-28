@@ -7,7 +7,6 @@
 
 #include "Components/Audio/Audio.h"
 #include "Components/Input/Input.h"
-#include "Components/Files/FileSystem.h"
 #include "Components/Render/Render.h"
 
 #if OS_WIN
@@ -74,7 +73,7 @@ namespace Volts
         I32 Index = 0;
         I32 Count = 0;
         const char** Names = nullptr;
-    private:
+
         std::vector<T*> BackendList;
         const char* RegisterMessage;
     };

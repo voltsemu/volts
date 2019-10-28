@@ -1,3 +1,3 @@
-foreach component : ['Audio', 'Files', 'Input', 'Render', 'Cell']
+foreach component : ['Audio', 'Input', 'Render', 'Cell']
     subdir(component)
 endforeach
