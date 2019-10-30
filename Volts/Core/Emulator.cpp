@@ -4,6 +4,8 @@
 #include <filesystem>
 #include <chrono>
 
+#include "glfw/glfw3.h"
+
 #include "imgui.h"
 #include "imgui/examples/imgui_impl_glfw.h"
 #include "imgui/examples/imgui_impl_win32.h"
@@ -229,60 +231,6 @@ namespace Volts
             DeviceNames[I] = strdup(Devices[I].Name());
     }
 
-    uiControl* MakeGamesList()
-    {
-        uiBox* VBox = uiNewVerticalBox();
-
-        return uiControl(VBox);
-    }
-
-    uiControl* MakeSettingsPage()
-    {
-        uiBox* HBox = uiNewHorizontalBox();
-        uiBoxSetPadded(HBox, 1);
-
-        auto* Group = uiNewGroup("Renderers");
-        uiGroupSetMargined(Group, 1);
-        uiBoxAppend(HBox, uiControl(Group), 1);
-
-        auto* VBox = uiNewVerticalBox();
-        uiBoxSetPadded(VBox, 1);
-        uiGroupSetChild(Group, uiControl(VBox));
-
-        {
-            auto* RenderBox = uiNewCombobox();
-            for(auto* Each : Emulator::Get()->Render.BackendList)
-                uiComboboxAppend(RenderBox, Each->Name());
-            uiBoxAppend(VBox, uiControl(RenderBox), 0);
-        }
-
-        {
-            auto* ScalingSlider = uiNewSlider(100, 200);
-
-            uiSliderOnChanged(ScalingSlider, [](auto* Slider, void*){
-                uiSliderSetValue(Slider, uiSliderValue(Slider));
-            }, nullptr);
-
-            uiBoxAppend(VBox, uiControl(ScalingSlider), 0);
-        }
-
-        {
-            auto* AudioBox = uiNewCombobox();
-            for(auto* Each : Emulator::Get()->Audio.BackendList)
-                uiComboboxAppend(AudioBox, Each->Name());
-            uiBoxAppend(VBox, uiControl(AudioBox), 0);
-        }
-
-        {
-            auto* InputBox = uiNewCombobox();
-            for(auto* Each : Emulator::Get()->Input.BackendList)
-                uiComboboxAppend(InputBox, Each->Name());
-            uiBoxAppend(VBox, uiControl(InputBox), 0);
-        }
-
-        return uiControl(HBox);
-    }
-
     void Emulator::Run()
     {
         //auto& IO = ImGui::GetIO();
@@ -292,32 +240,25 @@ namespace Volts
         Input.Finalize();
         Audio.Finalize();
 
-        uiInitOptions Opts = {};
-        uiInit(&Opts);
+        glfwSetErrorCallback([](int Error, const char* Desc) {
+            VERROR("GLFW error: {}:{}", Error, Desc);
+        });
 
-        auto* W = uiNewWindow("Volts", 720, 480, 1);
+        if(!glfwInit())
+        {
+            VFATAL("Failed to initialize glfw");
+            return;
+        }
 
-        uiWindowOnClosing(W, [](uiWindow*, void*){
-            uiQuit();
-            return 1;
-        }, nullptr);
+        auto* Window = glfwCreateWindow(780, 480, "Volts", nullptr, nullptr);
+        if(!Window)
+        {
+            VFATAL("Failed to create glfw window");
+            return;
+        }
 
-        uiOnShouldQuit([](void* Data){
-            uiControlDestroy(uiControl(uiWindow(Data)));
-            return 1;
-        }, W);
+        glfwDestroyWindow(Window);
 
-        auto* Tab = uiNewTab();
-        uiWindowSetChild(W, uiControl(Tab));
-        uiWindowSetMargined(W, 1);
-
-        uiTabAppend(Tab, "Games", MakeGamesList());
-        uiTabSetMargined(Tab, 0, 1);
-
-        uiTabAppend(Tab, "Settings", MakeSettingsPage());
-        uiTabSetMargined(Tab, 1, 1);
-
-        uiControlShow(uiControl(W));
-        uiMain();
+        glfwTerminate();
     }
 }
