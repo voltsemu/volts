@@ -14,12 +14,9 @@
 #include "Utils/SFO.h"
 #include "Utils/UNSELF.h"
 
-#include "ui.h"
-
 namespace Volts
 {
     using namespace Utils;
-    bool LogScrollToBottom = false;
 
     void Trace(const char* M)
     {
@@ -27,8 +24,7 @@ namespace Volts
         if(Emu->Level > LogLevel::Trace)
             return;
 
-        Emu->LogBuffer.append(fmt::format("[trace] {}\n", M).c_str());
-        LogScrollToBottom = true;
+        *Emu->OutStream << fmt::format("[trace] {}\n", M);
     }
 
     void Info(const char* M)
@@ -37,8 +33,7 @@ namespace Volts
         if(Emu->Level > LogLevel::Info)
             return;
 
-        Emu->LogBuffer.append(fmt::format("[info] {}\n", M).c_str());
-        LogScrollToBottom = true;
+        *Emu->OutStream << fmt::format("[info] {}\n", M);
     }
 
     void Warn(const char* M)
@@ -47,8 +42,7 @@ namespace Volts
         if(Emu->Level > LogLevel::Warn)
             return;
 
-        Emu->LogBuffer.append(fmt::format("[info] {}\n", M).c_str());
-        LogScrollToBottom = true;
+        *Emu->OutStream << fmt::format("[info] {}\n", M);
     }
 
     void Error(const char* M)
@@ -57,14 +51,12 @@ namespace Volts
         if(Emu->Level > LogLevel::Error)
             return;
 
-        Emu->LogBuffer.append(fmt::format("[error] {}\n", M).c_str());
-        LogScrollToBottom = true;
+        *Emu->OutStream << fmt::format("[error] {}\n", M);
     }
 
     void Fatal(const char* M)
     {
-        Emulator::Get()->LogBuffer.append(fmt::format("[fatal] {}\n", M).c_str());
-        LogScrollToBottom = true;
+        *Emulator::Get()->OutStream << fmt::format("[fatal] {}", M);
     }
 
     using namespace std;
@@ -75,160 +67,9 @@ namespace Volts
         return Singleton;
     }
 
-    enum class DialogType : U8
+    Emulator::Emulator()
     {
-        None,
-        PARAM,
-        UNSELF,
-    };
-
-    using TimePoint = decltype(std::chrono::high_resolution_clock::now());
-    using TimeDiff = std::chrono::duration<double, std::milli>;
-
-    DialogType CurrentDialog;
-    ImGui::FileBrowser FileDialog;
-    TimePoint LastFrame = std::chrono::high_resolution_clock::now();
-
-    void Emulator::GUI()
-    {
-        if(!ImGui::Begin("Volts"))
-        {
-            ImGui::End();
-        }
-        else
-        {
-            if(ImGui::CollapsingHeader("Metrics"))
-            {
-                auto Now = std::chrono::high_resolution_clock::now();
-
-                TimeDiff Count = (Now - LastFrame);
-
-                ImGui::Text("%s", fmt::format("FrameTime: {:.2f}ms", Count.count()).c_str());
-                ImGui::Text("%s", fmt::format("FPS: {:.2f}", 1000 / Count.count()).c_str());
-
-                LastFrame = Now;
-            }
-
-            if(ImGui::CollapsingHeader("Settings"))
-            {
-                ImGui::Combo("Renders", &Render.Index, Render.Names, Render.Count);
-
-
-                if(ImGui::Combo("Device", &CurrentDevice, DeviceNames, DeviceCount))
-                {
-                    Render.Current()->SetDevice(CurrentDevice);
-                }
-
-                Render.Current()->GUI();
-
-                ImGui::Separator();
-
-                ImGui::Combo("Audio", &Audio.Index, Audio.Names, Audio.Count);
-                ImGui::Combo("Input", &Input.Index, Input.Names, Input.Count);
-            }
-
-            if(ImGui::CollapsingHeader("Logs"))
-            {
-                const char* LevelOptions[] = { "Trace", "Info", "Warn", "Error", "Fatal" };
-                if(ImGui::Combo("Filter", (I32*)&Level, LevelOptions, IM_ARRAYSIZE(LevelOptions)))
-                {
-
-                }
-
-                ImGui::SameLine();
-                if(ImGui::Button("Clear"))
-                    LogBuffer.clear();
-
-                ImGui::Separator();
-                ImGui::BeginChild("LogBox");
-
-                ImGui::PushTextWrapPos();
-                ImGui::TextUnformatted(LogBuffer.c_str());
-                ImGui::PopTextWrapPos();
-
-                if(LogScrollToBottom)
-                    ImGui::SetScrollHere(1.f);
-                LogScrollToBottom = false;
-
-                ImGui::EndChild();
-            }
-
-            if(ImGui::CollapsingHeader("Files"))
-            {
-                if(ImGui::Button("Parse PARAM.SFO"))
-                {
-                    CurrentDialog = DialogType::PARAM;
-                    FileDialog.SetTitle("SFO");
-                    FileDialog.Open();
-                }
-
-                if(ImGui::Button("Decrypt EBOOT"))
-                {
-                    CurrentDialog = DialogType::UNSELF;
-                    FileDialog.SetTitle("UNSELF");
-                    FileDialog.Open();
-                }
-
-                FileDialog.Display();
-
-                if(FileDialog.HasSelected())
-                {
-                    // TODO: all this is debug code
-                    Info(fmt::format("Selected {}", FileDialog.GetSelected().string()).c_str());
-
-                    if(CurrentDialog == DialogType::PARAM)
-                    {
-                        auto Obj = LoadSFO({FileDialog.GetSelected().string().c_str()});
-
-                        for(auto& [Key, Val] : Obj)
-                        {
-                            std::string ValStr;
-                            switch(Val.Type)
-                            {
-                                case Format::String:
-                                    ValStr = (char*)Val.Data.data();
-                                    break;
-                                case Format::Array:
-                                    for(auto E : Val.Data)
-                                        ValStr += std::to_string(E) + " ";
-                                    break;
-                                case Format::Integer:
-                                    ValStr = std::to_string(*(U32*)Val.Data.data());
-                                    break;
-                            }
-                            VINFO("{}: {}", Key, ValStr);
-                        }
-                    }
-                    else if(CurrentDialog == DialogType::UNSELF)
-                    {
-                        auto Obj = LoadSELF({FileDialog.GetSelected().string().c_str()});
-
-                        auto* F = fopen("VOLTS.BIN", "wb");
-                        fwrite(Obj.GetData(), 1, Obj.Len(), F);
-                        fclose(F);
-                    }
-                    FileDialog.ClearSelected();
-                }
-            }
-            ImGui::End();
-        }
-    }
-
-    void Emulator::UpdateDeviceNames()
-    {
-        if(DeviceNames)
-        {
-            delete[] DeviceNames;
-            DeviceNames = nullptr;
-        }
-
-        auto* Devices = Render.Current()->Devices(&DeviceCount);
-        if(!Devices)
-            return;
-
-        DeviceNames = new char*[DeviceCount];
-        for(U32 I = 0; I < DeviceCount; I++)
-            DeviceNames[I] = strdup(Devices[I].Name());
+        OutStream = &std::cout;
     }
 
     void Emulator::Run()
@@ -240,25 +81,25 @@ namespace Volts
         Input.Finalize();
         Audio.Finalize();
 
-        glfwSetErrorCallback([](int Error, const char* Desc) {
-            VERROR("GLFW error: {}:{}", Error, Desc);
-        });
+        // glfwSetErrorCallback([](int Error, const char* Desc) {
+        //     VERROR("GLFW error: {}:{}", Error, Desc);
+        // });
 
-        if(!glfwInit())
-        {
-            VFATAL("Failed to initialize glfw");
-            return;
-        }
+        // if(!glfwInit())
+        // {
+        //     VFATAL("Failed to initialize glfw");
+        //     return;
+        // }
 
-        auto* Window = glfwCreateWindow(780, 480, "Volts", nullptr, nullptr);
-        if(!Window)
-        {
-            VFATAL("Failed to create glfw window");
-            return;
-        }
+        // auto* Window = glfwCreateWindow(780, 480, "Volts", nullptr, nullptr);
+        // if(!Window)
+        // {
+        //     VFATAL("Failed to create glfw window");
+        //     return;
+        // }
 
-        glfwDestroyWindow(Window);
+        // glfwDestroyWindow(Window);
 
-        glfwTerminate();
+        // glfwTerminate();
     }
 }

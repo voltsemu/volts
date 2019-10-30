@@ -92,6 +92,8 @@ namespace Volts
         // get global singleton
         static Emulator* Get();
 
+        Emulator();
+
         void Run();
 
         Backends<Audio::Audio> Audio{"Registered {} audio backend"};
@@ -101,13 +103,8 @@ namespace Volts
         Backends<Input::Input> Input{"Registered {} input backend"};
         Backends<Render::Render> Render{"Registered {} render backend"};
 
-        ImGuiTextBuffer LogBuffer;
         LogLevel Level = LogLevel::Info;
 
-    private:
-        void GUI();
-        char** DeviceNames = nullptr;
-        U32 DeviceCount = 0;
-        I32 CurrentDevice = 0;
+        std::ostream* OutStream;
     };
 }

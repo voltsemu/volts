@@ -6,6 +6,7 @@
 #include <fstream>
 
 #include "Volts/Utils/SFO.h"
+#include "Volts/Utils/UNSELF.h"
 
 #define CXXOPTS_NO_EXCEPTIONS
 #define CXXOPTS_NO_RTTI
@@ -24,6 +25,8 @@ namespace Volts::Args
     using namespace Cthulhu;
 
     using namespace Utils;
+
+    using namespace std;
 
     namespace fs = std::filesystem;
 
@@ -49,13 +52,11 @@ namespace Volts::Args
             return Singleton;
         }
 
-        bool DisableGUI = false;
-
         CLI* Build()
         {
             Opts.add_options()
                 ("H,help", "Display help message then exit")
-                ("N,nogui", "Disable emulator gui")
+                ("P,play", "Play the game at the desired location", cxxopts::value<std::string>())
                 ("S,sfo", "Parse a SFO and dump to json", cxxopts::value<std::string>())
                 ("U,unself", "Decrypt a SELF and write to a file", cxxopts::value<std::string>())
                 ("O,output", "A location to output data to", cxxopts::value<std::string>());
@@ -66,22 +67,45 @@ namespace Volts::Args
         {
             auto Res = Opts.parse(Argc, Argv);
 
-            std::ostream* OutPipe = &std::cout;
-
             if(Res.count("output"))
             {
                 auto Path = Res["output"].as<std::string>();
 
                 static auto Pipe = std::ofstream();
                 Pipe.open(Path, std::ofstream::out);
-                OutPipe = &Pipe;
+                Emulator::Get()->OutStream = &Pipe;
             }
 
             if(Res.count("help"))
             {
                 // print help then exit
-                *OutPipe << Opts.help();
-                exit(0);
+                VINFO(Opts.help());
+            }
+
+            if(Res.count("unself"))
+            {
+                auto Path = Res["unself"].as<std::string>();
+                if(!fs::exists(Path))
+                {
+                    VFATAL("SELF as {} was not found", Path);
+                    exit(1);
+                }
+
+                auto SELF = Utils::LoadSELF({Path.c_str()});
+
+                if(SELF.Len() == 0)
+                {
+                    VFATAL("Failed to decrypt SELF");
+                    exit(1);
+                }
+
+                std::ofstream Output("out.elf", ios::out | ios::binary);
+
+                Output.write((const char*)SELF.GetData(), SELF.Len());
+
+                Output.close();
+
+                VINFO("Done {}", SELF.Len());
             }
 
             if(Res.count("sfo"))
@@ -89,7 +113,7 @@ namespace Volts::Args
                 auto Path = Res["sfo"].as<std::string>();
                 if(!fs::exists(Path))
                 {
-                    *OutPipe << "SFO File at " << Path.c_str() << " was not found" << std::endl;
+                    VFATAL("SFO File at {} was not found", Path);
                     exit(1);
                 }
 
@@ -122,11 +146,8 @@ namespace Volts::Args
                     }
                 }
 
-                argo::unparser::unparse(*OutPipe, Output, "", "\n", "    ", 1);
+                argo::unparser::unparse(*Emulator::Get()->OutStream, Output, "", "\n", "    ", 1);
             }
-
-            if(Res.count("nogui"))
-                exit(0);
         }
     };
 }

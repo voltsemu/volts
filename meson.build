@@ -30,15 +30,12 @@ threads = dependency('threads')
 
 glfw_pack = dependency('glfw3', required : false)
 
-ui = subproject('libui')
-
 deps = [
     ctu.get_variable('fs_dep'),
     ctu.get_variable('meta_dep'),
     ctu.get_variable('core_dep'),
     json.get_variable('argo_dep'),
     machid.get_variable('machid_dep'),
-    ui.get_variable('libui_dep'),
     threads
 ]
 

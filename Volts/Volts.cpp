@@ -2,8 +2,6 @@
 
 using namespace Cthulhu;
 
-#include "ui.h"
-
 // enter here
 int main(int Argc, char** Argv)
 {
@@ -11,7 +9,7 @@ int main(int Argc, char** Argv)
 		->Build()
 		->Run(Argc, Argv);
 
-	Volts::Emulator::Get()->Run();
+	exit(0);
 }
 
 
@@ -40,7 +38,7 @@ int APIENTRY wWinMain(
 		RealArgv[I] = Arg;
 	}
 
-	main(Argc, (char**)RealArgv);
+	main(Argc, RealArgv);
 
 	LocalFree(Argv);
 }
