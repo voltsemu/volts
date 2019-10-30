@@ -8,8 +8,6 @@ int main(int Argc, char** Argv)
 	Volts::Args::CLI::Get()
 		->Build()
 		->Run(Argc, Argv);
-
-	exit(0);
 }
 
 

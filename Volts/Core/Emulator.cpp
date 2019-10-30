@@ -68,9 +68,8 @@ namespace Volts
     }
 
     Emulator::Emulator()
-    {
-        OutStream = &std::cout;
-    }
+        : OutStream(&std::cout)
+    {}
 
     void Emulator::Run()
     {
