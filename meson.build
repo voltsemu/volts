@@ -80,7 +80,6 @@ subdir('Volts')
 # use these slow features for convenience sake
 if meson.get_compiler('cpp').get_id() == 'msvc'
     args += ['/GR-', '/arch:AVX2', '/GF', '/EHsc-'] #GF enables string pooling, we abuse this for performance reasons
-    links += 'iphlpapi.lib'
 else
     args += ['-fno-rtti', '-fno-exceptions', '-march=native']
 endif
