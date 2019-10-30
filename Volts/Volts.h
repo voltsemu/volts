@@ -56,6 +56,7 @@ namespace Volts::Args
         {
             Opts.add_options()
                 ("H,help", "Display help message then exit")
+                ("L,level", "Change logging verbosity. defaults to info", cxxopts::value<std::string>()->default_value("info"))
                 ("P,play", "Play the game at the desired location", cxxopts::value<std::string>())
                 ("S,sfo", "Parse a SFO and dump to json", cxxopts::value<std::string>())
                 ("U,unself", "Decrypt a SELF and write to a file", cxxopts::value<std::string>())
@@ -66,6 +67,26 @@ namespace Volts::Args
         void Run(int Argc, char** Argv)
         {
             auto Res = Opts.parse(Argc, Argv);
+
+            {
+                auto Level = Res["level"].as<std::string>();
+                std::for_each(Level.begin(), Level.end(), [](char& C) {
+                    C = ::tolower(C);
+                });
+
+                if(Level == "0" || Level == "trace")
+                    Emulator::Get()->Level = LogLevel::Trace;
+                else if(Level == "1" || Level == "info")
+                    Emulator::Get()->Level = LogLevel::Info;
+                else if(Level == "2" || Level == "warn")
+                    Emulator::Get()->Level = LogLevel::Warn;
+                else if(Level == "3" || Level == "error")
+                    Emulator::Get()->Level = LogLevel::Error;
+                else if(Level == "4" || Level == "fatal")
+                    Emulator::Get()->Level = LogLevel::Fatal;
+                else
+                    VWARN("Invalid --level flag, must be one of (trace, info, warn, error, fatal). Defaulting to info");
+            }
 
             if(Res.count("output"))
             {
