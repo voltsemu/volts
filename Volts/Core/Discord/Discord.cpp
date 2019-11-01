@@ -12,8 +12,7 @@ namespace Volts::Discord
 {
     RPC::RPC()
     {
-        DiscordEventHandlers Handlers = {};
-        Discord_Initialize(ID, &Handlers, 1, nullptr);
+        Discord_Initialize(ID, nullptr, 1, nullptr);
         SetGame("Nothing");
     }
 

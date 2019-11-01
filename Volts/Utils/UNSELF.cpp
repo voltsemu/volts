@@ -10,6 +10,8 @@
 
 #include "aes/aes.h"
 
+#include "ELF.h"
+
 namespace Volts::Utils
 {
     namespace SCE
@@ -96,77 +98,6 @@ namespace Volts::Utils
         };
     };
 
-    namespace ELF
-    {
-        struct Header
-        {
-            U32 Magic;
-
-            U8 Class;
-            U8 Endian;
-            U8 SVersion;
-            U8 ABI;
-
-            U64 ABIVersion;
-
-            Big<U16> Type;
-            Big<U16> Machine;
-            Big<U32> Version;
-
-            Big<U64> Entry;
-            Big<U64> PHOffset;
-            Big<U64> SHOffset;
-
-            Big<U32> Flags;
-            Big<U16> HeaderSize;
-
-            Big<U16> PHEntrySize;
-            Big<U16> PHCount;
-
-            Big<U16> SHEntrySize;
-            Big<U16> SHCount;
-
-            Big<U16> StringIndex;
-        };
-
-        static_assert(sizeof(Header) == 64);
-
-        struct SectionHeader
-        {
-            Big<U32> StringOffset;
-            Big<U32> Type;
-
-            Big<U64> Flags;
-            Big<U64> VirtualAddress;
-            Big<U64> Offset;
-            Big<U64> Size;
-
-            Big<U32> Link;
-            Big<U32> Info;
-
-            Big<U64> Align;
-            Big<U64> EntrySize;
-        };
-
-        static_assert(sizeof(SectionHeader) == 64);
-
-        struct ProgramHeader
-        {
-            Big<U32> Type;
-
-            Big<U32> Flags;
-            Big<U64> Offset;
-            Big<U64> VirtualAddress;
-            Big<U64> PhysicalAddress;
-            Big<U64> FileSize;
-            Big<U64> MemorySize;
-
-            Big<U64> Align;
-        };
-
-        static_assert(sizeof(ProgramHeader) == 56);
-    };
-
     struct AppInfo
     {
         Big<U64> AuthID;
@@ -235,7 +166,7 @@ namespace Volts::Utils
 
     private:
         SCE::Header SCEHead;
-        ELF::Header ELFHead;
+        ELF::Header<U64> ELFHead;
         SELF::Header SELFHead;
 
         AppInfo Info;
@@ -250,8 +181,8 @@ namespace Volts::Utils
 
         std::vector<MetaData::Section> MetaSections;
 
-        std::vector<ELF::SectionHeader> SHeaders;
-        std::vector<ELF::ProgramHeader> PHeaders;
+        std::vector<ELF::SectionHeader<U64>> SHeaders;
+        std::vector<ELF::ProgramHeader<U64>> PHeaders;
 
         std::vector<SELF::ControlInfo> Controls;
 
@@ -323,7 +254,7 @@ namespace Volts::Utils
 
             SELFHead = File.Read<SELF::Header>();
             Info = File.Read<AppInfo>();
-            ELFHead = File.Read<ELF::Header>();
+            ELFHead = File.Read<ELF::Header<U64>>();
 
             if(ELFHead.Magic != "\177ELF"_U32)
             {
@@ -332,7 +263,7 @@ namespace Volts::Utils
             }
 
             for(U32 I = 0; I < ELFHead.PHCount; I++)
-                PHeaders.push_back(File.Read<ELF::ProgramHeader>());
+                PHeaders.push_back(File.Read<ELF::ProgramHeader<U64>>());
 
             File.Seek(SELFHead.ControlOffset);
 
@@ -348,7 +279,7 @@ namespace Volts::Utils
             File.Seek(SELFHead.SHeaderOffset);
 
             for(U32 I = 0; I < ELFHead.SHCount; I++)
-                SHeaders.push_back(File.Read<ELF::SectionHeader>());
+                SHeaders.push_back(File.Read<ELF::SectionHeader<U64>>());
 
             return true;
         }
