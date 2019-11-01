@@ -34,6 +34,13 @@ namespace Volts::Utils
             SPU = 23,
         };
 
+        enum class OS : U8
+        {
+            None = 0,
+
+            LV2 = 102
+        };
+
         template<typename T>
         struct Header
         {
@@ -42,7 +49,7 @@ namespace Volts::Utils
             U8 Class;
             U8 Endian;
             U8 SVersion;
-            U8 ABI;
+            OS ABI;
 
             U8 ABIVersion;
 
@@ -58,7 +65,7 @@ namespace Volts::Utils
 
             Big<U32> Flags;
             Big<U16> HeaderSize;
-            
+
             Big<U16> PHEntrySize;
             Big<U16> PHCount;
 
@@ -79,10 +86,10 @@ namespace Volts::Utils
         {
             Big<U32> Type;
             Big<U32> Offset;
-            
+
             Big<U32> VirtualAddress;
             Big<U32> PhysicalAddress;
-            
+
             Big<U32> FileSize;
             Big<U32> Align;
         };
@@ -93,10 +100,10 @@ namespace Volts::Utils
             Big<U32> Type;
             Big<U32> Flags;
             Big<U64> Offset;
-            
+
             Big<U64> VirtualAddress;
             Big<U64> PhysicalAddress;
-            
+
             Big<U64> FileSize;
             Big<U64> MemorySize;
             Big<U64> Align;
@@ -107,7 +114,7 @@ namespace Volts::Utils
         {
             Big<U32> Name;
             Big<U32> Type;
-            
+
             Big<T> Flags;
             Big<T> Address;
             Big<T> Offset;
@@ -120,7 +127,7 @@ namespace Volts::Utils
             Big<T> EntrySize;
         };
 
-        template<typename T>
+        template<typename T, Type TType, OS TSystem, Machine TMachine>
         struct Object
         {
             Header<T> Head;
@@ -130,8 +137,12 @@ namespace Volts::Utils
         };
     }
 
-    template<typename T>
-    ELF::Object<T>* LoadELF(FS::BufferedFile& File)
+    using PPUExec = ELF::Object<U64, ELF::Type::Exec, ELF::OS::None, ELF::Machine::PPC64>;
+    using PPCPRX = ELF::Object<U64, ELF::Type::Prx, ELF::OS::LV2, ELF::Machine::PPC64>;
+    using SPUExec = ELF::Object<U32, ELF::Type::Exec, ELF::OS::None, ELF::Machine::SPU>;
+
+    template<typename T, ELF::Type TType, ELF::OS TSystem, ELF::Machine TMachine>
+    ELF::Object<T, TType, TSystem, TMachine>* LoadELF(FS::BufferedFile& File)
     {
         if(!File.Valid())
         {
@@ -141,7 +152,7 @@ namespace Volts::Utils
 
         auto* Out = new ELF::Object<T>();
 
-        Out->Head = File.Read<ELF::Head<T>>();
+        Out->Head = File.Read<ELF::Header<T>>();
 
         if(Out->Head.Magic != "\177ELF"_U32)
         {
@@ -149,16 +160,13 @@ namespace Volts::Utils
             return nullptr;
         }
 
-        File.Seek(Out->Head.Offset)
+        File.Seek(Out->Head.SHOffset);
         for(U32 I = 0; I < Out->Head.SHCount; I++)
-        {
-            Progs.push_back(File.Read<ELF::SectionHeader<T>>());
-        }
+            Out->Sections.push_back(File.Read<ELF::SectionHeader<T>>());
 
+        File.Seek(Out->Head.PHOffset);
         for(U32 I = 0; I < Out->Head.PHCount; I++)
-        {
-            Progs.push_back(File.Read<ELF::ProgramHeader<T>>());
-        }
+            Out->Progs.push_back(File.Read<ELF::ProgramHeader<T>>());
 
         return Out;
     }

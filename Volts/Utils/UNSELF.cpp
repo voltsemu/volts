@@ -190,12 +190,7 @@ namespace Volts::Utils
         {
             SELF::ControlInfo* Ctrl = nullptr;
 
-            for(U32 I = 0; I < Controls.size(); I++)
-                if(Controls[I].Type == 3)
-                {
-                    Ctrl = &Controls[I];
-                    break;
-                }
+            Ctrl = &*std::find_if(Controls.begin(), Controls.end(), [](auto& Val) { return Val.Type == 3; });
 
             if(!Ctrl)
                 return true;
