@@ -15,6 +15,9 @@ Generated Files/
 # ignore mac stuff
 *.DS_STORE
 
+#meson wraps
+*.zip
+
 # other stuff
 *.elf
 Volts/Core/Generated/Version.h
