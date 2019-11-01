@@ -14,9 +14,6 @@ Generated Files/
 
 # ignore xcode files
 *.DS_STORE
-Volts/Platform/Darwin/Volts/build
-Index/
-*.xcbkptlist
-*.xcuserstate
 *.elf
 *.zip
+Version.h

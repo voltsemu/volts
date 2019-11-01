@@ -79,26 +79,32 @@ namespace Volts
         Render.Finalize();
         Input.Finalize();
         Audio.Finalize();
+        
 
-        // glfwSetErrorCallback([](int Error, const char* Desc) {
-        //     VERROR("GLFW error: {}:{}", Error, Desc);
-        // });
+        glfwSetErrorCallback([](int Error, const char* Desc) {
+            VERROR("GLFW error: {}:{}", Error, Desc);
+        });
 
-        // if(!glfwInit())
-        // {
-        //     VFATAL("Failed to initialize glfw");
-        //     return;
-        // }
+        if(!glfwInit())
+        {
+            VFATAL("Failed to initialize glfw");
+            return;
+        }
 
-        // auto* Window = glfwCreateWindow(780, 480, "Volts", nullptr, nullptr);
-        // if(!Window)
-        // {
-        //     VFATAL("Failed to create glfw window");
-        //     return;
-        // }
+        auto* Window = glfwCreateWindow(780, 480, "Volts", nullptr, nullptr);
+        if(!Window)
+        {
+            VFATAL("Failed to create glfw window");
+            return;
+        }
 
-        // glfwDestroyWindow(Window);
+        while(!glfwWindowShouldClose(Window))
+            glfwPollEvents();
 
-        // glfwTerminate();
+        glfwDestroyWindow(Window);
+
+        glfwTerminate();
+
+        exit(0);
     }
 }

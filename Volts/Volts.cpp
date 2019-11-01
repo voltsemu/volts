@@ -8,8 +8,10 @@ int main(int Argc, char** Argv)
 	Volts::Args::CLI::Get()
 		->Build()
 		->Run(Argc, Argv);
-}
 
+	Volts::Emulator::Get()
+		->Run();
+}
 
 #if OS_WINDOWS
 

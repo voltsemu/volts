@@ -16,6 +16,6 @@ namespace Volts::Discord
         void SetGame(std::string Title);
     private:
         const char* ID = "639289003375591430";
-        I64 StartTime = 0;
+        std::string State;
     };
 }

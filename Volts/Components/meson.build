@@ -1,3 +1,3 @@
-foreach component : ['Audio', 'Input', 'Render', 'PPU', 'SPU']
+foreach component : ['Audio', 'Input', 'Render']
     subdir(component)
 endforeach

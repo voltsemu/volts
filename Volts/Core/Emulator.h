@@ -5,6 +5,8 @@
 
 #include "Macros.h"
 
+#include "Discord/Discord.h"
+
 #include "Components/Audio/Audio.h"
 #include "Components/Input/Input.h"
 #include "Components/Render/Render.h"
@@ -104,6 +106,8 @@ namespace Volts
         Backends<Render::Render> Render{"Registered {} render backend"};
 
         LogLevel Level = LogLevel::Info;
+
+        Discord::RPC Presence = Discord::RPC();
 
         std::ostream* OutStream;
     };

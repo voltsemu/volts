@@ -68,6 +68,15 @@ namespace Volts::Args
         {
             auto Res = Opts.parse(Argc, Argv);
 
+            if(Res.count("output"))
+            {
+                auto Path = Res["output"].as<std::string>();
+
+                static auto Pipe = std::ofstream();
+                Pipe.open(Path, std::ofstream::out);
+                Emulator::Get()->OutStream = &Pipe;
+            }
+
             {
                 auto Level = Res["level"].as<std::string>();
                 std::for_each(Level.begin(), Level.end(), [](char& C) {
@@ -86,15 +95,6 @@ namespace Volts::Args
                     Emulator::Get()->Level = LogLevel::Fatal;
                 else
                     VWARN("Invalid --level flag, must be one of (trace, info, warn, error, fatal). Defaulting to info");
-            }
-
-            if(Res.count("output"))
-            {
-                auto Path = Res["output"].as<std::string>();
-
-                static auto Pipe = std::ofstream();
-                Pipe.open(Path, std::ofstream::out);
-                Emulator::Get()->OutStream = &Pipe;
             }
 
             if(Res.count("help"))
