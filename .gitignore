@@ -19,3 +19,4 @@ Index/
 *.xcbkptlist
 *.xcuserstate
 *.elf
+Volts/Core/Generated/Version.h
