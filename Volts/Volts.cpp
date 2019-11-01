@@ -1,35 +1,44 @@
-﻿
-#include "Volts.h"
+﻿#include "Volts.h"
 
-#include "GUI/Frame.h"
-
-#include "Core/Emulator.h"
-
-using namespace Volts;
 using namespace Cthulhu;
 
 // enter here
-int main(int Argc, const char** Argv)
+int main(int Argc, char** Argv)
 {
-	// run the main window
-	Emulator::Get().Run();
+	Volts::Args::CLI::Get()
+		->Build()
+		->Run(Argc, Argv);
+
+	Volts::Emulator::Get()
+		->Run();
 }
 
-
 #if OS_WINDOWS
+
+#include <windows.h>
+
 // on windows we need to use wWinMain to get an hInstance so we can make win32 windows and stuff
-int wWinMain(
+int APIENTRY wWinMain(
 	HINSTANCE Instance,
 	HINSTANCE PrevInstance,
 	LPWSTR CmdLine,
 	int ShowCmd
 )
 {
-	GUI::Instance = Instance;
 	int Argc;
 	wchar_t** Argv = CommandLineToArgvW(GetCommandLineW(), &Argc);
 
-	main(Argc, (const char**)Argv);
+	char** RealArgv = (char**)alloca(sizeof(char*) * Argc);
+
+	for(U32 I = 0; I < Argc; I++)
+	{
+		auto Len = wcslen(Argv[I]);
+		char* Arg = new char[Len + 1]();
+		wcstombs(Arg, Argv[I], Len);
+		RealArgv[I] = Arg;
+	}
+
+	main(Argc, RealArgv);
 
 	LocalFree(Argv);
 }

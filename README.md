@@ -95,12 +95,13 @@ volt.exe
 
 #### MacOSX
 
-As of Sept 17, 2019 supported MacOSX versions are
-* OSX 10.14.6 Mojave
+This will only build on OSX 10.15 (Catalina) or later
+
+you will also need to install xcode 11.1
 
 ```sh
 git submodule update --init
-meson Build
+env CXX=g++ meson Build
 ninja -C Build
 ./Build/volt
 ```

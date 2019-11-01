@@ -11,6 +11,8 @@
 #   error "include imgui.h before this header"
 #endif
 
+namespace fs = std::filesystem;
+
 using ImGuiFileBrowserFlags = int;
 
 enum ImGuiFileBrowserFlags_
@@ -194,6 +196,37 @@ inline bool ImGui::FileBrowser::IsOpened() const noexcept
     return isOpened_;
 }
 
+#if _WIN32
+
+struct Drives
+{
+    char** Names;
+    int Count;
+};
+
+Drives PhysicalDrives()
+{
+    char* Buf = new char[1024];
+    GetLogicalDriveStrings(1024, Buf);
+
+    // is it ugly? yes
+    // does it work? yes
+    static std::vector<char*> Items;
+
+    char* SingleDrive = Buf;
+    while(*SingleDrive)
+    {
+        UINT Type = GetDriveType(SingleDrive);
+        Items.push_back(SingleDrive);
+
+        SingleDrive += strlen(SingleDrive) + 1;
+    }
+
+    return { Items.data(), (int)Items.size() };
+}
+
+#endif
+
 inline void ImGui::FileBrowser::Display()
 {
     PushID(this);
@@ -209,6 +242,7 @@ inline void ImGui::FileBrowser::Display()
         SetNextWindowSize(ImVec2(700, 450));
     else
         SetNextWindowSize(ImVec2(700, 450), ImGuiCond_FirstUseEver);
+
     if(flags_ & ImGuiFileBrowserFlags_NoModal)
     {
         if(!BeginPopup(openLabel_.c_str()))
@@ -222,13 +256,26 @@ inline void ImGui::FileBrowser::Display()
     isOpened_ = true;
     ScopeGuard endPopup([] { EndPopup(); });
 
+#if _WIN32
+
+    static auto Drives = PhysicalDrives();
+
+    static int CurrentDrive = 0;
+
+    ImGui::SetNextItemWidth(30);
+
+    if(ImGui::Combo("", &CurrentDrive, Drives.Names, Drives.Count, -1, ImGuiComboFlags_NoArrowButton))
+        SetPwd(Drives.Names[CurrentDrive]);
+
+#endif
+
     // display elements in pwd
 
     int secIdx = 0, newPwdLastSecIdx = -1;
     for(auto &sec : pwd_)
     {
 #ifdef _WIN32
-        if(secIdx == 1)
+        if(secIdx == 0 || secIdx == 1)
         {
             ++secIdx;
             continue;

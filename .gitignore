@@ -12,11 +12,9 @@ x64/
 Generated Files/
 *.pfx
 
-# ignore xcode files
+# ignore mac stuff
 *.DS_STORE
-Volts/Platform/Darwin/Volts/build
-Index/
-*.xcbkptlist
-*.xcuserstate
+
+# other stuff
 *.elf
 Volts/Core/Generated/Version.h

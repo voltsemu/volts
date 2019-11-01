@@ -11,97 +11,92 @@ if host_machine.system() == 'darwin'
     add_languages('objcpp')
 endif
 
-# get cthulhu for the standard library
-cthulhu = subproject('Cthulhu')
+args = []
 
 # get zlib for decompressing files
 zlib = subproject('zlib')
 
 fmt = subproject('fmt')
 
-# get all the needed cthulhu projects
-libs = [
-    cthulhu.get_variable('metalib'),
-    cthulhu.get_variable('corelib'),
-    cthulhu.get_variable('fslib')
+ctu = subproject('cthulhu')
+
+args += '-DARGO_NOTHROW'
+
+json = subproject('argo')
+
+machid = subproject('machineid')
+
+threads = dependency('threads')
+
+discord = subproject('discord')
+
+glfw_pack = dependency('glfw3', required : false)
+
+deps = [
+    ctu.get_variable('fs_dep'),
+    ctu.get_variable('meta_dep'),
+    ctu.get_variable('core_dep'),
+    json.get_variable('argo_dep'),
+    machid.get_variable('machid_dep'),
+    discord.get_variable('discord_dep'),
+    threads
 ]
+
+if glfw_pack.found()
+    message('found glfw3, ignoring git submodule')
+    deps += glfw_pack
+else
+    message('glfw3 not found in system, using git submodule instead')
+    deps += subproject('glfw').get_variable('glfw_dep')
+endif
 
 # get the very basic core sources
-sources = [
-    'Volts/Volts.cpp',
-    'Volts/Config.cpp'
-]
+sources = []
 
-args = []
 
 if host_machine.system() == 'darwin'
     args += [
         # enable @import in objc++
         '-fmodules',
         # this fixes imgui metal backend
-        '-fobjc-arc',
-        # this allows filesystem to work
-        '-mmacosx-version-min=10.15'
+        '-fobjc-arc'
     ]
 endif
 
 incs = [
     include_directories('Volts'),
-    include_directories('Volts/PS3'),
-    cthulhu.get_variable('inc')
+    ctu.get_variable('inc')
 ]
 
-deps = [
+deps += [
     zlib.get_variable('zlib_dep'),
     fmt.get_variable('fmt_dep')
 ]
 
 links = []
 
-# include the main stuff
-subdir('Volts/PS3')
-subdir('Volts/Core')
-subdir('Volts/External')
-
-# include the gui
-subdir('Volts/GUI')
-
-subdir('Volts/Audio')
-subdir('Volts/Render')
-subdir('Volts/Input')
+subdir('Volts')
 
 # disable run time type id and exceptions in the hope of generating smaller code
 # i know you dont pay for features you dont use but this also stops people
 # from trying to use either feature at all so people dont """accidentally"""
 # use these slow features for convenience sake
 if meson.get_compiler('cpp').get_id() == 'msvc'
-    args += ['/GR-', '/arch:AVX2', '/GF'] #GF enables string pooling, we abuse this for performance reasons
+    args += ['/GR-', '/arch:AVX2', '/GF', '/EHsc-'] #GF enables string pooling, we abuse this for performance reasons
 else
     args += ['-fno-rtti', '-fno-exceptions', '-march=native']
+endif
+
+if meson.get_compiler('cpp').get_id() == 'clang'
+    args += '-std=c++17'
 endif
 
 if meson.get_compiler('cpp').get_id() == 'gcc'
     args += '-DGCC_WORKAROUND_BULLSHIT'
 endif
 
-if meson.get_compiler('cpp').get_id() == 'clang'
-    args += [
-        # meson doesnt set -std on clang
-        '-std=c++17',
-        # link to libc++ instead of default
-        '-stdlib=libc++',
-        # dont use default stdlib headers
-        '-nostdinc++',
-        # use these instead
-        '-I/usr/local/opt/llvm/include/c++/v1'
-    ]
-    # also link to the new stdlib
-    links += '-L/usr/local/opt/llvm/lib'
-endif
-
 executable('volt', sources,
     include_directories : incs,
-    link_with : libs,
     install : true,
     cpp_args : args,
     objcpp_args : args,
