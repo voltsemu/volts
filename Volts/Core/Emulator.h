@@ -1,52 +1,114 @@
 #pragma once
 
-#include <Core/Collections/Array.h>
+#include <Meta/Macros.h>
+#include <Meta/Aliases.h>
 
-#include "Logger.h"
+#include "Macros.h"
 
-#include "GUI/Frame.h"
-#include "Render/Render.h"
-#include "Audio/Player.h"
-#include "Input/Controller.h"
+#include "Discord/Discord.h"
+
+#include "Components/Audio/Audio.h"
+#include "Components/Input/Input.h"
+#include "Components/Render/Render.h"
+
+#if OS_WIN
+#   include <windows.h>
+#endif
+
+#define FMT_EXCEPTIONS 0
+#include <fmt/format.h>
+#include <vector>
+#include <filesystem>
+#include "imgui/imgui.h"
+
+#define VTRACE(...) { Volts::Trace(fmt::format(__VA_ARGS__).c_str()); }
+#define VINFO(...) { Volts::Info(fmt::format(__VA_ARGS__).c_str()); }
+#define VWARN(...) { Volts::Warn(fmt::format(__VA_ARGS__).c_str()); }
+#define VERROR(...) { Volts::Error(fmt::format(__VA_ARGS__).c_str()); }
+#define VFATAL(...) { Volts::Fatal(fmt::format(__VA_ARGS__).c_str()); }
 
 namespace Volts
 {
     using namespace Cthulhu;
 
+    void Trace(const char*);
+    void Info(const char*);
+    void Warn(const char*);
+    void Error(const char*);
+    void Fatal(const char*);
+
+    template<typename T>
+    struct Backends
+    {
+        Backends(const char* M) : RegisterMessage(M) {}
+
+        template<typename TOther>
+        void Register(TOther* Backend)
+        {
+            static_assert(std::is_base_of<T, TOther>::value);
+            BackendList.push_back((T*)Backend);
+            VINFO(RegisterMessage, Backend->Name());
+        }
+
+        T* Current() const { return BackendList[Index]; }
+
+        void Finalize()
+        {
+            Count = BackendList.size();
+            Names = new const char*[Count];
+            for(U32 I = 0; I < Count; I++)
+            {
+                Names[I] = BackendList[I]->Name();
+            }
+        }
+
+        void Update(U32 NewIndex)
+        {
+            if(NewIndex != Index)
+            {
+                Current()->Detach();
+                Index = NewIndex;
+                Current()->Attach();
+            }
+        }
+
+        I32 Index = 0;
+        I32 Count = 0;
+        const char** Names = nullptr;
+
+        std::vector<T*> BackendList;
+        const char* RegisterMessage;
+    };
+
+    enum class LogLevel : U8
+    {
+        Trace = 0,
+        Info = 1,
+        Warn = 2,
+        Error = 3,
+        Fatal = 4,
+    };
+
     struct Emulator
     {
-        static Emulator& Get();
+        // get global singleton
+        static Emulator* Get();
+
+        Emulator();
+
         void Run();
 
-        GUI::Frame* Window = nullptr;
+        Backends<Audio::Audio> Audio{"Registered {} audio backend"};
 
-        void GUI();
+        void UpdateDeviceNames();
 
-        ImGuiTextBuffer LogBuffer;
-        Level CurrentLevel = Level::Info;
-        void Log(Level L, std::string&& Message);
+        Backends<Input::Input> Input{"Registered {} input backend"};
+        Backends<Render::Render> Render{"Registered {} render backend"};
 
-        // render backends
-        void Register(RSX::Render* Backend);
-        Array<RSX::Render*> RenderBackends = {};
-        const char** RenderNames = nullptr;
-        U32 RenderIndex = 1;
-        RSX::Render& CurrentRender() { return *RenderBackends[RenderIndex]; }
+        LogLevel Level = LogLevel::Info;
 
+        Discord::RPC Presence = Discord::RPC();
 
-        // audio backends
-        void Register(Audio::Player* Backend);
-        Array<Audio::Player*> AudioBackends = {};
-        const char** AudioNames = nullptr;
-        U32 AudioIndex = 0;
-        Audio::Player& CurrentPlayer() { return *AudioBackends[AudioIndex]; }
-
-
-        // input device backends
-        void Register(Input::Controller* Backend);
-        Array<Input::Controller*> InputBackends = {};
-        const char** InputNames = nullptr;
-        U32 InputIndex = 0;
-        Input::Controller& CurrentController() { return *InputBackends[InputIndex]; }
+        std::ostream* OutStream;
     };
 }

@@ -1,71 +1,110 @@
 #include "Emulator.h"
 
+#include <iostream>
+#include <filesystem>
+#include <chrono>
+
+#include "GLFW/glfw3.h"
+
+#include "imgui.h"
+#include "imgui/examples/imgui_impl_glfw.h"
+#include "imgui/examples/imgui_impl_win32.h"
+#include "imfilebrowser.h"
+
+#include "Utils/SFO.h"
+#include "Utils/UNSELF.h"
+
 namespace Volts
 {
-    // static initialization trick
-    Emulator& Emulator::Get()
+    using namespace Utils;
+
+    void Trace(const char* M)
     {
-        static Emulator Global;
-        return Global;
+        auto* Emu = Emulator::Get();
+        if(Emu->Level > LogLevel::Trace)
+            return;
+
+        *Emu->OutStream << fmt::format("[trace] {}\n", M);
     }
+
+    void Info(const char* M)
+    {
+        auto* Emu = Emulator::Get();
+        if(Emu->Level > LogLevel::Info)
+            return;
+
+        *Emu->OutStream << fmt::format("[info] {}\n", M);
+    }
+
+    void Warn(const char* M)
+    {
+        auto* Emu = Emulator::Get();
+        if(Emu->Level > LogLevel::Warn)
+            return;
+
+        *Emu->OutStream << fmt::format("[info] {}\n", M);
+    }
+
+    void Error(const char* M)
+    {
+        auto* Emu = Emulator::Get();
+        if(Emu->Level > LogLevel::Error)
+            return;
+
+        *Emu->OutStream << fmt::format("[error] {}\n", M);
+    }
+
+    void Fatal(const char* M)
+    {
+        *Emulator::Get()->OutStream << fmt::format("[fatal] {}", M);
+    }
+
+    using namespace std;
+
+    Emulator* Emulator::Get()
+    {
+        static Emulator* Singleton = new Emulator();
+        return Singleton;
+    }
+
+    Emulator::Emulator()
+        : OutStream(&std::cout)
+    {}
 
     void Emulator::Run()
     {
-        Window = new GUI::Frame();
-        Window->SetTitle("Volts");
-        Window->Run();
-    }
+        //auto& IO = ImGui::GetIO();
+        //IO.IniFilename = "Config/imgui.ini";
 
-    void Emulator::GUI()
-    {
-        ImGui::Begin("Logs");
+        Render.Finalize();
+        Input.Finalize();
+        Audio.Finalize();
+        
 
-        ImGui::TextUnformatted(LogBuffer.c_str());
+        glfwSetErrorCallback([](int Error, const char* Desc) {
+            VERROR("GLFW error: {}:{}", Error, Desc);
+        });
 
-        ImGui::End();
-    }
-
-    void Emulator::Log(Level L, std::string&& Message)
-    {
-        if(L >= CurrentLevel)
+        if(!glfwInit())
         {
-            switch(L)
-            {
-                case Level::Info:
-                    LogBuffer.append("[info] ");
-                    break;
-                case Level::Warning:
-                    LogBuffer.append("[warn] ");
-                    break;
-                case Level::Error:
-                    LogBuffer.append("[error] ");
-                    break;
-                case Level::Fatal:
-                    LogBuffer.append("[fatal] ");
-                    break;
-                default:
-                    LogBuffer.append("[other] ");
-                    break;
-            }
-            LogBuffer.append((Message + "\n").c_str());
+            VFATAL("Failed to initialize glfw");
+            return;
         }
-    }
 
-    void Emulator::Register(RSX::Render* Backend)
-    {
-        VINFO("Registered {} rendering backend", Backend->Name());
-        RenderBackends.Append(Backend);
-    }
+        auto* Window = glfwCreateWindow(780, 480, "Volts", nullptr, nullptr);
+        if(!Window)
+        {
+            VFATAL("Failed to create glfw window");
+            return;
+        }
 
-    void Emulator::Register(Audio::Player* Backend)
-    {
-        VINFO("Registered {} audio backend", Backend->Name());
-        AudioBackends.Append(Backend);
-    }
+        while(!glfwWindowShouldClose(Window))
+            glfwPollEvents();
 
-    void Emulator::Register(Input::Controller* Backend)
-    {
-        VINFO("Registered {} input backend", Backend->Name());
-        InputBackends.Append(Backend);
+        glfwDestroyWindow(Window);
+
+        glfwTerminate();
+
+        exit(0);
     }
 }

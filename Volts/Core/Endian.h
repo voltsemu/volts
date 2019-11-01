@@ -1,12 +1,13 @@
 #pragma once
 
-#include <Meta/Macros.h>
 #include <Core/Math/Bytes.h>
 
 namespace Volts
 {
+    using namespace Cthulhu;
+    
     // what endianness does the data we're loading have?
-    enum class Endian : Cthulhu::U8
+    enum class Endian : U8
     {
         // powerpc is big endian
         Big,
@@ -23,6 +24,12 @@ namespace Volts
     //       to increase performance by reducing calls to byteswap functions.
     //
 
+#if PLATFORM_LITTLE_ENDIAN
+#   define CURRENT_ENDIAN Endian::Little
+#else
+#   define CURRENT_ENDIAN Endian::Big
+#endif
+
     /**
      * @brief Represents a value in either endian byte ordering
      *
@@ -38,13 +45,11 @@ namespace Volts
         // the stored data
         T Data;
 
-        // compile this function if we're running on a little endian platform
-#ifdef PLATFORM_LITTLE_ENDIAN
         // so this is strange, but this gets the data as little endian so it works on x86 which is little endian only
         T Get() const
         {
             // check if this value is loaded as Little endian Data
-            IF_CONSTEXPR(TOrder == Endian::Little)
+            if constexpr(TOrder == CURRENT_ENDIAN)
             {
                 // if it is we can just return the data as target is little endian as well
                 return Data;
@@ -58,22 +63,7 @@ namespace Volts
                 return Cthulhu::Math::GenericByteSwap<T>(Data);
             }
         }
-#else
-        // otherwise we're running on big endian arch so we compile this function
-        T Get() const
-        {
-            // if the data is loaded as little and we're on big endian we need to convert it to big
-            IF_CONSTEXPR(TOrder == Endian::Little)
-            {
-                return Cthulhu::Math::GenericByteSwap<T>(Data);
-            }
-            else
-            {
-                // otherwise we can just return the data
-                return Data;
-            }
-        }
-#endif
+
         // typecast implicity so we dont have to type .Get() everytime we need the real value
         operator T() const { return Get(); }
     };

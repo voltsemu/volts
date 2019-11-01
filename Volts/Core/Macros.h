@@ -1,14 +1,7 @@
 #pragma once
 
 #include <Meta/Macros.h>
-#include <Meta/Aliases.h>
 
-#include <chrono>
-
-// for concatenating tokens at compile time
-// eg CAT(__, AA) expands into __AA
-// this also works for macros such as __LINE__
-// eg CAT(_L_, __LINE) expands into _L_8
 #define CAT_INNER(A, B) A##B
 #define CAT(A, B) CAT_INNER(A, B)
 
@@ -32,18 +25,7 @@
 #   define VSCRIPT(...) namespace { static auto CAT(__, __LINE__) = [&] { [&]__VA_ARGS__(); return true; }(); }
 #endif
 
-// when i want something to be inline the compiler better make it inline
-#if CC_MSVC || CC_INTEL
-#   define VINLINE __forceinline
-#else
-#   define VINLINE __attribute__((always_inline))
-#endif
-
 namespace Volts
 {
-    // signifies padding in a structure
     using Pad = Cthulhu::Byte;
-    using TimePoint = decltype(std::chrono::high_resolution_clock::now());
-    using TimeDiff = std::chrono::duration<double, std::milli>;
-
 }
