@@ -16,3 +16,6 @@
 [submodule "subprojects/machineid"]
 	path = subprojects/machineid
 	url = https://github.com/Apache-HB/machineid
+[submodule "subprojects/discord"]
+	path = subprojects/discord
+	url = https://github.com/Apache-HB/discord-rpc

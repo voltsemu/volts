@@ -28,6 +28,8 @@ machid = subproject('machineid')
 
 threads = dependency('threads')
 
+discord = subproject('discord')
+
 glfw_pack = dependency('glfw3', required : false)
 
 deps = [
@@ -36,6 +38,7 @@ deps = [
     ctu.get_variable('core_dep'),
     json.get_variable('argo_dep'),
     machid.get_variable('machid_dep'),
+    discord.get_variable('discord_dep'),
     threads
 ]
 

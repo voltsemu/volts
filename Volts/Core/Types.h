@@ -28,12 +28,15 @@ namespace Volts::Types
         static constexpr T Mask = (T)(~(U64)Zero >> (BitMax - TSize));
         static constexpr T Max = (T)~(U64)Zero;
 
-        static constexpr T DataMask = (Mask >> (Max - TSize)) << TStart;
+        constexpr T DataMask()
+        {
+            return (Mask >> (Max - TSize)) << TStart;
+        }
 
         static_assert(TSize - 1 < (U64)Max, "TSize is too small");
         static_assert(
             IsSigned<T>::Value ||
-            IsUnsugned<T>::Value ||
+            IsUnsigned<T>::Value ||
             Same<T, bool>::Value,
             "T must be signed, unsigned, or bool"
         );
@@ -52,7 +55,7 @@ namespace Volts::Types
 
         auto& operator=(T Value)
         {
-            Data = (Data & ~DataMask) | ((Value * Mask) << TStart);
+            Data = (Data & ~DataMask()) | ((Value * Mask) << TStart);
             return *this;
         }
     };
