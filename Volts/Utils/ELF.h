@@ -1,6 +1,7 @@
 #pragma once
 
 #include <FileSystem/BufferedFile.h>
+#include <Core/Memory/Binary.h>
 
 #include "Core/Endian.h"
 
@@ -130,6 +131,7 @@ namespace Volts::Utils
         template<typename T, Type TType, OS TSystem, Machine TMachine>
         struct Object
         {
+            Binary Data;
             Header<T> Head;
 
             std::vector<ProgramHeader<T>> Progs;
@@ -150,7 +152,7 @@ namespace Volts::Utils
             return nullptr;
         }
 
-        auto* Out = new ELF::Object<T>();
+        auto* Out = new ELF::Object<T, TType, TSystem, TMachine>();
 
         Out->Head = File.Read<ELF::Header<T>>();
 
