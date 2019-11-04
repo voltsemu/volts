@@ -137,3 +137,14 @@ meson Build
 ninja -C Build
 ./Build/volt
 ```
+
+
+## Architecture
+
+The main emulator is a command line only interface. This allows each platform to have a native gui
+The gui will be able to interact with the emulator by opening it as a subproccess and using a socket
+to communicate (or popen, or something else, whatevers quickest really) with the main emulator.
+This also means most of the emulator can be completley platform agnostic, only relying on the C++ stdlib
+and external libraries that are platform agnostic as well.
+
+TODO: ramble more about emulator architecture

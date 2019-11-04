@@ -13,20 +13,29 @@ endif
 
 args = []
 
-# get zlib for decompressing files
+# subprojects
+# all in the subprojects/ folder
+# decompression, used in UNSELF
 zlib = subproject('zlib')
-
+# fmt, used in logging
 fmt = subproject('fmt')
-
+# cthulhu, used for file IO
 ctu = subproject('cthulhu')
 
+# json, used for config stuff
 args += '-DARGO_NOTHROW'
-
 json = subproject('argo')
+# tar, used for some ps3 files
+tar = subproject('microtar')
+# discord, used for custom discord presence
+# TODO: should this be removed and moved to the gui frontends?
+# TODO: probably lol
+discord = subproject('discord')
+
+# dependencies
+# usually from pkg-config
 
 threads = dependency('threads')
-
-discord = subproject('discord')
 
 glfw_pack = dependency('glfw3', required : false)
 
@@ -36,6 +45,7 @@ deps = [
     ctu.get_variable('core_dep'),
     json.get_variable('argo_dep'),
     discord.get_variable('discord_dep'),
+    tar.get_variable('tar_dep'),
     threads
 ]
 

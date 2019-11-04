@@ -16,3 +16,6 @@
 [submodule "subprojects/discord"]
 	path = subprojects/discord
 	url = https://github.com/Apache-HB/discord-rpc
+[submodule "subprojects/microtar"]
+	path = subprojects/microtar
+	url = https://github.com/Apache-HB/microtar
