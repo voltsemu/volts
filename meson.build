@@ -24,8 +24,6 @@ args += '-DARGO_NOTHROW'
 
 json = subproject('argo')
 
-machid = subproject('machineid')
-
 threads = dependency('threads')
 
 discord = subproject('discord')
@@ -37,7 +35,6 @@ deps = [
     ctu.get_variable('meta_dep'),
     ctu.get_variable('core_dep'),
     json.get_variable('argo_dep'),
-    machid.get_variable('machid_dep'),
     discord.get_variable('discord_dep'),
     threads
 ]
