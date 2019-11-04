@@ -170,6 +170,10 @@ namespace Volts::Utils
         for(U32 I = 0; I < Out->Head.PHCount; I++)
             Out->Progs.push_back(File.Read<ELF::ProgramHeader<T>>());
 
+        File.Seek(0);
+        Out->Head.Reserve(File.Size());
+        File.ReadN(Out->Data.GetData(), File.Size());
+
         return Out;
     }
 }
