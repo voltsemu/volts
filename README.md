@@ -101,7 +101,7 @@ you will also need to install xcode 11.1
 
 ```sh
 git submodule update --init
-env CXX=g++ meson Build
+meson Build
 ninja -C Build
 ./Build/volt
 ```
