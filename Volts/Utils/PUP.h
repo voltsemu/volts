@@ -37,11 +37,15 @@ namespace Volts::Utils
             std::vector<Entry> Files;
             std::vector<Hash> Hashes;
 
-            FS::BufferedFile& File;
+            FS::BufferedFile File;
+
+            Object(FS::BufferedFile F)
+                : File(F)
+            {}
 
             Binary GetFile(U64 ID);
         };
     }
 
-    std::optional<PUP::Object> LoadPUP(FS::BufferedFile& File);
+    std::optional<PUP::Object> LoadPUP(FS::BufferedFile&& File);
 }

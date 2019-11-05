@@ -15,14 +15,14 @@ namespace Volts::Utils
         Big<U64> DataLength;
     };
 
-    std::optional<PUP::Object> LoadSFO(FS::BufferedFile& File)
+    std::optional<PUP::Object> LoadPUP(FS::BufferedFile&& File)
     {
-        PUP::Object Ret = { .File = File };
+        PUP::Object Ret = File;
 
         auto Head = File.Read<Header>();
         if(Head.Magic != "SCEUF\0\0\0"_U64)
         {
-            VERROR("PUP file had invalid magic");
+            VERROR("PUP file had invalid magic {}", Head.Magic);
             return std::nullopt;
         }
 

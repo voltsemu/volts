@@ -5,8 +5,11 @@
 #include <filesystem>
 #include <fstream>
 
+#include "microtar.h"
+
 #include "Volts/Utils/SFO.h"
 #include "Volts/Utils/UNSELF.h"
+#include "Volts/Utils/PUP.h"
 
 #define CXXOPTS_NO_EXCEPTIONS
 #define CXXOPTS_NO_RTTI
@@ -56,8 +59,9 @@ namespace Volts::Args
         {
             Opts.add_options()
                 ("H,help", "Display help message then exit")
+                ("P,pup", "Parse PS3UPDAT.PUP file", cxxopts::value<std::string>())
                 ("L,level", "Change logging verbosity", cxxopts::value<std::string>()->default_value("info"))
-                ("P,play", "Play the game at location", cxxopts::value<std::string>())
+                ("R,run", "Play the game at location", cxxopts::value<std::string>())
                 ("S,sfo", "Parse a SFO and dump to json", cxxopts::value<std::string>())
                 ("U,unself", "Decrypt a SELF and write to a file", cxxopts::value<std::string>())
                 ("O,output", "A location to output data to", cxxopts::value<std::string>());
@@ -101,6 +105,26 @@ namespace Volts::Args
             {
                 // print help then exit
                 VINFO(Opts.help());
+            }
+
+            if(Res.count("pup"))
+            {
+                auto Path = Res["pup"].as<std::string>();
+                if(!fs::exists(Path))
+                {
+                    VFATAL("PUP file at {} not found", Path);
+                    exit(1);
+                }
+
+                auto PUP = Utils::LoadPUP({Path.c_str()});
+
+                if(!PUP.has_value())
+                {
+                    VFATAL("Failed to parse PUP file");
+                    exit(1);
+                }
+
+                auto File = PUP->GetFile(0x300);
             }
 
             if(Res.count("unself"))
