@@ -42,7 +42,7 @@ namespace Volts
         if(Emu->Level > LogLevel::Warn)
             return;
 
-        *Emu->OutStream << fmt::format("[info] {}\n", M);
+        *Emu->OutStream << fmt::format("[warn] {}\n", M);
     }
 
     void Error(const char* M)
@@ -56,7 +56,7 @@ namespace Volts
 
     void Fatal(const char* M)
     {
-        *Emulator::Get()->OutStream << fmt::format("[fatal] {}", M);
+        *Emulator::Get()->OutStream << fmt::format("[fatal] {}\n", M);
     }
 
     using namespace std;

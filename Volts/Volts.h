@@ -101,12 +101,6 @@ namespace Volts::Args
                     VWARN("Invalid --level flag, must be one of (trace, info, warn, error, fatal). Defaulting to info");
             }
 
-            if(Res.count("help"))
-            {
-                // print help then exit
-                VINFO(Opts.help());
-            }
-
             if(Res.count("pup"))
             {
                 auto Path = Res["pup"].as<std::string>();
@@ -192,6 +186,13 @@ namespace Volts::Args
                 }
 
                 argo::unparser::unparse(*Emulator::Get()->OutStream, Output, "", "\n", "    ", 1);
+            }
+
+            if(Res.count("help"))
+            {
+                // print help then exit
+                VINFO(Opts.help());
+                exit(0);
             }
         }
     };

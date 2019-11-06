@@ -15,19 +15,31 @@ namespace Volts::Utils
         Big<U64> DataLength;
     };
 
+    static_assert(sizeof(Header) == 48);
+
     std::optional<PUP::Object> LoadPUP(FS::BufferedFile&& File)
     {
+        if(!File.Valid())
+        {
+            VERROR("PUP file handle was invalid");
+            return std::nullopt;
+        }
         PUP::Object Ret = File;
 
         auto Head = File.Read<Header>();
         if(Head.Magic != "SCEUF\0\0\0"_U64)
         {
-            VERROR("PUP file had invalid magic {}", Head.Magic);
+            VINFO("Header was {} {} {} {} {} {}", 
+                Head.Magic,
+                Head.PackageVersion.Get(),
+                Head.ImageVersion.Get(),
+                Head.FileCount.Get(),
+                Head.HeaderLength.Get(),
+                Head.DataLength.Get()
+            );
+            VERROR("PUP file had invalid magic");
             return std::nullopt;
         }
-
-        Ret.Files.reserve(Head.FileCount);
-        Ret.Hashes.reserve(Head.FileCount);
 
         for(U32 I = 0; I < Head.FileCount; I++)
             Ret.Files.push_back(File.Read<PUP::Entry>());
