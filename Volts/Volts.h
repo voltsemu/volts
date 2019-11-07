@@ -60,6 +60,7 @@ namespace Volts::Args
         {
             Opts.add_options()
                 ("H,help", "Display help message then exit")
+                ("N,nogui", "Run all other command line tasks then exit before creating a gui")
                 ("P,pup", "Parse PS3UPDAT.PUP file", cxxopts::value<std::string>())
                 ("L,level", "Change logging verbosity", cxxopts::value<std::string>()->default_value("info"))
                 ("R,run", "Play the game at location", cxxopts::value<std::string>())
@@ -121,8 +122,9 @@ namespace Volts::Args
                     exit(1);
                 }
 
-                //auto File = PUP->GetFile(0x300);
-                //auto Data = Utils::LoadTAR(File);
+                auto File = PUP->GetFile(0x300);
+                VINFO("Here {}", File.Len());
+                auto Data = Utils::LoadTAR(File);
             }
 
             if(Res.count("unself"))
@@ -147,8 +149,6 @@ namespace Volts::Args
                 Output.write((const char*)SELF.GetData(), SELF.Len());
 
                 Output.close();
-
-                VINFO("Done {}", SELF.Len());
             }
 
             if(Res.count("sfo"))
@@ -198,6 +198,9 @@ namespace Volts::Args
                 VINFO(Opts.help());
                 exit(0);
             }
+
+            if(Res.count("nogui"))
+                exit(0);
         }
     };
 }

@@ -62,12 +62,16 @@ namespace Volts::Utils
         {
             for(auto& Entry : Files)
             {
+                VINFO("Entry = {}", Entry.ID);
                 if(Entry.ID == ID)
                 {
                     File->Seek(Entry.Offset);
                     Binary Out;
                     Out.Reserve(Entry.Length);
+                    VINFO("{} {} {}", Entry.Offset, Entry.Length, Out.RealLength());
                     File->ReadN(Out.GetData(), Entry.Length);
+                    VINFO("{} {} {}", Out.Tell(), Out.Len(), Out.RealLength());
+                    Out.Seek(Entry.Length);
 
                     return Out;
                 }

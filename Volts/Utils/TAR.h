@@ -27,6 +27,7 @@ namespace Volts::Utils
             Byte CheckSum[8];
             Byte FileType;
             C8 LinkName[100];
+            // always "ustar\0"
             Byte Magic[6];
             Pad Padding2[82];
             C8 Prefix[155];
