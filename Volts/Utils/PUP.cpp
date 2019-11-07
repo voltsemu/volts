@@ -5,17 +5,27 @@
 
 namespace Volts::Utils
 {
-    PACKED_STRUCT(Header,
+    namespace PUP
     {
-        U64 Magic;
-        Big<U64> PackageVersion;
-        Big<U64> ImageVersion;
-        Big<U64> FileCount;
-        Big<U64> HeaderLength;
-        Big<U64> DataLength;
-    });
+        // the first 48 bytes of a PUp file is the header
+        struct Header
+        {
+            // magic is always 302078313299 or "SCEUF\0\0\0"
+            Little<U64> Magic;
+            // ususally 1
+            Big<U64> PackageVersion;
+            // usually 66412
+            Big<U64> ImageVersion;
+            // the amount of files in the PUP object
+            Big<U64> FileCount;
+            // the size of the header + file table + hash table in bytes
+            Big<U64> HeaderLength;
+            // the length of the rest of the data
+            Big<U64> DataLength;
+        };
 
-    static_assert(sizeof(Header) == 48);
+        static_assert(sizeof(Header) == 48);
+    }
 
     std::optional<PUP::Object> LoadPUP(FS::BufferedFile* File)
     {
@@ -25,25 +35,17 @@ namespace Volts::Utils
             return std::nullopt;
         }
 
-        PUP::Object Ret{File};
-
         File->Seek(0);
 
-        auto Head = File->Read<Header>();
-        VINFO("Header was {} {} {} {} {} {}",
-            Head.Magic,
-            Head.PackageVersion.Get(),
-            Head.ImageVersion.Get(),
-            Head.FileCount.Get(),
-            Head.HeaderLength.Get(),
-            Head.DataLength.Get()
-        );
+        auto Head = File->Read<PUP::Header>();
 
         if(Head.Magic != "SCEUF\0\0\0"_U64)
         {
             VERROR("PUP file had invalid magic");
             return std::nullopt;
         }
+
+        PUP::Object Ret{File};
 
         for(U32 I = 0; I < Head.FileCount; I++)
             Ret.Files.push_back(File->Read<PUP::Entry>());
