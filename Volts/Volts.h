@@ -10,6 +10,7 @@
 #include "Volts/Utils/SFO.h"
 #include "Volts/Utils/UNSELF.h"
 #include "Volts/Utils/PUP.h"
+#include "Volts/Utils/TAR.h"
 
 #define CXXOPTS_NO_EXCEPTIONS
 #define CXXOPTS_NO_RTTI
@@ -110,7 +111,9 @@ namespace Volts::Args
                     exit(1);
                 }
 
-                auto PUP = Utils::LoadPUP({Path.c_str()});
+                FS::BufferedFile F = {Path.c_str()};
+
+                auto PUP = Utils::LoadPUP(&F);
 
                 if(!PUP.has_value())
                 {
@@ -119,6 +122,7 @@ namespace Volts::Args
                 }
 
                 auto File = PUP->GetFile(0x300);
+                auto Data = Utils::LoadTAR(File);
             }
 
             if(Res.count("unself"))

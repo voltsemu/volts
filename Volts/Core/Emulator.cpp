@@ -92,6 +92,7 @@ namespace Volts
         }
 
         auto* Window = glfwCreateWindow(780, 480, "Volts", nullptr, nullptr);
+        
         if(!Window)
         {
             VFATAL("Failed to create glfw window");
@@ -104,7 +105,5 @@ namespace Volts
         glfwDestroyWindow(Window);
 
         glfwTerminate();
-
-        exit(0);
     }
 }

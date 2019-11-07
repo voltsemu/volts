@@ -6,6 +6,8 @@
 #include "Core/Macros.h"
 #include "Core/Emulator.h"
 
+#include <Core/Memory/Binary.h>
+
 #include <FileSystem/BufferedFile.h>
 
 namespace Volts::Utils
@@ -37,4 +39,6 @@ namespace Volts::Utils
             std::map<std::string, U64> Offsets;
         };
     }
+
+    std::optional<TAR::Object> LoadTAR(Binary& B);
 }

@@ -17,16 +17,18 @@ namespace Volts::Utils
 
     static_assert(sizeof(Header) == 48);
 
-    std::optional<PUP::Object> LoadPUP(FS::BufferedFile&& File)
+    std::optional<PUP::Object> LoadPUP(FS::BufferedFile* File)
     {
-        if(!File.Valid())
+        if(!File->Valid())
         {
             VERROR("PUP file handle was invalid");
             return std::nullopt;
         }
         PUP::Object Ret = File;
 
-        auto Head = File.Read<Header>();
+        File->Seek(0);
+
+        auto Head = File->Read<Header>();
         if(Head.Magic != "SCEUF\0\0\0"_U64)
         {
             VINFO("Header was {} {} {} {} {} {}", 
@@ -42,10 +44,10 @@ namespace Volts::Utils
         }
 
         for(U32 I = 0; I < Head.FileCount; I++)
-            Ret.Files.push_back(File.Read<PUP::Entry>());
+            Ret.Files.push_back(File->Read<PUP::Entry>());
 
         for(U32 I = 0; I < Head.FileCount; I++)
-            Ret.Hashes.push_back(File.Read<PUP::Hash>());
+            Ret.Hashes.push_back(File->Read<PUP::Hash>());
 
         return Ret;
     }
@@ -58,10 +60,10 @@ namespace Volts::Utils
             {
                 if(Entry.ID == ID)
                 {
-                    File.Seek(Entry.Offset);
+                    File->Seek(Entry.Offset);
                     Binary Out;
                     Out.Reserve(Entry.Length);
-                    File.ReadN(Out.GetData(), Entry.Length);
+                    File->ReadN(Out.GetData(), Entry.Length);
 
                     return Out;
                 }

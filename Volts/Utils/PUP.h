@@ -37,9 +37,9 @@ namespace Volts::Utils
             std::vector<Entry> Files;
             std::vector<Hash> Hashes;
 
-            FS::BufferedFile File;
+            FS::BufferedFile* File;
 
-            Object(FS::BufferedFile F)
+            Object(FS::BufferedFile* F)
                 : File(F)
             {}
 
@@ -47,5 +47,5 @@ namespace Volts::Utils
         };
     }
 
-    std::optional<PUP::Object> LoadPUP(FS::BufferedFile&& File);
+    std::optional<PUP::Object> LoadPUP(FS::BufferedFile* File);
 }
