@@ -5,6 +5,9 @@ import os
 current_dir = sys.argv[1]
 
 with open(os.path.join(current_dir, 'Volts', 'Core', 'Generated', 'Version.h'), 'w') as out:
+    out.write('#pragma once\n')
+    out.write('// Generated file\n// Do not edit manually\n')
+
     commit_number = subprocess.check_output(['git', 'rev-list', 'HEAD', '--count']).strip()
     out.write(f'#define GIT_COMMIT {int(commit_number)}\n')
 

@@ -4,6 +4,6 @@ namespace Volts::Utils
 {
     std::optional<TAR::Object> LoadTAR(Binary& B)
     {
-
+        return std::nullopt;
     }
 }

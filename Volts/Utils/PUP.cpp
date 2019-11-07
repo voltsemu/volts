@@ -5,7 +5,7 @@
 
 namespace Volts::Utils
 {
-    struct Header
+    PACKED_STRUCT(Header,
     {
         U64 Magic;
         Big<U64> PackageVersion;
@@ -13,7 +13,7 @@ namespace Volts::Utils
         Big<U64> FileCount;
         Big<U64> HeaderLength;
         Big<U64> DataLength;
-    };
+    });
 
     static_assert(sizeof(Header) == 48);
 
@@ -24,21 +24,23 @@ namespace Volts::Utils
             VERROR("PUP file handle was invalid");
             return std::nullopt;
         }
-        PUP::Object Ret = File;
+
+        PUP::Object Ret{File};
 
         File->Seek(0);
 
         auto Head = File->Read<Header>();
+        VINFO("Header was {} {} {} {} {} {}",
+            Head.Magic,
+            Head.PackageVersion.Get(),
+            Head.ImageVersion.Get(),
+            Head.FileCount.Get(),
+            Head.HeaderLength.Get(),
+            Head.DataLength.Get()
+        );
+
         if(Head.Magic != "SCEUF\0\0\0"_U64)
         {
-            VINFO("Header was {} {} {} {} {} {}", 
-                Head.Magic,
-                Head.PackageVersion.Get(),
-                Head.ImageVersion.Get(),
-                Head.FileCount.Get(),
-                Head.HeaderLength.Get(),
-                Head.DataLength.Get()
-            );
             VERROR("PUP file had invalid magic");
             return std::nullopt;
         }

@@ -73,13 +73,10 @@ namespace Volts
 
     void Emulator::Run()
     {
-        //auto& IO = ImGui::GetIO();
-        //IO.IniFilename = "Config/imgui.ini";
-
         Render.Finalize();
         Input.Finalize();
         Audio.Finalize();
-        
+
 
         glfwSetErrorCallback([](int Error, const char* Desc) {
             VERROR("GLFW error: {}:{}", Error, Desc);
@@ -92,7 +89,7 @@ namespace Volts
         }
 
         auto* Window = glfwCreateWindow(780, 480, "Volts", nullptr, nullptr);
-        
+
         if(!Window)
         {
             VFATAL("Failed to create glfw window");

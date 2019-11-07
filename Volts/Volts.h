@@ -121,8 +121,8 @@ namespace Volts::Args
                     exit(1);
                 }
 
-                auto File = PUP->GetFile(0x300);
-                auto Data = Utils::LoadTAR(File);
+                //auto File = PUP->GetFile(0x300);
+                //auto Data = Utils::LoadTAR(File);
             }
 
             if(Res.count("unself"))
