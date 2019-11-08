@@ -18,21 +18,28 @@ namespace Volts::Utils
 
     namespace TAR
     {
-        struct Header
+        PACKED_STRUCT(Header,
         {
             C8 Name[100];
-            Pad Padding[24];
+            C8 Mode[8];
+            C8 UID[8];
+            C8 GID[8];
             Byte Size[12];
             Byte MTime[12];
             Byte CheckSum[8];
             Byte FileType;
             C8 LinkName[100];
-            // always "ustar\0"
+            // always "ustar\20"
             Byte Magic[6];
-            Pad Padding2[82];
+            U8 Version[2];
+            C8 UName[32];
+            C8 GName[32];
+            C8 DevMajor[8];
+            C8 DevMinor[8];
             C8 Prefix[155];
-            Pad Padding3[12];
-        };
+        })
+
+        static_assert(sizeof(Header) == 500);
 
         struct Object
         {

@@ -48,14 +48,15 @@ namespace Volts::Utils
                 VERROR("Invalid TAR Magic");
                 return std::nullopt;
             }
-            else
-            {
-                VINFO("Head = {} {} {}", Head.Name, Head.FileType, Cthulhu::Utils::ParseInt(Head.Size).Get());
-            }
 
-            I32 Size = OctalToDecimal(Cthulhu::Utils::ParseInt(Head.Size).Get());
-            Ret.Offsets[(char*)Head.Name] = B.Tell() - sizeof(TAR::Header);
-            B.Seek(Size);
+            VINFO("Head = {} {} {} {}", Head.Name, Head.FileType, OctalToDecimal(Cthulhu::Utils::ParseInt(Head.Size).Get()), B.Tell());
+
+            I32 Size = OctalToDecimal(Cthulhu::Utils::ParseInt(Head.Size).Get()) + 124;
+
+            //124, 268
+
+            Ret.Offsets[(char*)Head.Name] = B.Tell();
+            B.Seek(Size + B.Tell());
         }
 
         Ret.File = B;
