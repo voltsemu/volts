@@ -45,7 +45,7 @@ namespace Volts::Utils
             return std::nullopt;
         }
 
-        PUP::Object Ret{File};
+        auto Ret = PUP::Object(File);
 
         for(U32 I = 0; I < Head.FileCount; I++)
             Ret.Files.push_back(File->Read<PUP::Entry>());
@@ -62,16 +62,15 @@ namespace Volts::Utils
         {
             for(auto& Entry : Files)
             {
-                VINFO("Entry = {}", Entry.ID);
                 if(Entry.ID == ID)
                 {
                     File->Seek(Entry.Offset);
                     Binary Out;
                     Out.Reserve(Entry.Length);
-                    VINFO("{} {} {}", Entry.Offset, Entry.Length, Out.RealLength());
                     File->ReadN(Out.GetData(), Entry.Length);
-                    VINFO("{} {} {}", Out.Tell(), Out.Len(), Out.RealLength());
+                    // dumb hack to make everything the right length internally
                     Out.Seek(Entry.Length);
+                    Out.Seek(0);
 
                     return Out;
                 }

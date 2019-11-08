@@ -123,8 +123,13 @@ namespace Volts::Args
                 }
 
                 auto File = PUP->GetFile(0x300);
-                VINFO("Here {}", File.Len());
                 auto Data = Utils::LoadTAR(File);
+                if(!Data.has_value())
+                {
+                    VERROR("Failed to load TAR 0x300");
+                    exit(1);
+                }
+                Data->FileNames();
             }
 
             if(Res.count("unself"))

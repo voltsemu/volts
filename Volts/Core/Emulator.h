@@ -3,6 +3,8 @@
 #include <Meta/Macros.h>
 #include <Meta/Aliases.h>
 
+#include <Core/Memory/Binary.h>
+
 #include "Macros.h"
 
 #include "Discord/Discord.h"
@@ -110,5 +112,13 @@ namespace Volts
         Discord::RPC Presence = Discord::RPC();
 
         std::ostream* OutStream;
+
+        static void Shit(Binary B)
+        {
+            auto* F = fopen("shit.bin", "wb");
+            fwrite(B.GetData(), sizeof(Byte), B.Len(), F);
+            fclose(F);
+            VINFO("Shat");
+        }
     };
 }

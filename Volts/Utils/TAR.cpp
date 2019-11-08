@@ -4,6 +4,8 @@
 
 namespace Volts::Utils
 {
+    using namespace Cthulhu;
+
     I32 OctalToDecimal(I32 Num)
     {
         I32 Ret = 0, I = 0, Rem;
@@ -11,22 +13,44 @@ namespace Volts::Utils
         {
             Rem = Num % 10;
             Num /= 10;
-            Ret += Rem * pow(8, I++);
+            Ret += Rem * (I32)pow(8, I++);
         }
         return Ret;
     }
 
-    std::optional<TAR::Object> LoadTAR(Binary& B)
+    std::vector<std::string> TAR::Object::FileNames()
     {
+        std::vector<std::string> Names;
+
+        for(auto& [Key, Offset] : Offsets)
+        {
+            VINFO("Name = {}", Key);
+            Names.push_back(Key);
+        }
+
+        return Names;
+    }
+
+    // ustar\20
+    Byte USTAR[] = { 0x75, 0x73, 0x74, 0x61, 0x72, 0x20 };
+
+    std::optional<TAR::Object> LoadTAR(Binary B)
+    {
+        Emulator::Shit(B);
+        B.Seek(0);
         TAR::Object Ret;
         while(B.Tell() < B.Len())
         {
-            VINFO("Depth = {}", B.Tell());
             auto Head = B.Read<TAR::Header>();
-            if(Memory::Compare<Byte>(Head.Magic, (const Byte*)"ustar\0", 6) != 0)
+
+            if(memcmp(Head.Magic, USTAR, sizeof(USTAR)) != 0)
             {
                 VERROR("Invalid TAR Magic");
                 return std::nullopt;
+            }
+            else
+            {
+                VINFO("Head = {} {} {}", Head.Name, Head.FileType, Cthulhu::Utils::ParseInt(Head.Size).Get());
             }
 
             I32 Size = OctalToDecimal(Cthulhu::Utils::ParseInt(Head.Size).Get());
@@ -34,7 +58,7 @@ namespace Volts::Utils
             B.Seek(Size);
         }
 
-
-        return std::nullopt;
+        Ret.File = B;
+        return Ret;
     }
 }

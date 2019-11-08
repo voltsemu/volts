@@ -36,10 +36,12 @@ namespace Volts::Utils
 
         struct Object
         {
-            FS::BufferedFile File;
+            Binary File;
             std::map<std::string, U64> Offsets;
+
+            std::vector<std::string> FileNames();
         };
     }
 
-    std::optional<TAR::Object> LoadTAR(Binary& B);
+    std::optional<TAR::Object> LoadTAR(Binary B);
 }
