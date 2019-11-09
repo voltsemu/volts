@@ -9,6 +9,7 @@
 #define INNER_STR(...) #__VA_ARGS__
 #define STR(...) INNER_STR(__VA_ARGS__)
 
+// no compiler has a unified way of packing structs so different macros per compiler
 #if CC_MSVC
 // use some funny msvc specific macros to change byte padding to 1 then declare the struct
 #   define PACKED_STRUCT(Name, Fields)  __pragma(pack(push, 1)) \

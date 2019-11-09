@@ -18,7 +18,7 @@ namespace Volts::Utils
 
     namespace TAR
     {
-        PACKED_STRUCT(Header,
+        struct Header
         {
             C8 Name[100];
             C8 Mode[8];
@@ -37,18 +37,17 @@ namespace Volts::Utils
             C8 DevMajor[8];
             C8 DevMinor[8];
             C8 Prefix[155];
-        })
+            Pad Padding[12];
+        };
 
-        static_assert(sizeof(Header) == 500);
+        static_assert(sizeof(Header) == 512);
 
         struct Object
         {
             Binary File;
             std::map<std::string, U64> Offsets;
-
-            std::vector<std::string> FileNames();
         };
     }
 
-    std::optional<TAR::Object> LoadTAR(Binary B);
+    TAR::Object LoadTAR(Binary B);
 }

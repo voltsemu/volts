@@ -5,8 +5,6 @@
 #include <filesystem>
 #include <fstream>
 
-#include "microtar.h"
-
 #include "Volts/Utils/SFO.h"
 #include "Volts/Utils/UNSELF.h"
 #include "Volts/Utils/PUP.h"
@@ -18,6 +16,8 @@
 #include "cxxopts/cxxopts.h"
 
 #include <argo.hpp>
+
+#include <string>
 
 #if OS_WINDOWS
 #   include <io.h>
@@ -60,6 +60,7 @@ namespace Volts::Args
         {
             Opts.add_options()
                 ("H,help", "Display help message then exit")
+                ("V,version", "Print version")
                 ("N,nogui", "Run all other command line tasks then exit before creating a gui")
                 ("P,pup", "Parse PS3UPDAT.PUP file", cxxopts::value<std::string>())
                 ("L,level", "Change logging verbosity", cxxopts::value<std::string>()->default_value("info"))
@@ -103,6 +104,14 @@ namespace Volts::Args
                     VWARN("Invalid --level flag, must be one of (trace, info, warn, error, fatal). Defaulting to info");
             }
 
+            if(Res.count("version"))
+            {
+                argo::json Obj{argo::json::object_e};
+                Obj["commit"] = GIT_COMMIT;
+                Obj["branch"] = GIT_BRANCH;
+                argo::unparser::unparse(*Emulator::Get()->OutStream, Obj, "", "", "", 1);
+            }
+
             if(Res.count("pup"))
             {
                 auto Path = Res["pup"].as<std::string>();
@@ -124,12 +133,11 @@ namespace Volts::Args
 
                 auto File = PUP->GetFile(0x300);
                 auto Data = Utils::LoadTAR(File);
-                if(!Data.has_value())
+                if(Data.Offsets.size() == 0)
                 {
                     VERROR("Failed to load TAR 0x300");
                     exit(1);
                 }
-                Data->FileNames();
             }
 
             if(Res.count("unself"))
@@ -194,7 +202,7 @@ namespace Volts::Args
                     }
                 }
 
-                argo::unparser::unparse(*Emulator::Get()->OutStream, Output, "", "\n", "    ", 1);
+                argo::unparser::unparse(*Emulator::Get()->OutStream, Output, "", "", "", 1);
             }
 
             if(Res.count("help"))

@@ -1,6 +1,5 @@
 sources += [
-    'Volts/Core/Emulator.cpp',
-    'Volts/Core/Discord/Discord.cpp'
+    'Volts/Core/Emulator.cpp'
 ]
 
 py = find_program('python3', 'python')

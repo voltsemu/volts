@@ -7,8 +7,6 @@
 
 #include "Macros.h"
 
-#include "Discord/Discord.h"
-
 #include "Components/Audio/Audio.h"
 #include "Components/Input/Input.h"
 #include "Components/Render/Render.h"
@@ -21,7 +19,8 @@
 #include <fmt/format.h>
 #include <vector>
 #include <filesystem>
-#include "imgui/imgui.h"
+
+#include "Generated/Version.h"
 
 #define VTRACE(...) { Volts::Trace(fmt::format(__VA_ARGS__).c_str()); }
 #define VINFO(...) { Volts::Info(fmt::format(__VA_ARGS__).c_str()); }
@@ -109,16 +108,6 @@ namespace Volts
 
         LogLevel Level = LogLevel::Info;
 
-        Discord::RPC Presence = Discord::RPC();
-
         std::ostream* OutStream;
-
-        static void Shit(Binary B)
-        {
-            auto* F = fopen("shit.bin", "wb");
-            fwrite(B.GetData(), sizeof(Byte), B.Len(), F);
-            fclose(F);
-            VINFO("Shat");
-        }
     };
 }

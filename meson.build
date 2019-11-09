@@ -25,12 +25,6 @@ ctu = subproject('cthulhu')
 # json, used for config stuff
 args += '-DARGO_NOTHROW'
 json = subproject('argo')
-# tar, used for some ps3 files
-tar = subproject('microtar')
-# discord, used for custom discord presence
-# TODO: should this be removed and moved to the gui frontends?
-# TODO: probably lol
-discord = subproject('discord')
 
 # dependencies
 # usually from pkg-config
@@ -44,8 +38,6 @@ deps = [
     ctu.get_variable('meta_dep'),
     ctu.get_variable('core_dep'),
     json.get_variable('argo_dep'),
-    discord.get_variable('discord_dep'),
-    tar.get_variable('tar_dep'),
     threads
 ]
 
