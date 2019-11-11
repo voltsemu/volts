@@ -1,23 +1,15 @@
 #pragma once
 
-#include "Volts/Core/Emulator.h"
+#include "PCH.h"
 
-#include <filesystem>
-#include <fstream>
+#include "Volts/Core/Emulator.h"
 
 #include "Volts/Utils/SFO.h"
 #include "Volts/Utils/UNSELF.h"
 #include "Volts/Utils/PUP.h"
 #include "Volts/Utils/TAR.h"
 
-#define CXXOPTS_NO_EXCEPTIONS
-#define CXXOPTS_NO_RTTI
-
-#include "cxxopts/cxxopts.h"
-
 #include <argo.hpp>
-
-#include <string>
 
 #if OS_WINDOWS
 #   include <io.h>
