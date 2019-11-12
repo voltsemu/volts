@@ -20,24 +20,17 @@ namespace Volts
 
     struct GUI : ApplicationT<GUI>
     {
-        GUI() = default;
+        Button B{nullptr};
 
-        static void Clicked(IInspectable const& Sender, const RoutedEventArgs& Args)
-        {
-            MessageDialog D(L"You pressed the button");
-            D.ShowAsync();
-        }
+        void OnLaunched(LaunchActivatedEventArgs const& Args)
+        {       
+            B = Button();     
+            B.Content(box_value(L"Name jeff"));
 
-        static void OnLaunched(LaunchActivatedEventArgs const& Args)
-        {            
-            Button B;
-            IInspectable Caption = PropertyValue::CreateString(L"Name jeff");
-            B.Content(Caption);
-
-            B.Background(SolidColorBrush(Colors::Red()));
-            B.Foreground(SolidColorBrush(Colors::Yellow()));
-
-            B.Click(&Clicked);
+            B.Click([](auto const&, auto const&) {
+                MessageDialog D(L"AAAA");
+                D.ShowAsync();
+            });
 
             auto W = Window::Current();
             W.Content(B);
@@ -46,7 +39,6 @@ namespace Volts
 
         static void Run()
         {
-            winrt::init_apartment();
             Application::Start([](auto&&){ make<GUI>(); });
         }
     };
