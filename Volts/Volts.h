@@ -138,7 +138,7 @@ namespace Volts::Args
                     if(Name.find("dev_flash_") != std::string::npos)
                         continue;
 
-                    std::async(std::launch::async, [&Data, &Progress](U32 Offset) {
+                    std::async([&Data, &Progress](U32 Offset) {
                         VINFO("{}", Offset);
                         Progress++;
                     }, Offset);
