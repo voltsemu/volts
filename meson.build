@@ -94,6 +94,12 @@ if meson.get_compiler('cpp').get_id() == 'gcc'
     args += '-DGCC_WORKAROUND_BULLSHIT'
 endif
 
+pch = [] 
+
+if host_machine.system() == 'windows'
+    pch += ['Volts/PCH.h']
+endif
+
 executable('volt', sources,
     include_directories : incs,
     install : true,
@@ -101,6 +107,7 @@ executable('volt', sources,
     objcpp_args : args,
     dependencies : deps,
     link_args : links,
+    cpp_pch : pch,
     gui_app : true
 )
 

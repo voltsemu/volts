@@ -1,7 +1,6 @@
 #pragma once
 
-#include <Meta/Macros.h>
-#include <Meta/Aliases.h>
+#include "PCH.h"
 
 #include <Core/Memory/Binary.h>
 
@@ -14,11 +13,6 @@
 #if OS_WIN
 #   include <windows.h>
 #endif
-
-#define FMT_EXCEPTIONS 0
-#include <fmt/format.h>
-#include <vector>
-#include <filesystem>
 
 #include "Generated/Version.h"
 

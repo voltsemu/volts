@@ -1,5 +1,7 @@
 ﻿#include "Volts.h"
 
+#include "GUI/GUI.h"
+
 using namespace Cthulhu;
 
 // enter here
@@ -9,8 +11,7 @@ int main(int Argc, char** Argv)
 		->Build()
 		->Run(Argc, Argv);
 
-	Volts::Emulator::Get()
-		->Run();
+	Volts::GUI::Run();
 }
 
 #if OS_WINDOWS
