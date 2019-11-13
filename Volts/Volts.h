@@ -4,6 +4,8 @@
 
 #include <filesystem>
 #include <fstream>
+#include <future>
+#include <atomic>
 
 #include "Volts/Utils/SFO.h"
 #include "Volts/Utils/UNSELF.h"
@@ -137,6 +139,19 @@ namespace Volts::Args
                 {
                     VERROR("Failed to load TAR 0x300");
                     exit(1);
+                }
+
+                std::atomic<U32> Progress = 32;
+
+                for(auto& [Name, Offset] : Data.Offsets)
+                {
+                    if(Name.find("dev_flash_") != std::string::npos)
+                        continue;
+
+                    std::async(std::launch::async, [&Data, &Progress](U32 Offset) {
+                        VINFO("{}", Offset);
+                        Progress++;
+                    }, Offset);
                 }
             }
 
