@@ -10,4 +10,6 @@
 [submodule "subprojects/argo"]
 	path = subprojects/argo
 	url = https://github.com/Apache-HB/argo
-	
+[submodule "subprojects/cthulhu"]
+	path = subprojects/cthulhu
+	url = https://github.com/Apache-HB/Cthulhu2
