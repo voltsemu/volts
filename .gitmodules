@@ -10,12 +10,4 @@
 [submodule "subprojects/argo"]
 	path = subprojects/argo
 	url = https://github.com/Apache-HB/argo
-[submodule "subprojects/discord"]
-	path = subprojects/discord
-	url = https://github.com/Apache-HB/discord-rpc
-[submodule "subprojects/microtar"]
-	path = subprojects/microtar
-	url = https://github.com/Apache-HB/microtar
-[submodule "subprojects/cthulhu"]
-	path = subprojects/cthulhu
-	url = https://github.com/Apache-HB/Cthulhu2
+	
