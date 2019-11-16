@@ -1,7 +1,6 @@
 #pragma once
 
-#include <FileSystem/BufferedFile.h>
-#include <Core/Memory/Binary.h>
+#include "PCH.h"
 
 #include "Core/Endian.h"
 
@@ -9,9 +8,8 @@
 
 namespace Volts::Utils
 {
-    namespace FS = Cthulhu::FileSystem;
-
     using namespace Cthulhu;
+    using namespace Types;
 
     namespace ELF
     {
@@ -128,10 +126,10 @@ namespace Volts::Utils
             Big<T> EntrySize;
         };
 
-        template<typename T, Type TType, OS TSystem, Machine TMachine>
+        template<typename T, Type TType, OS TSystem, Machine TMachine, typename TStream>
         struct Object
         {
-            Binary Data;
+            Interfaces::Stream<TStream> Data;
             Header<T> Head;
 
             std::vector<ProgramHeader<T>> Progs;
@@ -143,37 +141,32 @@ namespace Volts::Utils
     using PPCPRX = ELF::Object<U64, ELF::Type::Prx, ELF::OS::LV2, ELF::Machine::PPC64>;
     using SPUExec = ELF::Object<U32, ELF::Type::Exec, ELF::OS::None, ELF::Machine::SPU>;
 
-    template<typename T, ELF::Type TType, ELF::OS TSystem, ELF::Machine TMachine>
-    ELF::Object<T, TType, TSystem, TMachine>* LoadELF(FS::BufferedFile& File)
+    template<typename T, ELF::Type TType, ELF::OS TSystem, ELF::Machine TMachine, typename TStream>
+    std::optional<ELF::Object<T, TType, TSystem, TMachine>> LoadELF(Interfaces::Stream<TStream>& File)
     {
-        if(!File.Valid())
-        {
-            VERROR("ELF file was invalid");
-            return nullptr;
-        }
+        auto Out = ELF::Object<T, TType, TSystem, TMachine>();
 
-        auto* Out = new ELF::Object<T, TType, TSystem, TMachine>();
+        Out.Head = File.Read<ELF::Header<T>>();
 
-        Out->Head = File.Read<ELF::Header<T>>();
-
-        if(Out->Head.Magic != "\177ELF"_U32)
+        if(Out.Head.Magic != "\177ELF"_U32)
         {
             VERROR("Invalid ELF magic");
-            return nullptr;
+            return std::nullopt;
         }
 
-        File.Seek(Out->Head.SHOffset);
-        for(U32 I = 0; I < Out->Head.SHCount; I++)
-            Out->Sections.push_back(File.Read<ELF::SectionHeader<T>>());
+        File.Seek(Out.Head.SHOffset);
+        for(U32 I = 0; I < Out.Head.SHCount; I++)
+            Out.Sections.push_back(File.Read<ELF::SectionHeader<T>>());
 
-        File.Seek(Out->Head.PHOffset);
-        for(U32 I = 0; I < Out->Head.PHCount; I++)
-            Out->Progs.push_back(File.Read<ELF::ProgramHeader<T>>());
+        File.Seek(Out.Head.PHOffset);
+        for(U32 I = 0; I < Out.Head.PHCount; I++)
+            Out.Progs.push_back(File.Read<ELF::ProgramHeader<T>>());
 
         File.Seek(0);
-        Out->Head.Reserve(File.Size());
-        File.ReadN(Out->Data.GetData(), File.Size());
+        auto* Data = alloca(File.Length());
+        File.WriteN(Data, File.Length());
+        Out.Data.ReadN(Data, File.Length());
 
-        return Out;
+        return std::move(Out);
     }
 }

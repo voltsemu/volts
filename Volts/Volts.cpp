@@ -1,6 +1,7 @@
 ﻿#include "Volts.h"
 
 using namespace Cthulhu;
+using namespace Types;
 
 // enter here
 int main(int Argc, char** Argv)

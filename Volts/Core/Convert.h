@@ -1,9 +1,11 @@
 #pragma once
 
-#include <Meta/Aliases.h>
+#include <Cthulhu/Types/Types.h>
 
 namespace Volts
 {
+    using namespace Cthulhu;
+
     // Justification:
     //  - Q: What are these functions even for?
     //  - A: The PS3 file structure relies alot on magic numbers such as
@@ -14,23 +16,23 @@ namespace Volts
     //       to improve runtime performance.
 
     // convert 2 characters into a number ie "AB"
-    constexpr Cthulhu::U16 operator ""_U16(const char* Str, size_t)
+    constexpr Types::U16 operator ""_U16(const char* Str, size_t)
     {
         // turn a string into a number by casting the pointer to
         // the relevant type at compile time and then returning
         // type number by value rather than reference to duplicate it
-        return *(Cthulhu::U16*)Str;
+        return *(Types::U16*)Str;
     }
 
     // convert 4 characters into a number ie "SFO\0"
-    constexpr Cthulhu::U32 operator ""_U32(const char* Str, size_t)
+    constexpr Types::U32 operator ""_U32(const char* Str, size_t)
     {
-        return *(Cthulhu::U32*)Str;
+        return *(Types::U32*)Str;
     }
 
     // convert 8 characters into a number, not often used for magic, but here for completions sake
-    constexpr Cthulhu::U64 operator ""_U64(const char* Str, size_t)
+    constexpr Types::U64 operator ""_U64(const char* Str, size_t)
     {
-        return *(Cthulhu::U64*)Str;
+        return *(Types::U64*)Str;
     }
 }

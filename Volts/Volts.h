@@ -19,6 +19,7 @@
 namespace Volts::Args
 {
     using namespace Cthulhu;
+    using namespace Collections;
 
     using namespace Utils;
 
@@ -113,9 +114,9 @@ namespace Volts::Args
                     exit(1);
                 }
 
-                FS::BufferedFile F = {Path.c_str()};
+                IO::BinaryFile F = Path.c_str();
 
-                auto PUP = Utils::LoadPUP(&F);
+                auto PUP = Utils::LoadPUP(std::move(F));
 
                 if(!PUP.has_value())
                 {
@@ -124,25 +125,22 @@ namespace Volts::Args
                 }
 
                 auto File = PUP->GetFile(0x300);
-                auto Data = Utils::LoadTAR(File);
+                auto Data = Utils::LoadTAR(std::move(File));
                 if(Data.Offsets.size() == 0)
                 {
                     VERROR("Failed to load TAR 0x300");
                     exit(1);
                 }
 
-                std::atomic<U32> Progress = 32;
+                std::atomic<U32> Progress = 0;
 
                 for(auto& [Name, Offset] : Data.Offsets)
-                {
-                    if(Name.find("dev_flash_") != std::string::npos)
-                        continue;
+                    if(Name.find("dev_flash_") == std::string::npos)
+                        Data.Offsets.erase(Name);
 
-                    std::async([&Data, &Progress](U32 Offset) {
-                        VINFO("{}", Offset);
-                        Progress++;
-                    }, Offset);
-                }
+                std::for_each(std::execution::par_unseq, Data.Offsets.begin(), Data.Offsets.end(), [](auto& Pair) {
+                    VINFO("{}", Pair.second);
+                });
             }
 
             if(Res.count("unself"))
@@ -154,19 +152,20 @@ namespace Volts::Args
                     exit(1);
                 }
 
-                auto SELF = Utils::LoadSELF({Path.c_str()});
+                auto SELF = Utils::LoadSELF(IO::BinaryFile(Path.c_str()));
 
-                if(SELF.Len() == 0)
+                if(SELF.Length() == 0)
                 {
                     VFATAL("Failed to decrypt SELF");
                     exit(1);
                 }
 
-                std::ofstream Output("out.elf", ios::out | ios::binary);
+                IO::BinaryFile Output = Collections::String({ Res["output"].as<std::string>().c_str(), ".out.elf" }).Ptr();
 
-                Output.write((const char*)SELF.GetData(), SELF.Len());
+                auto* Data = alloca(SELF.Length());
+                SELF.WriteN(Data, SELF.Length());
 
-                Output.close();
+                Output.WriteN((Types::Byte*)Data, SELF.Length());
             }
 
             if(Res.count("sfo"))
@@ -178,7 +177,7 @@ namespace Volts::Args
                     exit(1);
                 }
 
-                auto SFO = Utils::LoadSFO({Path.c_str()});
+                auto SFO = Utils::LoadSFO(IO::BinaryFile(Path.c_str()));
 
                 argo::json Output{argo::json::object_e};
 

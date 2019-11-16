@@ -14,6 +14,9 @@
 
 namespace Volts::Utils
 {
+    using namespace Cthulhu;
+    using namespace Types;
+
     namespace SCE
     {
         struct Header
@@ -158,9 +161,9 @@ namespace Volts::Utils
 
     struct Decryptor
     {
-        FS::BufferedFile& File;
+        Interfaces::Stream& File;
 
-        Decryptor(FS::BufferedFile& F)
+        Decryptor(Interfaces::Stream& F)
             : File(F)
         {}
 
@@ -205,7 +208,7 @@ namespace Volts::Utils
                 VERROR("Local licenses are not supported yet");
                 return false;
             case 3:
-                Memory::Copy<Byte>(MetaKey ? Keys::FreeKlic : MetaKey, Key, 16);
+                memcpy(Key, MetaKey ? Keys::FreeKlic : MetaKey, sizeof(Key));
                 return true;
             default:
                 VERROR("Invalid license type {}", Ctrl->NPDRMInfo.Version.Get());
@@ -395,9 +398,9 @@ namespace Volts::Utils
             }
         }
 
-        Cthulhu::Binary ToELF()
+        Memory::Binary ToELF()
         {
-            Cthulhu::Binary Bin;
+            Memory::Binary Bin;
 
             Bin.Write(ELFHead);
             Bin.Seek(ELFHead.PHOffset);
@@ -440,7 +443,7 @@ namespace Volts::Utils
         }
     };
 
-    Cthulhu::Binary LoadSELF(FS::BufferedFile&& File, Byte* Key)
+    Interfaces::Stream LoadSELF(Interfaces::Stream&& File, Byte* Key)
     {
         Decryptor Dec = File;
 
@@ -458,6 +461,6 @@ namespace Volts::Utils
 
         Dec.Decrypt();
 
-        return Dec.ToELF();
+        return std::move(Dec.ToELF());
     }
 }

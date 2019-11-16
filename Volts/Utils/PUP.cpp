@@ -27,52 +27,23 @@ namespace Volts::Utils
         static_assert(sizeof(Header) == 48);
     }
 
-    std::optional<PUP::Object> LoadPUP(FS::BufferedFile* File)
-    {
-        if(!File->Valid())
-        {
-            VERROR("PUP file handle was invalid");
-            return std::nullopt;
-        }
-
-        File->Seek(0);
-
-        auto Head = File->Read<PUP::Header>();
-
-        if(Head.Magic != "SCEUF\0\0\0"_U64)
-        {
-            VERROR("PUP file had invalid magic");
-            return std::nullopt;
-        }
-
-        auto Ret = PUP::Object(File);
-
-        for(U32 I = 0; I < Head.FileCount; I++)
-            Ret.Files.push_back(File->Read<PUP::Entry>());
-
-        for(U32 I = 0; I < Head.FileCount; I++)
-            Ret.Hashes.push_back(File->Read<PUP::Hash>());
-
-        return Ret;
-    }
-
     namespace PUP
     {
-        Binary Object::GetFile(U64 ID)
+        Memory::Binary Object::GetFile(U64 ID)
         {
             for(auto& Entry : Files)
             {
                 if(Entry.ID == ID)
                 {
-                    File->Seek(Entry.Offset);
-                    Binary Out;
-                    Out.Reserve(Entry.Length);
-                    File->ReadN(Out.GetData(), Entry.Length);
+                    File.Seek(Entry.Offset);
+                    Memory::Binary Ret;
+                    Types::Byte* Data = (Types::Byte*)alloca(sizeof(Types::Byte) * Entry.Length);
+                    File.ReadN(Data, Entry.Length);
+                    Ret.WriteN(Data, Entry.Length);
                     // dumb hack to make everything the right length internally
-                    Out.Seek(Entry.Length);
-                    Out.Seek(0);
+                    Ret.Seek(0);
 
-                    return Out;
+                    return std::move(Ret);
                 }
             }
 
