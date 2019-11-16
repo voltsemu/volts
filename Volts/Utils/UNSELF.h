@@ -1,11 +1,10 @@
 #pragma once
 
-#include <Core/Memory/Binary.h>
-#include <FileSystem/BufferedFile.h>
+#include "PCH.h"
 
 namespace Volts::Utils
 {
-    namespace FS = Cthulhu::FileSystem;
+    using namespace Cthulhu;
 
-    Cthulhu::Binary LoadSELF(FS::BufferedFile&& File, Cthulhu::Byte* Key = nullptr);
+    Cthulhu::Memory::Binary LoadSELF(Interfaces::Stream&& File, Types::Byte* Key = nullptr);
 }

@@ -4,13 +4,13 @@
 #include <string>
 #include <vector>
 
-#include <FileSystem/BufferedFile.h>
+#include <Cthulhu/Interfaces/Stream.h>
 
 #include "Core/Endian.h"
 
 namespace Volts::Utils
 {
-    namespace FS = Cthulhu::FileSystem;
+    using namespace Cthulhu;
 
     enum class Format : U16
     {
@@ -28,5 +28,5 @@ namespace Volts::Utils
 
     using SFO = std::map<std::string, SFOValue>;
 
-    SFO LoadSFO(FS::BufferedFile&& File);
+    SFO LoadSFO(Interfaces::Stream&& File);
 }

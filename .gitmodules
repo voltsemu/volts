@@ -7,9 +7,6 @@
 [submodule "subprojects/glfw"]
 	path = subprojects/glfw
 	url = https://github.com/Apache-HB/glfw-meson
-[submodule "subprojects/cthulhu"]
-	path = subprojects/cthulhu
-	url = https://github.com/Apache-HB/CTULib
 [submodule "subprojects/argo"]
 	path = subprojects/argo
 	url = https://github.com/Apache-HB/argo
@@ -19,3 +16,6 @@
 [submodule "subprojects/microtar"]
 	path = subprojects/microtar
 	url = https://github.com/Apache-HB/microtar
+[submodule "subprojects/cthulhu"]
+	path = subprojects/cthulhu
+	url = https://github.com/Apache-HB/Cthulhu2

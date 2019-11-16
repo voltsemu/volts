@@ -1,20 +1,13 @@
 #pragma once
 
-#include <optional>
-#include <map>
+#include "PCH.h"
 
 #include "Core/Macros.h"
 #include "Core/Emulator.h"
 
-#include <Core/Memory/Binary.h>
-
-#include <FileSystem/BufferedFile.h>
-
 namespace Volts::Utils
 {
     using namespace Cthulhu;
-
-    namespace FS = Cthulhu::FileSystem;
 
     namespace TAR
     {

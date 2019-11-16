@@ -3,6 +3,8 @@
 #include <filesystem>
 #include <fstream>
 #include <string>
+#include <optional>
+#include <map>
 #include <vector>
 #include <future>
 
@@ -14,5 +16,8 @@
 #define FMT_EXCEPTIONS 0
 #include <fmt/format.h>
 
-#include <Meta/Macros.h>
-#include <Meta/Aliases.h>
+#include <Cthulhu/Meta/Macros.h>
+#include <Cthulhu/Types/Types.h>
+
+#include <Cthulhu/System/Binary.h>
+#include <Cthulhu/Interfaces/Stream.h>

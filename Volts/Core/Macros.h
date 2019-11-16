@@ -1,7 +1,7 @@
 #pragma once
 
-#include <Meta/Macros.h>
-#include <Meta/Aliases.h>
+#include <Cthulhu/Meta/Macros.h>
+#include <Cthulhu/Types/Types.h>
 
 #define CAT_INNER(A, B) A##B
 #define CAT(A, B) CAT_INNER(A, B)
@@ -29,5 +29,5 @@
 
 namespace Volts
 {
-    using Pad = Cthulhu::Byte;
+    using Pad = Cthulhu::Types::Byte;
 }

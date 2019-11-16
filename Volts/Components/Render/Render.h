@@ -1,10 +1,11 @@
 #pragma once
 
-#include "Meta/Macros.h"
+#include <Cthulhu/Meta/Macros.h>
 
 namespace Volts::Render
 {
     using namespace Cthulhu;
+    using namespace Types;
 
     struct Device
     {

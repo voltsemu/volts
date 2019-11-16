@@ -34,9 +34,6 @@ threads = dependency('threads')
 glfw_pack = dependency('glfw3', required : false)
 
 deps = [
-    ctu.get_variable('fs_dep'),
-    ctu.get_variable('meta_dep'),
-    ctu.get_variable('core_dep'),
     json.get_variable('argo_dep'),
     threads
 ]
@@ -64,7 +61,7 @@ endif
 
 incs = [
     include_directories('Volts'),
-    ctu.get_variable('inc')
+    ctu.get_variable('incdir')
 ]
 
 deps += [

@@ -1,7 +1,6 @@
 #pragma once
 
-#include <FileSystem/BufferedFile.h>
-#include <Core/Memory/Binary.h>
+#include "PCH.h"
 
 #include "Core/Endian.h"
 #include "Core/Macros.h"
@@ -37,9 +36,9 @@ namespace Volts::Utils
             std::vector<Entry> Files;
             std::vector<Hash> Hashes;
 
-            FS::BufferedFile* File;
+            Interfaces::Stream File;
 
-            Object(FS::BufferedFile* F)
+            Object(Interfaces::Stream&& F)
                 : File(F)
             {}
 
@@ -47,5 +46,5 @@ namespace Volts::Utils
         };
     }
 
-    std::optional<PUP::Object> LoadPUP(FS::BufferedFile* File);
+    std::optional<PUP::Object> LoadPUP(Interfaces::Stream&& File);
 }

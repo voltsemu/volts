@@ -2,7 +2,7 @@
 
 #include "PCH.h"
 
-#include <Core/Memory/Binary.h>
+#include <Cthulhu/System/Binary.h>
 
 #include "Macros.h"
 
@@ -25,6 +25,7 @@
 namespace Volts
 {
     using namespace Cthulhu;
+    using namespace Types;
 
     void Trace(const char*);
     void Info(const char*);
@@ -75,7 +76,7 @@ namespace Volts
         const char* RegisterMessage;
     };
 
-    enum class LogLevel : U8
+    enum class LogLevel : Types::U8
     {
         Trace = 0,
         Info = 1,

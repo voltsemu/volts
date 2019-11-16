@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Core/Math/Bytes.h>
+#include <Cthulhu/Math/Bytes.h>
 
 namespace Volts
 {
