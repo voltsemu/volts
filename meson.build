@@ -7,12 +7,17 @@ project('volts', ['cpp'],
     license : 'Apache'
 )
 
-# fmt, used in logging
-fmt = subproject('fmt')
-
 sources = []
 
-deps = [ fmt.get_variable('fmt_dep') ]
+logging = subproject('spdlog', 
+    default_options : [
+        'enable_examples=false',
+        'enable_tests=false',
+        'no_exceptions=true'
+    ]
+)
+
+deps = [ logging.get_variable('spdlog_dep') ]
 
 incs = [ include_directories('volts') ]
 
@@ -40,16 +45,12 @@ if meson.get_compiler('cpp').get_id() == 'gcc'
     args += '-DGCC_WORKAROUND_BULLSHIT'
 endif
 
-pch = [] 
-
 executable('volt', sources,
     include_directories : incs,
     install : true,
     cpp_args : args,
     objcpp_args : args,
     dependencies : deps,
-    link_args : links,
-    cpp_pch : pch,
-    gui_app : true
+    link_args : links
 )
 

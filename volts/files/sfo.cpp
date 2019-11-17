@@ -9,20 +9,20 @@ namespace volts::files::sfo
 
     struct index_table_entry
     {
-        const std::uint16_t key_offset;
-        const format data_format;
-        const std::uint32_t data_length;
-        const std::uint32_t max_length;
-        const std::uint32_t data_offset;
+        std::uint16_t key_offset;
+        format data_format;
+        std::uint32_t data_length;
+        std::uint32_t max_length;
+        std::uint32_t data_offset;
     };
 
     struct header
     {
-        const std::uint32_t magic;
-        const std::uint32_t version;
-        const std::uint32_t key_offset;
-        const std::uint32_t data_offset;
-        const std::uint32_t total_entries;
+        std::uint32_t magic;
+        std::uint32_t version;
+        std::uint32_t key_offset;
+        std::uint32_t data_offset;
+        std::uint32_t total_entries;
     };
 
     std::optional<std::map<std::string, value>> load(std::fstream& stream)

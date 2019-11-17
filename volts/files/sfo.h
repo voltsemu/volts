@@ -18,9 +18,9 @@ namespace volts::files::sfo
 
     struct value
     {
-        const format type;
+        format type;
 
-        const std::vector<std::uint8_t> data;
+        std::vector<std::uint8_t> data;
     };
 
     std::optional<std::map<std::string, value>> load(std::fstream& stream);
