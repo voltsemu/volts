@@ -20,6 +20,3 @@ Generated Files/
 
 # other stuff
 *.elf
-Volts/Core/Generated/Version.h
-
-subprojects/rapidjson-1.1.0

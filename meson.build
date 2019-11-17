@@ -1,4 +1,4 @@
-project('Volts', ['cpp'],
+project('volts', ['cpp'],
     default_options : [
         'cpp_std=c++17',
         'cpp_eh=none'
@@ -7,71 +7,20 @@ project('Volts', ['cpp'],
     license : 'Apache'
 )
 
-if host_machine.system() == 'darwin'
-    add_languages('objcpp')
-endif
-
-args = []
-
-# subprojects
-# all in the subprojects/ folder
-# decompression, used in UNSELF
-zlib = subproject('zlib')
 # fmt, used in logging
 fmt = subproject('fmt')
-# cthulhu, used for file IO
-ctu = subproject('cthulhu')
 
-# json, used for config stuff
-args += '-DARGO_NOTHROW'
-json = subproject('argo')
-
-# dependencies
-# usually from pkg-config
-
-threads = dependency('threads')
-
-glfw_pack = dependency('glfw3', required : false)
-
-deps = [
-    json.get_variable('argo_dep'),
-    threads
-]
-
-if glfw_pack.found()
-    message('found glfw3, ignoring git submodule')
-    deps += glfw_pack
-else
-    message('glfw3 not found in system, using git submodule instead')
-    deps += subproject('glfw').get_variable('glfw_dep')
-endif
-
-# get the very basic core sources
 sources = []
 
+deps = [ fmt.get_variable('fmt_dep') ]
 
-if host_machine.system() == 'darwin'
-    args += [
-        # enable @import in objc++
-        '-fmodules',
-        # this fixes imgui metal backend
-        '-fobjc-arc'
-    ]
-endif
-
-incs = [
-    include_directories('Volts'),
-    ctu.get_variable('incdir')
-]
-
-deps += [
-    zlib.get_variable('zlib_dep'),
-    fmt.get_variable('fmt_dep')
-]
+incs = [ include_directories('volts') ]
 
 links = []
 
-subdir('Volts')
+args = []
+
+subdir('volts')
 
 # disable run time type id and exceptions in the hope of generating smaller code
 # i know you dont pay for features you dont use but this also stops people
@@ -92,10 +41,6 @@ if meson.get_compiler('cpp').get_id() == 'gcc'
 endif
 
 pch = [] 
-
-if host_machine.system() == 'windows'
-    pch += ['Volts/PCH.h']
-endif
 
 executable('volt', sources,
     include_directories : incs,
