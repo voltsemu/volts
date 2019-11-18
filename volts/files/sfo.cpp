@@ -1,31 +1,33 @@
 #include "sfo.h"
 
+#include "svl/types.h"
 #include "svl/stream.h"
 #include "svl/convert.h"
 
 #include <spdlog/spdlog.h>
 
 using namespace std;
-namespace cvt = svl::convert;
+using namespace svl;
+namespace cvt = convert;
 
 namespace volts::files::sfo
 {
     struct index_table_entry
     {
-        std::uint16_t key_offset;
+        u16 key_offset;
         format data_format;
-        std::uint32_t data_length;
-        std::uint32_t max_length;
-        std::uint32_t data_offset;
+        u32 data_length;
+        u32 max_length;
+        u32 data_offset;
     };
 
     struct header
     {
-        std::uint32_t magic;
-        std::uint32_t version;
-        std::uint32_t key_offset;
-        std::uint32_t data_offset;
-        std::uint32_t total_entries;
+        u32 magic;
+        u32 version;
+        u32 key_offset;
+        u32 data_offset;
+        u32 total_entries;
     };
 
     std::optional<std::map<std::string, value>> load(std::istream& stream)

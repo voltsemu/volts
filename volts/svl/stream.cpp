@@ -6,7 +6,7 @@ namespace svl::streams
     {
         std::vector<std::uint8_t> val(n);
         stream.read((char*)val.data(), n);
-        return std::move(val);
+        return val;
     }
 
     namespace

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "svl/types.h"
+
 #include <cstdint>
 #include <vector>
 #include <string>
@@ -9,7 +11,7 @@
 
 namespace volts::files::sfo
 {
-    enum class format : std::uint16_t
+    enum class format : svl::u16
     {
         string = 516,
         array = 4,
@@ -20,7 +22,7 @@ namespace volts::files::sfo
     {
         format type;
 
-        std::vector<std::uint8_t> data;
+        std::vector<svl::byte> data;
     };
 
     std::optional<std::map<std::string, value>> load(std::istream& stream);

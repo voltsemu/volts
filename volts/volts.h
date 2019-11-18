@@ -10,6 +10,7 @@
 #include <filesystem>
 #include <fstream>
 
+#define CXXOPTS_NO_EXCEPTIONS
 #define CXXOPTS_NO_RTTI
 
 #include <external/cxxopts.hpp>
