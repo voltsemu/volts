@@ -4,7 +4,7 @@
 #include <vector>
 #include <string>
 #include <map>
-#include <fstream>
+#include <istream>
 #include <optional>
 
 namespace volts::files::sfo
@@ -23,5 +23,5 @@ namespace volts::files::sfo
         std::vector<std::uint8_t> data;
     };
 
-    std::optional<std::map<std::string, value>> load(std::fstream& stream);
+    std::optional<std::map<std::string, value>> load(std::istream& stream);
 }

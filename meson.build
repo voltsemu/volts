@@ -9,15 +9,26 @@ project('volts', ['cpp'],
 
 sources = []
 
+log_opts = [
+    'enable_examples=false',
+    'enable_tests=false',
+    'no_exceptions=true'
+]
+
+if host_machine.system() == 'windows'
+    log_opts += 'wchar_support=true'
+endif
+
 logging = subproject('spdlog', 
-    default_options : [
-        'enable_examples=false',
-        'enable_tests=false',
-        'no_exceptions=true'
-    ]
+    default_options : log_opts
 )
 
-deps = [ logging.get_variable('spdlog_dep') ]
+json = subproject('rapidjson')
+
+deps = [ 
+    logging.get_variable('spdlog_dep'), 
+    json.get_variable('rapidjson_dep') 
+]
 
 incs = [ include_directories('volts') ]
 
@@ -54,3 +65,15 @@ executable('volt', sources,
     link_args : links
 )
 
+# at the point this becomes something that can launch a window 
+# we will need this target
+
+#executable('volts_gui', sources,
+#    include_directories : incs,
+#    install : true,
+#    cpp_args : args,
+#    objcpp_args : args,
+#    dependencies : deps,
+#    link_args : links,
+#    gui_app : true
+#)

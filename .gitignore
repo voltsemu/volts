@@ -1,22 +1,12 @@
-# ignore visual studio
-.vs/
+*
 
-# ignore vscode folder
-.vscode/*
+!*/
 
-# ignore build output
-Build/*
+!*.cpp
+!*.h
 
-# ignore msbuild files
-x64/
-Generated Files/
-*.pfx
+!*.wrap
+!*.build
 
-# ignore mac stuff
-*.DS_STORE
-
-#meson wraps
-*.zip
-
-# other stuff
-*.elf
+[b|B]uild/
+subprojects/

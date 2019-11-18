@@ -3,10 +3,13 @@
 #include "svl/stream.h"
 #include "svl/convert.h"
 
+#include <spdlog/spdlog.h>
+
+using namespace std;
+namespace cvt = svl::convert;
+
 namespace volts::files::sfo
 {
-    using namespace std;
-
     struct index_table_entry
     {
         std::uint16_t key_offset;
@@ -25,16 +28,21 @@ namespace volts::files::sfo
         std::uint32_t total_entries;
     };
 
-    std::optional<std::map<std::string, value>> load(std::fstream& stream)
+    std::optional<std::map<std::string, value>> load(std::istream& stream)
     {
-        // todo: logging
         const auto head = svl::streams::read<header>(stream);
 
-        if(head.magic != svl::convert::to_u32("\0PSF"))
+        if(head.magic != cvt::to_u32("\0PSF"))
+        {
+            spdlog::error("invalid magic");
             return std::nullopt;
+        }
 
         if(head.version != 0x101)
+        {
+            spdlog::error("unsupported version");
             return std::nullopt;
+        }
 
         map<string, value> val;
 

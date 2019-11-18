@@ -1174,6 +1174,9 @@ namespace cxxopts
   {
     public:
 
+    ParseResult() = default;
+    ParseResult(ParseResult&) = default;
+
     ParseResult(
       const std::shared_ptr<
         std::unordered_map<std::string, std::shared_ptr<OptionDetails>>
