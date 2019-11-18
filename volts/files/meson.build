@@ -1,1 +1,4 @@
-sources += 'volts/files/sfo.cpp'
+sources += [
+    'volts/files/sfo.cpp',
+    'volts/files/keys/keys.cpp'
+]

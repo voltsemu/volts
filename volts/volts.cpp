@@ -22,7 +22,9 @@ int main(int argc, char** argv)
     
     cmd::get().parse(argc, argv);
 
+#if SYS_WINDOWS
     system("pause");
+#endif
 }
 
 #if SYS_WINDOWS
