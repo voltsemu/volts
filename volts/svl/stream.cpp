@@ -2,9 +2,9 @@
 
 namespace svl::streams
 {
-    std::vector<std::uint8_t> read_n(std::istream& stream, std::streamsize n)
+    std::vector<u8> read_n(std::istream& stream, std::streamsize n)
     {
-        std::vector<std::uint8_t> val(n);
+        std::vector<u8> val(n);
         stream.read((char*)val.data(), n);
         return val;
     }

@@ -1,9 +1,11 @@
 #pragma once
 
 #include <fstream>
+#include <ostream>
 #include <filesystem>
 #include <vector>
 #include <cstdint>
+#include "types.h"
 
 namespace svl::streams
 {
@@ -17,7 +19,7 @@ namespace svl::streams
         return val;
     }
 
-    std::vector<std::uint8_t> read_n(std::istream& stream, std::streamsize n);
+    std::vector<u8> read_n(std::istream& stream, std::streamsize n);
 
     void write_utf8(fs::path path, const std::string& str);
 }

@@ -104,12 +104,12 @@ namespace volts::loader::unself
 
         bool load_headers()
         {
-
+            return true;
         }
 
         bool load_metadata(const std::vector<byte>& key)
         {
-
+            return true;
         }
 
         void decrypt()
@@ -117,11 +117,11 @@ namespace volts::loader::unself
 
         }
 
-        std::ostringstream elf()
+        std::vector<u8> elf()
         {
-            std::ostringstream out;
+            //std::stringstream out;
 
-            return out;
+            return {}; //out.rdbuf();
         }
 
     private:
@@ -144,6 +144,10 @@ namespace volts::loader::unself
 
         dec.decrypt();
 
-        return dec.elf();
+        // todo: alot
+
+        return std::nullopt;
+
+        //return dec.elf();
     }
 }

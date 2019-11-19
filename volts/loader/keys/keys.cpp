@@ -1,7 +1,5 @@
 #include "keys.h"
 
-#include <algorithm>
-
 using namespace svl;
 
 namespace volts::loader::keys
