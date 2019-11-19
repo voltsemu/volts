@@ -8,5 +8,5 @@
 
 namespace volts::loader::unself
 {
-    std::optional<std::ostream> load(std::istream& file, std::vector<svl::byte> key = {});
+    std::vector<svl::byte> load(std::istream& file, std::vector<svl::byte> key = {});
 }

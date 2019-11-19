@@ -4,6 +4,7 @@
 #include <spdlog/sinks/basic_file_sink.h>
 
 #include "loader/sfo.h"
+#include "loader/unself.h"
 
 #include "svl/stream.h"
 
@@ -44,6 +45,15 @@ namespace volts
                 auto log = spdlog::basic_logger_mt("volts", path);
                 spdlog::set_default_logger(log);
                 output_path = path;
+            }
+
+            if(opts.count("unself"))
+            {
+                if(auto path = opts["unself"].as<std::string>(); fs::exists(path))
+                {
+                    std::ifstream stream(path, std::ios::binary | std::ios::in);
+                    auto obj = loader::unself::load(stream);
+                }
             }
 
             if(opts.count("sfo"))
@@ -116,7 +126,8 @@ namespace volts
 
             options.add_options()
                 ("output", "set logging output file", cxxopts::value<std::string>())
-                ("sfo", "parse .sfo file", cxxopts::value<std::string>())
+                ("sfo", "parse an .sfo file", cxxopts::value<std::string>())
+                ("unself", "decrypt a self file", cxxopts::value<std::string>())
             ;
 
             return options.parse(argc, argv);
