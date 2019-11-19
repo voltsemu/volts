@@ -20,4 +20,12 @@ namespace svl::convert
     {
         return *(std::uint64_t*)str;
     }
+
+    template<typename T>
+    std::vector<byte> as_bytes(T dat)
+    {
+        std::vector<byte> val(sizeof(T));
+        memcpy(val.data(), &dat, sizeof(T));
+        return val;
+    }
 }

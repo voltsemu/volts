@@ -1,4 +1,4 @@
-project('volts', ['cpp'],
+project('volts', ['cpp', 'c'],
     default_options : [
         'cpp_std=c++17',
         'cpp_eh=none'
