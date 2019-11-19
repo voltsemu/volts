@@ -13,6 +13,7 @@
 #include "svl/endian.h"
 
 #include <sstream>
+#include <execution>
 
 using svl::endian::big;
 
@@ -295,7 +296,27 @@ namespace volts::loader::unself
 
         void decrypt()
         {
+            aes_context aes;
 
+            int buffer_offset = 0;
+
+            std::mutex data_guard;
+
+            std::copy_if(
+                std::begin(meta_sections), 
+                std::end(meta_sections),
+                std::back_inserter(meta_sections),
+                [](auto& sect) { return sect.encrypted == 3; }
+            );
+
+            std::for_each(
+                std::execution::par,
+                std::begin(meta_sections),
+                std::end(meta_sections),
+                [&](auto& sect) {
+                    size_t offset = 0;
+                }
+            );
         }
 
         std::vector<svl::byte> elf()
@@ -384,6 +405,10 @@ namespace volts::loader::unself
         std::vector<byte> data_keys;
         std::vector<metadata::section> meta_sections;
 
+        // output
+        std::vector<byte> data_buffer;
+
+        // input
         std::istream& stream;
     };
 
