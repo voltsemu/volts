@@ -4,7 +4,7 @@
 
 using namespace svl;
 
-namespace volts::files::keys
+namespace volts::loader::keys
 {
     constexpr key lvl0_key = {
         0, 0, key_type::lvl0,

@@ -10,7 +10,7 @@ using namespace std;
 using namespace svl;
 namespace cvt = convert;
 
-namespace volts::files::sfo
+namespace volts::loader::sfo
 {
     struct index_table_entry
     {

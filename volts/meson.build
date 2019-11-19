@@ -1,4 +1,4 @@
-subdir('files')
+subdir('loader')
 subdir('svl')
 
 sources += 'volts/volts.cpp'

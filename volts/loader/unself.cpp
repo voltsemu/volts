@@ -9,7 +9,7 @@ using svl::endian::big;
 
 using namespace svl;
 
-namespace volts::files::unself
+namespace volts::loader::unself
 {
     namespace sce
     {
@@ -107,7 +107,7 @@ namespace volts::files::unself
 
         }
 
-        bool load_metadata()
+        bool load_metadata(const std::vector<byte>& key)
         {
 
         }
@@ -117,9 +117,9 @@ namespace volts::files::unself
 
         }
 
-        std::stringstream elf()
+        std::ostringstream elf()
         {
-            std::stringstream out;
+            std::ostringstream out;
 
             return out;
         }
@@ -128,8 +128,22 @@ namespace volts::files::unself
         std::istream& stream;
     };
 
-    std::ostream load(std::istream& file, std::vector<byte> key)
+    std::optional<std::ostream> load(std::istream& file, std::vector<byte> key)
     {
+        self_decryptor dec(file);
 
+        if(!dec.load_headers())
+        {
+            return std::nullopt;
+        }
+
+        if(!dec.load_metadata(key))
+        {
+            return std::nullopt;
+        }
+
+        dec.decrypt();
+
+        return dec.elf();
     }
 }

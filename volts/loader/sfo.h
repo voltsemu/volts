@@ -9,7 +9,7 @@
 #include <istream>
 #include <optional>
 
-namespace volts::files::sfo
+namespace volts::loader::sfo
 {
     enum class format : svl::u16
     {

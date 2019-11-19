@@ -4,7 +4,7 @@
 
 #include "svl/types.h"
 
-namespace volts::files
+namespace volts::loader
 {
     enum class key_type : svl::u32
     {

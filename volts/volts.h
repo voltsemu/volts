@@ -3,7 +3,7 @@
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/basic_file_sink.h>
 
-#include "files/sfo.h"
+#include "loader/sfo.h"
 
 #include "svl/stream.h"
 
@@ -24,7 +24,7 @@ namespace volts
     namespace json = rapidjson;
     namespace opts = cxxopts;
 
-    using namespace files;
+    using namespace loader;
 
     struct cmd
     {
@@ -51,7 +51,7 @@ namespace volts
                 if(auto path = opts["sfo"].as<std::string>(); fs::exists(path))
                 {
                     std::ifstream stream(path, std::ios::binary | std::ios::in);
-                    auto obj = files::sfo::load(stream);
+                    auto obj = loader::sfo::load(stream);
 
                     json::StringBuffer s;
                     json::Writer w(s);
