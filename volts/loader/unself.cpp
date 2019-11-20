@@ -300,23 +300,40 @@ namespace volts::loader::unself
 
             int buffer_offset = 0;
 
-            std::mutex data_guard;
+            for(auto sect : meta_sections)
+            {
+                if(sect.encrypted != 3)
+                    continue;
 
-            std::copy_if(
-                std::begin(meta_sections), 
-                std::end(meta_sections),
-                std::back_inserter(meta_sections),
-                [](auto& sect) { return sect.encrypted == 3; }
-            );
+                size_t offset = 0;
 
-            std::for_each(
-                std::execution::par,
-                std::begin(meta_sections),
-                std::end(meta_sections),
-                [&](auto& sect) {
-                    size_t offset = 0;
-                }
-            );
+                byte key[16];
+                byte iv[16];
+
+                memcpy(key, data_keys.data() + (sect.key_index * 16), 16);
+                memcpy(iv, data_keys.data() + (sect.iv_index * 16), 16);
+
+                stream.seekg(sect.offset);
+
+                auto buf = streams::read_n(stream, sect.size);
+
+                byte aes_stream[16] = {};
+
+                aes_setkey_enc(&aes, key, 128);
+                aes_crypt_ctr(
+                    &aes,
+                    sect.size,
+                    &offset,
+                    iv,
+                    aes_stream,
+                    *buf,
+                    *buf
+                );
+
+                memcpy(data_buffer.data() + buffer_offset, buf.data(), sect.size);
+
+                buffer_offset += sect.size;
+            }
         }
 
         std::vector<svl::byte> elf()
