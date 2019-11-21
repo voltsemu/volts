@@ -1,4 +1,4 @@
 sources += [
-    'volts/svl/stream.cpp',
-    'volts/svl/endian.cpp'
+    'volts/svl/endian.cpp',
+    'volts/svl/stream.cpp'
 ]

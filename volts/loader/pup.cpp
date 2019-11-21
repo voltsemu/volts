@@ -33,13 +33,13 @@ namespace volts::loader::pup
         if(f == std::end(files))
             return {};
 
-        file->seekg(f->offset.get());
-        return streams::read_n(*file, f->length);
+        file->seek(f->offset.get());
+        return read_n(*file, f->length);
     }
 
-    std::optional<object> load(std::shared_ptr<std::istream> stream)
+    std::optional<object> load(std::shared_ptr<svl::iostream> stream)
     {
-        auto head = streams::read<header>(*stream);
+        auto head = read<header>(*stream);
 
         if(head.magic != cvt::to_u64("SCEUF\0\0\0"))
         {
@@ -49,8 +49,8 @@ namespace volts::loader::pup
 
         object ret = stream;
 
-        ret.files = streams::read_n<entry>(*stream, head.file_count);
-        ret.hashes = streams::read_n<hash>(*stream, head.file_count);
+        ret.files = read_n<entry>(*stream, head.file_count);
+        ret.hashes = read_n<hash>(*stream, head.file_count);
 
         return ret;
     }

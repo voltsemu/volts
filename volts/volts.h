@@ -11,7 +11,6 @@
 #include "svl/stream.h"
 
 #include <filesystem>
-#include <fstream>
 
 #define CXXOPTS_NO_EXCEPTIONS
 #define CXXOPTS_NO_RTTI
@@ -59,12 +58,12 @@ namespace volts
             {
                 if(auto path = opts["unself"].as<std::string>(); fs::exists(path))
                 {
-                    std::ifstream stream(path, std::ios::binary | std::ios::in);
+                    svl::fstream stream(path, std::ios::binary | std::ios::in);
                     auto obj = loader::unself::load(stream);
 
                     auto out = output_file("eboot.elf");
-                    std::ofstream out_file(out, std::ios::binary | std::ios::out);
-                    out_file.write((char*)obj.data(), obj.size());
+                    svl::fstream out_file(out, std::ios::binary | std::ios::out);
+                    svl::write_n(out_file, obj);
                     spdlog::info("decrypted self and wrote file to {}", fs::absolute(out).string());
                 }
             }
@@ -73,32 +72,13 @@ namespace volts
             {
                 if(auto path = opts["pup"].as<std::string>(); fs::exists(path))
                 {
-                    auto stream = std::make_shared<std::ifstream>(path, std::ios::binary | std::ios::in);
+                    auto stream = std::make_shared<svl::fstream>(path, std::ios::binary | std::ios::in);
                     auto obj = loader::pup::load(stream);
 
                     if(!obj)
                     {
                         spdlog::error("failed to load pup file");
                         std::exit(1);
-                    }
-
-                    auto file_300 = obj->get_file(0x300);
-
-                    svl::streams::vectorbuf buf(file_300);
-
-                    auto file = std::make_shared<std::istream>(&buf);
-
-                    auto f = loader::tar::load(file);
-
-                    if(!f.offsets.size())
-                    {
-                        spdlog::error("failed to load tar 0x300");
-                        std::exit(1);
-                    }
-
-                    for(auto [name, offset] : f.offsets)
-                    {
-                        spdlog::info("{} = {}", name, offset);
                     }
                 }
             }
@@ -107,7 +87,7 @@ namespace volts
             {
                 if(auto path = opts["sfo"].as<std::string>(); fs::exists(path))
                 {
-                    std::ifstream stream(path, std::ios::binary | std::ios::in);
+                    auto stream = svl::fstream(path, std::ios::in | std::ios::binary);
                     auto obj = loader::sfo::load(stream);
 
                     json::StringBuffer s;
@@ -159,7 +139,7 @@ namespace volts
                     w.EndObject();
 
                     auto out = output_file("sfo.json");
-                    svl::streams::write_utf8(out, s.GetString());
+                    svl::write_utf8(out, s.GetString());
                     spdlog::info("wrote parsed sfo file to {}", fs::absolute(out).string());
                 }
             }

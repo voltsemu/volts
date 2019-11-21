@@ -2,6 +2,7 @@
 
 #include "platform.h"
 
+#include <vector>
 #include <cstdint>
 
 namespace svl::convert

@@ -1,48 +1,94 @@
 #pragma once
 
-#include <fstream>
-#include <ostream>
-#include <filesystem>
-#include <vector>
-#include <cstdint>
-#include "types.h"
+#include "svl/types.h"
 
-namespace svl::streams
+#include <vector>
+#include <cstdio>
+#include <filesystem>
+
+namespace svl
 {
-    namespace fs = std::filesystem;
+    struct iostream
+    {
+        iostream() {}
+        iostream(iostream&) = delete;
+        virtual void seek(std::size_t len) = 0;
+        virtual std::size_t tell() const = 0;
+        virtual std::size_t size() const = 0;
+        virtual void read(void* ptr, std::size_t len) = 0;
+        virtual void write(void* ptr, std::size_t len) = 0;
+
+        virtual ~iostream() {}
+    };
+
+    struct memstream : iostream
+    {
+        memstream();
+        memstream(const std::vector<svl::byte>& o);
+
+        virtual void seek(std::size_t len) override;
+        virtual std::size_t tell() const override;
+        virtual std::size_t size() const override;
+        virtual void read(void* ptr, std::size_t len) override;
+        virtual void write(void* ptr, std::size_t len) override;
+        std::vector<svl::byte> take_vector();
+
+        virtual ~memstream() override {}
+
+    private:
+        std::vector<svl::byte> vec;
+        svl::u32 cursor = 0;
+    };
+    
+    struct fstream : iostream
+    {
+        // support binary, text, in, out
+        fstream(const std::filesystem::path& path, std::ios_base::openmode mode = std::ios::in);
+
+        fstream(fstream&& o);
+
+        virtual ~fstream() override;
+
+        virtual void seek(std::size_t len) override;
+
+        virtual std::size_t tell() const override;
+
+        virtual std::size_t size() const override;
+
+        virtual void read(void* ptr, std::size_t len) override;
+
+        virtual void write(void* ptr, std::size_t len) override;
+    private:
+        std::FILE* file;
+    };
 
     template<typename T>
-    T read(std::istream& stream)
+    T read(iostream& stream)
     {
         T val;
-        stream.read((char*)&val, sizeof(T));
+        stream.read((void*)&val, sizeof(T));
+        return val;
+    }
+
+    template<typename T = svl::byte>
+    std::vector<T> read_n(iostream& stream, std::size_t num)
+    {
+        std::vector<T> val(num);
+        stream.read((void*)val.data(), num * sizeof(T));
         return val;
     }
 
     template<typename T>
-    std::vector<T> read_n(std::istream& stream, int n)
+    void write(iostream& stream, T val)
     {
-        std::vector<T> ret(n);
-        stream.read((char*)ret.data(), n * sizeof(T));
-        return ret;
+        stream.write((void*)&val, sizeof(T));
     }
 
-    std::vector<u8> read_n(std::istream& stream, std::streamsize n);
-
-    void write_utf8(const fs::path& path, const std::string& str);
-
-    template<typename T>
-    struct vectorbuf : public std::streambuf
+    template<typename T = svl::byte>
+    void write_n(iostream& stream, const std::vector<T>& val)
     {
-        vectorbuf(std::vector<T>& ptr)
-        {
-            setg((char*)ptr.data(), (char*)ptr.data(), (char*)(ptr.data() + ptr.size()));
-        }
-    };
-
-    template<typename T>
-    void write(std::ostream& stream, T val)
-    {
-        stream.write((char*)&val, sizeof(T));
+        stream.write((void*)val.data(), sizeof(T) * val.size());
     }
+    
+    void write_utf8(const std::filesystem::path& path, const std::string& str);
 }

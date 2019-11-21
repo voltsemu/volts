@@ -1,6 +1,7 @@
 #include "tar.h"
 
 #include <cstdlib>
+#include <cmath>
 
 #include "svl/stream.h"
 
@@ -49,24 +50,24 @@ namespace volts::loader::tar
     // ustar\20
     constexpr svl::byte ustar_magic[] = { 0x75, 0x73, 0x74, 0x61, 0x72, 0x20 };
 
-    object load(std::shared_ptr<std::istream> stream)
+    object load(std::shared_ptr<svl::iostream> stream)
     {
         object ret = stream;
 
         for(;;)
         {
-            auto head = streams::read<header>(*stream);
+            auto head = svl::read<header>(*stream);
 
             if(memcmp(head.magic, ustar_magic, sizeof(ustar_magic)))
                 return ret;
 
             int size = octal_to_decimal(atoi(head.size));
 
-            auto aligned = (size + stream->tellg() + 512 - 1) & ~(512 - 1);
+            auto aligned = (size + stream->tell() + 512 - 1) & ~(512 - 1);
 
-            ret.offsets[head.name] = stream->tellg();
+            ret.offsets[head.name] = stream->tell();
 
-            stream->seekg(aligned);
+            stream->seek(aligned);
         }
 
         return ret;

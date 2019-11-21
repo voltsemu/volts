@@ -12,9 +12,6 @@
 #include "svl/convert.h"
 #include "svl/stream.h"
 
-#include <iostream>
-#include <sstream>
-
 using svl::endian::big;
 
 using namespace svl;
@@ -164,13 +161,13 @@ namespace volts::loader::unself
 
     struct self_decryptor
     {
-        self_decryptor(std::istream& file)
+        self_decryptor(svl::iostream& file)
             : stream(file)
         {}
 
         bool load_headers()
         {
-            sce_header = streams::read<sce::header>(stream);
+            sce_header = read<sce::header>(stream);
 
             if(sce_header.magic != cvt::to_u32("SCE\0"))
             {
@@ -178,10 +175,10 @@ namespace volts::loader::unself
                 return false;
             }
 
-            self_header = streams::read<self::header>(stream);
+            self_header = read<self::header>(stream);
 
-            info = streams::read<app_info>(stream);
-            elf_header = streams::read<elf::header<u64>>(stream);
+            info = read<app_info>(stream);
+            elf_header = read<elf::header<u64>>(stream);
 
             if(elf_header.magic != cvt::to_u32("\177ELF"))
             {
@@ -189,13 +186,13 @@ namespace volts::loader::unself
                 return false;
             }
 
-            prog_headers = streams::read_n<elf::program_header<u64>>(stream, elf_header.prog_count);
+            prog_headers = read_n<elf::program_header<u64>>(stream, elf_header.prog_count);
 
-            stream.seekg(self_header.sect_offset.get());
+            stream.seek(self_header.sect_offset.get());
 
-            sect_headers = streams::read_n<elf::section_header<u64>>(stream, elf_header.sect_count);
+            sect_headers = read_n<elf::section_header<u64>>(stream, elf_header.sect_count);
 
-            stream.seekg(self_header.control_offset.get());
+            stream.seek(self_header.control_offset.get());
 
             int c = 0;
             while(c < self_header.control_length)
@@ -211,16 +208,16 @@ namespace volts::loader::unself
 
         bool load_metadata(const std::vector<byte>& key)
         {
-            stream.seekg(sce_header.metadata_start + sizeof(sce::header));
+            stream.seek(sce_header.metadata_start + sizeof(sce::header));
 
-            auto meta_info = streams::read<metadata::info>(stream);
+            auto meta_info = read<metadata::info>(stream);
 
             const int header_size = sce_header.metadata_end
                 - sizeof(sce::header)
                 - sce_header.metadata_start
                 - sizeof(metadata::info);
 
-            stream.seekg(sce_header.metadata_start + sizeof(sce::header) + sizeof(metadata::info));
+            stream.seek(sce_header.metadata_start + sizeof(sce::header) + sizeof(metadata::info));
 
             headers = new u8[header_size];
             stream.read((char*)headers, header_size);
@@ -313,9 +310,9 @@ namespace volts::loader::unself
                 memcpy(key, data_keys + (sect.key_index * 16), 16);
                 memcpy(iv, data_keys + (sect.iv_index * 16), 16);
 
-                stream.seekg(sect.offset.get());
+                stream.seek(sect.offset.get());
 
-                auto buf = streams::read_n(stream, sect.size);
+                auto buf = read_n(stream, sect.size);
 
                 byte aes_stream[16] = {};
 
@@ -338,17 +335,13 @@ namespace volts::loader::unself
 
         std::vector<svl::byte> elf()
         {
-            std::stringstream out;
+            svl::memstream out;
 
-            streams::write(out, elf_header);
+            write(out, elf_header);
 
-            out.seekp(elf_header.prog_offset.get());
+            out.seek(elf_header.prog_offset.get());
 
-            for(auto prog : prog_headers)
-            {
-                spdlog::info("here");
-                streams::write(out, prog);
-            }
+            write(out, prog_headers);
 
             int buffer_offset = 0;
 
@@ -372,20 +365,11 @@ namespace volts::loader::unself
 
             if(self_header.sect_info_offset)
             {
-                out.seekp(self_header.sect_info_offset.get());
-                for(auto header : sect_headers)
-                {
-                    streams::write(out, header);
-                }
+                out.seek(self_header.sect_info_offset.get());
+                write_n(out, sect_headers);
             }
 
-            // do this rather than std::copy because std::copy is slow as shit
-            auto str = out.str();
-            std::vector<byte> ret(str.size());
-
-            memcpy(ret.data(), str.data(), str.size());
-
-            return ret;
+            return out.take_vector();
         }
 
         ~self_decryptor()
@@ -424,28 +408,28 @@ namespace volts::loader::unself
         {
             self::control_info ret;
 
-            ret.type = endian::byte_swap(streams::read<u32>(stream));
-            ret.size = endian::byte_swap(streams::read<u32>(stream));
-            ret.next = endian::byte_swap(streams::read<u64>(stream));
+            ret.type = endian::byte_swap(read<u32>(stream));
+            ret.size = endian::byte_swap(read<u32>(stream));
+            ret.next = endian::byte_swap(read<u64>(stream));
 
             if(ret.type == 1)
             {
-                ret.control_flags = streams::read<decltype(self::control_info::control_flags)>(stream);
+                ret.control_flags = read<decltype(self::control_info::control_flags)>(stream);
             }
             else if(ret.type == 2)
             {
                 if(ret.size == 48)
                 {
-                    ret.elf_digest_48 = streams::read<decltype(self::control_info::elf_digest_48)>(stream);
+                    ret.elf_digest_48 = read<decltype(self::control_info::elf_digest_48)>(stream);
                 }
                 else if(ret.size == 64)
                 {
-                    ret.elf_digest_32 = streams::read<decltype(self::control_info::elf_digest_32)>(stream);
+                    ret.elf_digest_32 = read<decltype(self::control_info::elf_digest_32)>(stream);
                 }
             }
             else if(ret.type == 3)
             {
-                ret.npdrm_info = streams::read<decltype(self::control_info::npdrm_info)>(stream);
+                ret.npdrm_info = read<decltype(self::control_info::npdrm_info)>(stream);
             }
             else
             {
@@ -478,7 +462,7 @@ namespace volts::loader::unself
         u32 data_len = 0;
 
         // input
-        std::istream& stream;
+        svl::iostream& stream;
 
         // extra stuff
         // this is freed when the object is deleted
@@ -486,7 +470,7 @@ namespace volts::loader::unself
         u8* headers = nullptr;
     };
 
-    std::vector<svl::byte> load(std::istream& file, std::vector<byte> key)
+    std::vector<svl::byte> load(svl::iostream& file, std::vector<byte> key)
     {
         self_decryptor dec(file);
 

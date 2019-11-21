@@ -30,9 +30,9 @@ namespace volts::loader::sfo
         u32 total_entries;
     };
 
-    std::optional<std::map<std::string, value>> load(std::istream& stream)
+    std::optional<std::map<std::string, value>> load(svl::iostream& stream)
     {
-        const auto head = svl::streams::read<header>(stream);
+        const auto head = svl::read<header>(stream);
 
         if(head.magic != cvt::to_u32("\0PSF"))
         {
@@ -50,25 +50,25 @@ namespace volts::loader::sfo
 
         for(int i = 0; i < head.total_entries; i++)
         {
-            const auto redirect = svl::streams::read<index_table_entry>(stream);
-            const auto dist = stream.tellg();
+            const auto redirect = svl::read<index_table_entry>(stream);
+            const auto dist = stream.tell();
 
-            stream.seekg(head.key_offset + redirect.key_offset);
+            stream.seek(head.key_offset + redirect.key_offset);
 
             string key;
 
-            while(auto c = stream.get())
+            while(auto c = svl::read<char>(stream))
                 key += c;
 
-            stream.seekg(head.data_offset + redirect.data_offset);
+            stream.seek(head.data_offset + redirect.data_offset);
 
-            const auto data = svl::streams::read_n(stream, redirect.max_length);
+            const auto data = svl::read_n(stream, redirect.max_length);
 
             value v = { redirect.data_format, std::move(data) };
 
             val.insert({ key, v });
 
-            stream.seekg(dist);
+            stream.seek(dist);
         }
 
         return val;

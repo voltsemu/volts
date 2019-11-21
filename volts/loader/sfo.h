@@ -1,12 +1,10 @@
 #pragma once
 
 #include "svl/types.h"
+#include "svl/stream.h"
 
 #include <cstdint>
-#include <vector>
-#include <string>
 #include <map>
-#include <istream>
 #include <optional>
 
 namespace volts::loader::sfo
@@ -25,5 +23,5 @@ namespace volts::loader::sfo
         std::vector<svl::byte> data;
     };
 
-    std::optional<std::map<std::string, value>> load(std::istream& stream);
+    std::optional<std::map<std::string, value>> load(svl::iostream& stream);
 }

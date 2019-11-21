@@ -1,12 +1,12 @@
 #pragma once
 
-#include <istream>
 #include <vector>
 #include <optional>
 #include <memory>
 
 #include "svl/endian.h"
 #include "svl/types.h"
+#include "svl/stream.h"
 
 namespace volts::loader::pup
 {
@@ -36,13 +36,13 @@ namespace volts::loader::pup
 
         std::vector<svl::byte> get_file(svl::u64 id);
 
-        object(std::shared_ptr<std::istream> s)
+        object(std::shared_ptr<svl::iostream> s)
             : file(s)
         {}
 
     private:
-        std::shared_ptr<std::istream> file;
+        std::shared_ptr<svl::iostream> file;
     };
 
-    std::optional<object> load(std::shared_ptr<std::istream> stream);
+    std::optional<object> load(std::shared_ptr<svl::iostream> stream);
 }
