@@ -14,7 +14,7 @@ namespace svl::streams
         unsigned char bom[] = { 0xEF, 0xBB, 0xBF };
     }
 
-    void write_utf8(fs::path path, const std::string& str)
+    void write_utf8(const fs::path& path, const std::string& str)
     {
         std::ofstream out(path.string());
 

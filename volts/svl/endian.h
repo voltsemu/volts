@@ -10,6 +10,7 @@
 #   include <stdlib.h>
 #endif
 
+
 namespace svl::endian
 {
     std::uint16_t byte_swap(std::uint16_t val);

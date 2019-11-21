@@ -29,7 +29,7 @@ namespace svl::streams
 
     std::vector<u8> read_n(std::istream& stream, std::streamsize n);
 
-    void write_utf8(fs::path path, const std::string& str);
+    void write_utf8(const fs::path& path, const std::string& str);
 
     template<typename T>
     class vectorbuf : public std::streambuf
@@ -48,4 +48,10 @@ namespace svl::streams
             : buffer(ptr)
         {}
     };
+
+    template<typename T>
+    void write(std::ostream& stream, T val)
+    {
+        stream.write((char*)&val, sizeof(T));
+    }
 }

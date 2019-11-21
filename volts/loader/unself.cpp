@@ -8,12 +8,12 @@
 
 #include <spdlog/spdlog.h>
 
-#include "svl/stream.h"
-#include "svl/convert.h"
 #include "svl/endian.h"
+#include "svl/convert.h"
+#include "svl/stream.h"
 
+#include <iostream>
 #include <sstream>
-#include <execution>
 
 using svl::endian::big;
 
@@ -222,7 +222,8 @@ namespace volts::loader::unself
 
             stream.seekg(sce_header.metadata_start + sizeof(sce::header) + sizeof(metadata::info));
 
-            auto headers = streams::read_n(stream, header_size);
+            headers = new u8[header_size];
+            stream.read((char*)headers, header_size);
 
             aes_context aes;
 
@@ -264,31 +265,29 @@ namespace volts::loader::unself
             aes_setkey_enc(&aes, meta_info.key, 128);
             aes_crypt_ctr(
                 &aes,
-                headers.size(),
+                header_size,
                 &offset,
                 meta_info.iv,
                 stream_buffer,
-                headers.data(),
-                headers.data()
+                headers,
+                headers
             );
 
-            meta_header = *(metadata::header*)headers.data();
+            meta_header = *(metadata::header*)headers;
 
-            int len = meta_header.key_count * 16;
+            data_keys_len = meta_header.key_count * 16;
 
             for(int i = 0; i < meta_header.sect_count; i++)
             {
-                auto sect = *(metadata::section*)(headers.data() + sizeof(metadata::header) + sizeof(metadata::section) * i);
+                auto sect = *(metadata::section*)(headers + sizeof(metadata::header) + sizeof(metadata::section) * i);
 
                 if(sect.encrypted == 3)
-                    len += sect.size;
+                    data_len += sect.size;
 
                 meta_sections.push_back(sect);
             }
 
-            data_keys.reserve(len);
-
-            memcpy(data_keys.data(), headers.data() + sizeof(metadata::header) + meta_header.sect_count * sizeof(metadata::section), len);
+            data_keys = headers + sizeof(metadata::header) + meta_header.sect_count * sizeof(metadata::section);
 
             return true;
         }
@@ -298,6 +297,8 @@ namespace volts::loader::unself
             aes_context aes;
 
             int buffer_offset = 0;
+
+            data_buffer = new byte[data_len];
 
             for(auto sect : meta_sections)
             {
@@ -309,8 +310,8 @@ namespace volts::loader::unself
                 byte key[16];
                 byte iv[16];
 
-                memcpy(key, data_keys.data() + (sect.key_index * 16), 16);
-                memcpy(iv, data_keys.data() + (sect.iv_index * 16), 16);
+                memcpy(key, data_keys + (sect.key_index * 16), 16);
+                memcpy(iv, data_keys + (sect.iv_index * 16), 16);
 
                 stream.seekg(sect.offset.get());
 
@@ -329,7 +330,7 @@ namespace volts::loader::unself
                     buf.data()
                 );
 
-                memcpy(data_buffer.data() + buffer_offset, buf.data(), sect.size);
+                memcpy(data_buffer + buffer_offset, buf.data(), sect.size);
 
                 buffer_offset += sect.size;
             }
@@ -337,11 +338,60 @@ namespace volts::loader::unself
 
         std::vector<svl::byte> elf()
         {
-            std::vector<svl::byte> ret;
-            streams::vectorbuf buf(&ret);
-            std::ostream out(&buf);
+            std::stringstream out;
+
+            streams::write(out, elf_header);
+
+            out.seekp(elf_header.prog_offset.get());
+
+            for(auto prog : prog_headers)
+            {
+                spdlog::info("here");
+                streams::write(out, prog);
+            }
+
+            int buffer_offset = 0;
+
+            for(auto& sect : meta_sections)
+            {
+                if(sect.type != 2)
+                    continue;
+
+                if(sect.compressed == 3)
+                {
+                    spdlog::error("todo compressed section in self");
+                    return {};
+                }
+                else
+                {
+                    out.write((char*)data_buffer + buffer_offset, sect.size);
+                }
+
+                buffer_offset += sect.size;
+            }
+
+            if(self_header.sect_info_offset)
+            {
+                out.seekp(self_header.sect_info_offset.get());
+                for(auto header : sect_headers)
+                {
+                    streams::write(out, header);
+                }
+            }
+
+
+            // do this rather than std::copy because std::copy is slow as shit
+            auto str = out.str();
+            std::vector<byte> ret(str.size());
+
+            memcpy(ret.data(), str.data(), str.size());
 
             return ret;
+        }
+
+        ~self_decryptor()
+        {
+            delete[] headers;
         }
 
     private:
@@ -418,14 +468,23 @@ namespace volts::loader::unself
         // metadata
         metadata::header meta_header;
         std::vector<self::control_info> controls;
-        std::vector<byte> data_keys;
+        
+        byte* data_keys;
+        u32 data_keys_len;
+        
         std::vector<metadata::section> meta_sections;
 
         // output
-        std::vector<byte> data_buffer;
+        byte* data_buffer;
+        u32 data_len = 0;
 
         // input
         std::istream& stream;
+
+        // extra stuff
+        // this is freed when the object is deleted
+        // make sure there are no memory leaks
+        u8* headers = nullptr;
     };
 
     std::vector<svl::byte> load(std::istream& file, std::vector<byte> key)

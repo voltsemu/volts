@@ -27,7 +27,7 @@ json = subproject('rapidjson')
 
 deps = [ 
     logging.get_variable('spdlog_dep'), 
-    json.get_variable('rapidjson_dep') 
+    json.get_variable('rapidjson_dep')
 ]
 
 incs = [ include_directories('volts') ]

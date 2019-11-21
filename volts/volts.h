@@ -47,12 +47,23 @@ namespace volts
                 output_path = path;
             }
 
+            if(opts.count("help"))
+            {
+                spdlog::info(options.help());
+                std::exit(0);
+            }
+
             if(opts.count("unself"))
             {
                 if(auto path = opts["unself"].as<std::string>(); fs::exists(path))
                 {
                     std::ifstream stream(path, std::ios::binary | std::ios::in);
                     auto obj = loader::unself::load(stream);
+
+                    auto out = output_file("eboot.elf");
+                    std::ofstream out_file(out, std::ios::binary | std::ios::out);
+                    out_file.write((char*)obj.data(), obj.size());
+                    spdlog::info("decrypted self and wrote file to {}", fs::absolute(out).string());
                 }
             }
 
@@ -113,18 +124,19 @@ namespace volts
 
                     auto out = output_file("sfo.json");
                     svl::streams::write_utf8(out, s.GetString());
-                    spdlog::info("wrote parsed sfo file to {}", out);
+                    spdlog::info("wrote parsed sfo file to {}", fs::absolute(out).string());
                 }
             }
         }
 
     private:
 
+        opts::Options options = {"volts", "c++ ps3 emulator"};
+
         opts::ParseResult build_options(int argc, char** argv)
         {
-            opts::Options options("volts", "c++ ps3 emulator");
-
             options.add_options()
+                ("help", "print help and exit")
                 ("output", "set logging output file", cxxopts::value<std::string>())
                 ("sfo", "parse an .sfo file", cxxopts::value<std::string>())
                 ("unself", "decrypt a self file", cxxopts::value<std::string>())
