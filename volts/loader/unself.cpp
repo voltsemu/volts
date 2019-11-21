@@ -379,7 +379,6 @@ namespace volts::loader::unself
                 }
             }
 
-
             // do this rather than std::copy because std::copy is slow as shit
             auto str = out.str();
             std::vector<byte> ret(str.size());

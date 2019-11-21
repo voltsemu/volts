@@ -32,21 +32,12 @@ namespace svl::streams
     void write_utf8(const fs::path& path, const std::string& str);
 
     template<typename T>
-    class vectorbuf : public std::streambuf
+    struct vectorbuf : public std::streambuf
     {
-        std::vector<T>* buffer;
-    protected:
-        
-        virtual int_type overflow(int_type c)
+        vectorbuf(std::vector<T>& ptr)
         {
-            buffer->push_back(static_cast<T>(c));
-            return c;
+            setg((char*)ptr.data(), (char*)ptr.data(), (char*)(ptr.data() + ptr.size()));
         }
-
-    public:
-        vectorbuf(std::vector<T>* ptr)
-            : buffer(ptr)
-        {}
     };
 
     template<typename T>

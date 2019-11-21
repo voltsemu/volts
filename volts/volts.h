@@ -5,6 +5,8 @@
 
 #include "loader/sfo.h"
 #include "loader/unself.h"
+#include "loader/pup.h"
+#include "loader/tar.h"
 
 #include "svl/stream.h"
 
@@ -64,6 +66,40 @@ namespace volts
                     std::ofstream out_file(out, std::ios::binary | std::ios::out);
                     out_file.write((char*)obj.data(), obj.size());
                     spdlog::info("decrypted self and wrote file to {}", fs::absolute(out).string());
+                }
+            }
+
+            if(opts.count("pup"))
+            {
+                if(auto path = opts["pup"].as<std::string>(); fs::exists(path))
+                {
+                    auto stream = std::make_shared<std::ifstream>(path, std::ios::binary | std::ios::in);
+                    auto obj = loader::pup::load(stream);
+
+                    if(!obj)
+                    {
+                        spdlog::error("failed to load pup file");
+                        std::exit(1);
+                    }
+
+                    auto file_300 = obj->get_file(0x300);
+
+                    svl::streams::vectorbuf buf(file_300);
+
+                    auto file = std::make_shared<std::istream>(&buf);
+
+                    auto f = loader::tar::load(file);
+
+                    if(!f.offsets.size())
+                    {
+                        spdlog::error("failed to load tar 0x300");
+                        std::exit(1);
+                    }
+
+                    for(auto [name, offset] : f.offsets)
+                    {
+                        spdlog::info("{} = {}", name, offset);
+                    }
                 }
             }
 
@@ -137,9 +173,10 @@ namespace volts
         {
             options.add_options()
                 ("help", "print help and exit")
-                ("output", "set logging output file", cxxopts::value<std::string>())
-                ("sfo", "parse an .sfo file", cxxopts::value<std::string>())
-                ("unself", "decrypt a self file", cxxopts::value<std::string>())
+                ("output", "set logging output file", opts::value<std::string>())
+                ("pup", "parse a .pup file", opts::value<std::string>())
+                ("sfo", "parse an .sfo file", opts::value<std::string>())
+                ("unself", "decrypt a self file", opts::value<std::string>())
             ;
 
             return options.parse(argc, argv);
