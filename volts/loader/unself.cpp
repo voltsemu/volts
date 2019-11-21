@@ -286,10 +286,9 @@ namespace volts::loader::unself
                 meta_sections.push_back(sect);
             }
 
-            auto* front = headers.data() + sizeof(metadata::header) + meta_header.sect_count * sizeof(metadata::section);
-            auto* back = front + len;
+            data_keys.reserve(len);
 
-            data_keys = { front, back };
+            memcpy(data_keys.data(), headers.data() + sizeof(metadata::header) + meta_header.sect_count * sizeof(metadata::section), len);
 
             return true;
         }
@@ -313,7 +312,7 @@ namespace volts::loader::unself
                 memcpy(key, data_keys.data() + (sect.key_index * 16), 16);
                 memcpy(iv, data_keys.data() + (sect.iv_index * 16), 16);
 
-                stream.seekg(sect.offset);
+                stream.seekg(sect.offset.get());
 
                 auto buf = streams::read_n(stream, sect.size);
 
@@ -326,8 +325,8 @@ namespace volts::loader::unself
                     &offset,
                     iv,
                     aes_stream,
-                    *buf,
-                    *buf
+                    buf.data(),
+                    buf.data()
                 );
 
                 memcpy(data_buffer.data() + buffer_offset, buf.data(), sect.size);

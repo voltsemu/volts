@@ -2,6 +2,8 @@
 
 #include <cstdint>
 
+#include <emmintrin.h>
+
 namespace svl
 {
     using i8 = std::int8_t;
@@ -16,4 +18,18 @@ namespace svl
 
     using byte = std::uint8_t;
     using pad = std::uint8_t;
+
+    using f32 = float;
+    using f64 = double;
+    
+    union v128
+    {
+        __m128i i;
+        __m128d d;
+        struct
+        {
+            u64 lo;
+            u64 hi;
+        };
+    };
 }
