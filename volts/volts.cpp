@@ -14,7 +14,7 @@ int main(int argc, char** argv)
 #if SYS_WINDOWS
     // UTF-8 console output for windows
     SetConsoleOutputCP(CP_UTF8);
-    setvbuf(stdout, nullptr, _IOFBF, 1000);
+    setvbuf(stdout, nullptr, _IOFBF, 1024);
 #endif
 
     for(int i = 0; i < argc; i++)
