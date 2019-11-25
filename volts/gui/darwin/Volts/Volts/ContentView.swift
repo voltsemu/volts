@@ -8,24 +8,53 @@
 
 import SwiftUI
 
-struct ContentView: View {
+struct Game: View {
+    let name: String
+    let image: String
+    
     var body: some View {
         VStack {
-            HStack {
-                Text("A")
-                Text("B")
+            Image(image).resizable().scaledToFit()
+            Text(name).font(.headline)
+        }
+    }
+}
+
+struct GamesView: View {
+    var body: some View {
+        Text("Games")
+    }
+}
+
+struct ManageView: View {
+    var body: some View {
+        Text("Manage")
+    }
+}
+
+struct SettingsView: View {
+    var body: some View {
+        Text("Settings")
+    }
+}
+
+struct ContentView: View {
+    var body: some View {
+        TabView {
+            GamesView()
+            .tabItem {
+                Text("Games")
             }
             
-            Text("C")
-            
-            HStack {
-                Text("D")
-                Text("E")
-                Text("F")
+            ManageView()
+            .tabItem {
+                Text("Manage")
             }
             
-            Text("Hello World")
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            SettingsView()
+            .tabItem {
+                Text("Settings")
+            }
         }
     }
 }
