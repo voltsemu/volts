@@ -71,7 +71,7 @@ executable('volt', sources,
     link_args : links
 )
 
-volt_lib = static_library('volts', sources,
+static_library('volt', sources,
     include_directories : incs,
     install : true,
     cpp_args : args,
