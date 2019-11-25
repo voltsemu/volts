@@ -12,3 +12,4 @@
 [b|B]uild/
 subprojects/**/*
 !subprojects/*.wrap
+.vscode/*

@@ -1,0 +1,382 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 50;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		3F20B2C1238B992400DC8115 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F20B2C0238B992400DC8115 /* AppDelegate.swift */; };
+		3F20B2C3238B992400DC8115 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F20B2C2238B992400DC8115 /* ContentView.swift */; };
+		3F20B2C5238B992800DC8115 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3F20B2C4238B992800DC8115 /* Assets.xcassets */; };
+		3F20B2C8238B992800DC8115 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3F20B2C7238B992800DC8115 /* Preview Assets.xcassets */; };
+		3F20B2CB238B992800DC8115 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3F20B2C9238B992800DC8115 /* Main.storyboard */; };
+		3F20B2D6238B9BD900DC8115 /* volts_external.c in Sources */ = {isa = PBXBuildFile; fileRef = 3F20B2D5238B9BD900DC8115 /* volts_external.c */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		3F20B2BD238B992400DC8115 /* Volts.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Volts.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		3F20B2C0238B992400DC8115 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		3F20B2C2238B992400DC8115 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		3F20B2C4238B992800DC8115 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		3F20B2C7238B992800DC8115 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		3F20B2CA238B992800DC8115 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		3F20B2CC238B992800DC8115 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		3F20B2CD238B992800DC8115 /* Volts.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Volts.entitlements; sourceTree = "<group>"; };
+		3F20B2D3238B9BD800DC8115 /* Volts-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Volts-Bridging-Header.h"; sourceTree = "<group>"; };
+		3F20B2D4238B9BD900DC8115 /* volts_external.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = volts_external.h; sourceTree = "<group>"; };
+		3F20B2D5238B9BD900DC8115 /* volts_external.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = volts_external.c; sourceTree = "<group>"; };
+		3F20B2D8238C22A600DC8115 /* libvolt.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libvolt.a; path = ../../../../Build/libvolt.a; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		3F20B2BA238B992400DC8115 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		3F20B2B4238B992400DC8115 = {
+			isa = PBXGroup;
+			children = (
+				3F20B2BF238B992400DC8115 /* Volts */,
+				3F20B2BE238B992400DC8115 /* Products */,
+				3F20B2D7238C22A600DC8115 /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		3F20B2BE238B992400DC8115 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				3F20B2BD238B992400DC8115 /* Volts.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		3F20B2BF238B992400DC8115 /* Volts */ = {
+			isa = PBXGroup;
+			children = (
+				3F20B2C0238B992400DC8115 /* AppDelegate.swift */,
+				3F20B2C2238B992400DC8115 /* ContentView.swift */,
+				3F20B2C4238B992800DC8115 /* Assets.xcassets */,
+				3F20B2C9238B992800DC8115 /* Main.storyboard */,
+				3F20B2CC238B992800DC8115 /* Info.plist */,
+				3F20B2CD238B992800DC8115 /* Volts.entitlements */,
+				3F20B2C6238B992800DC8115 /* Preview Content */,
+				3F20B2D4238B9BD900DC8115 /* volts_external.h */,
+				3F20B2D5238B9BD900DC8115 /* volts_external.c */,
+				3F20B2D3238B9BD800DC8115 /* Volts-Bridging-Header.h */,
+			);
+			path = Volts;
+			sourceTree = "<group>";
+		};
+		3F20B2C6238B992800DC8115 /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				3F20B2C7238B992800DC8115 /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		3F20B2D7238C22A600DC8115 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				3F20B2D8238C22A600DC8115 /* libvolt.a */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		3F20B2BC238B992400DC8115 /* Volts */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3F20B2D0238B992800DC8115 /* Build configuration list for PBXNativeTarget "Volts" */;
+			buildPhases = (
+				3F20B2B9238B992400DC8115 /* Sources */,
+				3F20B2BA238B992400DC8115 /* Frameworks */,
+				3F20B2BB238B992400DC8115 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Volts;
+			productName = Volts;
+			productReference = 3F20B2BD238B992400DC8115 /* Volts.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		3F20B2B5238B992400DC8115 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 1110;
+				LastUpgradeCheck = 1110;
+				ORGANIZATIONNAME = Apache;
+				TargetAttributes = {
+					3F20B2BC238B992400DC8115 = {
+						CreatedOnToolsVersion = 11.1;
+						LastSwiftMigration = 1110;
+					};
+				};
+			};
+			buildConfigurationList = 3F20B2B8238B992400DC8115 /* Build configuration list for PBXProject "Volts" */;
+			compatibilityVersion = "Xcode 9.3";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 3F20B2B4238B992400DC8115;
+			productRefGroup = 3F20B2BE238B992400DC8115 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				3F20B2BC238B992400DC8115 /* Volts */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		3F20B2BB238B992400DC8115 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3F20B2CB238B992800DC8115 /* Main.storyboard in Resources */,
+				3F20B2C8238B992800DC8115 /* Preview Assets.xcassets in Resources */,
+				3F20B2C5238B992800DC8115 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		3F20B2B9238B992400DC8115 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3F20B2D6238B9BD900DC8115 /* volts_external.c in Sources */,
+				3F20B2C3238B992400DC8115 /* ContentView.swift in Sources */,
+				3F20B2C1238B992400DC8115 /* AppDelegate.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		3F20B2C9238B992800DC8115 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				3F20B2CA238B992800DC8115 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		3F20B2CE238B992800DC8115 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		3F20B2CF238B992800DC8115 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+			};
+			name = Release;
+		};
+		3F20B2D1238B992800DC8115 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = Volts/Volts.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_ASSET_PATHS = "\"Volts/Preview Content\"";
+				ENABLE_PREVIEWS = YES;
+				INFOPLIST_FILE = Volts/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				LIBRARY_SEARCH_PATHS = "../../../../**";
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				OTHER_LDFLAGS = (
+					"-L../../../../Build",
+					"-lvolt",
+					"-lm",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.ApacheHB.Volts;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "Volts/Volts-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		3F20B2D2238B992800DC8115 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = Volts/Volts.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_ASSET_PATHS = "\"Volts/Preview Content\"";
+				ENABLE_PREVIEWS = YES;
+				INFOPLIST_FILE = Volts/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				LIBRARY_SEARCH_PATHS = "../../../../**";
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				OTHER_LDFLAGS = (
+					"-L../../../../Build",
+					"-lvolt",
+					"-lm",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.ApacheHB.Volts;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "Volts/Volts-Bridging-Header.h";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		3F20B2B8238B992400DC8115 /* Build configuration list for PBXProject "Volts" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3F20B2CE238B992800DC8115 /* Debug */,
+				3F20B2CF238B992800DC8115 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		3F20B2D0238B992800DC8115 /* Build configuration list for PBXNativeTarget "Volts" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3F20B2D1238B992800DC8115 /* Debug */,
+				3F20B2D2238B992800DC8115 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 3F20B2B5238B992400DC8115 /* Project object */;
+}

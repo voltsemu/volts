@@ -7,13 +7,6 @@ project('volts', ['cpp', 'c'],
     license : 'Apache'
 )
 
-if host_machine.system() == 'darwin'
-    # for some reason meson doesnt have xxx_args for swift
-    # so we need to set this as a global argument here instead
-    # once they fix that we can move this
-    add_global_arguments(['-parse-as-library'], language : 'swift')
-endif
-
 sources = []
 
 log_opts = [
