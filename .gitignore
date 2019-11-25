@@ -8,6 +8,7 @@
 
 !*.wrap
 !*.build
+!*.py
 
 [b|B]uild/
 subprojects/**/*
