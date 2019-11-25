@@ -19,6 +19,8 @@ namespace winrt::volts_gui::implementation
 
     void MainPage::NavigationLoaded(const IInspectable& sender, RoutedEventArgs args)
     {
+        // default to the games page
+        // TODO: make this configurable in settings
         set_page(L"Games");
     }
 
@@ -26,10 +28,12 @@ namespace winrt::volts_gui::implementation
     {
         if (args.IsSettingsInvoked())
         {
+            // the settings tab is a special case
             set_page(L"Settings");
         }
         else
         {
+            // everything else is just a string
             auto content = pages.at(unbox_value<hstring>(args.InvokedItem()));
             content_grid().Children().Append(content.get_content());
         }
@@ -37,9 +41,11 @@ namespace winrt::volts_gui::implementation
 
     void MainPage::set_page(const winrt::hstring& name)
     {
+        // clear the grid
         content_grid().Children().Clear();
+        // get the correct page
         auto content = pages.at(name);
-
+        // then add that page to the now empty grid
         content_grid().Children().Append(content.get_content());
     }
 }
