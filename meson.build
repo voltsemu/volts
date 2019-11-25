@@ -60,7 +60,14 @@ executable('volt', sources,
     include_directories : incs,
     install : true,
     cpp_args : args,
-    objcpp_args : args,
+    dependencies : deps,
+    link_args : links
+)
+
+static_library('volt', sources,
+    include_directories : incs,
+    install : true,
+    cpp_args : args,
     dependencies : deps,
     link_args : links
 )
