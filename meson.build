@@ -7,6 +7,13 @@ project('volts', ['cpp', 'c'],
     license : 'Apache'
 )
 
+if host_machine.system() == 'darwin'
+    # for some reason meson doesnt have xxx_args for swift
+    # so we need to set this as a global argument here instead
+    # once they fix that we can move this
+    add_global_arguments(['-parse-as-library'], language : 'swift')
+endif
+
 sources = []
 
 log_opts = [
@@ -60,20 +67,16 @@ executable('volt', sources,
     include_directories : incs,
     install : true,
     cpp_args : args,
-    objcpp_args : args,
     dependencies : deps,
     link_args : links
 )
 
-# at the point this becomes something that can launch a window 
-# we will need this target
+volt_lib = static_library('volts', sources,
+    include_directories : incs,
+    install : true,
+    cpp_args : args,
+    dependencies : deps,
+    link_args : links
+)
 
-#executable('volts_gui', sources,
-#    include_directories : incs,
-#    install : true,
-#    cpp_args : args,
-#    objcpp_args : args,
-#    dependencies : deps,
-#    link_args : links,
-#    gui_app : true
-#)
+subdir('gui')
