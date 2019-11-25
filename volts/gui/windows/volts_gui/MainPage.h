@@ -12,17 +12,26 @@ struct ContentPage
 
 struct GamesPage : ContentPage
 {
-
+    virtual winrt::Windows::UI::Xaml::UIElement get_content() const override
+    {
+        return winrt::Windows::UI::Xaml::Controls::Grid();
+    }
 };
 
 struct ManagePage : ContentPage
 {
-
+    virtual winrt::Windows::UI::Xaml::UIElement get_content() const override
+    {
+        return winrt::Windows::UI::Xaml::Controls::Grid();
+    }
 };
 
 struct SettingsPage : ContentPage
 {
-
+    virtual winrt::Windows::UI::Xaml::UIElement get_content() const override
+    {
+        return winrt::Windows::UI::Xaml::Controls::Grid();
+    }
 };
 
 namespace winrt::volts_gui::implementation
