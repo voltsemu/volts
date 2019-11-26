@@ -21,8 +21,21 @@ struct Game: View {
 }
 
 struct GamesView: View {
+    @State var games: [Game] = [
+        Game(name: "aaa", image: "aaa"),
+        Game(name: "bbb", image: "bbb"),
+        Game(name: "ccc", image: "ccc"),
+        Game(name: "ddd", image: "ddd")
+    ]
+    
     var body: some View {
-        Text("Games")
+        ScrollView {
+            VStack {
+                ForEach(0 ..< self.games.count) { idx in
+                    self.games[idx].frame(width: 200, height: 100)
+                }
+            }
+        }.frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity, alignment: .topLeading)
     }
 }
 
@@ -34,7 +47,15 @@ struct ManageView: View {
 
 struct SettingsView: View {
     var body: some View {
-        Text("Settings")
+        HStack {
+            VStack {
+                Text("GPU")
+            }
+            Divider()
+            VStack {
+                Text("CPU")
+            }
+        }
     }
 }
 
