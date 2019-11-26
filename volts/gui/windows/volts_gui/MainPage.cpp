@@ -3,12 +3,19 @@
 #include "MainPage.g.cpp"
 
 using namespace winrt;
+
 using namespace Windows;
 using namespace Foundation;
 using namespace UI;
 using namespace Popups;
 using namespace Xaml;
 using namespace Controls;
+
+#include "../../../volt.h"
+
+#include "GamesView.h"
+#include "SettingsView.h"
+#include "ManageView.h"
 
 namespace winrt::volts_gui::implementation
 {
@@ -21,7 +28,7 @@ namespace winrt::volts_gui::implementation
     {
         // default to the games page
         // TODO: make this configurable in settings
-        set_page(L"Games");
+        view().Content(winrt::make<GamesView>());
     }
 
     void MainPage::NavigationChanged(NavigationView const& sender, NavigationViewItemInvokedEventArgs args)
@@ -29,23 +36,15 @@ namespace winrt::volts_gui::implementation
         if (args.IsSettingsInvoked())
         {
             // the settings tab is a special case
-            set_page(L"Settings");
+            view().Content(winrt::make<SettingsView>());
         }
         else
         {
-            // everything else is just a string
-            auto content = pages.at(unbox_value<hstring>(args.InvokedItem()));
-            content_grid().Children().Append(content.get_content());
+            auto str = unbox_value<hstring>(args.InvokedItem());
+            if (str == L"Games")
+                view().Content(winrt::make<GamesView>());
+            else if (str == L"Manage")
+                view().Content(winrt::make<ManageView>());
         }
-    }
-
-    void MainPage::set_page(const winrt::hstring& name)
-    {
-        // clear the grid
-        content_grid().Children().Clear();
-        // get the correct page
-        auto content = pages.at(name);
-        // then add that page to the now empty grid
-        content_grid().Children().Append(content.get_content());
     }
 }

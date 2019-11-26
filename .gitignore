@@ -14,3 +14,4 @@
 subprojects/**/*
 !subprojects/*.wrap
 .vscode/*
+volts/generated/version.gen.h
