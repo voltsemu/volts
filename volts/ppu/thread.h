@@ -1,6 +1,7 @@
 #pragma once
 
 #include "svl/types.h"
+#include "svl/stream.h"
 
 namespace volts::ppu
 {
@@ -14,6 +15,8 @@ namespace volts::ppu
 
     struct thread
     {
+        thread(svl::iostream& stream);
+        
         svl::u64 gpr[32] = {};
         svl::f64 fpr[32] = {};
 

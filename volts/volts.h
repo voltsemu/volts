@@ -5,8 +5,11 @@
 
 #include "loader/sfo.h"
 #include "loader/unself.h"
+#include "loader/elf.h"
 #include "loader/pup.h"
 #include "loader/tar.h"
+
+#include "ppu/thread.h"
 
 #include "svl/stream.h"
 
@@ -52,6 +55,22 @@ namespace volts
             {
                 spdlog::info(options.help());
                 std::exit(0);
+            }
+
+            if(opts.count("boot"))
+            {
+                if(auto path = opts["boot"].as<std::string>(); fs::exists(path))
+                {
+                    svl::fstream stream(path, std::ios::binary | std::ios::in);
+                    auto obj = loader::unself::load(stream);
+                    
+                    auto e = svl::memstream(obj);
+
+                    auto entry = svl::read<loader::elf::header<svl::u64>>(e);
+                    e.seek(entry.entry);
+
+                    auto t = ppu::thread(e);
+                }
             }
 
             if(opts.count("unself"))
@@ -147,7 +166,7 @@ namespace volts
 
     private:
 
-        opts::Options options = {"volts", "c++ ps3 emulator"};
+        opts::Options options = {"volts", "ps3 emulator"};
 
         opts::ParseResult build_options(int argc, char** argv)
         {
@@ -157,6 +176,7 @@ namespace volts
                 ("pup", "parse a .pup file", opts::value<std::string>())
                 ("sfo", "parse an .sfo file", opts::value<std::string>())
                 ("unself", "decrypt a self file", opts::value<std::string>())
+                ("boot", "boot a self", opts::value<std::string>())
             ;
 
             return options.parse(argc, argv);
