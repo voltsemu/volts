@@ -1,5 +1,3 @@
-#include "ops.h"
-
 #include "thread.h"
 #include "svl/endian.h"
 
@@ -7,46 +5,52 @@
 
 #include <spdlog/spdlog.h>
 
-namespace volts::ppu::ops
+using namespace svl;
+
+namespace volts::ppu
 {
     inline svl::u32 decode(svl::u32 op)
     {
         return (op >> 26 | op << 6) & 0x1ffff;
     }
 
-    void STUB(svl::u32 op, thread* t)
+    void thread::stub(form op)
     {
-        spdlog::error("unimplemented ppu op {}", decode(op));
+        spdlog::error("unimplemented ppu op {}", decode(op.raw));
     }
 
-    void STD(svl::u32 op, thread* t)
+    void thread::ori(form op)
+    {
+        gpr[op.ra] = gpr[op.rs] | op.uimm16;
+    }
+
+    void thread::oris(form op)
     {
 
     }
 
-    using opcode = void(*)(svl::u32, thread*);
-
-    opcode ops[512] = {};
-
-    void init_table()
+    void thread::xori(form op)
     {
-        ops[62] = STD;
+        gpr[op.ra] = gpr[op.rs] ^ op.uimm16;
     }
 
-    void execute(svl::u32 op, thread* t)
+    void thread::xoris(form op)
     {
-        spdlog::info(
-            "raw = {:b} {} shifted = {} op = {}", 
-            svl::endian::byte_swap(op), 
-            svl::endian::byte_swap(op),
-            (op >> 26 | op << (32 - 26)),
-            (op >> 26 | op << (32 - 26)) & 0x1ffff
-        );
 
-        spdlog::info(
-            "{:b}\n{:b}",
-            (op >> 26 | op << 6),
-            (op >> 26 | op << 6) & 0x1ffff
-        );
+    }
+
+    void thread::std(form op)
+    {
+        // TODO: write stuff
+    }
+
+    void thread::stdu(form op)
+    {
+
+    }
+
+    void execute(svl::u32 op)
+    {
+        //ops[decode(op)](reinterpret_cast<form>(op));
     }
 }

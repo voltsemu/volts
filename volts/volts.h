@@ -64,6 +64,14 @@ namespace volts
                     svl::fstream stream(path, std::ios::binary | std::ios::in);
                     auto obj = loader::unself::load(stream);
                     
+                    if(obj.empty())
+                    {
+                        spdlog::info("file was not SELF, falling back to elf");
+
+                        svl::fstream elf_stream(path, std::ios::binary | std::ios::in);
+                        obj = svl::read_n(elf_stream, elf_stream.size());
+                    }
+
                     auto e = svl::memstream(obj);
 
                     auto entry = svl::read<loader::elf::header<svl::u64>>(e);

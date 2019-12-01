@@ -1,7 +1,5 @@
 #include "thread.h"
 
-#include "ops.h"
-
 #include "svl/endian.h"
 
 namespace volts::ppu
@@ -10,8 +8,8 @@ namespace volts::ppu
     {
         for(int i = 0; i < 10; i++)
         {
-            auto op = svl::read<svl::u32>(stream);
-            ops::execute(op, this);
+            // auto op = svl::read<svl::u32>(stream);
+            
         }
     }
 }
