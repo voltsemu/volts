@@ -56,20 +56,10 @@ if meson.get_compiler('cpp').get_id() == 'gcc'
     args += '-DGCC_WORKAROUND_BULLSHIT'
 endif
 
-volt_exe = executable('volt', sources,
+executable('volt', sources,
     include_directories : incs,
     install : true,
     cpp_args : args,
     dependencies : deps,
     link_args : links
 )
-
-volt_lib = static_library('volt', sources,
-    include_directories : incs,
-    install : true,
-    cpp_args : args,
-    dependencies : deps,
-    link_args : links
-)
-
-subdir('volts/gui'/host_machine.system())

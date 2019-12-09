@@ -6,6 +6,5 @@ subdir('spu')
 subdir('ppu')
 
 sources += [
-    'volts/volts.cpp',
-    'volts/volt.cpp'
+    'volts/volts.cpp'
 ]

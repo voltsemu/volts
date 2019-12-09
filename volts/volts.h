@@ -77,7 +77,7 @@ namespace volts
                     auto entry = svl::read<loader::elf::header<svl::u64>>(e);
                     e.seek(entry.entry);
 
-                    auto t = ppu::thread(e);
+                    //auto t = ppu::thread(e);
                 }
             }
 
