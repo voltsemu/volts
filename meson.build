@@ -1,110 +1,58 @@
-project('Volts', ['cpp'],
+project('volts', ['cpp', 'c'],
     default_options : [
         'cpp_std=c++17',
-        'cpp_eh=none'
+        'cpp_eh=none',
+        'cpp_rtti=false'
     ],
     version : '0.2.0',
     license : 'Apache'
 )
 
-if host_machine.system() == 'darwin'
-    add_languages('objcpp')
-endif
-
-args = []
-
-# subprojects
-# all in the subprojects/ folder
-# decompression, used in UNSELF
-zlib = subproject('zlib')
-# fmt, used in logging
-fmt = subproject('fmt')
-# cthulhu, used for file IO
-ctu = subproject('cthulhu')
-
-# json, used for config stuff
-args += '-DARGO_NOTHROW'
-json = subproject('argo')
-
-# dependencies
-# usually from pkg-config
-
-threads = dependency('threads')
-
-glfw_pack = dependency('glfw3', required : false)
-
-deps = [
-    json.get_variable('argo_dep'),
-    threads
-]
-
-if glfw_pack.found()
-    message('found glfw3, ignoring git submodule')
-    deps += glfw_pack
-else
-    message('glfw3 not found in system, using git submodule instead')
-    deps += subproject('glfw').get_variable('glfw_dep')
-endif
-
-# get the very basic core sources
 sources = []
 
+log_opts = [
+    'enable_examples=false',
+    'enable_tests=false',
+    'no_exceptions=true'
+]
 
-if host_machine.system() == 'darwin'
-    args += [
-        # enable @import in objc++
-        '-fmodules',
-        # this fixes imgui metal backend
-        '-fobjc-arc'
-    ]
+if host_machine.system() == 'windows'
+    log_opts += 'wchar_support=true'
 endif
 
-incs = [
-    include_directories('Volts'),
-    ctu.get_variable('incdir')
+logging = subproject('spdlog', 
+    default_options : log_opts
+)
+
+json = subproject('rapidjson')
+
+deps = [ 
+    logging.get_variable('spdlog_dep'), 
+    json.get_variable('rapidjson_dep')
 ]
 
-deps += [
-    zlib.get_variable('zlib_dep'),
-    fmt.get_variable('fmt_dep')
-]
+incs = [ include_directories('volts') ]
 
 links = []
 
-subdir('Volts')
+args = []
+
+subdir('volts')
 
 # disable run time type id and exceptions in the hope of generating smaller code
 # i know you dont pay for features you dont use but this also stops people
 # from trying to use either feature at all so people dont """accidentally"""
 # use these slow features for convenience sake
 if meson.get_compiler('cpp').get_id() == 'msvc'
-    args += ['/GR-', '/arch:AVX2', '/GF', '/EHsc-'] #GF enables string pooling, we abuse this for performance reasons
+    args += ['/arch:AVX2', '/GF'] #GF enables string pooling, we abuse this for performance reasons
 else
-    args += ['-fno-rtti', '-fno-exceptions', '-march=native']
-endif
-
-if meson.get_compiler('cpp').get_id() == 'clang'
-    args += '-std=c++17'
-endif
-
-if meson.get_compiler('cpp').get_id() == 'gcc'
-    args += '-DGCC_WORKAROUND_BULLSHIT'
-endif
-
-pch = [] 
-
-if host_machine.system() == 'windows'
-    pch += ['Volts/PCH.h']
+    args += '-march=native'
 endif
 
 executable('volt', sources,
     include_directories : incs,
     install : true,
     cpp_args : args,
-    objcpp_args : args,
     dependencies : deps,
-    link_args : links,
-    cpp_pch : pch,
-    gui_app : true
+    link_args : links
 )
-

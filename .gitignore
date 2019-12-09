@@ -1,25 +1,17 @@
-# ignore visual studio
-.vs/
+*
 
-# ignore vscode folder
+!*/
+
+!*.c
+!*.cpp
+!*.h
+
+!*.wrap
+!*.build
+!*.py
+
+[b|B]uild/
+subprojects/**/*
+!subprojects/*.wrap
 .vscode/*
-
-# ignore build output
-Build/*
-
-# ignore msbuild files
-x64/
-Generated Files/
-*.pfx
-
-# ignore mac stuff
-*.DS_STORE
-
-#meson wraps
-*.zip
-
-# other stuff
-*.elf
-Volts/Core/Generated/Version.h
-
-subprojects/rapidjson-1.1.0
+volts/generated/version.gen.h

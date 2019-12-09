@@ -34,7 +34,6 @@ Planned features
 
 ## Sideprojects
 
-* Themes
 * Debugger
 
 # Developer Q&A
@@ -47,7 +46,7 @@ This extends to design patterns as well as just the formatting of the code itsel
 ### Formatting
 
 1. 4 space indents only, not tabs.
-2. All `class`es, `struct`s, varaibles, functions, and arguments are in `PascalCase`
+2. All `class`es, `struct`s, varaibles, functions, and arguments are in `snake_case`
 3. All template type arguments are prefixed with `T`
 4. All macros are in `SCREAMING_SNAKE_CASE`
 5. All enums are `enum class`es
@@ -55,7 +54,7 @@ This extends to design patterns as well as just the formatting of the code itsel
 
 ### Patterns
 
-1. All code is in the `Volts` namespace
+1. All code is in the `volts` namespace
 2. No warnings when building
 3. Performance above all else
 4. `#pragma once` instead of include guards
@@ -69,7 +68,7 @@ This extends to design patterns as well as just the formatting of the code itsel
 2. `dynamic_cast` and RTTI are banned
 3. `thread_local` is banned
 4. Nested classes are banned
-5. Relative imports are banned
+5. Relative includes are banned
 
 ### Building
 
@@ -128,7 +127,7 @@ Assuming a fresh install of Debian
 ```sh
 su -
 
-apt install git python3-pip llvm ninja-build libx11-dev
+apt install git python3-pip llvm ninja-build
 
 pip3 install meson
 
@@ -137,14 +136,3 @@ meson Build
 ninja -C Build
 ./Build/volt
 ```
-
-
-## Architecture
-
-The main emulator is a command line only interface. This allows each platform to have a native gui
-The gui will be able to interact with the emulator by opening it as a subproccess and using a socket
-to communicate (or popen, or something else, whatevers quickest really) with the main emulator.
-This also means most of the emulator can be completley platform agnostic, only relying on the C++ stdlib
-and external libraries that are platform agnostic as well.
-
-TODO: ramble more about emulator architecture
