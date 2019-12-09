@@ -24,6 +24,8 @@ namespace volts::ppu
         svl::bit_field<svl::u32, 6, 10> rd;
         svl::bit_field<svl::u32, 16, 30> ds;
 
+        svl::bit_field<svl::u32, 6, 11> to;
+
         svl::bit_field<svl::i32, 16, 31> simm16;
         svl::bit_field<svl::u32, 16, 31> uimm16;
     };

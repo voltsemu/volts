@@ -25,4 +25,24 @@ namespace volts::vm
     {
         return *(u64*)(base + at);
     }
+
+    void write8(addr at, u8 val)
+    {
+        ((u8*)base)[at] = val;
+    }
+
+    void write16(addr at, u16 val)
+    {
+        ((u16*)base)[at] = val;
+    }
+
+    void write32(addr at, u32 val)
+    {
+        ((u32*)base)[at] = val;
+    }
+
+    void write64(addr at, u64 val)
+    {
+        ((u64*)base)[at] = val;
+    }
 }
