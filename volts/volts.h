@@ -9,7 +9,7 @@
 #include "loader/pup.h"
 #include "loader/tar.h"
 
-#include "ppu/thread.h"
+#include "vm/ppu/thread.h"
 
 #include "svl/stream.h"
 
@@ -77,7 +77,7 @@ namespace volts
                     auto entry = svl::read<loader::elf::header<svl::u64>>(e);
                     e.seek(entry.entry);
 
-                    //auto t = ppu::thread(e);
+                    
                 }
             }
 
@@ -170,6 +170,9 @@ namespace volts
                     spdlog::info("wrote parsed sfo file to {}", fs::absolute(out).string());
                 }
             }
+
+            if(opts.count("live"))
+                for(;;);
         }
 
     private:
@@ -185,6 +188,7 @@ namespace volts
                 ("sfo", "parse an .sfo file", opts::value<std::string>())
                 ("unself", "decrypt a self file", opts::value<std::string>())
                 ("boot", "boot a self", opts::value<std::string>())
+                ("live", "stay alive")
             ;
 
             return options.parse(argc, argv);

@@ -1,7 +1,8 @@
 project('volts', ['cpp', 'c'],
     default_options : [
         'cpp_std=c++17',
-        'cpp_eh=none'
+        'cpp_eh=none',
+        'cpp_rtti=false'
     ],
     version : '0.2.0',
     license : 'Apache'
@@ -43,17 +44,9 @@ subdir('volts')
 # from trying to use either feature at all so people dont """accidentally"""
 # use these slow features for convenience sake
 if meson.get_compiler('cpp').get_id() == 'msvc'
-    args += ['/GR-', '/arch:AVX2', '/GF', '/EHsc-'] #GF enables string pooling, we abuse this for performance reasons
+    args += ['/arch:AVX2', '/GF'] #GF enables string pooling, we abuse this for performance reasons
 else
-    args += ['-fno-rtti', '-fno-exceptions', '-march=native']
-endif
-
-if meson.get_compiler('cpp').get_id() == 'clang'
-    args += '-std=c++17'
-endif
-
-if meson.get_compiler('cpp').get_id() == 'gcc'
-    args += '-DGCC_WORKAROUND_BULLSHIT'
+    args += '-march=native'
 endif
 
 executable('volt', sources,

@@ -171,7 +171,7 @@ namespace volts::loader::unself
 
             if(sce_header.magic != cvt::to_u32("SCE\0"))
             {
-                spdlog::error("invalid sce magic");
+                spdlog::warn("invalid sce magic");
                 return false;
             }
 

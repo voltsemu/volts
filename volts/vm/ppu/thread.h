@@ -20,6 +20,8 @@ namespace volts::ppu
 
         svl::bit_field<svl::u32, 6, 11> rs;
         svl::bit_field<svl::u32, 11, 16> ra;
+        svl::bit_field<svl::u32, 16, 20> rb;
+        svl::bit_field<svl::u32, 6, 10> rd;
         svl::bit_field<svl::u32, 16, 30> ds;
 
         svl::bit_field<svl::i32, 16, 31> simm16;
@@ -46,17 +48,5 @@ namespace volts::ppu
 
         // todo: vector status
         // vr save register
-
-    private:
-        void stub(form _); // for unimplemented functions
-
-        void ori(form op); // 24
-        void oris(form op); // 25
-
-        void xori(form op); // 26
-        void xoris(form op); // 27
-
-        void std(form op); // 62
-        void stdu(form op); // 63
     };
 }

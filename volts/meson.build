@@ -2,8 +2,7 @@ subdir('loader')
 subdir('svl')
 subdir('external')
 subdir('generated')
-subdir('spu')
-subdir('ppu')
+subdir('vm')
 
 sources += [
     'volts/volts.cpp'
