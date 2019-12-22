@@ -30,7 +30,7 @@ namespace volts::loader::sfo
         u32 total_entries;
     };
 
-    std::optional<std::map<std::string, value>> load(svl::iostream& stream)
+    std::optional<object> load(svl::iostream& stream)
     {
         const auto head = svl::read<header>(stream);
 
@@ -46,7 +46,7 @@ namespace volts::loader::sfo
             return std::nullopt;
         }
 
-        map<string, value> val;
+        object val;
 
         for(int i = 0; i < head.total_entries; i++)
         {

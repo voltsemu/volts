@@ -32,4 +32,6 @@ namespace svl
             u64 hi;
         };
     };
+
+    static_assert(sizeof(v128) == 16);
 }

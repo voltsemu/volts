@@ -23,5 +23,7 @@ namespace volts::loader::sfo
         std::vector<svl::byte> data;
     };
 
-    std::optional<std::map<std::string, value>> load(svl::iostream& stream);
+    using object = std::map<std::string, value>;
+
+    std::optional<object> load(svl::iostream& stream);
 }

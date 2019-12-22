@@ -1,8 +1,6 @@
-subdir('loader')
-subdir('svl')
-subdir('external')
-subdir('generated')
-subdir('vm')
+foreach dir : ['loader', 'svl', 'external', 'generated', 'vm']
+    subdir(dir)
+endforeach
 
 sources += [
     'volts/volts.cpp'

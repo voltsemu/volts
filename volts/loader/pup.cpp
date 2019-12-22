@@ -26,15 +26,16 @@ namespace volts::loader::pup
 
     std::vector<svl::byte> object::get_file(svl::u64 id)
     {
-        auto f = std::find_if(std::begin(files), std::end(files), [id](auto& file) {
-            return file.id == id;
-        });
+        for(const auto& f : files)
+        {
+            if(f.id == id)
+            {
+                file->seek(f.offset);
+                return read_n(*file, f.length);
+            }
+        }
 
-        if(f == std::end(files))
-            return {};
-
-        file->seek(f->offset.get());
-        return read_n(*file, f->length);
+        return {};
     }
 
     std::optional<object> load(std::shared_ptr<svl::iostream> stream)

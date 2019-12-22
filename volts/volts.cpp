@@ -17,5 +17,6 @@ int main(int argc, char** argv)
     setvbuf(stdout, nullptr, _IOFBF, 1024);
 #endif
     
+    // parse command line arguments
     cmd::get().parse(argc, argv);
 }
