@@ -8,5 +8,6 @@
 
 namespace volts::loader::unself
 {
-    std::vector<svl::byte> load(svl::iostream& file, std::vector<svl::byte> key = {});
+    std::vector<svl::iostream> load_sce(svl::iostream& file);
+    std::vector<svl::byte> load_self(svl::iostream& file, std::vector<svl::byte> key = {});
 }

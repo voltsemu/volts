@@ -10,8 +10,8 @@ namespace volts::ppu
     {
         for(int i = 0; i < 10; i++)
         {
-            // auto op = svl::read<svl::u32>(stream);
-            
+            auto op = svl::read<svl::u32>(stream);
+            ops[decode(op)](*this, {op});
         }
     }
 }

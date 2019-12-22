@@ -26,9 +26,16 @@ logging = subproject('spdlog',
 
 json = subproject('rapidjson')
 
+zlib = subproject('zlib',
+    default_options : [
+        'default_library=static'
+    ]
+)
+
 deps = [ 
     logging.get_variable('spdlog_dep'), 
-    json.get_variable('rapidjson_dep')
+    json.get_variable('rapidjson_dep'),
+    zlib.get_variable('zlib_dep')
 ]
 
 incs = [ include_directories('volts') ]
@@ -44,7 +51,8 @@ subdir('volts')
 # from trying to use either feature at all so people dont """accidentally"""
 # use these slow features for convenience sake
 if meson.get_compiler('cpp').get_id() == 'msvc'
-    args += ['/arch:AVX2', '/GF'] #GF enables string pooling, we abuse this for performance reasons
+    args += ['/arch:AVX2', '/GF', '/wd4180'] #GF enables string pooling, we abuse this for performance reasons
+    # wd4180 disables some pointless warnings that dont matter (yeah i know ignoring warnings is bad style)
 else
     args += '-march=native'
 endif

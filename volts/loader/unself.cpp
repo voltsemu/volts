@@ -6,6 +6,8 @@
 
 #include <external/aes/aes.h>
 
+#include <zlib.h>
+
 #include <spdlog/spdlog.h>
 
 #include "svl/endian.h"
@@ -350,14 +352,25 @@ namespace volts::loader::unself
                 if(sect.type != 2)
                     continue;
 
-                if(sect.compressed == 3)
+                out.seek(prog_headers[sect.index].offset);
+
+                if(sect.compressed == 2)
                 {
-                    spdlog::error("todo compressed section in self");
-                    return {};
+                    auto size = prog_headers[sect.index].file_size;
+
+                    byte* dbuf = (byte*)alloca(size);
+                    byte* zbuf = (byte*)alloca(data_len);
+                    memcpy(zbuf, data_buffer, data_len);
+
+                    uLongf dbuf_len = static_cast<uLongf>(size);
+
+                    uncompress(dbuf, &dbuf_len, zbuf + buffer_offset, data_len);
+
+                    out.write(dbuf, size);
                 }
                 else
                 {
-                    out.write((char*)data_buffer + buffer_offset, sect.size);
+                    out.write(data_buffer + buffer_offset, sect.size);
                 }
 
                 buffer_offset += sect.size;
@@ -470,7 +483,7 @@ namespace volts::loader::unself
         u8* headers = nullptr;
     };
 
-    std::vector<svl::byte> load(svl::iostream& file, std::vector<byte> key)
+    std::vector<svl::byte> load_self(svl::iostream& file, std::vector<byte> key)
     {
         self_decryptor dec(file);
 
@@ -487,5 +500,39 @@ namespace volts::loader::unself
         dec.decrypt();
 
         return dec.elf();
+    }
+
+    struct sce_decryptor 
+    {
+        svl::iostream& stream;
+        
+        sce_decryptor(svl::iostream& s)
+            : stream(s)
+        {}
+
+        bool load_headers()
+        {
+
+        }
+
+        bool load_metadata()
+        {
+
+        }
+
+        void decrypt()
+        {
+
+        }
+
+        std::vector<svl::iostream> files()
+        {
+
+        }
+    };
+
+    std::vector<svl::iostream> load_sce(svl::iostream& file)
+    {
+        return {};
     }
 }

@@ -4,7 +4,7 @@ using namespace svl;
 
 namespace volts::vm
 {
-    u8* base = new svl::byte[256 * 1024 * 1024]();
+    u8* base = nullptr; 
 
     svl::u8 read8(addr at)
     {
@@ -44,5 +44,12 @@ namespace volts::vm
     void write64(addr at, u64 val)
     {
         ((u64*)base)[at] = val;
+    }
+
+    void init()
+    {
+        delete[] base;
+        // todo: make this configurable
+        base = new svl::byte[256 * 1024 * 1024]();
     }
 }

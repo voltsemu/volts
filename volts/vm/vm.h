@@ -15,4 +15,6 @@ namespace volts::vm
     void write16(addr at, svl::u16 val);
     void write32(addr at, svl::u32 val);
     void write64(addr at, svl::u64 val);
+
+    void init();
 }

@@ -62,7 +62,7 @@ namespace volts
                 if(auto path = opts["boot"].as<std::string>(); fs::exists(path))
                 {
                     svl::fstream stream(path, std::ios::binary | std::ios::in);
-                    auto obj = loader::unself::load(stream);
+                    auto obj = loader::unself::load_self(stream);
                     
                     if(obj.empty())
                     {
@@ -86,7 +86,7 @@ namespace volts
                 if(auto path = opts["unself"].as<std::string>(); fs::exists(path))
                 {
                     svl::fstream stream(path, std::ios::binary | std::ios::in);
-                    auto obj = loader::unself::load(stream);
+                    auto obj = loader::unself::load_self(stream);
 
                     auto out = output_file("eboot.elf");
                     svl::fstream out_file(out, std::ios::binary | std::ios::out);
@@ -107,7 +107,23 @@ namespace volts
                         spdlog::error("failed to load pup file");
                         std::exit(1);
                     }
+
+                    auto file = obj->get_file(0x300);
+                    svl::iostream* f = new svl::memstream(file);
+                    auto tar_file = loader::tar::load(std::shared_ptr<svl::iostream>(f));
+                    for(auto& [key, offset] : tar_file.offsets)
+                    {
+                        if(key.rfind("dev_flash_", 0) == 0)
+                        {
+                            spdlog::info("{}: {}", offset, key);
+                        }
+                    }
                 }
+                else
+                {
+                    spdlog::error("no pup file found at {}", path);
+                }
+                
             }
 
             if(opts.count("sfo"))
