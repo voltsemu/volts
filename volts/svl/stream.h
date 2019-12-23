@@ -11,7 +11,6 @@ namespace svl
     struct iostream
     {
         iostream() {}
-        iostream(iostream&) = delete;
         virtual void seek(std::size_t len) = 0;
         virtual std::size_t tell() const = 0;
         virtual std::size_t size() const = 0;
@@ -25,6 +24,8 @@ namespace svl
     {
         memstream();
         memstream(const std::vector<svl::byte>& o);
+
+        memstream(const memstream&) = default;
 
         virtual void seek(std::size_t len) override;
         virtual std::size_t tell() const override;

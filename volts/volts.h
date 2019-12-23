@@ -116,6 +116,9 @@ namespace volts
                         if(key.rfind("dev_flash_", 0) == 0)
                         {
                             spdlog::info("{}: {}", offset, key);
+                            auto update = tar_file.get_file(key);
+                            auto update_dec = unself::load_sce(update);
+                            spdlog::info("num: {}", update_dec.size());
                         }
                     }
                 }

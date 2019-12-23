@@ -26,16 +26,20 @@ logging = subproject('spdlog',
 
 json = subproject('rapidjson')
 
-zlib = subproject('zlib',
-    default_options : [
-        'default_library=static'
-    ]
-)
+zlib = dependency('zlib', required : false)
+
+if not zlib.found()
+    zlib = subproject('zlib',
+        default_options : [
+            'default_library=static'
+        ]
+    ).get_variable('zlib_dep')
+endif
 
 deps = [ 
     logging.get_variable('spdlog_dep'), 
     json.get_variable('rapidjson_dep'),
-    zlib.get_variable('zlib_dep')
+    zlib
 ]
 
 incs = [ include_directories('volts') ]

@@ -47,6 +47,21 @@ namespace volts::loader::tar
         return ret;
     }
 
+    svl::memstream object::get_file(std::string name)
+    {
+        if(offsets.find(name) == offsets.end())
+            return {};
+        
+        auto offset = offsets[name];
+        file->seek(offset);
+        auto head = svl::read<tar::header>(*file);
+        if(strcmp(head.name, name.c_str()) == 0)
+        {
+            return svl::read_n(*file, octal_to_decimal(atoi(head.size)));
+        }
+        return {};
+    }
+
     // ustar\20
     constexpr svl::byte ustar_magic[] = { 0x75, 0x73, 0x74, 0x61, 0x72, 0x20 };
 

@@ -16,6 +16,8 @@ namespace volts::loader::tar
             : file(s)
         {}
 
+        svl::memstream get_file(std::string name);
+
     private:
         std::shared_ptr<svl::iostream> file;
     };
