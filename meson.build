@@ -2,7 +2,8 @@ project('volts', ['cpp', 'c'],
     default_options : [
         'cpp_std=c++17',
         'cpp_eh=none',
-        'cpp_rtti=false'
+        'cpp_rtti=false',
+        'default_library=static'
     ],
     version : '0.2.0',
     license : 'Apache'
@@ -29,11 +30,7 @@ json = subproject('rapidjson')
 zlib = dependency('zlib', required : false)
 
 if not zlib.found()
-    zlib = subproject('zlib',
-        default_options : [
-            'default_library=static'
-        ]
-    ).get_variable('zlib_dep')
+    zlib = subproject('zlib').get_variable('zlib_dep')
 endif
 
 deps = [ 

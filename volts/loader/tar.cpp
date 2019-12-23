@@ -1,5 +1,7 @@
 #include "tar.h"
 
+#include <spdlog/spdlog.h>
+
 #include <cstdlib>
 #include <cmath>
 
@@ -50,11 +52,13 @@ namespace volts::loader::tar
     svl::memstream object::get_file(std::string name)
     {
         if(offsets.find(name) == offsets.end())
+        {
             return {};
+        }
         
         auto offset = offsets[name];
-        file->seek(offset);
-        auto head = svl::read<tar::header>(*file);
+        file->seek(offset - sizeof(header));
+        auto head = svl::read<header>(*file);
         if(strcmp(head.name, name.c_str()) == 0)
         {
             return svl::read_n(*file, octal_to_decimal(atoi(head.size)));
