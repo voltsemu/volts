@@ -74,10 +74,7 @@ namespace volts
 
                     auto e = svl::memstream(obj);
 
-                    auto entry = svl::read<loader::elf::header<svl::u64>>(e);
-                    e.seek(entry.entry);
-
-                    
+                    auto exec = loader::elf::load<loader::elf::ppu_exec>(e);
                 }
             }
 

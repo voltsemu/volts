@@ -1,25 +1,26 @@
 #pragma once
 
 #include "platform.h"
+#include "types.h"
 
 #include <vector>
 #include <cstdint>
 
 namespace svl::convert
 {
-    constexpr std::uint16_t to_u16(const char* str)
+    constexpr u16 to_u16(const char* str)
     {
-        return *(std::uint16_t*)str;
+        return *(u16*)str;
     }
 
-    constexpr std::uint32_t to_u32(const char* str)
+    constexpr u32 to_u32(const char* str)
     {
-        return *(std::uint32_t*)str;
+        return *(u32*)str;
     }
 
-    constexpr std::uint64_t to_u64(const char* str)
+    constexpr u64 to_u64(const char* str)
     {
-        return *(std::uint64_t*)str;
+        return *(u64*)str;
     }
 
     template<typename T>

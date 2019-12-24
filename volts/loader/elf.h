@@ -1,11 +1,15 @@
 #pragma once
 
+#include <optional>
+
+#include "svl/stream.h"
 #include "svl/endian.h"
 #include "svl/convert.h"
 #include "svl/types.h"
 
 namespace volts::loader::elf
 {
+    namespace cvt = svl::convert;
     enum class type : svl::u16
     {
         none = 0,
@@ -117,4 +121,38 @@ namespace volts::loader::elf
         svl::endian::big<T> align;
         svl::endian::big<T> entry_size;
     };
+
+    template<typename T>
+    struct object
+    {
+        using width = T;
+        header<T> head;
+        std::vector<program_header<T>> progs = {};
+        std::vector<section_header<T>> sects = {};
+    };
+
+    template<typename T>
+    std::optional<T> load(svl::iostream& stream)
+    {
+        T ret;
+
+        ret.head = svl::read<decltype(ret.head)>(stream);
+        if(ret.head.magic != cvt::to_u32("ELF\177"))
+        {
+            spdlog::error("bad elf magic");
+            return {};
+        }
+
+        stream.seek(ret.head.prog_offset);
+        ret.progs = svl::read_n<program_header<T::width>>(stream, ret.head.prog_count);
+
+        stream.seek(ret.head.sect_offset);
+        ret.sects = svl::read_n<section_header<T::width>>(stream, ret.head.sect_count);
+
+        return ret;
+    }
+
+    using ppu_exec = object<svl::u64>;
+    using ppu_prx = object<svl::u64>;
+    using spu_exec = object<svl::u32>;
 }
