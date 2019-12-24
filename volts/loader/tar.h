@@ -18,6 +18,8 @@ namespace volts::loader::tar
 
         svl::memstream get_file(std::string name);
 
+        void extract(const std::filesystem::path& to);
+
     private:
         std::shared_ptr<svl::iostream> file;
     };

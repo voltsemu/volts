@@ -1,6 +1,7 @@
 #include "tar.h"
 
 #include <spdlog/spdlog.h>
+#include <algorithm>
 
 #include <cstdlib>
 #include <cmath>
@@ -64,6 +65,31 @@ namespace volts::loader::tar
             return svl::read_n(*file, octal_to_decimal(atoi(head.size)));
         }
         return {};
+    }
+
+    void object::extract(const std::filesystem::path& to)
+    {
+        for(auto& [name, offset] : offsets)
+        {
+            file->seek(offset - sizeof(header));
+            const auto head = svl::read<header>(*file);
+
+            switch(head.file_type)
+            {
+                case '0':
+                {
+                    svl::fstream out(name, std::ios::binary);
+                    svl::write_n(out, svl::read_n(*file, octal_to_decimal(atoi(head.size))));
+                    break;
+                }
+                case '5':
+                    std::filesystem::create_directory(name);
+                    break;
+                default:
+                    spdlog::error("invalid tar section");
+                    break;
+            }
+        }
     }
 
     // ustar\20

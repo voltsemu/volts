@@ -164,9 +164,9 @@ namespace volts::loader::unself
 
     static_assert(sizeof(app_info) == 32);
 
-    struct self_decryptor
+    struct self_decrypter
     {
-        self_decryptor(svl::iostream& file)
+        self_decrypter(svl::iostream& file)
             : stream(file)
         {}
 
@@ -388,7 +388,7 @@ namespace volts::loader::unself
             return out.take_vector();
         }
 
-        ~self_decryptor()
+        ~self_decrypter()
         {
             delete[] headers;
         }
@@ -488,7 +488,7 @@ namespace volts::loader::unself
 
     std::vector<svl::byte> load_self(svl::iostream& file, std::vector<byte> key)
     {
-        self_decryptor dec(file);
+        self_decrypter dec(file);
 
         if(!dec.load_headers())
         {
@@ -505,11 +505,11 @@ namespace volts::loader::unself
         return dec.elf();
     }
 
-    struct sce_decryptor 
+    struct sce_decrypter 
     {
         svl::iostream& stream;
         
-        sce_decryptor(svl::iostream& s)
+        sce_decrypter(svl::iostream& s)
             : stream(s)
         {}
 
@@ -703,7 +703,7 @@ namespace volts::loader::unself
             return out;
         }
         
-        ~sce_decryptor()
+        ~sce_decrypter()
         {
             delete[] data_keys;
             delete[] data_buf;
@@ -712,7 +712,7 @@ namespace volts::loader::unself
 
     std::vector<svl::memstream> load_sce(svl::iostream& file)
     {
-        sce_decryptor dec(file);
+        sce_decrypter dec(file);
         if(!dec.load_headers())
         {
             return {};

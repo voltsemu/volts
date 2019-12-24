@@ -115,10 +115,15 @@ namespace volts
                     {
                         if(key.rfind("dev_flash_", 0) == 0)
                         {
-                            spdlog::info("{}: {}", offset, key);
                             auto update = tar_file.get_file(key);
                             auto update_dec = unself::load_sce(update);
-                            spdlog::info("num: {}", update_dec.size());
+
+                            update_dec[2].seek(0);
+
+                            std::shared_ptr<svl::memstream> shared_dec(new svl::memstream(update_dec[2]));
+                            auto t = loader::tar::load(shared_dec);
+
+                            t.extract(std::filesystem::current_path());
                         }
                     }
                 }
@@ -126,7 +131,6 @@ namespace volts
                 {
                     spdlog::error("no pup file found at {}", path);
                 }
-                
             }
 
             if(opts.count("sfo"))
