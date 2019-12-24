@@ -6,9 +6,4 @@ namespace volts::ppu
     {
 
     }
-
-    void init()
-    {
-        
-    }
 }

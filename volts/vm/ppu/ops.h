@@ -145,7 +145,7 @@ namespace volts::ppu
         }
     }
 
-    void init()
+    void init_table()
     {
         std::fill(std::begin(ops), std::end(ops), stub);
 
