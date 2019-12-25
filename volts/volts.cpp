@@ -10,7 +10,6 @@ using namespace volts;
 
 int main(int argc, char** argv)
 {
-
 #if SYS_WINDOWS
     // UTF-8 console output for windows
     SetConsoleOutputCP(CP_UTF8);

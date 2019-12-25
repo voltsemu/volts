@@ -78,12 +78,12 @@ namespace volts::loader::tar
             {
                 case '0':
                 {
-                    svl::fstream out(name, std::ios::binary);
+                    svl::fstream out(to/name, std::ios::binary);
                     svl::write_n(out, svl::read_n(*file, octal_to_decimal(atoi(head.size))));
                     break;
                 }
                 case '5':
-                    std::filesystem::create_directory(name);
+                    std::filesystem::create_directories(to/name);
                     break;
                 default:
                     spdlog::error("invalid tar section");

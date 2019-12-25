@@ -3,6 +3,8 @@
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/basic_file_sink.h>
 
+#include "vfs/vfs.h"
+
 #include "loader/sfo.h"
 #include "loader/unself.h"
 #include "loader/elf.h"
@@ -51,6 +53,14 @@ namespace volts
                 output_path = path;
             }
 
+            if(opts.count("vfs"))
+            {
+                auto path = opts["vfs"].as<std::string>();
+                std::filesystem::create_directories(path);
+                vfs::set_root(path);
+                spdlog::info("set vfs directory to {}", path);
+            }
+
             if(opts.count("help"))
             {
                 spdlog::info(options.help());
@@ -86,7 +96,7 @@ namespace volts
                     auto obj = loader::unself::load_self(stream);
 
                     auto out = output_file("eboot.elf");
-                    svl::fstream out_file(out, std::ios::binary | std::ios::out);
+                    svl::fstream out_file(vfs::get_path(out), std::ios::binary | std::ios::out);
                     svl::write_n(out_file, obj);
                     spdlog::info("decrypted self and wrote file to {}", fs::absolute(out).string());
                 }
@@ -120,7 +130,7 @@ namespace volts
                             std::shared_ptr<svl::memstream> shared_dec(new svl::memstream(update_dec[2]));
                             auto t = loader::tar::load(shared_dec);
 
-                            t.extract(std::filesystem::current_path());
+                            t.extract(vfs::get_root());
                         }
                     }
                 }
