@@ -4,5 +4,5 @@
 
 namespace volts::ppu
 {
-    void load_module(loader::elf::ppu_exec& mod);
+    void load_module(loader::elf::ppu_prx& mod);
 }

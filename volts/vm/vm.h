@@ -4,17 +4,45 @@
 
 namespace volts::vm
 {
-    using addr = svl::u32;
+    // a defined section of ps3 memory
+    struct section
+    {
+        section(svl::u8* base, svl::u32 len)
+            : ptr(base)
+            , size(len)
+        {}
 
-    svl::u8 read8(addr at);
-    svl::u16 read16(addr at);
-    svl::u32 read32(addr at);
-    svl::u64 read64(addr at);
+    private:
+        svl::u8* ptr;
+        svl::u32 size;
+    };
 
-    void write8(addr at, svl::u8 val);
-    void write16(addr at, svl::u16 val);
-    void write32(addr at, svl::u32 val);
-    void write64(addr at, svl::u64 val);
+    namespace mem
+    {
+        // contains all sections
+        extern section all;
+
+        // main sections
+        extern section main;
+
+        // 64KB user pages
+        extern section user64k;
+
+        // 1MB user pages
+        extern section user1m;
+
+        // rsx context memory
+        extern section rsx;
+
+        // vram
+        extern section video;
+
+        // ps3 stack
+        extern section stack;
+
+        // spu memory
+        extern section spu;
+    }
 
     void init();
 }

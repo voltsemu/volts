@@ -12,6 +12,7 @@
 #include "loader/tar.h"
 
 #include "vm/ppu/thread.h"
+#include "vm/ppu/module.h"
 
 #include "svl/stream.h"
 
@@ -106,6 +107,7 @@ namespace volts
             {
                 if(auto path = opts["pup"].as<std::string>(); fs::exists(path))
                 {
+                    spdlog::info("begining pup decryption");
                     auto stream = std::make_shared<svl::fstream>(path, std::ios::binary | std::ios::in);
                     auto obj = loader::pup::load(stream);
 
@@ -133,11 +135,25 @@ namespace volts
                             t.extract(vfs::get_root());
                         }
                     }
+
+                    spdlog::info("pup decryption finished");
                 }
                 else
                 {
                     spdlog::error("no pup file found at {}", path);
                 }
+            }
+
+            if(opts.count("load"))
+            {
+                svl::fstream firmware(vfs::get_root()/"dev_flash/sys/external/liblv2.sprx");
+                auto dec = loader::unself::load_self(firmware);
+
+                std::shared_ptr<svl::memstream> dec_mem(new svl::memstream(dec));
+
+                auto elf = loader::elf::load<loader::elf::ppu_prx>(dec_mem);
+
+                auto mod = ppu::load_module(elf);
             }
 
             if(opts.count("sfo"))
@@ -215,6 +231,7 @@ namespace volts
                 ("help", "print help and exit")
                 ("output", "set logging output file", opts::value<std::string>())
                 ("pup", "parse a .pup file", opts::value<std::string>())
+                ("load", "load using firmware in the vfs")
                 ("sfo", "parse an .sfo file", opts::value<std::string>())
                 ("unself", "decrypt a self file", opts::value<std::string>())
                 ("boot", "boot a self", opts::value<std::string>())
