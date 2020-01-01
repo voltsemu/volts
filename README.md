@@ -20,8 +20,7 @@ Planned features
 
 ## Shortterm features
 
-* Decrypt SELF files and generate ELFs
-* Working crossplatform ImGui
+* ~~Decrypt SELF files and generate ELFs~~
 * Working CELL interpreter
 * Minimal RSX implementation
 
@@ -86,8 +85,8 @@ If you successfully build & boot the emulator on your system please provide a pu
 * Install visual studio C++ compiler (C++17 support or later)
 
 ```sh
-meson Build
-cd Build
+meson build
+cd build
 ninja
 volt.exe
 ```
@@ -100,9 +99,9 @@ you will also need to install xcode 11.1
 
 ```sh
 git submodule update --init
-meson Build
-ninja -C Build
-./Build/volt
+meson build
+ninja -C build
+./build/volt
 ```
 
 #### Linux
@@ -117,8 +116,8 @@ Assuming an entirley fresh install of Ubuntu
 sudo apt install git python3 python3-pip ninja-build
 pip3 install --user meson
 
-~/.local/bin/meson Build
-ninja -C Build
+~/.local/bin/meson build
+ninja -C build
 ./Build/volt
 ```
 
@@ -132,7 +131,7 @@ apt install git python3-pip llvm ninja-build
 pip3 install meson
 
 cd Volts
-meson Build
-ninja -C Build
-./Build/volt
+meson build
+ninja -C build
+./build/volt
 ```
