@@ -44,5 +44,12 @@ namespace volts::vm
         extern section spu;
     }
 
+    using addr = svl::u32;
+
+    svl::u8& read8(addr);
+    svl::u16& read16(addr);
+    svl::u32& read32(addr);
+    svl::u64& read64(addr);
+
     void init();
 }

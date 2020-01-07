@@ -11,7 +11,6 @@
 #include <spdlog/spdlog.h>
 
 #include <numeric>
-#include <execution>
 
 #include "svl/endian.h"
 #include "svl/convert.h"

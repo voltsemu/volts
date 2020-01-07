@@ -93,14 +93,14 @@ namespace volts::ppu
     void std(thread& ppu, form op)
     {
         vm::addr addr = ppu.gpr[op.ra] + (op.simm16 & ~3);
-        vm::write64(addr, ppu.gpr[op.rs]);
+        vm::read64(addr) = ppu.gpr[op.rs];
         ppu.gpr[op.ra] = addr;
     }
 
     void stdu(thread& ppu, form op)
     {
         vm::addr addr = ppu.gpr[op.ra] + (op.simm16 & ~3);
-        vm::write64(addr, ppu.gpr[op.rs]);
+        vm::read64(addr) = ppu.gpr[op.rs];
         ppu.gpr[op.ra] = addr;
     }
     
