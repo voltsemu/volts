@@ -7,6 +7,11 @@ namespace volts::vm
     // a defined section of ps3 memory
     struct section
     {
+        section()
+            : ptr(nullptr)
+            , size(0)
+        {}
+        
         section(svl::u8* base, svl::u32 len)
             : ptr(base)
             , size(len)

@@ -149,11 +149,11 @@ namespace volts
                 svl::fstream firmware(vfs::get_root()/"dev_flash/sys/external/liblv2.sprx");
                 auto dec = loader::unself::load_self(firmware);
 
-                std::shared_ptr<svl::memstream> dec_mem(new svl::memstream(dec));
+                auto decstream = svl::memstream(dec);
 
-                auto elf = loader::elf::load<loader::elf::ppu_prx>(dec_mem);
+                auto elf = loader::elf::load<loader::elf::ppu_prx>(decstream);
 
-                auto mod = ppu::load_module(elf);
+                ppu::load_module(elf.value());
             }
 
             if(opts.count("sfo"))
