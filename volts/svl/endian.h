@@ -25,20 +25,38 @@ namespace svl::endian
         return byte_swap(reinterpret_cast<typename std::make_unsigned<T>::type>(val));
     }
 
-    template<typename T>
-    struct big
+    enum class endian_order
     {
-        operator T() const 
+#if SYS_WINDOWS
+        big = REG_DWORD_BIG_ENDIAN,
+        little = REG_DWORD_LITTLE_ENDIAN,
+        native = REG_WORD,
+#else
+        big = __ORDER_BIG_ENDIAN__,
+        little = __ORDER_LITTLE_ENDIAN__,
+        native = __BYTE_ORDER__,
+#endif
+    };
+
+    template<typename T, endian_order order>
+    struct endian_value
+    {
+        constexpr operator T() const 
         { 
             return get(); 
         }
 
-        T get() const
+        constexpr T get() const
         {
-            // we only support little endian platforms so this will do
-            return byte_swap(val);
+            return (order == endian_order::native) ? val : byte_swap(val);
         }
 
         T val;
     };
+
+    template<typename T>
+    using big = endian_value<T, endian_order::big>;
+
+    template<typename T>
+    using little = endian_value<T, endian_order::little>;
 } 

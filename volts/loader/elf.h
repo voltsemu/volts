@@ -126,10 +126,13 @@ namespace volts::loader::elf
     template<typename T>
     struct object
     {
-        using width = T;
-        header<T> head;
-        std::vector<program_header<T>> progs = {};
-        std::vector<section_header<T>> sects = {};
+        using program_t = program_header<T>;
+        using section_t = section_header<T>;
+        using width_t = T;
+
+        header<width_t> head;
+        std::vector<program_t> progs = {};
+        std::vector<section_t> sects = {};
     };
 
     template<typename T>
@@ -145,10 +148,10 @@ namespace volts::loader::elf
         }
 
         stream.seek(ret.head.prog_offset);
-        ret.progs = svl::read_n<program_header<typename T::width>>(stream, ret.head.prog_count);
+        ret.progs = svl::read_n<typename T::program_t>(stream, ret.head.prog_count);
 
         stream.seek(ret.head.sect_offset);
-        ret.sects = svl::read_n<section_header<typename T::width>>(stream, ret.head.sect_count);
+        ret.sects = svl::read_n<typename T::section_t>(stream, ret.head.sect_count);
 
         return ret;
     }

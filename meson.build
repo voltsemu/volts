@@ -3,7 +3,9 @@ project('volts', ['cpp', 'c'],
         'cpp_std=c++17',
         'cpp_eh=none',
         'cpp_rtti=false',
-        'default_library=static'
+        'default_library=static',
+        'warning_level=3',
+        'werror=true'
     ],
     version : '0.2.0',
     license : 'Apache'
@@ -33,10 +35,13 @@ if not zlib.found()
     zlib = subproject('zlib').get_variable('zlib_dep')
 endif
 
+hash = subproject('xxhash').get_variable('xxhash_dep')
+
 deps = [ 
     logging.get_variable('spdlog_dep'), 
     json.get_variable('rapidjson_dep'),
-    zlib
+    zlib,
+    hash
 ]
 
 incs = [ include_directories('volts') ]

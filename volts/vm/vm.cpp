@@ -6,18 +6,6 @@ namespace volts::vm
 {
     u8* base = nullptr; 
 
-    namespace mem
-    {
-        section all;
-        section main;
-        section user64k;
-        section user1m;
-        section rsx;
-        section video;
-        section stack;
-        section spu;
-    }    
-
     svl::u8& read8(addr at)
     {
         return (base + at)[0];
@@ -44,15 +32,5 @@ namespace volts::vm
 
         // todo: make this configurable
         base = new byte[1024 * 1024 * 1024 * 4]();
-
-        mem::all = section(base, 1024 * 1024 * 1024 * 4);
-        mem::main = section(base, 256 * 1024 * 1024);
-        mem::user64k = section(base, 256 * 1024 * 1024);
-        
-        // user1m: todo
-        // rsx: todo
-
-        mem::video = section(base + (256 * 1024 * 1024), 256 * 1024 * 1024);
-        //mem::stack = section();
     }
 }
