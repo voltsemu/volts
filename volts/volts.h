@@ -146,14 +146,19 @@ namespace volts
 
             if(opts.count("load"))
             {
-                svl::fstream firmware(vfs::get_root()/"dev_flash/sys/external/liblv2.sprx");
+                svl::fstream firmware(vfs::get_path("dev_flash/sys/external/liblv2.sprx"));
+
+                spdlog::info("valid: {}", firmware.valid());
                 auto dec = loader::unself::load_self(firmware);
 
                 auto decstream = svl::memstream(dec);
 
-                auto elf = loader::elf::load<loader::elf::ppu_prx>(decstream);
+                svl::fstream out("liblv2.elf", std::ios::binary | std::ios::out);
+                svl::write_n(out, dec);
 
-                ppu::load_module(elf.value());
+                //auto elf = loader::elf::load<loader::elf::ppu_prx>(decstream);
+                //spdlog::info("loaded {}", elf.has_value());
+                //ppu::load_prx(elf.value());
             }
 
             if(opts.count("sfo"))

@@ -487,6 +487,37 @@ namespace volts::loader::unself
 
     std::vector<svl::byte> load_self(svl::iostream& file, std::vector<byte> key)
     {
+        // check for debug self
+        file.seek(8);
+        if(auto version = svl::read<endian::little<u16>>(file); version == 0x80 || version == 0xC0)
+        {
+            spdlog::info("debug self");
+        }
+        else
+        {  
+            spdlog::info("release self");
+        }
+        file.seek(0);
+
+        // check for 32/64 bit elf
+        auto scehead = svl::read<sce::header>(file);
+        auto selfhead = svl::read<self::header>(file);
+
+        file.seek(selfhead.elf_offset);
+
+        auto cls = svl::read_n<u8>(file, 8);
+
+        if(cls[4] == 1)
+        {
+            spdlog::info("32 bit");
+        }
+        else
+        {
+            spdlog::info("64 bit");
+        }
+
+        file.seek(0);
+
         self_decrypter dec(file);
 
         if(!dec.load_headers())

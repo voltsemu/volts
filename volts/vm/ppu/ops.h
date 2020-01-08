@@ -27,14 +27,15 @@ namespace volts::ppu
         i64 s = (i64)op.simm16;
         
         if(
-            ((a < s) && (op.to & 0b1)) ||
-            ((a > s) && (op.to & 0b01)) ||
-            ((a == s) && (op.to & 0b001)) ||
-            ((a < s) && (op.to & 0b0001)) ||
-            ((a > s) && (op.to & 0b00001))
+            ((a < s) && (op.bo & 0x10)) ||
+            ((a > s) && (op.bo & 0x8)) ||
+            ((a == s) && (op.bo & 0x4)) ||
+            ((a < s) && (op.bo & 0x2)) ||
+            ((a > s) && (op.bo & 0x1))
         )
         {
             spdlog::error("trap");
+            // todo: pause
         }
     }
 
@@ -42,6 +43,18 @@ namespace volts::ppu
     {
         u32 a = ppu.gpr[op.ra];
         i64 s = (i64)op.simm16;
+
+        if(
+            ((a < s) && (op.bo & 0x10)) ||
+            ((a > s) && (op.bo & 0x8)) ||
+            ((a == s) && (op.bo & 0x4)) ||
+            ((a < s) && (op.bo & 0x2)) ||
+            ((a > s) && (op.bo & 0x1))
+        )
+        {
+            spdlog::error("trap");
+            // todo: pause
+        }
     }
 
     void ori(thread& ppu, form op)
@@ -64,19 +77,6 @@ namespace volts::ppu
         ppu.gpr[op.ra] = ppu.gpr[op.rs] ^ ((u64)op.uimm16 << 16);
     }
 
-    void lbzx(thread& ppu, form op)
-    {
-        vm::addr addr = op.ra ? ppu.gpr[op.ra] + ppu.gpr[op.rb] : ppu.gpr[op.rb];
-        ppu.gpr[op.rd] = vm::read8(addr);
-    }
-
-    void lbzux(thread& ppu, form op)
-    {
-        vm::addr addr = ppu.gpr[op.ra] + ppu.gpr[op.rb];
-        ppu.gpr[op.rd] = vm::read8(addr);
-        ppu.gpr[op.ra] = addr;
-    }
-
     void lbz(thread& ppu, form op)
     {
         vm::addr addr = op.ra ? ppu.gpr[op.ra] + op.simm16 : op.simm16;
@@ -86,6 +86,19 @@ namespace volts::ppu
     void lbzu(thread& ppu, form op)
     {
         vm::addr addr = ppu.gpr[op.ra] + op.simm16;
+        ppu.gpr[op.rd] = vm::read8(addr);
+        ppu.gpr[op.ra] = addr;
+    }
+
+    void lbzx(thread& ppu, form op)
+    {
+        vm::addr addr = op.ra ? ppu.gpr[op.ra] + ppu.gpr[op.rb] : ppu.gpr[op.rb];
+        ppu.gpr[op.rd] = vm::read8(addr);
+    }
+
+    void lbzux(thread& ppu, form op)
+    {
+        vm::addr addr = ppu.gpr[op.ra] + ppu.gpr[op.rb];
         ppu.gpr[op.rd] = vm::read8(addr);
         ppu.gpr[op.ra] = addr;
     }
@@ -147,11 +160,30 @@ namespace volts::ppu
 
     void init_table()
     {
+        // fill the table with stub ops to stop random crashes
         std::fill(std::begin(ops), std::end(ops), stub);
 
         fill(0, 6, -1, {
             { 0x02, tdi },
-            { 0x03, twi }
+            { 0x03, twi },
+
+            { 0x18, ori },
+            { 0x19, oris },
+            { 0x1A, xori },
+            { 0x1B, xoris },
+
+            { 0x22, lbz },
+            { 0x23, lbzu }
+        });
+
+        fill(0x3E, 2, 0, {
+            { 0x0, std },
+            { 0x1, stdu }
+        });
+
+        fill(0x1F, 10, 1, {
+            { 0x57, lbzx },
+            { 0x77, lbzux }
         });
     }
 }

@@ -4,13 +4,21 @@
 
 #include <xxhash.h>
 
+#include "vfs/vfs.h"
+
 namespace volts::ppu
 {
-    void load_module(loader::elf::ppu_prx& mod)
+    // TODO: all this
+    void load_prx(loader::elf::ppu_prx& mod)
     {
+        spdlog::info("hasher");
         std::unique_ptr<XXH64_state_t, decltype(&XXH64_freeState)> hasher(XXH64_createState(), XXH64_freeState);
 
+        spdlog::info("aaaa");
+
         XXH64_reset(hasher.get(), 0);
+
+        spdlog::info("honk");
 
         for(auto& prog : mod.progs)
         {
@@ -23,5 +31,6 @@ namespace volts::ppu
         }
 
         auto hash = XXH64_digest(hasher.get());
+        spdlog::info("prx hash: {}", hash);
     }
 }

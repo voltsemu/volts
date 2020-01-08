@@ -11,6 +11,7 @@ namespace svl
     struct iostream
     {
         iostream() {}
+        virtual bool valid() const = 0;
         virtual void seek(std::size_t len) = 0;
         virtual std::size_t tell() const = 0;
         virtual std::size_t size() const = 0;
@@ -24,9 +25,9 @@ namespace svl
     {
         memstream();
         memstream(const std::vector<svl::byte>& o);
-
         memstream(const memstream&) = default;
 
+        virtual bool valid() const override { return true; }
         virtual void seek(std::size_t len) override;
         virtual std::size_t tell() const override;
         virtual std::size_t size() const override;
@@ -45,19 +46,15 @@ namespace svl
     {
         // support binary, text, in, out
         fstream(const std::filesystem::path& path, std::ios_base::openmode mode = std::ios::in);
-
         fstream(fstream&& o);
 
         virtual ~fstream() override;
 
+        virtual bool valid() const override { return !!file; }
         virtual void seek(std::size_t len) override;
-
         virtual std::size_t tell() const override;
-
         virtual std::size_t size() const override;
-
         virtual void read(void* ptr, std::size_t len) override;
-
         virtual void write(void* ptr, std::size_t len) override;
     private:
         std::FILE* file;
