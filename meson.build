@@ -3,9 +3,7 @@ project('volts', ['cpp', 'c'],
         'cpp_std=c++17',
         'cpp_eh=none',
         'cpp_rtti=false',
-        'default_library=static',
-        'warning_level=3',
-        'werror=true'
+        'default_library=static'
     ],
     version : '0.2.0',
     license : 'Apache'

@@ -10,6 +10,9 @@
 #   include <stdlib.h>
 #endif
 
+#if SYS_WINDOWS
+#   include <Windows.h>
+#endif
 
 namespace svl::endian
 {
@@ -30,7 +33,7 @@ namespace svl::endian
 #if SYS_WINDOWS
         big = REG_DWORD_BIG_ENDIAN,
         little = REG_DWORD_LITTLE_ENDIAN,
-        native = REG_WORD,
+        native = REG_DWORD,
 #else
         big = __ORDER_BIG_ENDIAN__,
         little = __ORDER_LITTLE_ENDIAN__,
