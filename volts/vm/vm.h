@@ -11,5 +11,7 @@ namespace volts::vm
     svl::u32& read32(addr);
     svl::u64& read64(addr);
 
+    void* real(addr of);
+
     void init();
 }

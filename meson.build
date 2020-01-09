@@ -1,24 +1,33 @@
 project('volts', ['cpp', 'c'],
     default_options : [
         'cpp_std=c++17',
-        'cpp_eh=none',
         'cpp_rtti=false',
+        'cpp_eh=none',
         'default_library=static'
     ],
     version : '0.2.0',
     license : 'Apache'
 )
 
+#TODO: using cpp_eh=none makes meson do funky stuff on windows, feels like a bug, should report
+if meson.get_compiler('cpp').get_id() == 'msvc'
+    add_global_arguments('/D_HAS_EXCEPTIONS=0', language : 'cpp')
+endif
+
 sources = []
 
 log_opts = [
-    'enable_examples=false',
     'enable_tests=false',
-    'no_exceptions=true'
+    'enable_examples=false',
+    'no_exceptions=true',
+    'no_thread_id=true',
+    'no_tls=true'
 ]
 
 if host_machine.system() == 'windows'
-    log_opts += 'wchar_support=true'
+    log_opts += [
+        'wchar_support=true'
+    ]
 endif
 
 logging = subproject('spdlog', 
