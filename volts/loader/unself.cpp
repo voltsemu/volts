@@ -190,6 +190,8 @@ namespace volts::loader::unself
                 return false;
             }
 
+            spdlog::info("elf_header(entry={})", elf_header.entry);
+
             prog_headers = read_n<elf::program_header<u64>>(stream, elf_header.prog_count);
 
             stream.seek(self_header.sect_offset.get());
@@ -497,10 +499,9 @@ namespace volts::loader::unself
         {  
             spdlog::info("release self");
         }
-        file.seek(0);
 
         // check for 32/64 bit elf
-        auto scehead = svl::read<sce::header>(file);
+        file.seek(sizeof(sce::header));
         auto selfhead = svl::read<self::header>(file);
 
         file.seek(selfhead.elf_offset);
