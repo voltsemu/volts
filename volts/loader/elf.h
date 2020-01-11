@@ -144,7 +144,7 @@ namespace volts::loader::elf
         if(ret.head.magic != cvt::to_u32("ELF\177"))
         {
             spdlog::error("bad elf magic");
-            return {};
+            return std::nullopt;
         }
 
         stream.seek(ret.head.prog_offset);

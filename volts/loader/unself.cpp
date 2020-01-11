@@ -16,6 +16,8 @@
 #include "svl/convert.h"
 #include "svl/stream.h"
 
+#include "debugapi.h"
+
 using svl::endian::big;
 
 using namespace svl;
@@ -190,8 +192,6 @@ namespace volts::loader::unself
                 return false;
             }
 
-            spdlog::info("elf_header(entry={})", elf_header.entry);
-
             prog_headers = read_n<elf::program_header<u64>>(stream, elf_header.prog_count);
 
             stream.seek(self_header.sect_offset.get());
@@ -360,20 +360,29 @@ namespace volts::loader::unself
 
                 if(sect.compressed == 2)
                 {
+                    spdlog::info("compressed section in self");
+
                     auto size = prog_headers[sect.index].file_size;
 
-                    byte* dbuf = (byte*)alloca(size);
-                    byte* zbuf = (byte*)alloca(data_len);
+                    byte* dbuf = new byte[size]();
+                    byte* zbuf = new byte[data_len];
                     memcpy(zbuf, data_buffer, data_len);
 
                     uLongf dbuf_len = static_cast<uLongf>(size);
 
-                    uncompress(dbuf, &dbuf_len, zbuf + buffer_offset, data_len);
+                    int res = uncompress(dbuf, &dbuf_len, zbuf + buffer_offset, data_len);
+
+                    if(res != Z_OK)
+                    {
+                        spdlog::warn("zlib broke {}", res);
+                    }
 
                     out.write(dbuf, size);
                 }
                 else
                 {
+                    spdlog::info("uncompressed section");
+
                     out.write(data_buffer + buffer_offset, sect.size);
                 }
 

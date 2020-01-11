@@ -25,9 +25,7 @@ log_opts = [
 ]
 
 if host_machine.system() == 'windows'
-    log_opts += [
-        'wchar_support=true'
-    ]
+    log_opts += 'wchar_support=true'
 endif
 
 logging = subproject('spdlog', 
