@@ -25,7 +25,7 @@ namespace svl::endian
     template<typename T>
     T byte_swap(T val)
     {
-        return byte_swap(reinterpret_cast<typename std::make_unsigned<T>::type>(val));
+        return byte_swap(*reinterpret_cast<typename std::make_unsigned<T>::type*>(&val));
     }
 
     enum class endian_order
