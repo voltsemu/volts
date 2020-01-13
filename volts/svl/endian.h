@@ -3,6 +3,7 @@
 #include "platform.h"
 #include <cstdint>
 #include <type_traits>
+#include <spdlog/spdlog.h>
 
 #if SYS_OSX
 #   include <machine/endian.h>
@@ -63,3 +64,21 @@ namespace svl::endian
     template<typename T>
     using little = endian_value<T, endian_order::little>;
 } 
+
+template<typename T>
+struct fmt::formatter<svl::endian::big<T>> : fmt::formatter<T> 
+{
+    auto format(svl::endian::big<T> val, format_context& ctx) 
+    {
+        return fmt::formatter<T>::format(val.get(), ctx);
+    }
+};
+
+template<typename T>
+struct fmt::formatter<svl::endian::little<T>> : fmt::formatter<T> 
+{
+    auto format(svl::endian::little<T> val, format_context& ctx) 
+    {
+        return fmt::formatter<T>::format(val.get(), ctx);
+    }
+};
