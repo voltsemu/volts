@@ -135,3 +135,31 @@ meson build
 ninja -C build
 ./build/volt
 ```
+
+
+### Comparison
+
+#### Volts
+
+##### Pros
+- No warnings while building
+- Uses meson
+- Fully cross platform
+- Has command line utilities build in
+
+##### Cons
+- Cant run ps3 games
+- Is nowhere near finished
+
+#### rpcs3
+
+##### Pros
+- Can run ps3 games
+
+##### Cons
+- Uses cmake and visual studio
+- No command line interface
+- An almost uncountable amount of build warnings
+- Doesnt work on mac
+- Uses Qt
+- Inconsistent code style

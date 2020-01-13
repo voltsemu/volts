@@ -15,6 +15,7 @@ if meson.get_compiler('cpp').get_id() == 'msvc'
 endif
 
 sources = []
+test_sources = []
 
 log_opts = [
     'enable_tests=false',
@@ -25,9 +26,7 @@ log_opts = [
 ]
 
 if host_machine.system() == 'windows'
-    log_opts += [
-        'wchar_support=true'
-    ]
+    log_opts += 'wchar_support=true'
 endif
 
 logging = subproject('spdlog', 
@@ -74,6 +73,14 @@ executable('volt', sources,
     include_directories : incs,
     install : true,
     cpp_args : args,
+    dependencies : deps,
+    link_args : links
+)
+
+executable('volt_tests', sources + test_sources,
+    include_directories : incs,
+    install : false,
+    cpp_args : args + [ '-DVTESTING=1' ],
     dependencies : deps,
     link_args : links
 )
