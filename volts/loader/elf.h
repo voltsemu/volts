@@ -160,3 +160,22 @@ namespace volts::loader::elf
     using ppu_prx = object<svl::u64>;
     using spu_exec = object<svl::u32>;
 }
+
+template<typename T>
+struct fmt::formatter<volts::loader::elf::program_header<T>> : fmt::formatter<std::string> 
+{
+    auto format(const volts::loader::elf::program_header<T>& val, format_context& ctx)
+    {
+        return formatter<std::string>::format(fmt::format("program_header(typesize={},type={},flags={},offset={},vaddr={},paddr={},filesz={},memsz={},align={})",
+            sizeof(volts::loader::elf::program_header<T>),
+            val.type,
+            val.flags,
+            val.offset,
+            val.vaadres,
+            val.paddres,
+            val.file_size,
+            val.mem_size,
+            val.align
+        ), ctx);
+    }
+};

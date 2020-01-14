@@ -2,8 +2,6 @@
 
 #include "svl/platform.h"
 
-using namespace volts;
-
 #if SYS_WINDOWS
 #   include <windows.h>
 #endif
@@ -19,7 +17,7 @@ int main(int argc, char** argv)
 #endif
     
     // parse command line arguments
-    cmd::get().parse(argc, argv);
+    volts::cmd::get().parse(argc, argv);
 }
 
 #else

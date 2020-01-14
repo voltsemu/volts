@@ -5,13 +5,13 @@
 #include "svl/stream.h"
 #include "svl/convert.h"
 
-using namespace svl;
-using namespace endian;
-
-namespace cvt = svl::convert;
-
 namespace volts::loader::pup
 {
+    using namespace svl;
+    using namespace endian;
+
+    namespace cvt = svl::convert;
+
     struct header
     {
         u64 magic;

@@ -1,9 +1,9 @@
 #include "vm.h"
 
-using namespace svl;
-
 namespace volts::vm
 {
+    using namespace svl;
+
     u8* base = nullptr; 
 
     svl::u8& read8(addr at)

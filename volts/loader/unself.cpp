@@ -16,15 +16,13 @@
 #include "svl/convert.h"
 #include "svl/stream.h"
 
-#include "debugapi.h"
-
-using svl::endian::big;
-
-using namespace svl;
-namespace cvt = svl::convert;
-
 namespace volts::loader::unself
 {
+    using svl::endian::big;
+
+    using namespace svl;
+    namespace cvt = svl::convert;
+
     namespace sce
     {
         struct header
@@ -343,11 +341,11 @@ namespace volts::loader::unself
         {
             svl::memstream out;
 
-            write(out, elf_header);
+            svl::write(out, elf_header);
 
             out.seek(elf_header.prog_offset.get());
 
-            write(out, prog_headers);
+            svl::write_n(out, prog_headers);
 
             int buffer_offset = 0;
 
@@ -381,7 +379,7 @@ namespace volts::loader::unself
                 }
                 else
                 {
-                    spdlog::info("uncompressed section");
+                    spdlog::info("{}", prog_headers[sect.index].offset);
 
                     out.write(data_buffer + buffer_offset, sect.size);
                 }
@@ -392,7 +390,7 @@ namespace volts::loader::unself
             if(self_header.sect_info_offset)
             {
                 out.seek(self_header.sect_info_offset.get());
-                write_n(out, sect_headers);
+                svl::write_n(out, sect_headers); 
             }
 
             return out.take_vector();

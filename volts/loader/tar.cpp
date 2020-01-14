@@ -8,10 +8,10 @@
 
 #include "svl/stream.h"
 
-using namespace svl;
-
 namespace volts::loader::tar
 {
+    using namespace svl;
+
     struct header
     {
         char name[100];

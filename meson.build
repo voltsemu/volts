@@ -63,10 +63,8 @@ subdir('volts')
 # from trying to use either feature at all so people dont """accidentally"""
 # use these slow features for convenience sake
 if meson.get_compiler('cpp').get_id() == 'msvc'
-    args += ['/arch:AVX2', '/GF', '/wd4180'] #GF enables string pooling, we abuse this for performance reasons
+    args += ['/GF', '/wd4180'] #GF enables string pooling, we abuse this for performance reasons
     # wd4180 disables some pointless warnings that dont matter (yeah i know ignoring warnings is bad style)
-else
-    args += '-march=native'
 endif
 
 executable('volt', sources,

@@ -6,12 +6,12 @@
 
 #include <spdlog/spdlog.h>
 
-using namespace std;
-using namespace svl;
-namespace cvt = convert;
-
 namespace volts::loader::sfo
 {
+    using namespace std;
+    using namespace svl;
+    namespace cvt = convert;
+
     struct index_table_entry
     {
         u16 key_offset;

@@ -2,6 +2,7 @@
 
 #include "platform.h"
 #include "types.h"
+#include "tests.h"
 
 #include <vector>
 #include <cstdint>

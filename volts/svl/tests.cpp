@@ -4,7 +4,12 @@
 #include <vector>
 #include <atomic>
 #include <algorithm>
-#include <execution>
+
+// clang and gcc dont support this header yet
+#if CC_MSVC
+#   include <execution>
+#endif
+
 #include <spdlog/spdlog.h>
 
 namespace svl::tests
@@ -27,7 +32,10 @@ namespace svl::tests
 
         std::atomic<u64> failed_tests = 0;
         std::for_each(
+            // clang and gcc dont have parralel foreach yet
+#if CC_MSVC
             std::execution::par_unseq, 
+#endif
             get_tests().begin(), 
             get_tests().end(),
             [&failed_tests](auto&& test) {

@@ -7,10 +7,10 @@
 
 #include <spdlog/spdlog.h>
 
-using namespace svl;
-
 namespace volts::ppu
 {
+    using namespace svl;
+
     svl::u32 decode(svl::u32 op)
     {
         return (op >> 26 | op << 6) & 0x1ffff;
