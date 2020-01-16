@@ -94,7 +94,7 @@ namespace volts::loader::elf
     struct program_header<svl::u64>
     {
         svl::endian::big<svl::u32> type;
-        svl::endian::big<svl::u64> flags;
+        svl::endian::big<svl::u32> flags;
         svl::endian::big<svl::u64> offset;
 
         svl::endian::big<svl::u64> vaadres;

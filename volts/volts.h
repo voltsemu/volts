@@ -153,12 +153,14 @@ namespace volts
 
                 auto decstream = svl::memstream(dec);
 
-                svl::fstream out("liblv2.elf", std::ios::binary | std::ios::out);
-                svl::write_n(out, dec);
+                //svl::fstream out("liblv2.elf", std::ios::binary | std::ios::out);
+                //svl::write_n(out, dec);
 
-                //auto elf = loader::elf::load<loader::elf::ppu_prx>(decstream);
-                //spdlog::info("loaded {}", elf.has_value());
-                //ppu::load_prx(elf.value());
+                decstream.seek(0);
+
+                auto elf = loader::elf::load<loader::elf::ppu_prx>(decstream);
+                spdlog::info("loaded {}", elf.has_value());
+                ppu::load_prx(elf.value());
             }
 
             if(opts.count("sfo"))

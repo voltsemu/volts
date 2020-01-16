@@ -80,5 +80,6 @@ executable('volt_tests', sources + test_sources,
     install : false,
     cpp_args : args + [ '-DVTESTING=1' ],
     dependencies : deps,
-    link_args : links
+    link_args : links,
+    build_by_default : false
 )

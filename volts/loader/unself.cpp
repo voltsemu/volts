@@ -190,6 +190,8 @@ namespace volts::loader::unself
                 return false;
             }
 
+            stream.seek(self_header.prog_offset.get());
+
             prog_headers = read_n<elf::program_header<u64>>(stream, elf_header.prog_count);
 
             stream.seek(self_header.sect_offset.get());
@@ -354,6 +356,9 @@ namespace volts::loader::unself
                 if(sect.type != 2)
                     continue;
 
+                spdlog::info("sect = {} {}", sect.offset, sect.size);
+                spdlog::info("prog = {}", prog_headers[sect.index].offset);
+
                 out.seek(prog_headers[sect.index].offset);
 
                 if(sect.compressed == 2)
@@ -379,8 +384,6 @@ namespace volts::loader::unself
                 }
                 else
                 {
-                    spdlog::info("{}", prog_headers[sect.index].offset);
-
                     out.write(data_buffer + buffer_offset, sect.size);
                 }
 
