@@ -11,18 +11,14 @@ namespace volts::ppu
     // TODO: all this
     void load_prx(loader::elf::ppu_prx& mod)
     {
-        spdlog::info("hasher");
         std::unique_ptr<XXH64_state_t, decltype(&XXH64_freeState)> hasher(XXH64_createState(), XXH64_freeState);
-
-        spdlog::info("aaaa");
 
         XXH64_reset(hasher.get(), 0);
 
-        spdlog::info("honk");
-
         for(auto& prog : mod.progs)
         {
-            XXH64_update(hasher.get(), reinterpret_cast<void*>(&prog.vaadres), sizeof(decltype(prog.vaadres)));
+            XXH64_update(hasher.get(), reinterpret_cast<void*>(&prog.vaddress), sizeof(decltype(prog.vaddress)));
+            // std::memcpy(vm::base(prog.vaddress));
         }
 
         for(auto& sect : mod.sects)

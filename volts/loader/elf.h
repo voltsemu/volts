@@ -83,8 +83,8 @@ namespace volts::loader::elf
         svl::endian::big<svl::u32> type;
         svl::endian::big<svl::u32> offset;
 
-        svl::endian::big<svl::u32> vaddres;
-        svl::endian::big<svl::u32> paddres;
+        svl::endian::big<svl::u32> vaddress;
+        svl::endian::big<svl::u32> paddress;
         
         svl::endian::big<svl::u32> size;
         svl::endian::big<svl::u32> align;
@@ -97,8 +97,8 @@ namespace volts::loader::elf
         svl::endian::big<svl::u32> flags;
         svl::endian::big<svl::u64> offset;
 
-        svl::endian::big<svl::u64> vaadres;
-        svl::endian::big<svl::u64> paddres;
+        svl::endian::big<svl::u64> vaddress;
+        svl::endian::big<svl::u64> paddress;
 
         svl::endian::big<svl::u64> file_size;
         svl::endian::big<svl::u64> mem_size;
@@ -128,9 +128,10 @@ namespace volts::loader::elf
     {
         using program_t = program_header<T>;
         using section_t = section_header<T>;
+        using header_t = header<T>;
         using width_t = T;
 
-        header<width_t> head;
+        header_t head;
         std::vector<program_t> progs = {};
         std::vector<section_t> sects = {};
     };
@@ -140,8 +141,11 @@ namespace volts::loader::elf
     {
         T ret;
 
-        ret.head = svl::read<decltype(ret.head)>(stream);
-        if(ret.head.magic != cvt::to_u32("ELF\177"))
+        stream.seek(0);
+
+        ret.head = svl::read<typename T::header_t>(stream);
+
+        if(ret.head.magic != cvt::to_u32("\177ELF"))
         {
             spdlog::error("bad elf magic");
             return std::nullopt;
@@ -160,22 +164,3 @@ namespace volts::loader::elf
     using ppu_prx = object<svl::u64>;
     using spu_exec = object<svl::u32>;
 }
-
-template<typename T>
-struct fmt::formatter<volts::loader::elf::program_header<T>> : fmt::formatter<std::string> 
-{
-    auto format(const volts::loader::elf::program_header<T>& val, format_context& ctx)
-    {
-        return formatter<std::string>::format(fmt::format("program_header(typesize={},type={},flags={},offset={},vaddr={},paddr={},filesz={},memsz={},align={})",
-            sizeof(volts::loader::elf::program_header<T>),
-            val.type,
-            val.flags,
-            val.offset,
-            val.vaadres,
-            val.paddres,
-            val.file_size,
-            val.mem_size,
-            val.align
-        ), ctx);
-    }
-};
