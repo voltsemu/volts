@@ -134,16 +134,22 @@ namespace volts::loader::elf
         header_t head;
         std::vector<program_t> progs = {};
         std::vector<section_t> sects = {};
+
+        std::shared_ptr<svl::iostream> data;
+
+        object(std::shared_ptr<svl::iostream> d)
+            : data(d)
+        {}
     };
 
     template<typename T>
-    std::optional<T> load(svl::iostream& stream)
+    std::optional<T> load(std::shared_ptr<svl::iostream> stream)
     {
-        T ret;
+        T ret = { stream };
 
-        stream.seek(0);
+        stream->seek(0);
 
-        ret.head = svl::read<typename T::header_t>(stream);
+        ret.head = svl::read<typename T::header_t>(*stream);
 
         if(ret.head.magic != cvt::to_u32("\177ELF"))
         {
@@ -151,11 +157,11 @@ namespace volts::loader::elf
             return std::nullopt;
         }
 
-        stream.seek(ret.head.prog_offset);
-        ret.progs = svl::read_n<typename T::program_t>(stream, ret.head.prog_count);
+        stream->seek(ret.head.prog_offset);
+        ret.progs = svl::read_n<typename T::program_t>(*stream, ret.head.prog_count);
 
-        stream.seek(ret.head.sect_offset);
-        ret.sects = svl::read_n<typename T::section_t>(stream, ret.head.sect_count);
+        stream->seek(ret.head.sect_offset);
+        ret.sects = svl::read_n<typename T::section_t>(*stream, ret.head.sect_count);
 
         return ret;
     }

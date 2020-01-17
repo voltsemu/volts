@@ -57,6 +57,13 @@ namespace volts::ppu
         }
     }
 
+    void stw(thread& ppu, form op)
+    {
+        const vm::addr addr = op.ra ? ppu.gpr[op.ra] + op.simm16 : op.simm16;
+        const u32 val = (u32)ppu.gpr[op.rs];
+        vm::read32(addr) = val;
+    }
+
     void ori(thread& ppu, form op)
     {
         ppu.gpr[op.ra] = ppu.gpr[op.rs] | op.uimm16;
@@ -117,6 +124,13 @@ namespace volts::ppu
         ppu.gpr[op.ra] = addr;
     }
     
+    void lhzu(thread& ppu, form op)
+    {
+        vm::addr addr = ppu.gpr[op.ra] + op.simm16;
+        ppu.gpr[op.rd] = vm::read16(addr);
+        ppu.gpr[op.ra] = addr;
+    }
+
     using func_t = void(*)(thread&, form);
     
     func_t ops[0x20000];
@@ -173,7 +187,11 @@ namespace volts::ppu
             { 0x1B, xoris },
 
             { 0x22, lbz },
-            { 0x23, lbzu }
+            { 0x23, lbzu },
+
+            { 0x24, stw },
+
+            { 0x29, lhzu }
         });
 
         fill(0x3E, 2, 0, {

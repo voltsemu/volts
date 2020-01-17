@@ -6,12 +6,20 @@
 
 namespace volts::ppu
 {
-    thread::thread(svl::iostream& stream)
+    thread::thread(u32 entry)
     {
+        init_table();
+        cia = entry;
+
         for(int i = 0; i < 10; i++)
         {
-            auto op = svl::read<svl::u32>(stream);
-            ops[decode(op)](*this, {op});
+            spdlog::info("reading from {}", vm::real(cia));
+            auto op = vm::read32(cia);
+            spdlog::info("read");
+            auto d = decode(op);
+            spdlog::info("{} {:x}", d, op);
+            ops[d](*this, {op});
+            cia += 4;
         }
     }
 }

@@ -34,7 +34,7 @@ namespace volts::ppu
 
     struct thread
     {
-        thread(svl::iostream& stream);
+        thread(svl::u32 entry);
         
         svl::u64 gpr[32] = {};
         svl::f64 fpr[32] = {};
@@ -42,6 +42,9 @@ namespace volts::ppu
         svl::u64 link = 0;
         svl::u64 count = 0;
         svl::u64 xer = 0;
+
+        // current instruction address
+        svl::u32 cia = 0;
 
         control cr = {};
         // todo: fixed point exception

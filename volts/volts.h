@@ -13,6 +13,7 @@
 
 #include "vm/ppu/thread.h"
 #include "vm/ppu/module.h"
+#include "vm/vm.h"
 
 #include "svl/stream.h"
 
@@ -66,27 +67,6 @@ namespace volts
             {
                 spdlog::info(options.help());
                 std::exit(0);
-            }
-
-            if(opts.count("boot"))
-            {
-                if(auto path = opts["boot"].as<std::string>(); fs::exists(path))
-                {
-                    svl::fstream stream(path, std::ios::binary | std::ios::in);
-                    auto obj = loader::unself::load_self(stream);
-                    
-                    if(obj.empty())
-                    {
-                        spdlog::info("file was not SELF, falling back to elf");
-
-                        svl::fstream elf_stream(path, std::ios::binary | std::ios::in);
-                        obj = svl::read_n(elf_stream, elf_stream.size());
-                    }
-
-                    auto e = svl::memstream(obj);
-
-                    auto exec = loader::elf::load<loader::elf::ppu_exec>(e);
-                }
             }
 
             if(opts.count("unself"))
@@ -151,13 +131,18 @@ namespace volts
                 spdlog::info("valid: {}", firmware.valid());
                 auto dec = loader::unself::load_self(firmware);
 
-                auto decstream = svl::memstream(dec);
+                auto decstream = std::shared_ptr<svl::iostream>(new svl::memstream(dec));
 
-                decstream.seek(0);
+                decstream->seek(0);
 
                 auto elf = loader::elf::load<loader::elf::ppu_prx>(decstream);
                 spdlog::info("loaded {}", elf.has_value());
+
+                vm::init();
+
                 ppu::load_prx(elf.value());
+                spdlog::info("loaded liblv2 {}", elf->head.entry);
+                auto t = ppu::thread(elf->head.entry);
             }
 
             if(opts.count("sfo"))
@@ -238,7 +223,6 @@ namespace volts
                 ("load", "load using firmware in the vfs")
                 ("sfo", "parse an .sfo file", opts::value<std::string>())
                 ("unself", "decrypt a self file", opts::value<std::string>())
-                ("boot", "boot a self", opts::value<std::string>())
                 ("live", "stay alive")
             ;
 
