@@ -9,6 +9,29 @@
 
 namespace volts::ppu
 {
+    union form
+    {
+        svl::u32 raw;
+
+        svl::bit_field<svl::u32, 6, 11> rs;
+        svl::bit_field<svl::u32, 11, 16> ra;
+        svl::bit_field<svl::u32, 16, 20> rb;
+        svl::bit_field<svl::u32, 6, 10> rd;
+        svl::bit_field<svl::u32, 16, 30> ds;
+
+        svl::bit_field<svl::u32, 11, 15> va;
+        svl::bit_field<svl::u32, 16, 20> vb;
+        svl::bit_field<svl::u32, 21, 25> vc;
+        svl::bit_field<svl::u32, 6, 10> vd;
+
+        svl::bit_field<svl::u32, 6, 10> bo;
+
+        svl::bit_field<svl::i32, 16, 31> simm16;
+        svl::bit_field<svl::u32, 16, 31> uimm16;
+    };
+
+    static_assert(sizeof(form) == sizeof(svl::u32));
+
     using namespace svl;
 
     svl::u32 decode(svl::u32 op)
@@ -131,6 +154,18 @@ namespace volts::ppu
         ppu.gpr[op.ra] = addr;
     }
 
+    void vmhaddshs(thread& ppu, form op)
+    {
+        auto a = ppu.vr[op.va].ints;
+        auto b = ppu.vr[op.vb].ints;
+        auto c = ppu.vr[op.vc].ints;
+
+        auto m = _mm_or_si128(_mm_srli_epi16(_mm_mullo_epi16(a, b), 15), _mm_slli_epi16(_mm_mulhi_epi16(a, b), 1));
+        auto s = _mm_cmpeq_epi16(m, _mm_set1_epi16(-0x8000));
+
+        ppu.vr[op.vd].ints = _mm_adds_epi16(_mm_adds_epi16(_mm_xor_si128(m, s), c), _mm_srli_epi16(s, 15));
+    }
+
     using func_t = void(*)(thread&, form);
     
     func_t ops[0x20000];
@@ -202,6 +237,10 @@ namespace volts::ppu
         fill(0x1F, 10, 1, {
             { 0x57, lbzx },
             { 0x77, lbzux }
+        });
+
+        fill(0x04, 11, 0, {
+            { 0x20, vmhaddshs, 5}
         });
     }
 }

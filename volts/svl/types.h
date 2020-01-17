@@ -24,8 +24,8 @@ namespace svl
     
     union v128
     {
-        __m128i i;
-        __m128d d;
+        __m128i ints;
+        __m128d doubles;
         struct
         {
             u64 lo;

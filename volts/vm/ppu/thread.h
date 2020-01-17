@@ -14,24 +14,6 @@ namespace volts::ppu
 
     static_assert(sizeof(control) == 32);
 
-    union form
-    {
-        svl::u32 raw;
-
-        svl::bit_field<svl::u32, 6, 11> rs;
-        svl::bit_field<svl::u32, 11, 16> ra;
-        svl::bit_field<svl::u32, 16, 20> rb;
-        svl::bit_field<svl::u32, 6, 10> rd;
-        svl::bit_field<svl::u32, 16, 30> ds;
-
-        svl::bit_field<svl::u32, 6, 10> bo;
-
-        svl::bit_field<svl::i32, 16, 31> simm16;
-        svl::bit_field<svl::u32, 16, 31> uimm16;
-    };
-
-    static_assert(sizeof(form) == sizeof(svl::u32));
-
     struct thread
     {
         thread(svl::u32 entry);
