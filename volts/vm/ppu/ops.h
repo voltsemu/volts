@@ -240,7 +240,7 @@ namespace volts::ppu
         });
 
         fill(0x04, 11, 0, {
-            { 0x20, vmhaddshs, 5}
+            { 0x20, vmhaddshs, 5 }
         });
     }
 }
