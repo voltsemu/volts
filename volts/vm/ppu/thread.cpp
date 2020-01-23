@@ -6,9 +6,11 @@
 
 namespace volts::ppu
 {
+    std::once_flag table_flag;
+
     thread::thread(u32 entry)
     {
-        init_table();
+        std::call_once(table_flag, init_table);
         cia = entry;
 
         for(int i = 0; i < 10; i++)
