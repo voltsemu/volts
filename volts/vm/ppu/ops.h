@@ -17,7 +17,6 @@ namespace volts::ppu
         svl::bit_field<svl::u32, 11, 16> ra;
         svl::bit_field<svl::u32, 16, 20> rb;
         svl::bit_field<svl::u32, 6, 10> rd;
-        svl::bit_field<svl::u32, 16, 30> ds;
 
         svl::bit_field<svl::u32, 11, 15> va;
         svl::bit_field<svl::u32, 16, 20> vb;
@@ -25,6 +24,11 @@ namespace volts::ppu
         svl::bit_field<svl::u32, 6, 10> vd;
 
         svl::bit_field<svl::u32, 6, 10> bo;
+
+        svl::bit_field<svl::u32, 16, 30> ds;
+
+        svl::bit_field<svl::u32, 6, 10> frs;
+        svl::bit_field<svl::u32, 6, 10> frd;
 
         svl::bit_field<svl::i32, 16, 31> simm16;
         svl::bit_field<svl::u32, 16, 31> uimm16;
@@ -36,7 +40,7 @@ namespace volts::ppu
 
     svl::u32 decode(svl::u32 op)
     {
-        return (op >> 26 | op << 6) & 0x1ffff;
+        return (op >> 26 | op << (32 - 26)) & 0x1FFFF; 
     }
 
     void stub(thread& ppu, form op)
@@ -133,7 +137,7 @@ namespace volts::ppu
         ppu.gpr[op.ra] = addr;
     }
 
-    void std(thread& ppu, form op)
+    void _std(thread& ppu, form op)
     {
         vm::addr addr = ppu.gpr[op.ra] + (op.simm16 & ~3);
         vm::read64(addr) = ppu.gpr[op.rs];
@@ -147,10 +151,30 @@ namespace volts::ppu
         ppu.gpr[op.ra] = addr;
     }
     
+    void lfs(thread& ppu, form op)
+    {
+        // TODO: is this right
+        vm::addr addr = op.ra ? ppu.gpr[op.ra] + op.simm16 : op.simm16;
+        ppu.fpr[op.frd] = addr;
+    }
+
+    void stfs(thread& ppu, form op)
+    {
+        vm::addr addr = op.ra ? ppu.gpr[op.ra] + op.simm16 : op.simm16;
+        vm::read32(addr) = static_cast<f32>(ppu.fpr[op.frs]);
+    }
+
     void lhzu(thread& ppu, form op)
     {
         vm::addr addr = ppu.gpr[op.ra] + op.simm16;
         ppu.gpr[op.rd] = vm::read16(addr);
+        ppu.gpr[op.ra] = addr;
+    }
+
+    void lwzu(thread& ppu, form op)
+    {
+        vm::addr addr = ppu.gpr[op.ra] + op.simm16;
+        ppu.gpr[op.rd] = vm::read32(addr);
         ppu.gpr[op.ra] = addr;
     }
 
@@ -187,10 +211,9 @@ namespace volts::ppu
             {
                 for(int i = 0; i < (e.magn + (11 - sh - num)); i++)
                 {
-                    for(int j = 0; j < 1 << sh; j++)
+                    for(int j = 0; j < 1u << sh; j++)
                     {
-                        auto at = (((((i << (num - e.magn)) | e.val) << sh) | j) << 6) | op;
-                        ops[at] = e.func;
+                        ops[((((((i << (num - e.magn)) | e.val) << sh) | j) << 6) | op)] = e.func;
                     }
                 }
             }
@@ -199,7 +222,7 @@ namespace volts::ppu
         {
             for(auto& e : instr)
             {
-                for(int i = 0; i < 1 << 11; i++)
+                for(int i = 0; i < 1u << 11; i++)
                 {
                     ops[i << 6 | e.val] = e.func;
                 }
@@ -221,16 +244,21 @@ namespace volts::ppu
             { 0x1A, xori },
             { 0x1B, xoris },
 
+            { 0x21, lwzu },
             { 0x22, lbz },
             { 0x23, lbzu },
 
             { 0x24, stw },
 
-            { 0x29, lhzu }
+            { 0x29, lhzu },
+
+            { 0x30, lfs },
+
+            { 0x34, stfs }
         });
 
         fill(0x3E, 2, 0, {
-            { 0x0, std },
+            { 0x0, _std },
             { 0x1, stdu }
         });
 

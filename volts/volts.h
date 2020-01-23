@@ -142,7 +142,7 @@ namespace volts
 
                 ppu::load_prx(elf.value());
                 spdlog::info("loaded liblv2 {}", elf->head.entry);
-                auto t = ppu::thread(elf->head.entry);
+                ppu::thread(elf->head.entry);
             }
 
             if(opts.count("sfo"))

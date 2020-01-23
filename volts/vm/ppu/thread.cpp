@@ -13,9 +13,7 @@ namespace volts::ppu
 
         for(int i = 0; i < 10; i++)
         {
-            spdlog::info("reading from {}", vm::real(cia));
             auto op = vm::read32(cia);
-            spdlog::info("read");
             auto d = decode(op);
             spdlog::info("{} {:x}", d, op);
             ops[d](*this, {op});
