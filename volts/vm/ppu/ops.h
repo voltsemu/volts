@@ -161,7 +161,7 @@ namespace volts::ppu
     void stfs(thread& ppu, form op)
     {
         vm::addr addr = op.ra ? ppu.gpr[op.ra] + op.simm16 : op.simm16;
-        vm::read32(addr) = static_cast<f32>(ppu.fpr[op.frs]);
+        reinterpret_cast<f32&>(vm::read32(addr)) = static_cast<f32>(ppu.fpr[op.frs]);
     }
 
     void lhzu(thread& ppu, form op)

@@ -36,6 +36,6 @@ namespace volts::vm
         delete[] base;
 
         // todo: make this configurable
-        base = new byte[0x100000000ULL]();
+        base = new byte[0x100000000ULL];
     }
 }

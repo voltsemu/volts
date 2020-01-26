@@ -78,7 +78,7 @@ namespace volts::loader::tar
             {
                 case '0':
                 {
-                    svl::fstream out(to/name, std::ios::binary);
+                    svl::fstream out(to/name, std::ios::out | std::ios::binary);
                     svl::write_n(out, svl::read_n(*file, octal_to_decimal(atoi(head.size))));
                     break;
                 }

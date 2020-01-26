@@ -126,7 +126,7 @@ namespace volts
 
             if(opts.count("load"))
             {
-                svl::fstream firmware(vfs::get_path("dev_flash/sys/external/liblv2.sprx"));
+                svl::fstream firmware(vfs::get_path("dev_flash/sys/external/liblv2.sprx"), std::ios::in | std::ios::binary);
 
                 spdlog::info("valid: {}", firmware.valid());
                 auto dec = loader::unself::load_self(firmware);
