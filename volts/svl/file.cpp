@@ -51,4 +51,9 @@ namespace svl
     return { new posix_file(f) };
 #endif
     }
+
+    file from(std::vector<svl::byte> vec)
+    {
+        return file(new ram_file(vec));
+    }
 }

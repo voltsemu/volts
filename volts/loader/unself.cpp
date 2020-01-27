@@ -680,6 +680,8 @@ namespace volts::loader::unself
 
             for(auto& sect : meta_sections)
             {
+                svl::file file;
+
                 if(sect.compressed == 2)
                 {
                     const size_t size = 32 * 1024;
@@ -696,30 +698,18 @@ namespace volts::loader::unself
                     
                     int ret = inflateInit(&zstream);
 
-                    svl::file file = svl::from<u8>({});
+                    file = svl::from({});
 
                     while(zstream.avail_in)
                     {
                         ret = inflate(&zstream, Z_NO_FLUSH);
 
                         if(ret == Z_STREAM_END)
-                        {
-                            int res = inflate(&zstream, Z_FINISH);
-
-                            if(res == Z_STREAM_END)
-                            {
-                                file.write(buf, size - zstream.avail_out);
-                                out.push_back({file});
-                            }
-                            inflateEnd(&zstream);
                             break;
-                        }
 
                         if(ret != Z_OK)
-                        {
-                            inflateEnd(&zstream);
-                        }
-                            
+                            spdlog::info("oh no");
+
                         if(!zstream.avail_out)
                         {
                             file.write(buf, size);
@@ -731,12 +721,22 @@ namespace volts::loader::unself
                             break;
                         }
                     }
+
+                    int res = Z_OK;
+                    res = inflate(&zstream, Z_FINISH);
+
+                    if(res != Z_STREAM_END)
+                        spdlog::info("oh no 2");
+
+                    file.write(buf, size);
+                    inflateEnd(&zstream);
                 }
                 else
                 {
-                    auto f = svl::from<byte>({ data_buf, data_buf + data_offset });
-                    out.push_back(f);
+                    file = svl::from({ data_buf, data_buf + data_offset });
                 }
+
+                out.push_back(std::move(file));
 
                 data_offset += sect.size;
             }

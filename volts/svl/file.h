@@ -106,14 +106,14 @@ namespace svl
     // in memory file handle wrapper
     struct ram_file : file_handle
     {
-        ram_file(std::vector<byte> vec)
+        ram_file(const std::vector<byte>& vec)
             : handle(vec)
         {}
 
         virtual void seek(u64 pos) override 
         {
             cursor = pos;
-            if(handle.size() < pos)
+            if(handle.max_size() + cursor < pos)
                 handle.resize(pos);
         }
 
@@ -129,8 +129,8 @@ namespace svl
 
         virtual void read(void* out, u64 num) override 
         {
-            if(handle.size() < num)
-                handle.resize(num);
+            if(cursor + num > handle.max_size())
+                handle.resize(cursor + num);
 
             std::memcpy(out, handle.data() + cursor, num);
             cursor += num;
@@ -138,8 +138,8 @@ namespace svl
 
         virtual void write(const void* in, u64 num) override 
         {
-            if(handle.size() < num)
-                handle.resize(num);
+            if(num + cursor > handle.max_size())
+                handle.resize(cursor + num);
 
             std::memcpy(handle.data() + cursor, in, num);
             cursor += num;
@@ -147,7 +147,7 @@ namespace svl
 
     private:
         u64 cursor = 0;
-        std::vector<byte> handle;
+        std::vector<byte> handle = {};
     };
 
     struct file
@@ -210,11 +210,10 @@ namespace svl
         {}
 
         file(file_handle* ptr)
-            : handle(std::make_shared<file_handle>(ptr))
+            : handle(ptr)
         {}
 
-        file(file&) = default;
-        file(file&&) = default;
+        file(const file& f) : handle(f.handle) {}
 
     private:
 
@@ -223,9 +222,5 @@ namespace svl
 
     file open(const std::filesystem::path& path, u8 mo);
     
-    template<typename T>
-    file from(std::vector<T> vec)
-    {
-        return file(new ram_file(vec));
-    }
+    file from(std::vector<svl::byte> vec);
 }

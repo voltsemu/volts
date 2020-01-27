@@ -195,8 +195,7 @@ namespace volts
                     w.EndObject();
 
                     auto f = svl::open("sfo.json", svl::mode::write);
-                    f.write<svl::u8>(std::vector<svl::u8>({ 0xEF, 0xBB, 0xBF }));
-                    f.write(s.GetString());
+                    f.write(s.GetString(), strlen(s.GetString()));
 
                     spdlog::info("wrote parsed sfo file to {}", fs::absolute("sfo.json").string());
                 }
