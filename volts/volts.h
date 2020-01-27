@@ -15,7 +15,7 @@
 #include "vm/ppu/module.h"
 #include "vm/vm.h"
 
-#include "svl/stream.h"
+#include "svl/file.h"
 
 #include <filesystem>
 
@@ -73,12 +73,12 @@ namespace volts
             {
                 if(auto path = opts["unself"].as<std::string>(); fs::exists(path))
                 {
-                    svl::fstream stream(path, std::ios::binary | std::ios::in);
+                    svl::file stream = svl::open(path, svl::mode::read);
                     auto obj = loader::unself::load_self(stream);
 
                     auto out = output_file("eboot.elf");
-                    svl::fstream out_file(vfs::get_path(out), std::ios::binary | std::ios::out);
-                    svl::write_n(out_file, obj);
+                    svl::file out_file = svl::open(vfs::get_path(out), svl::mode::write);
+                    out_file.write(obj);
                     spdlog::info("decrypted self and wrote file to {}", fs::absolute(out).string());
                 }
             }
@@ -88,7 +88,7 @@ namespace volts
                 if(auto path = opts["pup"].as<std::string>(); fs::exists(path))
                 {
                     spdlog::info("begining pup decryption");
-                    auto stream = std::make_shared<svl::fstream>(path, std::ios::binary | std::ios::in);
+                    auto stream = svl::open(path, svl::mode::read);
                     auto obj = loader::pup::load(stream);
 
                     if(!obj)
@@ -98,8 +98,7 @@ namespace volts
                     }
 
                     auto file = obj->get_file(0x300);
-                    svl::iostream* f = new svl::memstream(file);
-                    auto tar_file = loader::tar::load(std::shared_ptr<svl::iostream>(f));
+                    auto tar_file = loader::tar::load(file);
                     for(auto& [key, offset] : tar_file.offsets)
                     {
                         if(key.rfind("dev_flash_", 0) == 0)
@@ -109,8 +108,7 @@ namespace volts
 
                             update_dec[2].seek(0);
 
-                            std::shared_ptr<svl::memstream> shared_dec(new svl::memstream(update_dec[2]));
-                            auto t = loader::tar::load(shared_dec);
+                            auto t = loader::tar::load(update_dec[2]);
 
                             t.extract(vfs::get_root());
                         }
@@ -126,16 +124,12 @@ namespace volts
 
             if(opts.count("load"))
             {
-                svl::fstream firmware(vfs::get_path("dev_flash/sys/external/liblv2.sprx"), std::ios::in | std::ios::binary);
+                svl::file firmware = svl::open(vfs::get_path("dev_flash/sys/external/liblv2.sprx"), svl::mode::read);
 
                 spdlog::info("valid: {}", firmware.valid());
                 auto dec = loader::unself::load_self(firmware);
 
-                auto decstream = std::shared_ptr<svl::iostream>(new svl::memstream(dec));
-
-                decstream->seek(0);
-
-                auto elf = loader::elf::load<loader::elf::ppu_prx>(decstream);
+                auto elf = loader::elf::load<loader::elf::ppu_prx>(dec);
                 spdlog::info("loaded {}", elf.has_value());
 
                 vm::init();
@@ -149,7 +143,7 @@ namespace volts
             {
                 if(auto path = opts["sfo"].as<std::string>(); fs::exists(path))
                 {
-                    auto stream = svl::fstream(path, std::ios::in | std::ios::binary);
+                    auto stream = svl::open(path, svl::mode::read);
                     auto obj = loader::sfo::load(stream);
 
                     json::StringBuffer s;
@@ -200,9 +194,11 @@ namespace volts
                 
                     w.EndObject();
 
-                    auto out = output_file("sfo.json");
-                    svl::write_utf8(out, s.GetString());
-                    spdlog::info("wrote parsed sfo file to {}", fs::absolute(out).string());
+                    auto f = svl::open("sfo.json", svl::mode::write);
+                    f.write<svl::u8>(std::vector<svl::u8>({ 0xEF, 0xBB, 0xBF }));
+                    f.write(s.GetString());
+
+                    spdlog::info("wrote parsed sfo file to {}", fs::absolute("sfo.json").string());
                 }
             }
 

@@ -2,7 +2,7 @@
 
 #include "svl/types.h"
 #include "svl/bitfield.h"
-#include "svl/stream.h"
+#include "svl/file.h"
 
 namespace volts::ppu
 {

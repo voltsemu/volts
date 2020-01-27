@@ -1,7 +1,7 @@
 #pragma once
 
 #include "svl/types.h"
-#include "svl/stream.h"
+#include "svl/file.h"
 
 #include <cstdint>
 #include <map>
@@ -25,5 +25,5 @@ namespace volts::loader::sfo
 
     using object = std::map<std::string, value>;
 
-    std::optional<object> load(svl::iostream& stream);
+    std::optional<object> load(svl::file stream);
 }

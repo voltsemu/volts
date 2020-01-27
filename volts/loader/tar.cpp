@@ -6,7 +6,7 @@
 #include <cstdlib>
 #include <cmath>
 
-#include "svl/stream.h"
+#include "svl/file.h"
 
 namespace volts::loader::tar
 {
@@ -50,36 +50,37 @@ namespace volts::loader::tar
         return ret;
     }
 
-    svl::memstream object::get_file(std::string name)
+    svl::file object::get_file(std::string name)
     {
         if(offsets.find(name) == offsets.end())
         {
-            return {};
+            return svl::from<u8>({});
         }
         
         auto offset = offsets[name];
-        file->seek(offset - sizeof(header));
-        auto head = svl::read<header>(*file);
+        file.seek(offset - sizeof(header));
+        auto head = file.read<header>();
         if(strcmp(head.name, name.c_str()) == 0)
         {
-            return svl::read_n(*file, octal_to_decimal(atoi(head.size)));
+            return svl::from(file.read<u8>(octal_to_decimal(atoi(head.size))));
         }
-        return {};
+
+        return svl::from<u8>({});
     }
 
     void object::extract(const std::filesystem::path& to)
     {
         for(auto& [name, offset] : offsets)
         {
-            file->seek(offset - sizeof(header));
-            const auto head = svl::read<header>(*file);
+            file.seek(offset - sizeof(header));
+            const auto head = file.read<header>();
 
             switch(head.file_type)
             {
                 case '0':
                 {
-                    svl::fstream out(to/name, std::ios::out | std::ios::binary);
-                    svl::write_n(out, svl::read_n(*file, octal_to_decimal(atoi(head.size))));
+                    svl::file out = open(to/name, svl::mode::write);
+                    out.write<u8>(file.read<u8>(octal_to_decimal(atoi(head.size))));
                     break;
                 }
                 case '5':
@@ -95,24 +96,24 @@ namespace volts::loader::tar
     // ustar\20
     constexpr svl::byte ustar_magic[] = { 0x75, 0x73, 0x74, 0x61, 0x72, 0x20 };
 
-    object load(std::shared_ptr<svl::iostream> stream)
+    object load(svl::file stream)
     {
         object ret = stream;
 
         for(;;)
         {
-            auto head = svl::read<header>(*stream);
+            auto head = stream.read<header>();
 
             if(memcmp(head.magic, ustar_magic, sizeof(ustar_magic)))
                 return ret;
 
             int size = octal_to_decimal(atoi(head.size));
 
-            auto aligned = (size + stream->tell() + 512 - 1) & ~(512 - 1);
+            auto aligned = (size + stream.tell() + 512 - 1) & ~(512 - 1);
 
-            ret.offsets[head.name] = stream->tell();
+            ret.offsets[head.name] = stream.tell();
 
-            stream->seek(aligned);
+            stream.seek(aligned);
         }
 
         return ret;

@@ -24,8 +24,8 @@ namespace volts::ppu
             if(prog.type == 0x700000A4)
                 continue;
 
-            mod.data->seek(prog.offset);
-            auto data = svl::read_n(*mod.data, prog.file_size);
+            mod.data.seek(prog.offset);
+            auto data = mod.data.read<svl::byte>(prog.file_size);
 
             spdlog::info("read in section {} {}", prog.offset, data.size());
 
@@ -38,8 +38,8 @@ namespace volts::ppu
 
             spdlog::info("loading section header");
 
-            mod.data->seek(sect.offset);
-            auto data = svl::read_n(*mod.data, sect.size);
+            mod.data.seek(sect.offset);
+            auto data = mod.data.read<svl::byte>(sect.size);
             std::memcpy(vm::real(sect.address), data.data(), data.size());
         }
 

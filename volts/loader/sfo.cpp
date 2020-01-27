@@ -1,7 +1,7 @@
 #include "sfo.h"
 
 #include "svl/types.h"
-#include "svl/stream.h"
+#include "svl/file.h"
 #include "svl/convert.h"
 
 #include <spdlog/spdlog.h>
@@ -30,9 +30,9 @@ namespace volts::loader::sfo
         u32 total_entries;
     };
 
-    std::optional<object> load(svl::iostream& stream)
+    std::optional<object> load(svl::file stream)
     {
-        const auto head = svl::read<header>(stream);
+        const auto head = stream.read<header>();
 
         if(head.magic != cvt::to_u32("\0PSF"))
         {
@@ -50,19 +50,19 @@ namespace volts::loader::sfo
 
         for(int i = 0; i < head.total_entries; i++)
         {
-            const auto redirect = svl::read<index_table_entry>(stream);
+            const auto redirect = stream.read<index_table_entry>();
             const auto dist = stream.tell();
 
             stream.seek(head.key_offset + redirect.key_offset);
 
             string key;
 
-            while(auto c = svl::read<char>(stream))
+            while(auto c = stream.read<char>())
                 key += c;
 
             stream.seek(head.data_offset + redirect.data_offset);
 
-            const auto data = svl::read_n(stream, redirect.max_length);
+            const auto data = stream.read<svl::byte>(redirect.max_length);
 
             value v = { redirect.data_format, std::move(data) };
 

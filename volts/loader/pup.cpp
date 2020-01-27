@@ -2,7 +2,7 @@
 
 #include <spdlog/spdlog.h>
 
-#include "svl/stream.h"
+#include "svl/file.h"
 #include "svl/convert.h"
 
 namespace volts::loader::pup
@@ -24,23 +24,23 @@ namespace volts::loader::pup
 
     static_assert(sizeof(header) == 48);
 
-    std::vector<svl::byte> object::get_file(svl::u64 id)
+    svl::file object::get_file(svl::u64 id)
     {
         for(const auto& f : files)
         {
             if(f.id == id)
             {
-                file->seek(f.offset);
-                return read_n(*file, f.length);
+                file.seek(f.offset);
+                return svl::from(file.read<u8>(f.length));
             }
         }
 
         return {};
     }
 
-    std::optional<object> load(std::shared_ptr<svl::iostream> stream)
+    std::optional<object> load(svl::file stream)
     {
-        auto head = read<header>(*stream);
+        auto head = stream.read<header>();
 
         if(head.magic != cvt::to_u64("SCEUF\0\0\0"))
         {
@@ -50,8 +50,8 @@ namespace volts::loader::pup
 
         object ret = stream;
 
-        ret.files = read_n<entry>(*stream, head.file_count);
-        ret.hashes = read_n<hash>(*stream, head.file_count);
+        ret.files = stream.read<entry>(head.file_count);
+        ret.hashes = stream.read<hash>(head.file_count);
 
         return ret;
     }

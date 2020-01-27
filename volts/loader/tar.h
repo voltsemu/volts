@@ -4,7 +4,7 @@
 #include <string>
 
 #include "svl/types.h"
-#include "svl/stream.h"
+#include "svl/file.h"
 
 namespace volts::loader::tar
 {
@@ -12,17 +12,17 @@ namespace volts::loader::tar
     {
         std::map<std::string, svl::u64> offsets;
         
-        object(std::shared_ptr<svl::iostream> s)
+        object(svl::file s)
             : file(s)
         {}
 
-        svl::memstream get_file(std::string name);
+        svl::file get_file(std::string name);
 
         void extract(const std::filesystem::path& to);
 
     private:
-        std::shared_ptr<svl::iostream> file;
+        svl::file file;
     };
 
-    object load(std::shared_ptr<svl::iostream> stream);
+    object load(svl::file stream);
 }

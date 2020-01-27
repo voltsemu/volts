@@ -3,6 +3,8 @@
 #include "types.h"
 #include "platform.h"
 
+#include <spdlog/spdlog.h>
+
 #if SYS_WINDOWS
 #   include "windows.h"
 #endif
@@ -12,19 +14,21 @@
 
 namespace svl
 {
-    using mode = u8;
-    constexpr mode read = (1 << 0);
-    constexpr mode write = (1 << 1);
+    namespace mode
+    {
+        constexpr u8 read = (1 << 0);
+        constexpr u8 write = (1 << 1);
+    }
 
     struct file_handle 
     {
         virtual ~file_handle() {}
-        virtual void seek(u64 pos) = 0;
-        virtual u64 tell() const = 0;
-        virtual u64 size() const = 0;
+        virtual void seek(u64 pos) {}
+        virtual u64 tell() const { return 0; }
+        virtual u64 size() const { return 0; }
 
-        virtual void read(void* out, u64 num) = 0;
-        virtual void write(void* in, u64 num) = 0;
+        virtual void read(void* out, u64 num) {}
+        virtual void write(const void* in, u64 num) {}
     };
     
 #if SYS_WINDOWS
@@ -33,21 +37,28 @@ namespace svl
     {
         virtual ~win32_file() override
         {
-            CloseHandle(handle);
+            FindClose(handle);
         }
 
-        win32_file(HANDLE h)
+        win32_file(const HANDLE&& h)
             : handle(h)
         {}
 
         virtual void seek(u64 pos) override 
         {
+            LARGE_INTEGER p;
+            p.QuadPart = pos;
 
+            SetFilePointerEx(handle, p, nullptr, FILE_BEGIN);
         }
 
         virtual u64 tell() const override 
         {
-            
+            LARGE_INTEGER pos;
+            pos.QuadPart = 0;
+            SetFilePointerEx(handle, pos, &pos, FILE_CURRENT);
+
+            return pos.QuadPart;
         }
         
         virtual u64 size() const override
@@ -59,12 +70,16 @@ namespace svl
 
         virtual void read(void* out, u64 num) override 
         {
-
+            DWORD n;
+            if(!ReadFile(handle, out, num, &n, nullptr))
+            {
+                spdlog::error("reading from file failed {}", GetLastError());
+            }
         }
 
-        virtual void write(void* in, u64 num) override 
+        virtual void write(const void* in, u64 num) override 
         {
-
+            WriteFile(handle, in, num, nullptr, nullptr);
         }
 
     private:
@@ -91,15 +106,44 @@ namespace svl
     // in memory file handle wrapper
     struct ram_file : file_handle
     {
-        ram_file(std::vector<byte>&& vec)
+        ram_file(std::vector<byte> vec)
             : handle(vec)
         {}
 
-        virtual void seek(u64 pos) override {}
-        virtual u64 tell() const override { return cursor; }
+        virtual void seek(u64 pos) override 
+        {
+            cursor = pos;
+            if(handle.size() < pos)
+                handle.resize(pos);
+        }
 
-        virtual void read(void* out, u64 num) override {}
-        virtual void write(void* in, u64 num) override {}
+        virtual u64 size() const override
+        {
+            return handle.size();
+        }
+
+        virtual u64 tell() const override 
+        { 
+            return cursor; 
+        }
+
+        virtual void read(void* out, u64 num) override 
+        {
+            if(handle.size() < num)
+                handle.resize(num);
+
+            std::memcpy(out, handle.data() + cursor, num);
+            cursor += num;
+        }
+
+        virtual void write(const void* in, u64 num) override 
+        {
+            if(handle.size() < num)
+                handle.resize(num);
+
+            std::memcpy(handle.data() + cursor, in, num);
+            cursor += num;
+        }
 
     private:
         u64 cursor = 0;
@@ -108,11 +152,6 @@ namespace svl
 
     struct file
     {
-        friend file open(const std::filesystem::path& path, mode m);
-        
-        template<typename T>
-        friend file from(std::vector<T>&& vec);
-
         void seek(u64 pos)
         {
             handle->seek(pos);
@@ -139,6 +178,11 @@ namespace svl
             return vec;
         }
         
+        void read(void* out, u64 num)
+        {
+            handle->read(out, num);
+        }
+
         template<typename T>
         void write(const T& val)
         {
@@ -151,57 +195,37 @@ namespace svl
             handle->write(vec.data(), vec.size() * sizeof(T));
         }
 
-    private:
-        file(file_handle* ptr)
-            : handle(ptr)
+        void write(const void* ptr, u64 num)
+        {
+            handle->write(ptr, num);
+        }
+
+        bool valid() const
+        {
+            return !!handle;
+        }
+
+        file()
+            : handle(nullptr)
         {}
 
-        std::shared_ptr<file_handle> handle = nullptr;
+        file(file_handle* ptr)
+            : handle(std::make_shared<file_handle>(ptr))
+        {}
+
+        file(file&) = default;
+        file(file&&) = default;
+
+    private:
+
+        std::shared_ptr<file_handle> handle;
     };
 
-    file open(const std::filesystem::path& path, mode m)
-    {
-#if SYS_WINDOWS
-        DWORD access = 0;
-        if(m & write)
-            access |= GENERIC_WRITE;
-
-        if(m & read)
-            access |= GENERIC_READ;
-
-        HANDLE f = CreateFileW(path.c_str(), access, 0, nullptr, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
-        return { new win32_file(f) };
-#else
-        std::string access;
-
-        if(m & write)
-            access += "w";
-
-        if(m & read)
-            access += "r";
-
-        std::FILE* f = std::fopen(path.c_str(), access);
-        return { new posix_file(f) };
-#endif
-    }
+    file open(const std::filesystem::path& path, u8 mo);
     
     template<typename T>
-    file from(std::vector<T>&& vec)
+    file from(std::vector<T> vec)
     {
-        return { new ram_file(vec) };
-    }
-
-    template<typename T>
-    std::vector<T> read_n(file& f, u64 num)
-    {
-        std::vector<T> vec(num);
-        f.read((void*)vec.data(), num * sizeof(T));
-        return vec;
-    }
-
-    template<typename T>
-    void write_n(file& f, const std::vector<T>& vec)
-    {
-        f.write((void*)vec.data(), vec.size() * sizeof(T));
+        return file(new ram_file(vec));
     }
 }

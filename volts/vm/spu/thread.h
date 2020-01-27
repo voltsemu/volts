@@ -1,7 +1,7 @@
 #pragma once
 
 #include "svl/types.h"
-#include "svl/stream.h"
+#include "svl/file.h"
 
 namespace volts::spu
 {
@@ -9,7 +9,7 @@ namespace volts::spu
     {
         svl::v128 gpr[128] = {};
 
-        thread(svl::iostream& stream);
+        thread(svl::file stream);
 
         // todo: float point status and control register
     };

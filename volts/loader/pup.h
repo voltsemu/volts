@@ -6,7 +6,7 @@
 
 #include "svl/endian.h"
 #include "svl/types.h"
-#include "svl/stream.h"
+#include "svl/file.h"
 
 namespace volts::loader::pup
 {
@@ -34,15 +34,15 @@ namespace volts::loader::pup
         std::vector<entry> files;
         std::vector<hash> hashes;
 
-        std::vector<svl::byte> get_file(svl::u64 id);
+        svl::file get_file(svl::u64 id);
 
-        object(std::shared_ptr<svl::iostream> s)
+        object(svl::file s)
             : file(s)
         {}
 
     private:
-        std::shared_ptr<svl::iostream> file;
+        svl::file file;
     };
 
-    std::optional<object> load(std::shared_ptr<svl::iostream> stream);
+    std::optional<object> load(svl::file stream);
 }

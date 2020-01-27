@@ -3,7 +3,7 @@
 #include <optional>
 #include <spdlog/spdlog.h>
 
-#include "svl/stream.h"
+#include "svl/file.h"
 #include "svl/endian.h"
 #include "svl/convert.h"
 #include "svl/types.h"
@@ -129,27 +129,26 @@ namespace volts::loader::elf
         using program_t = program_header<T>;
         using section_t = section_header<T>;
         using header_t = header<T>;
-        using width_t = T;
 
         header_t head;
         std::vector<program_t> progs = {};
         std::vector<section_t> sects = {};
 
-        std::shared_ptr<svl::iostream> data;
+        svl::file data;
 
-        object(std::shared_ptr<svl::iostream> d)
+        object(svl::file d)
             : data(d)
         {}
     };
 
     template<typename T>
-    std::optional<T> load(std::shared_ptr<svl::iostream> stream)
+    std::optional<T> load(svl::file stream)
     {
         T ret = { stream };
 
-        stream->seek(0);
+        stream.seek(0);
 
-        ret.head = svl::read<typename T::header_t>(*stream);
+        ret.head = stream.read<typename T::header_t>();
 
         if(ret.head.magic != cvt::to_u32("\177ELF"))
         {
@@ -157,11 +156,11 @@ namespace volts::loader::elf
             return std::nullopt;
         }
 
-        stream->seek(ret.head.prog_offset);
-        ret.progs = svl::read_n<typename T::program_t>(*stream, ret.head.prog_count);
+        stream.seek(ret.head.prog_offset);
+        ret.progs = stream.read<typename T::program_t>(ret.head.prog_count);
 
-        stream->seek(ret.head.sect_offset);
-        ret.sects = svl::read_n<typename T::section_t>(*stream, ret.head.sect_count);
+        stream.seek(ret.head.sect_offset);
+        ret.sects = stream.read<typename T::section_t>(ret.head.sect_count);
 
         return ret;
     }

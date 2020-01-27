@@ -2,7 +2,7 @@
 
 namespace volts::spu
 {
-    thread::thread(svl::iostream& stream)
+    thread::thread(svl::file stream)
     {
         
     }
