@@ -1,5 +1,7 @@
 #include "vm.h"
 
+#include <string.h>
+
 namespace volts::vm
 {
     using namespace svl;
@@ -37,5 +39,6 @@ namespace volts::vm
 
         // todo: make this configurable
         base = new byte[0x100000000ULL];
+        memset(base, 0, 0x100000000ULL);
     }
 }

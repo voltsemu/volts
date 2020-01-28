@@ -21,8 +21,21 @@ namespace volts::ppu
             
             spdlog::info("loading program header");
 
-            if(prog.type == 0x700000A4)
+            if(prog.type == 1)
+            {
+                if(prog.mem_size)
+                {
+
+                }
+            }
+            else if(prog.type == 0x700000A4)
+            {
                 continue;
+            }
+            else
+            {
+                spdlog::error("invalid segment type");
+            }
 
             mod.data.seek(prog.offset);
             auto data = mod.data.read<svl::byte>(prog.file_size);

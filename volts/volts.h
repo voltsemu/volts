@@ -75,11 +75,11 @@ namespace volts
                 {
                     svl::file stream = svl::open(path, svl::mode::read);
                     auto obj = loader::unself::load_self(stream);
+                    obj.seek(0);
 
-                    auto out = output_file("eboot.elf");
-                    svl::file out_file = svl::open(vfs::get_path(out), svl::mode::write);
-                    out_file.write(obj);
-                    spdlog::info("decrypted self and wrote file to {}", fs::absolute(out).string());
+                    svl::file out_file = svl::open("eboot.elf", svl::mode::write);
+                    out_file.write(obj.read<char>(obj.size()));
+                    //spdlog::info("decrypted self and wrote file to {}", fs::absolute(out).string());
                 }
             }
 

@@ -6,18 +6,21 @@
 
 namespace volts::ppu
 {
-    std::once_flag table_flag;
-
     thread::thread(u32 entry)
     {
-        std::call_once(table_flag, init_table);
+        if(static bool table_flag = true; table_flag)
+        {
+            init_table();
+            table_flag = false;
+        }
+
         cia = entry;
+        spdlog::info("entry point: {}", cia);
 
         for(int i = 0; i < 10; i++)
         {
             auto op = vm::read32(cia);
             auto d = decode(op);
-            spdlog::info("{} {:x}", d, op);
             ops[d](*this, {op});
             cia += 4;
         }

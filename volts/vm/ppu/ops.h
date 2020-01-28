@@ -45,7 +45,7 @@ namespace volts::ppu
 
     void stub(thread& ppu, form op)
     {
-        spdlog::error("unimplemented ppu op {}", decode(op.raw));
+        spdlog::error("unimplemented ppu op {:x}", op.raw);
     }
 
     void tdi(thread& ppu, form op)
@@ -178,6 +178,20 @@ namespace volts::ppu
         ppu.gpr[op.ra] = addr;
     }
 
+    void lhau(thread& ppu, form op)
+    {
+        vm::addr addr = ppu.gpr[op.ra] + op.simm16;
+        ppu.gpr[op.rd] = vm::read16(addr);
+        ppu.gpr[op.ra] = addr;
+    }
+
+    void andi(thread& ppu, form op)
+    {
+        ppu.gpr[op.ra] = ppu.gpr[op.rs] & op.uimm16;
+        // TODO: set cr
+
+    }
+
     void vmhaddshs(thread& ppu, form op)
     {
         auto a = ppu.vr[op.va].ints;
@@ -243,6 +257,7 @@ namespace volts::ppu
             { 0x19, oris },
             { 0x1A, xori },
             { 0x1B, xoris },
+            { 0x1C, andi },
 
             { 0x21, lwzu },
             { 0x22, lbz },
@@ -251,6 +266,8 @@ namespace volts::ppu
             { 0x24, stw },
 
             { 0x29, lhzu },
+
+            { 0x2B, lhau },
 
             { 0x30, lfs },
 

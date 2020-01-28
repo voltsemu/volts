@@ -39,6 +39,11 @@ namespace svl
             return handle->tell();
         }
 
+        u64 size() const 
+        {
+            return handle->size();
+        }
+
         template<typename T>
         T read()
         {
