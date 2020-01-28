@@ -341,7 +341,7 @@ namespace volts::loader::unself
 
         svl::file elf()
         {
-            svl::file out;
+            svl::file out = svl::from({});
 
             out.write(elf_header);
 

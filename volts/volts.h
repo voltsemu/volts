@@ -126,16 +126,13 @@ namespace volts
             {
                 svl::file firmware = svl::open(vfs::get_path("dev_flash/sys/external/liblv2.sprx"), svl::mode::read);
 
-                spdlog::info("valid: {}", firmware.valid());
                 auto dec = loader::unself::load_self(firmware);
 
                 auto elf = loader::elf::load<loader::elf::ppu_prx>(dec);
-                spdlog::info("loaded {}", elf.has_value());
 
                 vm::init();
 
                 ppu::load_prx(elf.value());
-                spdlog::info("loaded liblv2 {}", elf->head.entry);
                 ppu::thread(elf->head.entry);
             }
 

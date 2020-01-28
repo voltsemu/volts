@@ -2,9 +2,6 @@
 
 #include <spdlog/spdlog.h>
 
-#include <execinfo.h>
-#include <cxxabi.h>
-
 #if SYS_WINDOWS
 #   include "windows.h"
 #endif
