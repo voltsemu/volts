@@ -356,9 +356,6 @@ namespace volts::loader::unself
                 if(sect.type != 2)
                     continue;
 
-                spdlog::info("sect = {} {}", sect.offset, sect.size);
-                spdlog::info("prog = {}", prog_headers[sect.index].offset);
-
                 out.seek(prog_headers[sect.index].offset);
 
                 if(sect.compressed == 2)
@@ -698,7 +695,8 @@ namespace volts::loader::unself
                     
                     int ret = inflateInit(&zstream);
 
-                    file = svl::from({});
+                    file = svl::from({ 0 });
+                    file.seek(0);
 
                     while(zstream.avail_in)
                     {
@@ -708,7 +706,7 @@ namespace volts::loader::unself
                             break;
 
                         if(ret != Z_OK)
-                            spdlog::info("oh no");
+                            spdlog::info("file inflation failed");
 
                         if(!zstream.avail_out)
                         {
@@ -726,7 +724,7 @@ namespace volts::loader::unself
                     res = inflate(&zstream, Z_FINISH);
 
                     if(res != Z_STREAM_END)
-                        spdlog::info("oh no 2");
+                        spdlog::info("zstream result was invalid");
 
                     file.write(buf, size);
                     inflateEnd(&zstream);
@@ -754,6 +752,7 @@ namespace volts::loader::unself
     std::vector<svl::file> load_sce(svl::file file)
     {
         sce_decrypter dec(file);
+        
         if(!dec.load_headers())
         {
             return {};

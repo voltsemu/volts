@@ -2,8 +2,7 @@ project('volts', ['cpp', 'c'],
     default_options : [
         'cpp_std=c++17',
         'cpp_rtti=false',
-        'cpp_eh=none',
-        'default_library=static'
+        'cpp_eh=none'
     ],
     version : '0.2.0',
     license : 'Apache'
@@ -83,14 +82,3 @@ executable('volt_tests', sources + test_sources,
     link_args : links,
     build_by_default : false
 )
-
-# [wrap-file]
-# directory = capstone-4.0.1
-
-# source_url = https://github.com/aquynh/capstone/archive/4.0.1.tar.gz
-# source_filename = capstone-4.0.1.tar.gz
-# source_hash = 79BBEA8DBE466BD7D051E037DB5961FDB34F67C9FAC5C3471DD105CFB1E05DC7
-
-# patch_url = 
-# patch_filename = capstone-4.0.1-wrap.zip
-# patch_hash = 

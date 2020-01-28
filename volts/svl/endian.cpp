@@ -31,9 +31,9 @@ namespace svl::endian
 #endif
     }
 
-
     using namespace svl;
     using namespace endian;
+
     // 16 bit byte swap test
     TEST("bswap16", {
         u16 v1 = 0xFF00;

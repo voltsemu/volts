@@ -48,7 +48,7 @@ namespace volts::loader::pup
             return std::nullopt;
         }
 
-        object ret = stream;
+        object ret = { stream };
 
         ret.files = stream.read<entry>(head.file_count);
         ret.hashes = stream.read<hash>(head.file_count);

@@ -5,10 +5,6 @@
 
 #include <spdlog/spdlog.h>
 
-#if SYS_WINDOWS
-#   include "windows.h"
-#endif
-
 #include <vector>
 #include <filesystem>
 
@@ -29,125 +25,6 @@ namespace svl
 
         virtual void read(void* out, u64 num) {}
         virtual void write(const void* in, u64 num) {}
-    };
-    
-#if SYS_WINDOWS
-    // win32 file handle wrapper
-    struct win32_file : file_handle
-    {
-        virtual ~win32_file() override
-        {
-            FindClose(handle);
-        }
-
-        win32_file(const HANDLE&& h)
-            : handle(h)
-        {}
-
-        virtual void seek(u64 pos) override 
-        {
-            LARGE_INTEGER p;
-            p.QuadPart = pos;
-
-            SetFilePointerEx(handle, p, nullptr, FILE_BEGIN);
-        }
-
-        virtual u64 tell() const override 
-        {
-            LARGE_INTEGER pos;
-            pos.QuadPart = 0;
-            SetFilePointerEx(handle, pos, &pos, FILE_CURRENT);
-
-            return pos.QuadPart;
-        }
-        
-        virtual u64 size() const override
-        {
-            LARGE_INTEGER len;
-            GetFileSizeEx(handle, &len);
-            return len.QuadPart;
-        }
-
-        virtual void read(void* out, u64 num) override 
-        {
-            DWORD n;
-            if(!ReadFile(handle, out, num, &n, nullptr))
-            {
-                spdlog::error("reading from file failed {}", GetLastError());
-            }
-        }
-
-        virtual void write(const void* in, u64 num) override 
-        {
-            WriteFile(handle, in, num, nullptr, nullptr);
-        }
-
-    private:
-        const HANDLE handle;
-    };
-#else
-    // posix file handle wrapper
-    struct posix_file : file_handle
-    {
-        virtual ~posix_file() override
-        {
-            std::fclose(handle);
-        }
-
-        posix_file(std::FILE* h)
-            : handle(h)
-        {}
-
-    private:
-        std::FILE* handle;
-    };
-#endif
-
-    // in memory file handle wrapper
-    struct ram_file : file_handle
-    {
-        ram_file(const std::vector<byte>& vec)
-            : handle(vec)
-        {}
-
-        virtual void seek(u64 pos) override 
-        {
-            cursor = pos;
-            if(handle.max_size() + cursor < pos)
-                handle.resize(pos);
-        }
-
-        virtual u64 size() const override
-        {
-            return handle.size();
-        }
-
-        virtual u64 tell() const override 
-        { 
-            return cursor; 
-        }
-
-        virtual void read(void* out, u64 num) override 
-        {
-            if(cursor + num > handle.max_size())
-                handle.resize(cursor + num);
-
-            std::memcpy(out, handle.data() + cursor, num);
-            cursor += num;
-        }
-
-        virtual void write(const void* in, u64 num) override 
-        {
-            if(num + cursor > handle.max_size())
-                handle.resize(cursor + num);
-
-            std::memcpy(handle.data() + cursor, in, num);
-            cursor += num;
-        }
-
-    private:
-        u64 cursor = 0;
-        std::vector<byte> handle = {};
     };
 
     struct file
@@ -222,5 +99,5 @@ namespace svl
 
     file open(const std::filesystem::path& path, u8 mo);
     
-    file from(std::vector<svl::byte> vec);
+    file from(const std::vector<svl::byte>& vec);
 }
