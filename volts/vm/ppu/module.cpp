@@ -14,12 +14,14 @@ namespace volts::ppu
     struct relocation_info
     {
         endian::big<u64> offset;
-        pad pad[2];
+        endian::big<u16> pad;
         u8 idx_val;
         u8 idx_addr;
         endian::big<u32> type;
         endian::big<u64> ptr;
     };
+
+    static_assert(sizeof(relocation_info) == 24);
 
     // TODO: all this
     void load_prx(loader::elf::ppu_prx& mod)
@@ -37,11 +39,6 @@ namespace volts::ppu
 
             if(!prog.file_size)
                 continue;
-
-            vm::addr start = vm::round_down(prog.vaddress, vm::page_size);
-            u32 round_size = prog.vaddress - start;
-
-            u32 size = vm::page_align(prog.mem_size + round_size);
 
             mod.data.seek(prog.offset);
             auto sect = mod.data.read<u8>(prog.file_size);
@@ -66,14 +63,13 @@ namespace volts::ppu
 
             mod.data.seek(prog.offset);
             auto bin = mod.data.read<u8>(prog.file_size);
-            relocation_info* infos = (relocation_info*)bin.data();
 
             for(int i = 0; i < prog.file_size; i += sizeof(relocation_info))
             {
-                auto rel = *(relocation_info*)(bin.data() + i);
+                auto rel = ((relocation_info*)(bin.data()))[i];
 
-                u32 addr = vm::read32(segments[rel.idx_addr].vaddress + rel.offset);
-                u32 data = rel.idx_val == 0xFF ? vm::read64(rel.ptr) : segments[rel.idx_val].vaddress + vm::read64(rel.ptr);
+                u64 addr = vm::read64(segments[rel.idx_addr].vaddress + rel.offset);
+                u64 data = rel.idx_val == 0xFF ? rel.ptr : segments[rel.idx_val].vaddress + rel.ptr;
 
                 switch(rel.type)
                 {
@@ -90,9 +86,10 @@ namespace volts::ppu
                     vm::read16(addr) = (data >> 16) + (data & 0x8000 ? 1 : 0);
                     break;
                 case 10:
-                    //vm::read
+                    vm::read32(addr) = ((data - addr) >> 2) >> 6;
                     break;
                 case 11:
+                    vm::read32(addr) = ((data - addr) >> 2) >> 16;
                     break;
                 case 38:
                     vm::read64(addr) = data;
@@ -101,6 +98,7 @@ namespace volts::ppu
                     vm::read64(addr) = data - addr;
                     break;
                 case 57:
+                    vm::read16(addr) = (data >> 2) & ~3;
                     break;
                 default:
                     spdlog::error("invalid relocation type");
