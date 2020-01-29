@@ -14,4 +14,10 @@ namespace volts::vm
     void* real(addr of);
 
     void init();
+
+    // ps3 page size
+    constexpr svl::i32 page_size = 0x1000;
+
+    inline svl::u32 page_align(svl::u32 val) { return (val + page_size - 1) & -page_size; }
+    inline svl::u32 round_down(svl::u32 val, svl::i32 to) { return val & -to; }
 }
