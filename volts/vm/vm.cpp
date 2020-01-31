@@ -1,44 +1,80 @@
 #include "vm.h"
 
-#include <string.h>
+#include <cstring>
 
 namespace volts::vm
 {
     using namespace svl;
 
-    u8* base = nullptr; 
+    block::block(u64 a, u64 w)
+        : block((void*)a, w)
+    {}
 
-    svl::u8& read8(addr at)
+    block::block(void* a, u64 w)
+        : addr(base((vm::addr)a))
+        , width(w)
+    {}
+
+    void* block::alloc(u64 size, u64 align)
     {
-        return *(base + at);
+        // TODO: all the allocation
+        return nullptr;
     }
 
-    svl::u16& read16(addr at)
+    u8* base_addr = nullptr; 
+
+    void* base(addr of)
     {
-        return *(reinterpret_cast<u16*>(base) + at);
+        return base_addr + of;
     }
 
-    svl::u32& read32(addr at)
-    {
-        return *(reinterpret_cast<u32*>(base) + at);
-    }
-
-    svl::u64& read64(addr at)
-    {
-        return *(reinterpret_cast<u64*>(base) + at);
-    }
-
-    void* real(addr of)
-    {
-        return base + of;
-    }
+    block* main = nullptr;
+    block* user64k = nullptr;
+    block* user1m = nullptr;
+    block* rsx = nullptr;
+    block* video = nullptr;
+    block* stack = nullptr;
+    block* spu = nullptr;
+    block* any = nullptr;
 
     void init()
     {
-        delete[] base;
-
         // todo: make this configurable
-        base = new byte[0x100000000ULL];
-        memset(base, 0, 0x100000000ULL);
+
+        // create base memory pointer then zero it out
+        base_addr = new byte[0x100000000ULL];
+        std::memset(base_addr, 0, 0x100000000ULL);
+
+        {
+            main = new block(0x10000, 0x1FFF0000);
+            user64k = new block(0x20000000, 0x10000000);
+
+            user1m = nullptr;
+            rsx = nullptr;
+
+            video = new block(0xC0000000, 0x10000000);
+            stack = new block(0xD0000000, 0x10000000);
+            spu = new block(0xE0000000, 0x20000000);
+
+            // map all memory
+            any = new block(0x10000, 0xE0000000 + 0x20000000);
+        }
+    }
+
+    void deinit()
+    {
+        delete[] base_addr;
+
+        delete main;
+        delete user64k;
+        
+        delete user1m;
+        delete rsx;
+
+        delete video;
+        delete stack;
+        delete spu;
+        
+        delete any;
     }
 }

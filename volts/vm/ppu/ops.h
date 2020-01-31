@@ -88,7 +88,7 @@ namespace volts::ppu
     {
         const vm::addr addr = op.ra ? ppu.gpr[op.ra] + op.simm16 : op.simm16;
         const u32 val = (u32)ppu.gpr[op.rs];
-        vm::read32(addr) = val;
+        vm::write<u32>(addr, val);
     }
 
     void ori(thread& ppu, form op)
@@ -114,40 +114,40 @@ namespace volts::ppu
     void lbz(thread& ppu, form op)
     {
         vm::addr addr = op.ra ? ppu.gpr[op.ra] + op.simm16 : op.simm16;
-        ppu.gpr[op.rd] = vm::read8(addr);
+        ppu.gpr[op.rd] = vm::read<u8>(addr);
     }
 
     void lbzu(thread& ppu, form op)
     {
         vm::addr addr = ppu.gpr[op.ra] + op.simm16;
-        ppu.gpr[op.rd] = vm::read8(addr);
+        ppu.gpr[op.rd] = vm::read<u8>(addr);
         ppu.gpr[op.ra] = addr;
     }
 
     void lbzx(thread& ppu, form op)
     {
         vm::addr addr = op.ra ? ppu.gpr[op.ra] + ppu.gpr[op.rb] : ppu.gpr[op.rb];
-        ppu.gpr[op.rd] = vm::read8(addr);
+        ppu.gpr[op.rd] = vm::read<u8>(addr);
     }
 
     void lbzux(thread& ppu, form op)
     {
         vm::addr addr = ppu.gpr[op.ra] + ppu.gpr[op.rb];
-        ppu.gpr[op.rd] = vm::read8(addr);
+        ppu.gpr[op.rd] = vm::read<u8>(addr);
         ppu.gpr[op.ra] = addr;
     }
 
     void _std(thread& ppu, form op)
     {
         vm::addr addr = ppu.gpr[op.ra] + (op.simm16 & ~3);
-        vm::read64(addr) = ppu.gpr[op.rs];
+        vm::write<u64>(addr, ppu.gpr[op.rs]);
         ppu.gpr[op.ra] = addr;
     }
 
     void stdu(thread& ppu, form op)
     {
         vm::addr addr = ppu.gpr[op.ra] + (op.simm16 & ~3);
-        vm::read64(addr) = ppu.gpr[op.rs];
+        vm::write<u64>(addr, ppu.gpr[op.rs]);
         ppu.gpr[op.ra] = addr;
     }
     
@@ -161,27 +161,27 @@ namespace volts::ppu
     void stfs(thread& ppu, form op)
     {
         vm::addr addr = op.ra ? ppu.gpr[op.ra] + op.simm16 : op.simm16;
-        reinterpret_cast<f32&>(vm::read32(addr)) = static_cast<f32>(ppu.fpr[op.frs]);
+        reinterpret_cast<f32&>(vm::ref<u32>(addr)) = static_cast<f32>(ppu.fpr[op.frs]);
     }
 
     void lhzu(thread& ppu, form op)
     {
         vm::addr addr = ppu.gpr[op.ra] + op.simm16;
-        ppu.gpr[op.rd] = vm::read16(addr);
+        ppu.gpr[op.rd] = vm::read<u16>(addr);
         ppu.gpr[op.ra] = addr;
     }
 
     void lwzu(thread& ppu, form op)
     {
         vm::addr addr = ppu.gpr[op.ra] + op.simm16;
-        ppu.gpr[op.rd] = vm::read32(addr);
+        ppu.gpr[op.rd] = vm::read<u32>(addr);
         ppu.gpr[op.ra] = addr;
     }
 
     void lhau(thread& ppu, form op)
     {
         vm::addr addr = ppu.gpr[op.ra] + op.simm16;
-        ppu.gpr[op.rd] = vm::read16(addr);
+        ppu.gpr[op.rd] = vm::read<u16>(addr);
         ppu.gpr[op.ra] = addr;
     }
 

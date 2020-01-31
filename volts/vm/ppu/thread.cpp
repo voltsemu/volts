@@ -19,7 +19,7 @@ namespace volts::ppu
 
         for(int i = 0; i < 10; i++)
         {
-            auto op = vm::read32(cia);
+            auto op = vm::read<u32>(cia);
             auto d = decode(op);
             ops[d](*this, {op});
             cia += 4;

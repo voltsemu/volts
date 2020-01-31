@@ -27,8 +27,15 @@ namespace volts::ppu
     void load_prx(loader::elf::ppu_prx& mod)
     {
         std::unique_ptr<XXH64_state_t, decltype(&XXH64_freeState)> hasher(XXH64_createState(), XXH64_freeState);
-
         XXH64_reset(hasher.get(), 0);
+        
+        
+        auto hash = XXH64_digest(hasher.get());
+        spdlog::info("prx hash: {}", hash);
+    }
+}
+
+#if 0
 
         std::vector<elf::program_header<u64>> segments;
 
@@ -147,8 +154,4 @@ namespace volts::ppu
             auto data = mod.data.read<svl::byte>(sect.size);
             std::memcpy(vm::real(sect.address), data.data(), data.size());
         } */
-
-        auto hash = XXH64_digest(hasher.get());
-        spdlog::info("prx hash: {}", hash);
-    }
-}
+#endif
