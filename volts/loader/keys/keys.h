@@ -6,6 +6,10 @@
 
 namespace volts::loader
 {
+    /**
+     * @brief the type of decryption key
+     * 
+     */
     enum class key_type : svl::u32
     {
         lvl0 = 1,
@@ -18,6 +22,10 @@ namespace volts::loader
         npdrm = 8,
     };
 
+    /**
+     * @brief a decryption key
+     * 
+     */
     struct key
     {
         svl::u64 version;
@@ -30,6 +38,10 @@ namespace volts::loader
         svl::u32 curve;
     };
 
+    /**
+     * @brief required decryption keys
+     * 
+     */
     namespace keys
     {
         static const svl::u8 free_klic[] = {
@@ -45,6 +57,14 @@ namespace volts::loader
             0x4A, 0xCE, 0xF0, 0x12, 0x24, 0xFB, 0xEE, 0xDF, 0x82, 0x45, 0xF8, 0xFF, 0x10, 0x21, 0x1E, 0x6E 
         };
 
+        /**
+         * @brief get a self key based off requirements
+         * 
+         * @param type the type of key required
+         * @param rev the revision of key required
+         * @param ver the version of key required
+         * @return std::optional<key> a key if one was found
+         */
         std::optional<key> get_self_key(key_type type, svl::u16 rev, svl::u64 ver);
     }
 }
