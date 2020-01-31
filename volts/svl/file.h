@@ -11,51 +11,54 @@
 namespace svl
 {
     /**
-     * a files open mode
+     * @brief file open mode
      */
     namespace mode
     {
-        constexpr u8 read = (1 << 0); /// read only file
-        constexpr u8 write = (1 << 1); /// write file, implies read as well
+        /// read only file
+        constexpr u8 read = (1 << 0); 
+
+        /// write file, implies read as well
+        constexpr u8 write = (1 << 1); 
     }
 
     /**
-     * an abstract base class for all file handles
+     * @brief an abstract base class for all file handles
      */
     struct file_handle 
     {
         /**
-         * virtual destructor 
+         * @brief virtual destructor 
          */
         virtual ~file_handle() {}
 
         /**
-         * seek to an absolute offset in the file
+         * @brief seek to an absolute offset in the file
          * @param pos the position to seek from relative to 0
          */
         virtual void seek(u64 pos) {}
 
         /**
-         * get the current cursor position in the file
+         * @brief get the current cursor position in the file
          * @return the current cursor position
          */
         virtual u64 tell() const { return 0; }
 
         /**
-         * get the size of the file in bytes
+         * @brief get the size of the file in bytes
          * @return length of file data in bytes
          */
         virtual u64 size() const { return 0; }
 
         /**
-         * read binary data into a pointer
+         * @brief read binary data into a pointer
          * @param out the pointer to write to
          * @param num the amount of bytes to read
          */
         virtual void read(void* out, u64 num) {}
 
         /**
-         * write binary data from a pointer into the file
+         * @brief write binary data from a pointer into the file
          * @param in the binary data to read from
          * @param num the amount of bytes to read
          */
@@ -63,13 +66,13 @@ namespace svl
     };
 
     /**
-     * represents a file stream
+     * @brief represents a file stream
      * can be either an in memory stream or a disk backed file
      */
     struct file
     {
         /**
-         * seek to a point in the file
+         * @brief seek to a point in the file
          * @param pos the point to seek to
          */
         void seek(u64 pos)
@@ -78,7 +81,7 @@ namespace svl
         }
 
         /**
-         * get the location of the cursor in the file
+         * @brief get the location of the cursor in the file
          * @return the position of the cursor
          */
         u64 tell() const
@@ -87,7 +90,7 @@ namespace svl
         }
 
         /**
-         * get the size of the file
+         * @brief get the size of the file
          * @return size in bytes
          */
         u64 size() const 
@@ -96,7 +99,7 @@ namespace svl
         }
 
         /**
-         * read a POD type in from the stream
+         * @brief read a POD type in from the stream
          * @tparam the type to read in
          * @return the read in data
          */
@@ -197,6 +200,7 @@ namespace svl
 
     private:
 
+        /// handle to the underlying file handle
         std::shared_ptr<file_handle> handle;
     };
 

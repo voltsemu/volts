@@ -11,42 +11,57 @@
 namespace volts::loader::pup
 {
     /**
-     * A PUP object data table entry
+     * @brief a PUP object data table entry
      * always 32 bytes wide
      */
     struct entry
     {
-        svl::endian::big<svl::u64> id; /// the id of the entry
-        svl::endian::big<svl::u64> offset; /// the absolute offset of the data in the file
-        svl::endian::big<svl::u64> length; /// the length of the data in bytes
-        svl::pad padding[8]; /// structure padding
+        /// the id of the entry
+        svl::endian::big<svl::u64> id; 
+
+        /// the absolute offset of the data in the file
+        svl::endian::big<svl::u64> offset; 
+
+        /// the length of the data in bytes
+        svl::endian::big<svl::u64> length; 
+
+        /// structure padding
+        svl::pad padding[8]; 
     };
 
     static_assert(sizeof(entry) == 32);
 
     /**
-     * A PUP object hash table entry
+     * @brief a PUP object hash table entry
      * always 32 bytes wide
      */
     struct hash
     {
-        svl::endian::big<svl::u64> id; /// the id of the assocciated entry
-        svl::byte hash[20]; /// the hash of the entry
-        svl::pad padding[4]; /// padding
+        /// the id of the assocciated entry
+        svl::endian::big<svl::u64> id; 
+
+        /// the hash of the entry
+        svl::byte hash[20]; 
+
+        /// padding
+        svl::pad padding[4]; 
     };
 
     static_assert(sizeof(hash) == 32);
 
     /**
-     * A PUP (Playstation Update Package) object representation
+     * @brief a PUP (Playstation Update Package) object representation
      */
     struct object
     {
-        std::vector<entry> files; /// all the files in the object
-        std::vector<hash> hashes; /// the hashes of the file entries
+        /// all the files in the object
+        std::vector<entry> files; 
+
+        /// the hashes of the file entries
+        std::vector<hash> hashes; 
 
         /**
-         * Get a file from the update object
+         * @brief get a file from the update object
          * @param id the id of the entry to retrive
          * @return the extracted file
          */
@@ -56,7 +71,7 @@ namespace volts::loader::pup
 
     private:
         /**
-         * Parse a PUP file
+         * @brief parse a PUP file
          * @param s the file to parse
          */
         object(svl::file s)
@@ -67,7 +82,7 @@ namespace volts::loader::pup
     };
 
     /**
-     * parse a PUP file and return if the file was valid
+     * @brief parse a PUP file and return if the file was valid
      * @param stream the file to parse
      * @return the parsed object or an empty option
      */

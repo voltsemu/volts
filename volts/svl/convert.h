@@ -9,6 +9,12 @@
 
 namespace svl::convert
 {
+    /**
+     * @brief convert a string to a number
+     * 
+     * @param str the string to convert to a number
+     * @return u16 the number
+     */
     constexpr u16 to_u16(const char* str)
     {
         return *(u16*)str;
