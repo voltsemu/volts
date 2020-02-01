@@ -2,7 +2,8 @@ project('volts', ['cpp', 'c'],
     default_options : [
         'cpp_std=c++17',
         'cpp_rtti=false',
-        'cpp_eh=none'
+        'cpp_eh=none',
+        'default_library=static'
     ],
     version : '0.2.0',
     license : 'Apache'
@@ -80,5 +81,16 @@ executable('volt_tests', sources + test_sources,
     cpp_args : args + [ '-DVTESTING=1' ],
     dependencies : deps,
     link_args : links,
+    build_by_default : false
+)
+
+doxygen = find_program('doxygen', required : false)
+
+custom_target('docs', 
+    input : 'Doxyfile',
+    output : 'html',
+    command : [doxygen, 'Doxyfile'], 
+    install : true, 
+    install_dir : 'docs',
     build_by_default : false
 )

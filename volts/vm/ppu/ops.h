@@ -155,13 +155,13 @@ namespace volts::ppu
     {
         // TODO: is this right
         vm::addr addr = op.ra ? ppu.gpr[op.ra] + op.simm16 : op.simm16;
-        ppu.fpr[op.frd] = addr;
+        ppu.fpr[op.frd] = vm::ref<f32>(addr);
     }
 
     void stfs(thread& ppu, form op)
     {
         vm::addr addr = op.ra ? ppu.gpr[op.ra] + op.simm16 : op.simm16;
-        reinterpret_cast<f32&>(vm::ref<u32>(addr)) = static_cast<f32>(ppu.fpr[op.frs]);
+        vm::write<f32>(addr, ppu.fpr[op.frs]);
     }
 
     void lhzu(thread& ppu, form op)
