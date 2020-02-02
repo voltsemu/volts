@@ -86,11 +86,6 @@ executable('volt_tests', sources + test_sources,
 
 doxygen = find_program('doxygen', required : false)
 
-custom_target('docs', 
-    input : 'Doxyfile',
-    output : 'html',
-    command : [doxygen, 'Doxyfile'], 
-    install : true, 
-    install_dir : 'docs',
-    build_by_default : false
+run_target('docs', 
+    command : [doxygen, meson.source_root()/'Doxyfile']
 )

@@ -188,6 +188,11 @@ namespace svl
             return !!handle;
         }
 
+        friend file open(const std::filesystem::path& path, u8 mo);
+        friend file from(const std::vector<svl::byte>& vec);
+
+    private:
+
         file()
             : handle(nullptr)
         {}
@@ -198,13 +203,24 @@ namespace svl
 
         file(const file& f) : handle(f.handle) {}
 
-    private:
-
         /// handle to the underlying file handle
         std::shared_ptr<file_handle> handle;
     };
 
+    /**
+     * @brief open a file on disk
+     * 
+     * @param path the file path to open
+     * @param mo the open mode to use
+     * @return file the opened file
+     */
     file open(const std::filesystem::path& path, u8 mo);
     
+    /**
+     * @brief convert a vector to a file stream
+     * 
+     * @param vec the vector to convert to a file
+     * @return file the file stream
+     */
     file from(const std::vector<svl::byte>& vec);
 }

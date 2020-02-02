@@ -1,5 +1,29 @@
 #pragma once
 
+/**
+ * @brief platform defines
+ * 
+ * platform specific defines
+ * 
+ * @def SYS_WINDOWS
+ * 1 when building on windows else 0
+ * 
+ * @def SYS_OSX
+ * 1 when compiling on mac osx else 0
+ * 
+ * @def SYS_UNIX
+ * 1 when compiling on linux else 0
+ * 
+ * @def CL_CLANG
+ * 1 when compiling using clang else 0
+ * 
+ * @def CL_GNU
+ * 1 when compiling using g++ else 0
+ * 
+ * @def CL_MSVC
+ * 1 when compiling using msvc else 0
+ */
+
 #if defined(_WIN32) || defined(_WIN64)
 #   define SYS_WINDOWS 1
 #elif defined(__APPLE__) && defined(__MACH__)

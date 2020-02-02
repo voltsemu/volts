@@ -18,7 +18,7 @@ namespace cell::lv2::memory
         spu_thread = (1 << 1),
         raw_spu = (1 << 0),
 
-        any = ppu_thread | handler | spu_thread | raw_spu,
+        any = (1 << 3) | (1 << 2) | (1 << 1) | (1 << 0),
         none = 240,
 
         read_only = (1 << 19),
