@@ -32,20 +32,23 @@ namespace volts::vm
         return *static_cast<T*>(base(at));
     }
 
-    enum class block_flags
+    enum class block_flags : svl::u32
     {
-        large_pages = (1 << 0),
-        page_offset = (1 << 1),
+        small_pages = (1 << 0),
+        offset_pages = (1 << 1)
     };
 
     struct block
     {
         block(void* a, svl::u64 w);
         block(svl::u64 a, svl::u64 w);
+        ~block();
+
         void* addr;
         svl::u64 width;
 
         void* alloc(svl::u64 size, svl::u64 align);
+        void dealloc(void* ptr);
     };
 
     extern block* main;

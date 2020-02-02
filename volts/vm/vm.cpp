@@ -2,6 +2,8 @@
 
 #include <cstring>
 
+#include <spdlog/spdlog.h>
+
 namespace volts::vm
 {
     using namespace svl;
@@ -15,10 +17,24 @@ namespace volts::vm
         , width(w)
     {}
 
-    void* block::alloc(u64 size, u64 align)
+    static u32 align(u64 val, u64 alignment)
     {
-        // TODO: all the allocation
+        return (val + alignment - 1) & -alignment;
+    }
+
+    block::~block()
+    {
+        
+    }
+
+    void* block::alloc(u64 size, u64 alignto)
+    {
         return nullptr;
+    }
+
+    void block::dealloc(void* ptr)
+    {
+        
     }
 
     u8* base_addr = nullptr; 
