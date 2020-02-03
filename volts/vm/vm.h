@@ -32,12 +32,6 @@ namespace volts::vm
         return *static_cast<T*>(base(at));
     }
 
-    enum class block_flags : svl::u32
-    {
-        small_pages = (1 << 0),
-        offset_pages = (1 << 1)
-    };
-
     struct block
     {
         template<typename T>

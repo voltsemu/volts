@@ -2,11 +2,19 @@
 
 #include <cstring>
 
+#include <mutex>
+
 #include <spdlog/spdlog.h>
 
 namespace volts::vm
 {
     using namespace svl;
+
+    u8* base_addr = nullptr; 
+
+    std::mutex memory_mutex;
+
+#define LOCKED(...) { std::lock_guard<std::mutex> guard(memory_mutex); { __VA_ARGS__ } }
 
     static u32 align(u64 val, u64 alignment)
     {
@@ -20,15 +28,17 @@ namespace volts::vm
 
     void* block::alloc(u64 size, u64 alignto)
     {
-        return nullptr;
+        u32 s = align(size, page_size) + (offset_pages ? 0x2000 : 0);
+
+        LOCKED({
+            return nullptr;
+        });
     }
 
     void block::dealloc(void* ptr)
     {
         
     }
-
-    u8* base_addr = nullptr; 
 
     void* base(addr of)
     {
