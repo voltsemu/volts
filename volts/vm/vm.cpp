@@ -8,15 +8,6 @@ namespace volts::vm
 {
     using namespace svl;
 
-    block::block(u64 a, u64 w)
-        : block((void*)a, w)
-    {}
-
-    block::block(void* a, u64 w)
-        : addr(base((vm::addr)a))
-        , width(w)
-    {}
-
     static u32 align(u64 val, u64 alignment)
     {
         return (val + alignment - 1) & -alignment;

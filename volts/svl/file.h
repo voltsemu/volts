@@ -191,17 +191,13 @@ namespace svl
         friend file open(const std::filesystem::path& path, u8 mo);
         friend file from(const std::vector<svl::byte>& vec);
 
+        file(const file&) = default;
+
+        file() : handle(nullptr) {}
+
     private:
 
-        file()
-            : handle(nullptr)
-        {}
-
-        file(file_handle* ptr)
-            : handle(ptr)
-        {}
-
-        file(const file& f) : handle(f.handle) {}
+        file(file_handle* ptr) : handle(ptr) {}
 
         /// handle to the underlying file handle
         std::shared_ptr<file_handle> handle;

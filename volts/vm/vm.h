@@ -40,12 +40,21 @@ namespace volts::vm
 
     struct block
     {
-        block(void* a, svl::u64 w);
-        block(svl::u64 a, svl::u64 w);
+        template<typename T>
+        block(T a, svl::u64 w, svl::u32 ps = 0x10000, bool op = false)
+            : addr(base((vm::addr)a))
+            , width(w)
+            , page_size(ps)
+            , offset_pages(op)
+        {}
+
         ~block();
 
         void* addr;
         svl::u64 width;
+
+        const svl::u32 page_size;
+        const bool offset_pages;
 
         void* alloc(svl::u64 size, svl::u64 align);
         void dealloc(void* ptr);
