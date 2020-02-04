@@ -56,6 +56,14 @@ links = []
 
 args = []
 
+if meson.get_compiler('cpp').get_id() == 'g++'
+    args += '-lstdc++fs'
+endif
+
+if not meson.get_compiler('cpp').has_header('filesystem')
+    args += '-DNO_FILESYSTEM'
+endif
+
 subdir('volts')
 
 # disable run time type id and exceptions in the hope of generating smaller code
@@ -86,6 +94,8 @@ executable('volt_tests', sources + test_sources,
 
 doxygen = find_program('doxygen', required : false)
 
-run_target('docs', 
-    command : [doxygen, meson.source_root()/'Doxyfile']
-)
+if doxygen.found()
+    run_target('docs', 
+        command : [doxygen, meson.source_root()/'Doxyfile']
+    )
+endif

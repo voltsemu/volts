@@ -29,6 +29,30 @@ namespace volts::ppu
         std::unique_ptr<XXH64_state_t, decltype(&XXH64_freeState)> hasher(XXH64_createState(), XXH64_freeState);
         XXH64_reset(hasher.get(), 0);
         
+        for(auto prog : mod.progs)
+        {
+            if(prog.type != 1 || !prog.file_size)
+                continue;
+
+            mod.data.seek(prog.offset);
+            auto dat = mod.data.read<u8>(prog.file_size);
+
+            void* addr = vm::main->alloc(prog.mem_size);
+
+            if(!addr)
+                spdlog::info("out of memory");
+
+            std::memcpy(vm::base((vm::addr)addr), dat.data(), prog.file_size);
+        
+            //TODO: segments
+
+            XXH64_update(hasher.get(), &prog.vaddress, sizeof(prog.vaddress));
+        }
+
+        for(auto sect : mod.sects)
+        {
+            
+        }
         
         auto hash = XXH64_digest(hasher.get());
         spdlog::info("prx hash: {}", hash);

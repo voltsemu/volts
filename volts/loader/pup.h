@@ -67,7 +67,7 @@ namespace volts::loader::pup
          */
         svl::file get_file(svl::u64 id);
 
-        friend std::optional<object> load(svl::file stream);
+        friend std::optional<object> load(svl::file);
 
     private:
         /**

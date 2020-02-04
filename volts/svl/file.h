@@ -6,7 +6,8 @@
 #include <spdlog/spdlog.h>
 
 #include <vector>
-#include <filesystem>
+
+#include <external/wrapfs.h>
 
 namespace svl
 {
@@ -188,7 +189,7 @@ namespace svl
             return !!handle;
         }
 
-        friend file open(const std::filesystem::path& path, u8 mo);
+        friend file open(const fs::path& path, u8 mo);
         friend file from(const std::vector<svl::byte>& vec);
 
         file(const file&) = default;
@@ -210,7 +211,7 @@ namespace svl
      * @param mo the open mode to use
      * @return file the opened file
      */
-    file open(const std::filesystem::path& path, u8 mo);
+    file open(const fs::path& path, u8 mo);
     
     /**
      * @brief convert a vector to a file stream

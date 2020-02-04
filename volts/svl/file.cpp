@@ -156,7 +156,7 @@ namespace svl
         std::vector<byte> handle = {};
     };
 
-    file open(const std::filesystem::path& path, u8 mo)
+    file open(const fs::path& path, u8 mo)
     {
 #if SYS_WINDOWS
     DWORD access = 0;

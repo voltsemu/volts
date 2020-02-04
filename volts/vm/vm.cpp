@@ -2,8 +2,6 @@
 
 #include <cstring>
 
-#include <mutex>
-
 #include <spdlog/spdlog.h>
 
 namespace volts::vm
@@ -12,26 +10,54 @@ namespace volts::vm
 
     u8* base_addr = nullptr; 
 
-    std::mutex memory_mutex;
+#define LOCKED(...) { std::lock_guard<std::mutex> guard(this->mut); { __VA_ARGS__ } }
 
-#define LOCKED(...) { std::lock_guard<std::mutex> guard(memory_mutex); { __VA_ARGS__ } }
-
-    static u32 align(u64 val, u64 alignment)
+    static u32 align(u64 val, i64 alignment)
     {
         return (val + alignment - 1) & -alignment;
     }
 
+    static void free_link_chain(link* begin)
+    {
+        if(begin)
+        {
+            free_link_chain(begin->next);
+            delete begin;
+        }
+    }
+
     block::~block()
     {
-        
+        free_link_chain(begin);
     }
 
     void* block::alloc(u64 size, u64 alignto)
     {
         u32 s = align(size, page_size) + (offset_pages ? 0x2000 : 0);
+        u32 page_count = size / s;
 
         LOCKED({
-            return nullptr;
+            link* cur = begin;
+            for(;;)
+            {
+                // if this block wont overlap with the next one we can allocate
+                if(((s + cur->len + cur->addr) - cur->next->addr) < 0)
+                {
+                    link* lk = new link{cur, cur->next, cur->addr + cur->len, s};
+                    cur->next->behind = lk;
+                    cur->next = lk;
+
+                    return (void*)lk->addr;
+                }
+                else if(cur == end)
+                {
+                    return nullptr;
+                }
+                else
+                {
+                    cur = cur->next;
+                }
+            }
         });
     }
 

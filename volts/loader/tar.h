@@ -30,7 +30,7 @@ namespace volts::loader::tar
          * 
          * @param to the location to extract to
          */
-        void extract(const std::filesystem::path& to);
+        void extract(const fs::path& to);
 
         friend object load(svl::file stream);
 

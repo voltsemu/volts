@@ -2,6 +2,8 @@
 
 #include "svl/types.h"
 
+#include <mutex>
+
 namespace volts::vm
 {
     using addr = svl::u64;
@@ -32,6 +34,15 @@ namespace volts::vm
         return *static_cast<T*>(base(at));
     }
 
+    struct link
+    {
+        link* next;
+        link* behind;
+
+        vm::addr addr;
+        svl::u32 len;
+    };
+
     struct block
     {
         template<typename T>
@@ -40,7 +51,11 @@ namespace volts::vm
             , width(w)
             , page_size(ps)
             , offset_pages(op)
-        {}
+        {
+            begin = new link{nullptr, nullptr, (vm::addr)a, 0};
+            end = new link{nullptr, begin, (vm::addr)a + width, 0};
+            begin->next = end;
+        }
 
         ~block();
 
@@ -50,8 +65,15 @@ namespace volts::vm
         const svl::u32 page_size;
         const bool offset_pages;
 
-        void* alloc(svl::u64 size, svl::u64 align);
+        link* begin;
+        link* end;
+
+        // returns vm address, not real address (although technically it would work either way)
+        void* alloc(svl::u64 size, svl::u64 align = 0x10000);
         void dealloc(void* ptr);
+
+    private:
+        std::mutex mut;
     };
 
     extern block* main;

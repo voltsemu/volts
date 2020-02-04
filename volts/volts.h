@@ -17,7 +17,7 @@
 
 #include "svl/file.h"
 
-#include <filesystem>
+#include <external/wrapfs.h>
 
 #define CXXOPTS_NO_EXCEPTIONS
 #define CXXOPTS_NO_RTTI
@@ -29,7 +29,6 @@
 
 namespace volts
 {
-    namespace fs = std::filesystem;
     namespace json = rapidjson;
     namespace opts = cxxopts;
 
@@ -58,7 +57,7 @@ namespace volts
             if(opts.count("vfs"))
             {
                 auto path = opts["vfs"].as<std::string>();
-                std::filesystem::create_directories(path);
+                fs::create_directories(path);
                 vfs::set_root(path);
                 spdlog::info("set vfs directory to {}", path);
             }
