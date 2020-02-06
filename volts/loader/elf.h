@@ -124,24 +124,53 @@ namespace volts::loader::elf
         svl::endian::big<T> entry_size;
     };
 
+    /**
+     * @brief an elf object
+     * 
+     * @tparam T elf format, either u32 or u64
+     */
     template<typename T>
     struct object
     {
+        /// the type of the program headers
         using program_t = program_header<T>;
+
+        /// the type of the section headers
         using section_t = section_header<T>;
+
+        /// the type of the elf header
         using header_t = header<T>;
 
+        /// elf header data
         header_t head;
+
+        /// elf program headers
         std::vector<program_t> progs = {};
+
+        /// elf section headers
         std::vector<section_t> sects = {};
 
+        /// underlying file handle
         svl::file data;
 
+        /**
+         * @brief Construct a new elf object
+         * 
+         * @param d the file to load from
+         */
         object(svl::file d)
             : data(d)
         {}
     };
 
+    /**
+     * @brief parse an elf from a file stream
+     * 
+     * @tparam T the elf file type
+     * @param stream the stream to parse
+     * @return std::optional<T> if the file was properly formatted then a loaded elf
+     *         otherwise nullopt
+     */
     template<typename T>
     std::optional<T> load(svl::file stream)
     {
@@ -166,7 +195,12 @@ namespace volts::loader::elf
         return ret;
     }
 
+    /// a ppu executable
     using ppu_exec = object<svl::u64>;
+
+    /// a ppu system object
     using ppu_prx = object<svl::u64>;
+
+    /// a spu executable
     using spu_exec = object<svl::u32>;
 }

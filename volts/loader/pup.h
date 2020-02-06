@@ -78,7 +78,8 @@ namespace volts::loader::pup
             : file(s)
         {}
 
-        svl::file file; /// the source file of this PUP
+        /// the source file of this PUP
+        svl::file file; 
     };
 
     /**

@@ -64,6 +64,8 @@ namespace svl
          * @param num the amount of bytes to read
          */
         virtual void write(const void* in, u64 num) {}
+
+        virtual void save(const fs::path& path) const {}
     };
 
     /**
@@ -187,6 +189,11 @@ namespace svl
         bool valid() const
         {
             return !!handle;
+        }
+
+        void save(const fs::path& path) const
+        {
+            handle->save(path);
         }
 
         friend file open(const fs::path& path, u8 mo);

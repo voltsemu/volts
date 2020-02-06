@@ -2,20 +2,20 @@
 
 namespace volts::vfs
 {
-    fs::path root = fs::current_path()/"vfs";
+    fs::path vfs_root = fs::current_path()/"vfs";
 
-    void set_root(const fs::path& new_path)
+    void root(const fs::path& new_root)
     {
-        root = new_path;
+        vfs_root = new_root;
     }
 
-    fs::path get_root()
+    fs::path root()
     {
-        return root;
+        return vfs_root;
     }
 
-    fs::path get_path(const fs::path& path)
+    fs::path get(const fs::path& path)
     {
-        return root/path;
+        return vfs_root/path;
     }
 }

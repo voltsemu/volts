@@ -4,12 +4,25 @@
 
 namespace volts::vfs
 {
-    // set the root of the virtual file system
-    void set_root(const fs::path& new_root);
+    /**
+     * @brief set the current root of the virtual filesystem
+     * 
+     * @param new_root the new root
+     */
+    void root(const fs::path& new_root);
 
-    // get the root path of the virtual file system
-    fs::path get_root();
+    /**
+     * @brief get the current root of the vfs
+     * 
+     * @return fs::path the current vfs root
+     */
+    fs::path root();
 
-    // get a path inside the filesystem that is relative to root
-    fs::path get_path(const fs::path& path);
+    /**
+     * @brief get a path relative to the vfs root
+     * 
+     * @param path the path to get
+     * @return fs::path the corrected path
+     */
+    fs::path get(const fs::path& path);
 }

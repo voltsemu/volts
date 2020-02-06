@@ -4,6 +4,13 @@
 
 #if SYS_WINDOWS
 #   include "windows.h"
+#elif SYS_OSX
+#   include <copyfile.h>
+#endif
+
+#if !SYS_WINDOWS
+#   include <unistd.h>
+#   include <fcntl.h>
 #endif
 
 namespace svl
@@ -56,6 +63,15 @@ namespace svl
             WriteFile(handle, in, num, nullptr, nullptr);
         }
 
+        virtual void save(const fs::path& path) const override
+        {
+            FlushFileBuffers(handle);
+
+            TCHAR buf[MAX_PATH];
+            GetFinalPathNameByHandle(handle, buf, MAX_PATH, VOLUME_NAME_NT);
+            CopyFileW(buf, path.wstring().c_str(), false);
+        }
+
     private:
         const HANDLE handle;
     };
@@ -99,6 +115,22 @@ namespace svl
         virtual void write(const void* in, u64 num) override 
         {
             std::fwrite(in, 1, num, handle);
+        }
+
+        virtual void save(const fs::path& path) const override
+        {
+            std::fflush(handle);
+            int out = creat(path.c_str(), 0660);
+#if SYS_OSX
+            fcopyfile(fileno(handle), out, 0, COPYFILE_ALL);
+#else
+            off_t copied = 0;
+            struct stat info = {};
+            int in = fileno(handle);
+            fstat(in, &info);
+            sendfile(out, in, &copied, info.st_size);
+#endif
+            close(out);
         }
 
     private:
@@ -151,6 +183,11 @@ namespace svl
             cursor += num;
         }
 
+        virtual void save(const fs::path& path) const override
+        {
+            svl::open(path, mode::write).write(handle.data(), handle.size());
+        }
+
     private:
         u64 cursor = 0;
         std::vector<byte> handle = {};
@@ -159,48 +196,48 @@ namespace svl
     file open(const fs::path& path, u8 mo)
     {
 #if SYS_WINDOWS
-    DWORD access = 0;
-    DWORD disp = 0;
+        DWORD access = 0;
+        DWORD disp = 0;
 
-    if(mo & mode::write)
-    {
-        access |= GENERIC_WRITE;
-        disp |= CREATE_ALWAYS;
-    }
+        if(mo & mode::write)
+        {
+            access |= GENERIC_WRITE;
+            disp |= CREATE_ALWAYS;
+        }
 
-    if(mo & mode::read)
-    {
-        access |= GENERIC_READ;
-        disp |= OPEN_EXISTING;
-    }
+        if(mo & mode::read)
+        {
+            access |= GENERIC_READ;
+            disp |= OPEN_EXISTING;
+        }
 
-    const HANDLE f = CreateFileW(
-        path.wstring().c_str(), 
-        access,
-        FILE_SHARE_READ,
-        nullptr,
-        disp,
-        FILE_ATTRIBUTE_NORMAL,
-        nullptr
-    );
+        const HANDLE f = CreateFileW(
+            path.wstring().c_str(), 
+            access,
+            FILE_SHARE_READ,
+            nullptr,
+            disp,
+            FILE_ATTRIBUTE_NORMAL,
+            nullptr
+        );
 
-    if(f == INVALID_HANDLE_VALUE)
-    {
-        spdlog::error("failed to open file");
-    }
+        if(f == INVALID_HANDLE_VALUE)
+        {
+            spdlog::error("failed to open file");
+        }
 
-    return { new win32_file(std::move(f)) };
+        return { new win32_file(std::move(f)) };
 #else
-    std::string access;
+        std::string access;
 
-    if(mo & mode::write)
-        access += "w";
+        if(mo & mode::write)
+            access += "w";
 
-    if(mo & mode::read)
-        access += "r";
+        if(mo & mode::read)
+            access += "r";
 
-    std::FILE* f = std::fopen(path.c_str(), access.c_str());
-    return { new posix_file(f) };
+        std::FILE* f = std::fopen(path.c_str(), access.c_str());
+        return { new posix_file(f) };
 #endif
     }
 

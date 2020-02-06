@@ -51,14 +51,13 @@ namespace volts
                 auto path = opts["output"].as<std::string>();
                 auto log = spdlog::basic_logger_mt("volts", path);
                 spdlog::set_default_logger(log);
-                output_path = path;
             }
 
             if(opts.count("vfs"))
             {
                 auto path = opts["vfs"].as<std::string>();
                 fs::create_directories(path);
-                vfs::set_root(path);
+                vfs::root(path);
                 spdlog::info("set vfs directory to {}", path);
             }
 
@@ -74,11 +73,7 @@ namespace volts
                 {
                     svl::file stream = svl::open(path, svl::mode::read);
                     auto obj = loader::unself::load_self(stream);
-                    obj.seek(0);
-
-                    svl::file out_file = svl::open("eboot.elf", svl::mode::write);
-                    out_file.write(obj.read<char>(obj.size()));
-                    //spdlog::info("decrypted self and wrote file to {}", fs::absolute(out).string());
+                    obj.save(vfs::get("eboot.elf"));
                 }
             }
 
@@ -109,7 +104,7 @@ namespace volts
 
                             auto t = loader::tar::load(update_dec[2]);
 
-                            t.extract(vfs::get_root());
+                            t.extract(vfs::root());
                         }
                     }
 
@@ -123,7 +118,7 @@ namespace volts
 
             if(opts.count("load"))
             {
-                svl::file firmware = svl::open(vfs::get_path("dev_flash/sys/external/liblv2.sprx"), svl::mode::read);
+                svl::file firmware = svl::open(vfs::get("dev_flash/sys/external/liblv2.sprx"), svl::mode::read);
 
                 auto dec = loader::unself::load_self(firmware);
 
@@ -190,8 +185,7 @@ namespace volts
                 
                     w.EndObject();
 
-                    auto f = svl::open("sfo.json", svl::mode::write);
-                    f.write(s.GetString(), strlen(s.GetString()));
+                    svl::open("sfo.json", svl::mode::write).write(s.GetString(), strlen(s.GetString()));
 
                     spdlog::info("wrote parsed sfo file to {}", fs::absolute("sfo.json").string());
                 }
@@ -219,19 +213,5 @@ namespace volts
 
             return options.parse(argc, argv);
         }
-
-        std::string output_file(const std::string& name)
-        {
-            if(output_path)
-            {
-                auto ret = *output_path;
-                ret.replace_extension("." + name);
-                return ret.string();
-            }
-            
-            return name;
-        }
-
-        std::optional<fs::path> output_path = std::nullopt;
     };
 }
