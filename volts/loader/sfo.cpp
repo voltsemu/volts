@@ -77,15 +77,12 @@ namespace volts::loader::sfo
 
         object val;
 
+        // read in the redirectors
+        const auto redirects = stream.read<index_table_entry>(head.total_entries);
+
         // for every entry
-        for(int i = 0; i < head.total_entries; i++)
+        for(const auto redirect : redirects)
         {
-            // read in the redirector to find out where the key and data are
-            const auto redirect = stream.read<index_table_entry>();
-
-            // get the current distance so we can seek back
-            const auto dist = stream.tell();
-
             // seek to the key in the key table
             stream.seek(head.key_offset + redirect.key_offset);
 
@@ -105,9 +102,6 @@ namespace volts::loader::sfo
 
             // put the data into the object
             val.insert({ key, v });
-
-            // seek back to the start
-            stream.seek(dist);
         }
 
         return val;

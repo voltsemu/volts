@@ -38,6 +38,7 @@ namespace volts::ppu
             auto dat = mod.data.read<u8>(prog.file_size);
 
             void* addr = vm::main->alloc(prog.mem_size);
+            spdlog::info("addr {}", addr);
 
             if(!addr)
                 spdlog::info("out of memory");

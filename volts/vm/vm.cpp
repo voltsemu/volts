@@ -34,14 +34,13 @@ namespace volts::vm
     void* block::alloc(u64 size, u64 alignto)
     {
         u32 s = align(size, page_size) + (offset_pages ? 0x2000 : 0);
-        u32 page_count = size / s;
 
         LOCKED({
             link* cur = begin;
             for(;;)
             {
                 // if this block wont overlap with the next one we can allocate
-                if(((s + cur->len + cur->addr) - cur->next->addr) < 0)
+                if(((s + cur->len + cur->addr) - cur->next->addr) > 0)
                 {
                     link* lk = new link{cur, cur->next, cur->addr + cur->len, s};
                     cur->next->behind = lk;
@@ -51,10 +50,12 @@ namespace volts::vm
                 }
                 else if(cur == end)
                 {
+                    // we've run out of space
                     return nullptr;
                 }
                 else
                 {
+                    // check the next node
                     cur = cur->next;
                 }
             }
@@ -63,7 +64,32 @@ namespace volts::vm
 
     void block::dealloc(void* ptr)
     {
-        
+        LOCKED({
+            link* cur = begin;
+            for(;;)
+            {
+                if(cur->addr == (vm::addr)ptr)
+                {
+                    // remove link in chain
+                    link* behind = cur->behind;
+                    link* next = cur->next;
+                    behind->next = next;
+                    next->behind = behind;
+                    delete cur;
+                }
+                else if(cur == end)
+                {
+                    // if we've reached the end then something went wrong
+                    spdlog::info("invalid free of address {:x}", ptr);
+                    break;
+                }
+                else
+                {
+                    // next item in chain
+                    cur = cur->next;
+                }
+            }
+        })
     }
 
     void* base(addr of)

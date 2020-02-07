@@ -3,5 +3,6 @@ foreach dir : ['loader', 'svl', 'external', 'generated', 'vm', 'vfs']
 endforeach
 
 sources += [
-    'volts/volts.cpp'
+    'volts/volts.cpp',
+    'volts/cmd.cpp'
 ]

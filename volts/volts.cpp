@@ -6,32 +6,34 @@
 #   include <windows.h>
 #endif
 
-#ifndef VTESTING
-
-int main(int argc, char** argv)
-{
-#if SYS_WINDOWS
-    // UTF-8 console output for windows
-    SetConsoleOutputCP(CP_UTF8);
-    setvbuf(stdout, nullptr, _IOFBF, 1024);
+#ifdef VTESTING
+#   include "svl/tests.h"
 #endif
-    
-    // parse command line arguments
-    volts::cmd::get().parse(argc, argv);
-}
 
+#if defined(VGUI) && SYS_WINDOWS
+int WINAPI wWinMain(
+    HINSTANCE inst,
+    HINSTANCE prev,
+    PWSTR cmd,
+    int show
+)
 #else
-
-#include "svl/tests.h"
-
 int main(int argc, char** argv)
+#endif
 {
-#if SYS_WINDOWS
+#if SYS_WINDOWS && !defined(VGUI)
     // UTF-8 console output for windows
     SetConsoleOutputCP(CP_UTF8);
     setvbuf(stdout, nullptr, _IOFBF, 1024);
 #endif
-    svl::tests::run_tests();
-}
 
+#if defined(VTESTING)
+    // testing build
+    svl::tests::run_tests();
+#elif defined(VGUI)
+    // gui build
+#else
+    // command line only build
+    volts::cmd::parse(argc, argv);
 #endif
+}

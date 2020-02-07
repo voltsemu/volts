@@ -34,12 +34,22 @@ namespace volts::vm
         return *static_cast<T*>(base(at));
     }
 
+    /**
+     * @brief link in a free chain
+     * 
+     */
     struct link
     {
+        /// next link in the chain
         link* next;
+
+        /// previous link in the chain
         link* behind;
 
+        /// address of a link
         vm::addr addr;
+
+        /// length of the section
         svl::u32 len;
     };
 
@@ -59,17 +69,38 @@ namespace volts::vm
 
         ~block();
 
+        /// base address
         void* addr;
+
+        /// width of the memory block
         svl::u64 width;
 
+        /// the default page size
         const svl::u32 page_size;
+
+        /// should pages be offset
         const bool offset_pages;
 
+        /// first link
         link* begin;
+
+        /// last link
         link* end;
 
-        // returns vm address, not real address (although technically it would work either way)
+        /**
+         * @brief allocate pages from the block
+         * 
+         * @param size size of the block to allocate
+         * @param align the alignment of the block
+         * @return void* the returned pointer, nullptr if out of memory
+         */
         void* alloc(svl::u64 size, svl::u64 align = 0x10000);
+        
+        /**
+         * @brief deallocate a peice of memory in the block
+         * 
+         * @param ptr the block to deallocate
+         */
         void dealloc(void* ptr);
 
     private:

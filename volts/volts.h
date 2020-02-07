@@ -27,6 +27,7 @@
 #include <rapidjson/writer.h>
 #include <rapidjson/stringbuffer.h>
 
+/*
 namespace volts
 {
     namespace json = rapidjson;
@@ -214,4 +215,10 @@ namespace volts
             return options.parse(argc, argv);
         }
     };
+}
+*/
+
+namespace volts::cmd
+{
+    void parse(int argc, char** argv);
 }

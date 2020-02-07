@@ -78,6 +78,15 @@ endif
 executable('volt', sources,
     include_directories : incs,
     install : true,
+    cpp_args : args + [ '-DVGUI=1' ],
+    dependencies : deps,
+    link_args : links,
+    build_by_default : false
+)
+
+executable('volt_cmd', sources,
+    include_directories : incs,
+    install : true,
     cpp_args : args,
     dependencies : deps,
     link_args : links
