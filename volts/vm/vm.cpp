@@ -82,6 +82,7 @@ namespace volts::vm
 
     void init()
     {
+        spdlog::info("here");
         // todo: make this configurable
 
         // create base memory pointer then zero it out

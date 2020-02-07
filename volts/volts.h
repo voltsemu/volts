@@ -95,17 +95,17 @@ namespace volts
                     auto tar_file = loader::tar::load(file);
                     for(auto& [key, offset] : tar_file.offsets)
                     {
-                        if(key.rfind("dev_flash_", 0) == 0)
-                        {
-                            auto update = tar_file.get_file(key);
-                            auto update_dec = unself::load_sce(update);
+                        if(key.rfind("dev_flash_", 0) != 0)
+                            continue;
+                        
+                        auto update = tar_file.get_file(key);
+                        auto update_dec = unself::load_sce(update);
 
-                            update_dec[2].seek(0);
+                        update_dec[2].seek(0);
 
-                            auto t = loader::tar::load(update_dec[2]);
+                        auto t = loader::tar::load(update_dec[2]);
 
-                            t.extract(vfs::root());
-                        }
+                        t.extract(vfs::root());
                     }
 
                     spdlog::info("pup decryption finished");
