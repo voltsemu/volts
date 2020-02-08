@@ -1,6 +1,34 @@
 #include "volts.h"
 
+// quick string hashing
 #include <external/fnv1a.h>
+
+// logging
+#include <spdlog/spdlog.h>
+#include <spdlog/sinks/basic_file_sink.h>
+
+// filesystem
+#include <external/wrapfs.h>
+#include "vfs/vfs.h"
+#include "svl/file.h"
+
+#include "loader/sfo.h"
+#include "loader/unself.h"
+#include "loader/elf.h"
+#include "loader/pup.h"
+#include "loader/tar.h"
+
+#include "vm/ppu/thread.h"
+#include "vm/ppu/module.h"
+#include "vm/vm.h"
+
+#define CXXOPTS_NO_EXCEPTIONS
+#define CXXOPTS_NO_RTTI
+
+#include <external/cxxopts.hpp>
+
+#include <rapidjson/writer.h>
+#include <rapidjson/stringbuffer.h>
 
 namespace volts::cmd
 {
@@ -56,7 +84,7 @@ namespace volts::cmd
                 spdlog::set_level(spdlog::level::critical);
                 break;
             default:
-                spdlog::warn("invalid log level {}", str);
+                spdlog::warn("invalid log level {}. must be one of [off | info | warn | err | critical]", str);
                 break;
             }
         }
@@ -172,6 +200,8 @@ namespace volts::cmd
 
                         auto dec = tar::load(update[2]);
 
+                        spdlog::info("extracing entry into vfs");
+
                         dec.extract(vfs::root());
                     }
                 }
@@ -180,17 +210,34 @@ namespace volts::cmd
             {
                 spdlog::error("no pup file found at {}", path.string());
             }
-            
         }
 
         if(res.count("self"))
         {
-
+            if(fs::path path = res["self"].as<std::string>(); fs::exists(path))
+            {
+                auto self = unself::load_self(svl::open(path, svl::mode::read));
+                self.save("eboot.elf");
+                spdlog::info("saved decrypted elf to eboot.elf");
+            }
+            else
+            {
+                spdlog::error("no self file found at {}", path.string());
+            }
         }
 
         if(res.count("boot"))
         {
+            svl::file liblv2 = svl::open(vfs::get("dev_flash/sys/external/liblv2.sprx"), svl::mode::read);
 
+            auto lib = unself::load_self(liblv2);
+
+            auto elf = elf::load<elf::ppu_prx>(lib);
+
+            vm::init();
+
+            ppu::load_prx(elf.value());
+            ppu::thread(elf->head.entry);
         }
     }
 }

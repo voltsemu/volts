@@ -3,6 +3,7 @@
 #include "svl/platform.h"
 
 #if SYS_WINDOWS
+#   include <cstdio>
 #   include <windows.h>
 #endif
 

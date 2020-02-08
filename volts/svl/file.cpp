@@ -67,8 +67,8 @@ namespace svl
         {
             FlushFileBuffers(handle);
 
-            TCHAR buf[MAX_PATH];
-            GetFinalPathNameByHandle(handle, buf, MAX_PATH, VOLUME_NAME_NT);
+            WCHAR buf[MAX_PATH];
+            GetFinalPathNameByHandleW(handle, buf, MAX_PATH, VOLUME_NAME_NT);
             CopyFileW(buf, path.wstring().c_str(), false);
         }
 

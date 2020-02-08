@@ -14,8 +14,17 @@ if meson.get_compiler('cpp').get_id() == 'msvc'
     add_global_arguments('/D_HAS_EXCEPTIONS=0', language : 'cpp')
 endif
 
+# sources that are required for everything
 sources = []
+
+# sources only required for debug builds
 test_sources = []
+
+# sources only required for cli builds
+cmd_sources = []
+
+# sources only required for gui builds
+gui_sources = []
 
 log_opts = [
     'enable_tests=false',
@@ -75,7 +84,7 @@ if meson.get_compiler('cpp').get_id() == 'msvc'
     # wd4180 disables some pointless warnings that dont matter (yeah i know ignoring warnings is bad style)
 endif
 
-executable('volt', sources,
+executable('volt', sources + gui_sources,
     include_directories : incs,
     install : true,
     cpp_args : args + [ '-DVGUI=1' ],
@@ -84,7 +93,7 @@ executable('volt', sources,
     build_by_default : false
 )
 
-executable('volt_cmd', sources,
+executable('volt_cmd', sources + cmd_sources,
     include_directories : incs,
     install : true,
     cpp_args : args,
