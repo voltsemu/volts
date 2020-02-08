@@ -23,12 +23,23 @@ namespace volts::ppu
 
     static_assert(sizeof(relocation_info) == 24);
 
+    struct segment
+    {
+        vm::addr addr;
+        u64 size;
+        u32 type;
+        u32 flags;
+        u64 file_size;
+    };
+
     // TODO: all this
     void load_prx(loader::elf::ppu_prx& mod)
     {
         std::unique_ptr<XXH64_state_t, decltype(&XXH64_freeState)> hasher(XXH64_createState(), XXH64_freeState);
         XXH64_reset(hasher.get(), 0);
         
+        std::vector<segment> segments;
+
         for(auto prog : mod.progs)
         {
             if(prog.type != 1 || !prog.file_size)
@@ -37,15 +48,21 @@ namespace volts::ppu
             mod.data.seek(prog.offset);
             auto dat = mod.data.read<u8>(prog.file_size);
 
-            void* addr = vm::main->alloc(prog.mem_size);
+            vm::addr addr = (vm::addr)vm::main->alloc(prog.mem_size);
             spdlog::info("addr {}", addr);
 
             if(!addr)
                 spdlog::info("out of memory");
 
-            std::memcpy(vm::base((vm::addr)addr), dat.data(), prog.file_size);
+            std::memcpy(vm::base(addr), dat.data(), prog.file_size);
         
-            //TODO: segments
+            segments.push_back(segment{
+                addr,
+                prog.mem_size,
+                prog.type,
+                prog.flags,
+                prog.file_size
+            });
 
             XXH64_update(hasher.get(), &prog.vaddress, sizeof(prog.vaddress));
         }
