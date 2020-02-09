@@ -9,6 +9,14 @@ project('volts', ['cpp', 'c'],
     license : 'Apache'
 )
 
+deps = []
+
+if host_machine.system() == 'darwin'
+    add_languages('objcpp')
+    #todo
+    deps += dependency('appleframeworks')
+endif
+
 #TODO: using cpp_eh=none makes meson do funky stuff on windows, feels like a bug, should report
 if meson.get_compiler('cpp').get_id() == 'msvc'
     add_global_arguments('/D_HAS_EXCEPTIONS=0', language : 'cpp')
@@ -59,7 +67,7 @@ if not glfw.found()
     glfw = cmake.subproject('glfw').dependency('glfw')
 endif
 
-deps = [ 
+deps += [ 
     logging.get_variable('spdlog_dep'), 
     json.get_variable('rapidjson_dep'),
     zlib,
