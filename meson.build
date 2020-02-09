@@ -68,7 +68,13 @@ if not glfw.found()
     # todo: this generates command line warnings on windows
     # due to glfws shitty cmake setup. will have to fork glfw
     # and fix the buildscript
-    glfw = cmake.subproject('glfw').dependency('glfw')
+    glfw = cmake.subproject('glfw',
+        cmake_options : [
+            '-DGLFW_BUILD_DOCS:BOOL=OFF',
+            '-DGLFW_BUILD_TESTS:BOOL=OFF',
+            '-DGLFW_BUILD_EXAMPLES:BOOL=OFF'
+        ]
+    ).dependency('glfw')
 endif
 
 deps += [ 
