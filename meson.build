@@ -3,7 +3,8 @@ project('volts', ['cpp', 'c'],
         'cpp_std=c++17',
         'cpp_rtti=false',
         'cpp_eh=none',
-        'default_library=static'
+        'default_library=static',
+        'buildtype=debug'
     ],
     version : '0.2.0',
     license : 'Apache'
@@ -64,6 +65,9 @@ glfw = dependency('glfw', required : false)
 
 if not glfw.found()
     cmake = import('cmake')
+    # todo: this generates command line warnings on windows
+    # due to glfws shitty cmake setup. will have to fork glfw
+    # and fix the buildscript
     glfw = cmake.subproject('glfw').dependency('glfw')
 endif
 
