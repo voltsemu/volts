@@ -55,6 +55,7 @@ namespace volts::cmd
         if(res.count("help"))
         {
             spdlog::info(opts.help());
+            std::exit(0);
         }
 
         if(res.count("log-lvl"))
@@ -184,8 +185,7 @@ namespace volts::cmd
                 {
                     spdlog::info("starting pup extraction");
 
-                    auto tar_file = pup->get_file(0x300);
-                    auto tar = tar::load(tar_file);
+                    auto tar = tar::load(pup->get_file(0x300));
 
                     for(auto& [key, off] : tar.offsets)
                     {

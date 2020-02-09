@@ -11,6 +11,10 @@
 #   include "svl/tests.h"
 #endif
 
+#ifdef VGUI
+#   include "volts/gui/window.h"
+#endif
+
 #if defined(VGUI) && SYS_WINDOWS
 int WINAPI wWinMain(
     HINSTANCE inst,
@@ -32,7 +36,9 @@ int main(int argc, char** argv)
     // testing build
     svl::tests::run_tests();
 #elif defined(VGUI)
-    // gui build
+    volts::gui::init();
+
+    volts::gui::deinit();
 #else
     // command line only build
     volts::cmd::parse(argc, argv);

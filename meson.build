@@ -52,6 +52,13 @@ endif
 
 hash = subproject('xxhash').get_variable('xxhash_dep')
 
+glfw = dependency('glfw', required : false)
+
+if not glfw.found()
+    cmake = import('cmake')
+    glfw = cmake.subproject('glfw').dependency('glfw')
+endif
+
 deps = [ 
     logging.get_variable('spdlog_dep'), 
     json.get_variable('rapidjson_dep'),
@@ -84,16 +91,16 @@ if meson.get_compiler('cpp').get_id() == 'msvc'
     # wd4180 disables some pointless warnings that dont matter (yeah i know ignoring warnings is bad style)
 endif
 
-executable('volt', sources + gui_sources,
+gui = executable('gui', sources + gui_sources,
     include_directories : incs,
     install : true,
     cpp_args : args + [ '-DVGUI=1' ],
-    dependencies : deps,
+    dependencies : deps + [ glfw ],
     link_args : links,
-    build_by_default : false
+    gui_app : true
 )
 
-executable('volt_cmd', sources + cmd_sources,
+cli = executable('cli', sources + cmd_sources,
     include_directories : incs,
     install : true,
     cpp_args : args,
@@ -101,13 +108,12 @@ executable('volt_cmd', sources + cmd_sources,
     link_args : links
 )
 
-executable('volt_tests', sources + test_sources,
+tests = executable('tests', sources + test_sources,
     include_directories : incs,
     install : false,
     cpp_args : args + [ '-DVTESTING=1' ],
     dependencies : deps,
-    link_args : links,
-    build_by_default : false
+    link_args : links
 )
 
 doxygen = find_program('doxygen', required : false)

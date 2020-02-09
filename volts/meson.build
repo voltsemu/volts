@@ -1,4 +1,4 @@
-foreach dir : ['loader', 'svl', 'external', 'generated', 'vm', 'vfs']
+foreach dir : ['loader', 'svl', 'external', 'generated', 'vm', 'vfs', 'gui']
     subdir(dir)
 endforeach
 
