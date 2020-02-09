@@ -14,8 +14,7 @@ deps = []
 
 if host_machine.system() == 'darwin'
     add_languages('objcpp')
-    #todo
-    deps += dependency('appleframeworks')
+    deps += dependency('appleframeworks', modules : [ 'Cocoa', 'MetalKit', 'Metal', 'Foundation' ])
 endif
 
 #TODO: using cpp_eh=none makes meson do funky stuff on windows, feels like a bug, should report

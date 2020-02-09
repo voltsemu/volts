@@ -16,6 +16,7 @@
 #endif
 
 #if defined(VGUI) && SYS_WINDOWS
+// windows guis require a sepcific entry point
 int WINAPI wWinMain(
     HINSTANCE inst,
     HINSTANCE prev,
@@ -23,6 +24,7 @@ int WINAPI wWinMain(
     int show
 )
 #else
+// everything else is standard c++
 int main(int argc, char** argv)
 #endif
 {

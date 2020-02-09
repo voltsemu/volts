@@ -1,4 +1,5 @@
 subdir('aes')
+subdir('alert')
 
 gui_sources += [
     'volts/external/fts_fuzzy_match.cpp'
