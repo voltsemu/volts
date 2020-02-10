@@ -16,3 +16,4 @@ docs/
 .vscode/*
 volts/generated/version.gen.h
 !Doxyfile
+!.gitignore
