@@ -1,11 +1,3 @@
-foreach dir : ['loader', 'svl', 'external', 'generated', 'vm', 'vfs', 'gui']
+foreach dir : [ 'loader', 'decrypt' ]
     subdir(dir)
 endforeach
-
-sources += [
-    'volts/volts.cpp'
-]
-
-cmd_sources += [
-    'volts/cmd.cpp'
-]

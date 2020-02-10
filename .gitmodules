@@ -7,3 +7,6 @@
 [submodule "subprojects/glfw"]
 	path = subprojects/glfw
 	url = https://github.com/Apache-HB/glfw
+[submodule "subprojects/cxxopts"]
+	path = subprojects/cxxopts
+	url = https://github.com/jarro2783/cxxopts

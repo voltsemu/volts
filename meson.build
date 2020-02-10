@@ -20,6 +20,8 @@ if meson.get_compiler('cpp').get_id() == 'msvc'
     add_global_arguments('/D_HAS_EXCEPTIONS=0', language : 'cpp')
 endif
 
+cmake = import('cmake')
+
 # we structure the emulator by splitting it into core parts
 # we have 
 #   - a decryption library
@@ -31,41 +33,7 @@ endif
 
 subdir('volts')
 
-# project('volts', ['cpp', 'c'],
-#     default_options : [
-#         'cpp_std=c++17',
-#         'cpp_rtti=false',
-#         'cpp_eh=none',
-#         'default_library=static'
-#     ],
-#     version : '0.2.0',
-#     license : 'Apache'
-# )
-
-
-# deps = []
-
-# if host_machine.system() == 'darwin'
-#     add_languages('objcpp')
-#     deps += dependency('appleframeworks', modules : [ 'Cocoa', 'MetalKit', 'Metal', 'QuartzCore', 'Foundation' ])
-# endif
-
-# #TODO: using cpp_eh=none makes meson do funky stuff on windows, feels like a bug, should report
-# if meson.get_compiler('cpp').get_id() == 'msvc'
-#     add_global_arguments('/D_HAS_EXCEPTIONS=0', language : 'cpp')
-# endif
-
-# # sources that are required for everything
-# sources = []
-
-# # sources only required for debug builds
-# test_sources = []
-
-# # sources only required for cli builds
-# cmd_sources = []
-
-# # sources only required for gui builds
-# gui_sources = []
+cxxopts = cmake.subproject('cxxopts').dependency('cxxopts')
 
 # log_opts = [
 #     'enable_tests=false',
