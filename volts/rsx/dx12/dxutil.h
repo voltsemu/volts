@@ -1,42 +1,44 @@
 #pragma once
 
-#include <vector>
-
 #include <d3d12.h>
 #include <d3dcompiler.h>
 #include <dxgi1_6.h>
 #include <tchar.h>
 
+#include <system_error>
+
+#include <spdlog/spdlog.h>
+
 #include <wrl.h>
 using namespace Microsoft::WRL;
 
-#include <external/alert/alert.h>
-
-#define VALIDATE()
-
-#define ENSURE(msg, ...)  { if((__VA_ARGS__) != S_OK) { alert::alert(L"d3d12 error", msg); return; } }
+#define VALIDATE(...) { auto hr = (__VA_ARGS__); if(FAILED(hr)) { spdlog::error("d3d12 error {} at {}:{}", std::system_category().message(hr), __FILE__, __LINE__); /* TODO exit */ } }
 
 namespace volts::rsx::dxutil
 {
-    void get_adapter(IDXGIFactory2* factory, IDXGIAdapter1** adapt)
+    struct dx12device : device
     {
-        ComPtr<IDXGIAdapter1> adapter;
-        *adapt = nullptr;
-
-        for(UINT idx = 0; factory->EnumAdapters1(idx, &adapter) != DXGI_ERROR_NOT_FOUND; idx++)
+        dx12device(IDXGIAdapter1* h)
+            : handle(h)
         {
-            DXGI_ADAPTER_DESC1 desc;
-            adapter->GetDesc1(&desc);
-
-            if(desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE)
-                continue;
-
-            if(SUCCEEDED(D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_11_0, _uuidof(ID3D12Device), nullptr)))
-            {
-                break;
-            }
+            handle->GetDesc1(&desc);
         }
 
-        *adapt = adapter.Detach();
+        virtual ~dx12device() override {}
+
+        virtual const std::wstring& name() const override
+        {
+            return std::wstring(desc.Description);
+        }
+
+        IDXGIAdapter1* handle;
+        DXGI_ADAPTER_DESC1 desc;
+    };
+
+    bool can_tear(IDXGIFactory5* factory)
+    {
+        bool tear = false;
+        return factory->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &tear, sizeof(tear)) && tear;
     }
+
 }

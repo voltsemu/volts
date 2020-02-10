@@ -5,6 +5,13 @@
 
 namespace volts::rsx
 {
+    // rendering device
+    struct device
+    {   
+        virtual ~device() {}
+        virtual const std::wstring& name() const = 0;
+    };
+
     struct render
     {
         virtual ~render() {}
@@ -15,6 +22,8 @@ namespace volts::rsx
         virtual void end() = 0;
 
         virtual std::string name() const = 0;
+
+        virtual rsx::device* devices(int* len) const = 0;
     };
 
     std::vector<render*>& renders();

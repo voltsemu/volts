@@ -3,8 +3,7 @@ project('volts', ['cpp', 'c'],
         'cpp_std=c++17',
         'cpp_rtti=false',
         'cpp_eh=none',
-        'default_library=static',
-        'buildtype=debug'
+        'default_library=static'
     ],
     version : '0.2.0',
     license : 'Apache'
@@ -80,7 +79,8 @@ deps += [
     logging.get_variable('spdlog_dep'), 
     json.get_variable('rapidjson_dep'),
     zlib,
-    hash
+    hash,
+    glfw
 ]
 
 incs = [ include_directories('volts') ]
@@ -112,7 +112,7 @@ gui = executable('gui', sources + gui_sources,
     include_directories : incs,
     install : true,
     cpp_args : args + [ '-DVGUI=1' ],
-    dependencies : deps + [ glfw ],
+    dependencies : deps,
     link_args : links,
     gui_app : true
 )

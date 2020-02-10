@@ -16,7 +16,7 @@ namespace volts::ppu
 
     struct thread
     {
-        thread(svl::u32 entry);
+        thread(svl::u64 entry);
         
         svl::u64 gpr[32] = {};
         svl::f64 fpr[32] = {};

@@ -14,7 +14,9 @@
 
 #include <spdlog/sinks/base_sink.h>
 
-#include "imgui/examples/imgui_impl_glfw.h"
+#include <examples/imgui_impl_glfw.h>
+
+#include "rsx/rsx.h"
 
 namespace volts::gui
 {
@@ -35,6 +37,10 @@ namespace volts::gui
 
         // we will provide our own graphics api stuff
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+
+        // disable vsync
+        glfwWindowHint(GLFW_DOUBLEBUFFER, GL_FALSE);
+
         window = glfwCreateWindow(640, 480, "Volts", nullptr, nullptr);
 
         if(!window)
@@ -47,16 +53,32 @@ namespace volts::gui
 
         ImGui::StyleColorsDark();
 
-        ImGui_ImplGlfw
+        // we're not using opengl but imgui actually doesnt care what we use
+        ImGui_ImplGlfw_InitForOpenGL(window, true);
+
+        rsx::renders()[0]->attach();
 
         while(!glfwWindowShouldClose(window))
         {
+            rsx::renders()[0]->begin();
+            ImGui_ImplGlfw_NewFrame();
+
+            ImGui::NewFrame();
+            ImGui::Begin("aaa");
+            ImGui::End();
+
+            ImGui::Render();
+
+            rsx::renders()[0]->end();
             glfwPollEvents();
         }
     }
 
     void deinit()
     {
+        rsx::renders()[0]->detach();
+        ImGui_ImplGlfw_Shutdown();
+        
         glfwDestroyWindow(window);
         glfwTerminate();
     }

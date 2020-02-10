@@ -31,4 +31,7 @@ elif host_machine.system() == 'linux'
     # todo: linux stuff
 endif
 
-incs += include_directories('imgui')
+incs += [
+    include_directories('imgui'),
+    include_directories('.')
+]

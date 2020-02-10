@@ -6,7 +6,7 @@
 
 namespace volts::ppu
 {
-    thread::thread(u32 entry)
+    thread::thread(u64 entry)
     {
         if(static bool table_flag = true; table_flag)
         {
