@@ -14,31 +14,13 @@
 
 #include <spdlog/sinks/base_sink.h>
 
+#include "imgui/examples/imgui_impl_glfw.h"
+
 namespace volts::gui
 {
     static GLFWwindow* window = nullptr;
 
     ImGuiLog log;
-
-/*
-    ImGuiTextBuffer log_buf;
-
-    template<typename Mutex>
-    struct imgui_sink : spdlog::sinks::base_sink<Mutex>
-    {
-        void sink_it_(const spdlog::details::log_msg& msg) override
-        {
-            spdlog::memory_buf_t formatted;
-            base_sink<Mutex>::formatter_->format(msg, formatted);
-            std::cout << fmt::to_string(formatted);
-        }
-
-        void flush_() override 
-        {
-
-        }
-    };
-*/
 
     void init()
     {
@@ -59,6 +41,13 @@ namespace volts::gui
         {
             alert::alert(L"GLFW error", L"Failed to initialize glfw window");
         }
+
+        IMGUI_CHECKVERSION();
+        ImGui::CreateContext();
+
+        ImGui::StyleColorsDark();
+
+        ImGui_ImplGlfw
 
         while(!glfwWindowShouldClose(window))
         {
