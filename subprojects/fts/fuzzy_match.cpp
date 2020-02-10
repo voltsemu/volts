@@ -1,4 +1,4 @@
-#include "fts_fuzzy_match.h"
+#include "fuzzy_match.h"
 
 namespace fts {
 

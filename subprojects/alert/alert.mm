@@ -22,7 +22,7 @@ namespace alert
         
         NSAlert* alert = [[NSAlert alloc] init];
         [alert setMessageText:tl];
-        [alert setInformativeTest:msg];
+        [alert setInformativeText:msg];
         [alert addButtonWithTitle:@"Ok"];
         [alert runModal];
     }
