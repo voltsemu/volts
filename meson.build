@@ -9,8 +9,6 @@ project('volts', ['cpp', 'c'],
     license : 'Apache'
 )
 
-deps = []
-
 if host_machine.system() == 'darwin'
     add_languages('obcjpp')
 endif
@@ -20,7 +18,48 @@ if meson.get_compiler('cpp').get_id() == 'msvc'
     add_global_arguments('/D_HAS_EXCEPTIONS=0', language : 'cpp')
 endif
 
+# collect all the dependencies that lots of things share
+
 cmake = import('cmake')
+
+cxxopts = cmake.subproject('cxxopts').dependency('cxxopts')
+
+zlib = dependency('zlib', fallback : [ 'zlib', 'zlib_dep' ])
+
+glfw = dependency('glfw3', required : false)
+
+if not glfw.found()
+    glfw = cmake.subproject('glfw').dependency('glfw')
+endif
+
+
+
+spdlog_opts = [
+    'enable_tests=false',
+    'enable_examples=false',
+    'no_exceptions=true',
+    'no_thread_id=true',
+    'no_tls=true'
+]
+
+if host_machine.system() == 'windows'
+    spdlog_opts += 'wchar_support=true'
+endif
+
+spdlog = subproject('spdlog', default_options : spdlog_opts).get_variable('spdlog_dep')
+
+
+xxhash = subproject('xxhash').get_variable('xxhash_dep')
+
+rapidjson = subproject('rapidjson').get_variable('rapidjson_dep')
+
+fuzzy = subproject('fts').get_variable('fuzzy_dep')
+
+aes = subproject('aes').get_variable('aes_dep')
+
+svl = subproject('svl').get_variable('svl_dep')
+
+elf = subproject('elf').get_variable('elf_dep')
 
 # we structure the emulator by splitting it into core parts
 # we have 
@@ -32,58 +71,6 @@ cmake = import('cmake')
 #   - a cli toolkit executable <- decryption
 
 subdir('volts')
-
-cxxopts = cmake.subproject('cxxopts').dependency('cxxopts')
-
-# log_opts = [
-#     'enable_tests=false',
-#     'enable_examples=false',
-#     'no_exceptions=true',
-#     'no_thread_id=true',
-#     'no_tls=true'
-# ]
-
-# if host_machine.system() == 'windows'
-#     log_opts += 'wchar_support=true'
-# endif
-
-# logging = subproject('spdlog', 
-#     default_options : log_opts
-# )
-
-# json = subproject('rapidjson')
-
-# zlib = dependency('zlib', required : false)
-
-# if not zlib.found()
-#     zlib = subproject('zlib').get_variable('zlib_dep')
-# endif
-
-# hash = subproject('xxhash').get_variable('xxhash_dep')
-
-# glfw = dependency('glfw', required : false)
-
-# if not glfw.found()
-#     cmake = import('cmake')
-#     # todo: this generates command line warnings on windows
-#     # due to glfws shitty cmake setup. will have to fork glfw
-#     # and fix the buildscript
-#     glfw = cmake.subproject('glfw',
-#         cmake_options : [
-#             '-DGLFW_BUILD_DOCS:BOOL=OFF',
-#             '-DGLFW_BUILD_TESTS:BOOL=OFF',
-#             '-DGLFW_BUILD_EXAMPLES:BOOL=OFF'
-#         ]
-#     ).dependency('glfw')
-# endif
-
-# deps += [ 
-#     logging.get_variable('spdlog_dep'), 
-#     json.get_variable('rapidjson_dep'),
-#     zlib,
-#     hash,
-#     glfw
-# ]
 
 # incs = [ include_directories('volts') ]
 

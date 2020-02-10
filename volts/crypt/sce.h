@@ -1,11 +1,11 @@
 #pragma once
 
-#include "svl/types.h"
-#include "svl/file.h"
+#include <types.h>
+#include <file.h>
 
 #include <vector>
 
-namespace volts::loader::unself
+namespace volts::crypt::sce
 {
     /**
      * @brief parse an sce file
@@ -13,5 +13,5 @@ namespace volts::loader::unself
      * @param file the file to parse
      * @return std::vector<svl::file> an array of every file contained inside the file 
      */
-    std::vector<svl::file> load_sce(svl::file file);
+    std::vector<svl::file> load(svl::file file);
 }

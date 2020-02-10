@@ -1,31 +1,26 @@
 #include "volts.h"
 
-// quick string hashing
-#include <external/fnv1a.h>
-
 // logging
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/basic_file_sink.h>
 
 // filesystem
-#include <external/wrapfs.h>
+#include <wrapfs.h>
+#include <file.h>
 #include "vfs/vfs.h"
-#include "svl/file.h"
+
+#include "elf.h"
 
 #include "loader/sfo.h"
-#include "loader/unself.h"
-#include "loader/elf.h"
+#include "crypt/self.h"
+#include "crypt/sce.h"
 #include "loader/pup.h"
 #include "loader/tar.h"
-
-#include "vm/ppu/thread.h"
-#include "vm/ppu/module.h"
-#include "vm/vm.h"
 
 #define CXXOPTS_NO_EXCEPTIONS
 #define CXXOPTS_NO_RTTI
 
-#include <external/cxxopts.hpp>
+#include <cxxopts.hpp>
 
 #include <rapidjson/writer.h>
 #include <rapidjson/stringbuffer.h>
@@ -36,6 +31,7 @@ namespace volts::cmd
     namespace opts = cxxopts;
 
     using namespace loader;
+    using namespace crypt;
 
     void parse(int argc, char** argv)
     {
@@ -48,7 +44,8 @@ namespace volts::cmd
             ("sfo", "parse an sfo file", opts::value<std::string>())
             ("pup", "parse a pup file", opts::value<std::string>())
             ("self", "parse a self file", opts::value<std::string>())
-            ("boot", "boot the emulator");
+            // ("boot", "boot the emulator")
+            ;
 
         auto res = opts.parse(argc, argv);
 
@@ -62,25 +59,25 @@ namespace volts::cmd
         {
             auto str = res["log-lvl"].as<std::string>();
 
-            switch(hash_32_fnv1a_const(str.c_str()))
+            switch(str[0])
             {
-            case hash_32_fnv1a_const("off"):
+            case '0': case 'o': case 'O':
                 spdlog::info("disaling logging");
                 spdlog::set_level(spdlog::level::off);
                 break;
-            case hash_32_fnv1a_const("info"):
+            case '1': case 'i': case 'I':
                 spdlog::info("setting log level to info");
                 spdlog::set_level(spdlog::level::info);
                 break;
-            case hash_32_fnv1a_const("warn"):
+            case '2': case 'w': case 'W':
                 spdlog::info("setting log level to warn");
                 spdlog::set_level(spdlog::level::warn);
                 break;
-            case hash_32_fnv1a_const("err"):
+            case '3': case 'e': case 'E':
                 spdlog::info("setting log level to error");
                 spdlog::set_level(spdlog::level::err);
                 break;
-            case hash_32_fnv1a_const("critical"):
+            case '4': case 'c': case 'C':
                 spdlog::info("setting log level to critical");
                 spdlog::set_level(spdlog::level::critical);
                 break;
@@ -194,7 +191,7 @@ namespace volts::cmd
 
                         spdlog::info("decrypting pup entry {}", key);
 
-                        auto update = unself::load_sce(tar.get_file(key));
+                        auto update = sce::load(tar.get_file(key));
 
                         update[2].seek(0);
 
@@ -216,7 +213,7 @@ namespace volts::cmd
         {
             if(fs::path path = res["self"].as<std::string>(); fs::exists(path))
             {
-                auto self = unself::load_self(svl::open(path, svl::mode::read));
+                auto self = self::load(svl::open(path, svl::mode::read));
                 self.save("eboot.elf");
                 spdlog::info("saved decrypted elf to eboot.elf");
             }
@@ -226,7 +223,7 @@ namespace volts::cmd
             }
         }
 
-        if(res.count("boot"))
+        /* if(res.count("boot"))
         {
             svl::file liblv2 = svl::open(vfs::get("dev_flash/sys/external/liblv2.sprx"), svl::mode::read);
 
@@ -238,6 +235,16 @@ namespace volts::cmd
 
             ppu::load_prx(elf.value());
             ppu::thread(elf->head.entry);
-        }
+        } */
     }
+}
+
+int main(int argc, char** argv)
+{
+#if SYS_WINDOWS
+    // UTF-8 console output for windows
+    SetConsoleOutputCP(CP_UTF8);
+    setvbuf(stdout, nullptr, _IOFBF, 1024);
+#endif
+    volts::cmd::parse(argc, argv);
 }

@@ -1,7 +1,8 @@
 libload = library('load', [
-        'volts/loader/sfo.cpp',
-        'volts/loader/pup.cpp',
-        'volts/loader/tar.cpp',
+        'sfo.cpp',
+        'pup.cpp',
+        'tar.cpp',
     ],
-    include_directories : include_directories('.')
+    include_directories : include_directories('.'),
+    dependencies : [ spdlog, svl ]
 )

@@ -1,3 +1,5 @@
-sources += [
-    'volts/vfs/vfs.cpp'
-]
+libvfs = library('vfs', [
+        'vfs.cpp'
+    ],
+    dependencies : svl
+)

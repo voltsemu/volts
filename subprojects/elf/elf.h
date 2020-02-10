@@ -1,14 +1,13 @@
 #pragma once
 
 #include <optional>
-#include <spdlog/spdlog.h>
 
-#include "svl/file.h"
-#include "svl/endian.h"
-#include "svl/convert.h"
-#include "svl/types.h"
+#include <file.h>
+#include <endian.h>
+#include <convert.h>
+#include <types.h>
 
-namespace volts::loader::elf
+namespace elf
 {
     namespace cvt = svl::convert;
     
@@ -182,7 +181,6 @@ namespace volts::loader::elf
 
         if(ret.head.magic != cvt::to_u32("\177ELF"))
         {
-            spdlog::error("bad elf magic");
             return std::nullopt;
         }
 

@@ -2,7 +2,7 @@
 
 #include "ops.h"
 
-#include "svl/endian.h"
+#include <endian.h>
 
 namespace volts::ppu
 {

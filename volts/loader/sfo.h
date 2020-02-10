@@ -1,7 +1,7 @@
 #pragma once
 
-#include "svl/types.h"
-#include "svl/file.h"
+#include <types.h>
+#include <file.h>
 
 #include <cstdint>
 #include <map>

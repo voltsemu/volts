@@ -2,9 +2,9 @@
 
 #include <optional>
 
-#include "svl/types.h"
+#include <types.h>
 
-namespace volts::loader
+namespace volts::crypt
 {
     /**
      * @brief the type of decryption key

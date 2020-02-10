@@ -1,5 +1,5 @@
 #include "thread.h"
-#include "svl/endian.h"
+#include <endian.h>
 
 #include "vm/vm.h"
 

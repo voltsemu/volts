@@ -1,4 +1,4 @@
-#include "svl/platform.h"
+#include <platform.h>
 
 #if SYS_WINDOWS
 #   include <windows.h>

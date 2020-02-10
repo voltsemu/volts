@@ -2,8 +2,8 @@
 
 #include <spdlog/spdlog.h>
 
-#include "svl/file.h"
-#include "svl/convert.h"
+#include <file.h>
+#include <convert.h>
 
 namespace volts::loader::pup
 {

@@ -3,8 +3,9 @@
 #include <map>
 #include <string>
 
-#include "svl/types.h"
-#include "svl/file.h"
+#include <types.h>
+#include <file.h>
+#include <wrapfs.h>
 
 namespace volts::loader::tar
 {

@@ -4,9 +4,9 @@
 #include <optional>
 #include <memory>
 
-#include "svl/endian.h"
-#include "svl/types.h"
-#include "svl/file.h"
+#include <endian.h>
+#include <types.h>
+#include <file.h>
 
 namespace volts::loader::pup
 {

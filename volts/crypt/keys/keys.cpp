@@ -1,6 +1,6 @@
 #include "keys.h"
 
-namespace volts::loader::keys
+namespace volts::crypt::keys
 {
     using namespace svl;
 

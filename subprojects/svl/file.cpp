@@ -1,7 +1,5 @@
 #include "file.h"
 
-#include <spdlog/spdlog.h>
-
 #if SYS_WINDOWS
 #   include "windows.h"
 #elif SYS_OSX
@@ -223,7 +221,7 @@ namespace svl
 
         if(f == INVALID_HANDLE_VALUE)
         {
-            spdlog::error("failed to open file");
+            return { new win32_file(nullptr) };
         }
 
         return { new win32_file(std::move(f)) };

@@ -1,12 +1,12 @@
 #pragma once
 
-#include "svl/types.h"
-#include "svl/file.h"
+#include <types.h>
+#include <file.h>
 
 #include <vector>
 #include <optional>
 
-namespace volts::loader::unself
+namespace volts::crypt::self
 {
     /**
      * @brief decrypt and parse a self file
@@ -15,5 +15,5 @@ namespace volts::loader::unself
      * @param key the decryption key to use if needed
      * @return svl::file the decrypted file, or empty
      */
-    svl::file load_self(svl::file file, std::vector<svl::byte> key = {});
+    svl::file load(svl::file file, std::vector<svl::byte> key = {});
 }

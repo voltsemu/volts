@@ -3,11 +3,9 @@
 #include "types.h"
 #include "platform.h"
 
-#include <spdlog/spdlog.h>
-
 #include <vector>
 
-#include <external/wrapfs.h>
+#include "wrapfs.h"
 
 namespace svl
 {

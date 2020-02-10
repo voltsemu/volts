@@ -9,12 +9,12 @@ source = 'fuzzy_match.cpp'
 
 include = include_directories('.')
 
-libaes = library('fuzzy', source,
+libfuzzy = library('fuzzy', source,
     include_directories : include,
     install : true
 )
 
-aes_dep = declare_dependency(
+fuzzy_dep = declare_dependency(
     include_directories : include,
-    link_with : libaes
+    link_with : libfuzzy
 )

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "svl/types.h"
-#include "svl/bitfield.h"
-#include "svl/file.h"
+#include <types.h>
+#include <bitfield.h>
+#include <file.h>
 
 namespace volts::ppu
 {
