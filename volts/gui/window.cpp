@@ -58,8 +58,6 @@ namespace volts::window
 
         ImGui_ImplGlfw_InitForOpenGL(win, true);
 
-
-
         while(!glfwWindowShouldClose(win))
         {
             glfwPollEvents();

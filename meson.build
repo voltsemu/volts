@@ -30,8 +30,6 @@ if not glfw.found()
     glfw = cmake.subproject('glfw').dependency('glfw')
 endif
 
-
-
 spdlog_opts = [
     'enable_tests=false',
     'enable_examples=false',
