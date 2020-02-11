@@ -5,3 +5,6 @@
 !svl/
 !fnv1a/
 !elf/
+!vfs/
+!cfg/
+!imgui/

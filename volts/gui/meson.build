@@ -1,1 +1,3 @@
-sources += 'volts/gui/window.cpp'
+libgui = library('gui', [ 'window.cpp' ],
+    dependencies : [ glfw, spdlog, alert, svl, vfs, imgui ]
+)

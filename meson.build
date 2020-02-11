@@ -61,6 +61,12 @@ svl = subproject('svl').get_variable('svl_dep')
 
 elf = subproject('elf').get_variable('elf_dep')
 
+vfs = subproject('vfs').get_variable('vfs_dep')
+
+alert = subproject('alert').get_variable('alert_dep')
+
+imgui = subproject('imgui').get_variable('imgui_dep')
+
 # we structure the emulator by splitting it into core parts
 # we have 
 #   - a decryption library
@@ -72,61 +78,8 @@ elf = subproject('elf').get_variable('elf_dep')
 
 subdir('volts')
 
-# incs = [ include_directories('volts') ]
+doxygen = find_program('doxygen', required : false)
 
-# links = []
-
-# args = []
-
-# if meson.get_compiler('cpp').get_id() == 'g++'
-#     args += '-lstdc++fs'
-# endif
-
-# if not meson.get_compiler('cpp').has_header('filesystem')
-#     args += '-DNO_FILESYSTEM'
-# endif
-
-# subdir('volts')
-
-# # disable run time type id and exceptions in the hope of generating smaller code
-# # i know you dont pay for features you dont use but this also stops people
-# # from trying to use either feature at all so people dont """accidentally"""
-# # use these slow features for convenience sake
-# if meson.get_compiler('cpp').get_id() == 'msvc'
-#     args += ['/GF', '/wd4180'] #GF enables string pooling, we abuse this for performance reasons
-#     # wd4180 disables some pointless warnings that dont matter (yeah i know ignoring warnings is bad style)
-# endif
-
-# gui = executable('gui', sources + gui_sources,
-#     include_directories : incs,
-#     install : true,
-#     cpp_args : args + [ '-DVGUI=1' ],
-#     objcpp_args : args,
-#     dependencies : deps,
-#     link_args : links,
-#     gui_app : true
-# )
-
-# cli = executable('cli', sources + cmd_sources,
-#     include_directories : incs,
-#     install : true,
-#     cpp_args : args,
-#     dependencies : deps,
-#     link_args : links
-# )
-
-# tests = executable('tests', sources + test_sources,
-#     include_directories : incs,
-#     install : false,
-#     cpp_args : args + [ '-DVTESTING=1' ],
-#     dependencies : deps,
-#     link_args : links
-# )
-
-# doxygen = find_program('doxygen', required : false)
-
-# if doxygen.found()
-#     run_target('docs', 
-#         command : [doxygen, meson.source_root()/'Doxyfile']
-#     )
-# endif
+if doxygen.found()
+    run_target('docs', command : [doxygen, meson.source_root()/'Doxyfile'])
+endif

@@ -1,4 +1,4 @@
-project('alert', 'cpp'
+project('alert', 'cpp',
     default_options : [
         'cpp_std=c++98'
     ]

@@ -1,12 +1,12 @@
 [submodule "subprojects/spdlog"]
 	path = subprojects/spdlog
 	url = https://github.com/gabime/spdlog
-[submodule "volts/external/imgui"]
-	path = volts/external/imgui
-	url = https://github.com/ocornut/imgui
 [submodule "subprojects/glfw"]
 	path = subprojects/glfw
 	url = https://github.com/Apache-HB/glfw
 [submodule "subprojects/cxxopts"]
 	path = subprojects/cxxopts
 	url = https://github.com/jarro2783/cxxopts
+[submodule "subprojects/imgui/imgui"]
+	path = subprojects/imgui/imgui
+	url = https://github.com/ocornut/imgui

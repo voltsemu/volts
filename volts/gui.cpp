@@ -1,13 +1,13 @@
-#include "volts.h"
-
 #include <platform.h>
+
+#include "gui/window.h"
 
 #if SYS_WINDOWS
 #   include <cstdio>
 #   include <windows.h>
 #endif
 
-#if defined(VGUI) && SYS_WINDOWS
+#if SYS_WINDOWS
 // windows guis require a sepcific entry point
 int WINAPI wWinMain(
     HINSTANCE inst,
@@ -20,10 +20,5 @@ int WINAPI wWinMain(
 int main(int argc, char** argv)
 #endif
 {
-#if SYS_WINDOWS && !defined(VGUI)
-    // UTF-8 console output for windows
-    SetConsoleOutputCP(CP_UTF8);
-    setvbuf(stdout, nullptr, _IOFBF, 1024);
-#endif
-
+    volts::window::run();
 }
