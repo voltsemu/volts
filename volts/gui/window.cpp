@@ -23,6 +23,12 @@ namespace volts::window
 {
     GLFWwindow* win = nullptr;
 
+    void gui_loop()
+    {
+        ImGui::Begin("yes");
+        ImGui::End();
+    }
+
     void run()
     {
         glfwSetErrorCallback([](int err, const char* desc) {
@@ -60,6 +66,7 @@ namespace volts::window
 
         while(!glfwWindowShouldClose(win))
         {
+            gui_loop();
             glfwPollEvents();
         }
 

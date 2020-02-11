@@ -179,6 +179,16 @@ namespace svl
         }
 
         /**
+         * @brief write a string to the file
+         * 
+         * @param str the string to write
+         */
+        void write(const std::string& str)
+        {
+            handle->write(str.c_str(), str.size());
+        }
+
+        /**
          * @brief check if the file is valid
          * 
          * @return true the file is valid
