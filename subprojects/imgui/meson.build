@@ -32,7 +32,8 @@ endif
 
 libimgui = library('imgui', sources,
     include_directories : inc,
-    dependencies : glfw
+    dependencies : glfw,
+    objcpp_args : [ '-fobjc-arc' ]
 )
 
 imgui_dep = declare_dependency(

@@ -10,7 +10,7 @@ project('volts', ['cpp', 'c'],
 )
 
 if host_machine.system() == 'darwin'
-    add_languages('obcjpp')
+    add_languages('objcpp')
 endif
 
 # TODO: using cpp_eh=none makes meson do funky stuff on windows, feels like a bug, should report
@@ -21,8 +21,6 @@ endif
 # collect all the dependencies that lots of things share
 
 cmake = import('cmake')
-
-cxxopts = cmake.subproject('cxxopts').dependency('cxxopts')
 
 zlib = dependency('zlib', fallback : [ 'zlib', 'zlib_dep' ])
 
@@ -67,6 +65,8 @@ alert = subproject('alert').get_variable('alert_dep')
 
 imgui = subproject('imgui').get_variable('imgui_dep')
 
+cxxopts = subproject('cxxopts').get_variable('cxxopts_dep')
+
 # we structure the emulator by splitting it into core parts
 # we have 
 #   - a decryption library
@@ -76,7 +76,25 @@ imgui = subproject('imgui').get_variable('imgui_dep')
 #   - a frontend gui executable <- gpu
 #   - a cli toolkit executable <- decryption
 
+extra_deps = []
+
+if host_machine.system() == 'darwin'
+    extra_deps += dependency('appleframeworks', modules : [ 'Cocoa', 'Foundation' ])
+endif
+
 subdir('volts')
+
+
+cli = executable('cli', [ 'volts/cli.cpp' ],
+    link_with : [ libload, libcrypt ],
+    dependencies : [ spdlog, svl, elf, vfs, cxxopts, rapidjson ]
+)
+
+gui = executable('gui', [ 'volts/gui.cpp' ],
+    link_with : [ libgui ],
+    dependencies : [ svl, vfs ] + extra_deps,
+    gui_app : true
+)
 
 doxygen = find_program('doxygen', required : false)
 
