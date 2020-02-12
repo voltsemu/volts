@@ -1,3 +1,3 @@
-foreach dir : [ 'crypt', 'loader', 'gui' ]
+foreach dir : [ 'crypt', 'loader', 'rsx' ]
     subdir(dir)
 endforeach

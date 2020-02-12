@@ -23,6 +23,8 @@
 #include <rapidjson/writer.h>
 #include <rapidjson/stringbuffer.h>
 
+#include "rsx/render.h"
+
 namespace volts::cmd
 {
     namespace json = rapidjson;
@@ -245,4 +247,6 @@ int main(int argc, char** argv)
     setvbuf(stdout, nullptr, _IOFBF, 1024);
 #endif
     volts::cmd::parse(argc, argv);
+
+    volts::rsx::run("bonk");
 }

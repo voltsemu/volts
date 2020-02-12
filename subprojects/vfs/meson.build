@@ -12,5 +12,6 @@ libvfs = library('vfs', 'vfs.cpp',
 
 vfs_dep = declare_dependency(
     link_with : libvfs,
-    include_directories : include_directories('.')
+    include_directories : include_directories('.'),
+    dependencies : svl
 )

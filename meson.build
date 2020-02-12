@@ -82,16 +82,9 @@ endif
 
 subdir('volts')
 
-
 cli = executable('cli', [ 'volts/cli.cpp' ],
-    link_with : [ libload, libcrypt ],
+    link_with : [ libload, libcrypt, librsx ],
     dependencies : [ spdlog, svl, elf, vfs, cxxopts, rapidjson ]
-)
-
-gui = executable('gui', [ 'volts/gui.cpp' ],
-    link_with : [ libgui ],
-    dependencies : [ svl, vfs ] + extra_deps,
-    gui_app : true
 )
 
 doxygen = find_program('doxygen', required : false)

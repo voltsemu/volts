@@ -23,16 +23,29 @@ else
     #TODO: linux 
 endif
 
-glfw = dependency('glfw3', required : false)
+deps = []
 
-if not glfw.found()
-    cmake = import('cmake')
-    glfw = cmake.subproject('glfw').dependency('glfw')
+if host_machine.system() != 'darwin'
+    sources += 'imgui/examples/imgui_impl_opengl3.cpp'
+    
+    glfw = dependency('glfw3', required : false)
+
+    if not glfw.found()
+        cmake = import('cmake')
+        glfw = cmake.subproject('glfw').dependency('glfw')
+    endif
+
+    glad = subproject('glad').get_variable('glad_dep')
+
+    deps += [ glfw, glad ]
+
 endif
 
 libimgui = library('imgui', sources,
     include_directories : inc,
-    dependencies : glfw,
+    dependencies : deps,
+    #TODO: should this be configurable?
+    cpp_args : [ '-DIMGUI_IMPL_OPENGL_LOADER_GLAD' ],
     objcpp_args : [ '-fobjc-arc' ]
 )
 
