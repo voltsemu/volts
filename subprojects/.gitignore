@@ -10,3 +10,4 @@
 !imgui/
 !cxxopts/
 !glad/
+!glad/**/*
