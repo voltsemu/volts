@@ -12,8 +12,12 @@
 
 #include "vfs.h"
 
+#include <platform.h>
+
 #if !SYS_OSX
 #   include "ogl/render.h"
+#else
+#   include "metal/render.h"
 #endif
 
 namespace volts::rsx
@@ -38,11 +42,24 @@ namespace volts::rsx
 
     void run(const std::string& name)
     {
+#if !SYS_OSX
         opengl::connect();
+#else
+        metal::connect();
+#endif
+
 
         auto* current = renders()->at(0);
 
-        glfwInit();
+        glfwSetErrorCallback([](auto err, auto msg) {
+            spdlog::info("glfw error {}: {}", err, msg);
+        });
+
+        if(!glfwInit())
+        {
+            spdlog::critical("failed to initialize glfw");
+            return;
+        }
 
         current->preinit();
 
@@ -69,14 +86,10 @@ namespace volts::rsx
             ImGui::Begin("aaa");
             ImGui::End();
 
-            ImGui::Render();
-
             current->end();
         }
 
         current->cleanup();
-
-        ImGui::DestroyContext();
 
         glfwDestroyWindow(win);
         glfwTerminate();

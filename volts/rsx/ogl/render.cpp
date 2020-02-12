@@ -49,6 +49,7 @@ namespace volts::rsx
             glClearColor(0.45f, 0.55f, 0.60f, 1.f);
             glClear(GL_COLOR_BUFFER_BIT);
 
+            ImGui::Render();
             ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
             glfwSwapBuffers(window());
@@ -58,6 +59,7 @@ namespace volts::rsx
         {
             ImGui_ImplOpenGL3_Shutdown();
             ImGui_ImplGlfw_Shutdown();
+            ImGui::DestroyContext();
         }
 
     private:
