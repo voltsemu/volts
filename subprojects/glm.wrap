@@ -1,6 +1,0 @@
-[wrap-file]
-directory = glm-0.9.9
-
-source_url = https://github.com/g-truc/glm/archive/stable.zip
-source_filename = glm-stable.zip
-source_hash = 6b092b47d1727ef5e3adb2191350da82df57d10b3203187cc506c535a1cf64fb
