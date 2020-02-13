@@ -134,11 +134,8 @@ namespace volts::rsx
         id<MTLRenderCommandEncoder> encoder;
     };
 
-    namespace metal
+    void metal::connect()
     {
-        void connect()
-        {
-            rsx::add(new mtl());
-        }
+        rsx::add(new mtl());
     }
 }

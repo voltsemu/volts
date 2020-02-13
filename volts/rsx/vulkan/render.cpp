@@ -5,7 +5,7 @@ namespace volts::rsx
 {
     struct vk : render
     {
-        virtual ~vulkan() override {}
+        virtual ~vk() override {}
 
         virtual void preinit() override
         {
@@ -33,11 +33,8 @@ namespace volts::rsx
         }
     };
 
-    namespace vulkan
+    void vulkan::connect()
     {
-        void connect()
-        {
-            add(new vk());
-        }
+        add(new vk());
     }
 }

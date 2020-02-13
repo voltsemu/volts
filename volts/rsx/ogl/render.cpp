@@ -67,11 +67,8 @@ namespace volts::rsx
         int height;
     };
 
-    namespace opengl
+    void opengl::connect()
     {
-        void connect()
-        {
-            rsx::add(new ogl());
-        }
+        rsx::add(new ogl());
     }
 }

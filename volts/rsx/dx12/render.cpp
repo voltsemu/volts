@@ -1,8 +1,9 @@
 #include "render.h"
+#include "backend.h"
 
-namespace volts::rsx::directx12
+namespace volts::rsx
 {
-    void connect()
+    void directx12::connect()
     {
         
     }
