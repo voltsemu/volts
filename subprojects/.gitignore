@@ -11,3 +11,4 @@
 !cxxopts/
 !glad/
 !glad/**/*
+!imgui-filebrowser/
