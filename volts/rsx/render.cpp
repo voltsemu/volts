@@ -16,7 +16,9 @@
 
 #if !SYS_OSX
 #   include "ogl/render.h"
-#   include "vulkan/render.h"
+#   if HAS_VULKAN
+#       include "vulkan/render.h"
+#   endif
 #   if SYS_WINDOWS
 #       include "dx12/render.h"
 #   endif
@@ -48,7 +50,9 @@ namespace volts::rsx
     {
 #if !SYS_OSX
         opengl::connect();
+#   if HAS_VULKAN
         vulkan::connect();
+#   endif
 #   if SYS_WINDOWS
         directx12::connect();
 #   endif
