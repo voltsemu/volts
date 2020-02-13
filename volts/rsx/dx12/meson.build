@@ -1,0 +1,1 @@
+rsx_src += 'dx12/render.cpp'

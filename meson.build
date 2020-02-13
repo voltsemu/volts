@@ -65,6 +65,8 @@ imgui = subproject('imgui').get_variable('imgui_dep')
 
 cxxopts = subproject('cxxopts').get_variable('cxxopts_dep')
 
+browser = subproject('imgui-filebrowser').get_variable('filebrowser_dep')
+
 # we structure the emulator by splitting it into core parts
 # we have 
 #   - a decryption library

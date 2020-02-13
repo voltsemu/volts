@@ -1,0 +1,1 @@
+rsx_src += 'vulkan/render.cpp'
