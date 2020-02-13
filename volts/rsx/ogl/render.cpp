@@ -1,3 +1,4 @@
+#include "render.h"
 #include "backend.h"
 
 #include <spdlog/spdlog.h>
