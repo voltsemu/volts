@@ -10,6 +10,3 @@
 [submodule "subprojects/cxxopts/cxxopts"]
 	path = subprojects/cxxopts/cxxopts
 	url = https://github.com/jarro2783/cxxopts
-[submodule "subprojects/imgui-filebrowser/imgui-filebrowser"]
-	path = subprojects/imgui-filebrowser/imgui-filebrowser
-	url = https://github.com/AirGuanZ/imgui-filebrowser

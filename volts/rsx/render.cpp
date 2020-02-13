@@ -10,8 +10,6 @@
 
 #include "imgui/imgui.h"
 
-#include "imfilebrowser.h"
-
 #include "vfs.h"
 
 #include <platform.h>
@@ -84,8 +82,6 @@ namespace volts::rsx
 
         current->postinit();
 
-        //ImGui::FileBrowser file_dialog;
-
         while(!glfwWindowShouldClose(win))
         {
             glfwPollEvents();
@@ -96,31 +92,9 @@ namespace volts::rsx
             ImGui::ShowDemoWindow(&a);
 
             ImGui::Begin("utils");
-            /*
-            if(ImGui::Button("decrypt pup"))
-            {
-                file_dialog.SetTitle("pup");
-                file_dialog.SetTypeFilters({ ".PUP" });
-                file_dialog.Open();
-            }
-
-            if(ImGui::Button("decrypt self"))
-            {
-                file_dialog.SetTitle("self");
-                file_dialog.SetTypeFilters({ ".SELF", ".BIN" });
-                file_dialog.Open();
-            }
-            */
+           
             ImGui::End();
-            /*
-            file_dialog.Display();
-
-            if(file_dialog.HasSelected())
-            {
-                spdlog::info("selected {}", file_dialog.GetSelected().string());
-                file_dialog.ClearSelected();
-            }
-            */
+            
             current->end();
         }
 

@@ -21,7 +21,7 @@ else
 endif
 
 librsx = library('rsx', [ 'render.cpp' ] + rsx_src,
-    dependencies : [ glfw, vfs, imgui, spdlog, browser ] + rsx_deps,
+    dependencies : [ glfw, vfs, imgui, spdlog ] + rsx_deps,
     include_directories : rsx_inc,
     objcpp_args : [ '-std=c++17' ],
     cpp_args : rsx_args
