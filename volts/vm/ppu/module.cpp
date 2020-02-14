@@ -67,9 +67,28 @@ namespace volts::ppu
             XXH64_update(hasher.get(), &prog.vaddress, sizeof(prog.vaddress));
         }
 
+        std::vector<segment> sections;
+
         for(auto sect : mod.sects)
         {
-            
+            if(sect.type != 1)
+                continue;
+
+            for(int i = 0; i < segments.size(); i++)
+            {
+                u32 sect_addr = mod.progs[i].vaddress;
+                if(sect.address >= sect_addr && sect.address < sect_addr + mod.progs[i].mem_size)
+                {
+                    sections.push_back(segment{
+                        sect.address - sect_addr + segments[i].addr,
+                        sect.size,
+                        sect.type,
+                        sect.flags & 7,
+                        0
+                    });
+                    break;
+                }
+            }
         }
         
         auto hash = XXH64_digest(hasher.get());

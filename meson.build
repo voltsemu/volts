@@ -24,6 +24,7 @@ cmake = import('cmake')
 
 zlib = dependency('zlib', fallback : [ 'zlib', 'zlib_dep' ])
 
+#TODO: this is really noisy on some windows systems but not all
 glfw = dependency('glfw3', required : false)
 
 if not glfw.found()
