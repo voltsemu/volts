@@ -61,7 +61,7 @@ namespace volts::rsx
 #endif
 
         // TODO: configure
-        auto* current = renders()->at(0);
+        auto* current = renders()->at(1);
 
         glfwSetErrorCallback([](auto err, auto msg) {
             spdlog::info("glfw error {}: {}", err, msg);
@@ -86,20 +86,25 @@ namespace volts::rsx
 
         current->postinit();
 
+        double last_frame = 0.0;
+        int frames = 0;
+
         while(!glfwWindowShouldClose(win))
         {
+            frames++;
             glfwPollEvents();
             current->begin();
 
-            static bool a = true;
+            if(static bool a = true; a)
+                ImGui::ShowDemoWindow(&a);
 
-            ImGui::ShowDemoWindow(&a);
 
             ImGui::Begin("utils");
-           
+            ImGui::Text("fps %.2f", frames/last_frame);
             ImGui::End();
             
             current->end();
+            last_frame = glfwGetTime();
         }
 
         current->cleanup();
