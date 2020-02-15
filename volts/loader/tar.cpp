@@ -78,11 +78,9 @@ namespace volts::loader::tar
             switch(head.file_type)
             {
                 case '0':
-                {
-                    svl::file out = open(to/name, svl::mode::write);
-                    out.write<u8>(file.read<u8>(octal_to_decimal(atoi(head.size))));
+                    open(to/name, svl::mode::write)
+                        .write<u8>(file.read<u8>(octal_to_decimal(atoi(head.size))));
                     break;
-                }
                 case '5':
                     fs::create_directories(to/name);
                     break;

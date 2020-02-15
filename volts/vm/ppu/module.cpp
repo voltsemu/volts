@@ -90,6 +90,55 @@ namespace volts::ppu
                 }
             }
         }
+
+        for(auto prog : mod.progs)
+        {
+            if(prog.type != 0x700000A4)
+                continue;
+
+            mod.file.seek(prog.offset);
+            auto relocs = mod.file.read<relocation_info>(prog.file_size / sizeof(relocation_info));
+
+            for(auto reloc : relocs)
+            {
+                auto addr = vm::read<u32>(segments.at(reloc.idx_addr).addr + reloc.offset);
+                auto data = reloc.idx_val == 0xFF ? vm::read<u64>(reloc.ptr) : segments.at(reloc.idx_addr).addr + reloc.ptr;
+
+                switch(reloc.type)
+                {
+                case 1:
+                    vm::write<u32>(addr, data);
+                    break;
+                case 4:
+                    vm::write<u16>(addr, data);
+                    break;
+                case 5:
+                    vm::write<u16>(addr, data >> 16);
+                    break;
+                case 6:
+                    vm::write<u16>(addr, (data >> 16) + (data & 0x8000 ? 1 : 0));
+                    break;
+                case 10:
+                    vm::write<bit_field<endian::big<u32>, 6, 30>(addr, (data - addr) >> 2);
+                    break;
+                case 11:
+                    vm::write<bit_field<endian::big<u32>, 16, 30>(addr, (data - addr) >> 2);
+                    break;
+                case 38:
+                    vm::write<u64>(addr, data);
+                    break;
+                case 44:
+                    vm::write<u64>(addr, data - addr);
+                    break;
+                case 57:
+                    vm::write<bit_field<endian::big<u16>, 0, 14>(addr, data >> 2);
+                    break;
+                default:
+                    spdlog::error("invalid relocation type {}", reloc.type);
+                    break;
+                }
+            }
+        }
         
         auto hash = XXH64_digest(hasher.get());
         spdlog::info("prx hash: {}", hash);
