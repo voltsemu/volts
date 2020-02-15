@@ -32,22 +32,15 @@ namespace volts::rsx::vulkan::debug
 
     void setup(const VkInstance& instance)
     {
-        spdlog::info("aaa");
         vkCreateDebugUtilsMessengerEXT = reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT"));
         vkDestroyDebugUtilsMessengerEXT = reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT"));
-    
-        spdlog::info("bbb");
 
         VkDebugUtilsMessengerCreateInfoEXT messenger = { VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT };
         messenger.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
         messenger.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT;
         messenger.pfnUserCallback = debug_callback;
 
-        spdlog::info("ccc {}", (void*)vkCreateDebugUtilsMessengerEXT);
-
         VK_ENSURE(vkCreateDebugUtilsMessengerEXT(instance, &messenger, nullptr, &utilsMessenger));
-
-        spdlog::info("ddd");
     }
 
     void cleanup(const VkInstance& instance)

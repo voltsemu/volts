@@ -1,9 +1,19 @@
 #pragma once
 
+#include <string>
+
+#include <types.h>
+
 struct GLFWwindow;
 
 namespace volts::rsx
 {
+    struct device
+    {
+        virtual ~device() {}
+        virtual std::string name() const = 0;
+    };
+
     struct render
     {
         virtual ~render() {}

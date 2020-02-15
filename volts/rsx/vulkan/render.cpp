@@ -1,14 +1,19 @@
 #include "render.h"
 #include "backend.h"
 #include "support.h"
-#include "debug.h"
+
+#if VK_VALIDATE
+#   include "debug.h"
+#endif
 
 namespace volts::rsx
 {
+#if VK_VALIDATE
     VkDebugUtilsMessengerEXT vulkan::debug::utilsMessenger = {};
     
     PFN_vkCreateDebugUtilsMessengerEXT vulkan::debug::vkCreateDebugUtilsMessengerEXT = {};
     PFN_vkDestroyDebugUtilsMessengerEXT vulkan::debug::vkDestroyDebugUtilsMessengerEXT = {};
+#endif
 
     struct vk : render
     {
@@ -21,13 +26,12 @@ namespace volts::rsx
 #if VK_VALIDATE
             vulkan::debug::setup(instance);
 #endif
-            auto devices = vulkan::phsyical_devices(instance);
+            devices = vulkan::phsyical_devices(instance);
+
             for(auto device : devices)
-            {
-                VkPhysicalDeviceProperties props = {};
-                vkGetPhysicalDeviceProperties(device, &props);
-                spdlog::info("device {}", props.deviceName);
-            }
+                spdlog::info("device {}", device.name());
+
+            physical = devices[0];
         }
 
         virtual void postinit() override
@@ -52,6 +56,9 @@ namespace volts::rsx
 
     private:
         VkInstance instance;
+        std::vector<physical_device> devices;
+
+        physical_device physical;
     };
 
     void vulkan::connect()
