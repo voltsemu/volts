@@ -1,8 +1,8 @@
 #pragma once
 
-#include "loader/elf.h"
+#include <elf.h>
 
 namespace volts::ppu
 {
-    void load_prx(loader::elf::ppu_prx& mod);
+    void load_prx(elf::ppu_prx& mod);
 }

@@ -1,6 +1,8 @@
-subdir('ppu')
-subdir('spu')
+vm = library('vm', 'vm.cpp',
+    dependencies : [ spdlog, svl ]
+)
 
-sources += [
-    'volts/vm/vm.cpp'
-]
+foreach module : ['ppu', 'spu', 'sys']
+    subdir(module)
+endforeach
+

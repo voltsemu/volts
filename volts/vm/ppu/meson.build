@@ -1,4 +1,4 @@
-sources += [
-    'volts/vm/ppu/thread.cpp',
-    'volts/vm/ppu/module.cpp'
-]
+ppu = library('ppu', [ 'module.cpp', 'thread.cpp' ],
+    link_with : [ vm ],
+    dependencies : [ spdlog, svl, elf ]
+)

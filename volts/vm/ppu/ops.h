@@ -1,7 +1,7 @@
 #include "thread.h"
 #include <endian.h>
 
-#include "vm/vm.h"
+#include "vm.h"
 
 #include <array>
 
