@@ -15,6 +15,8 @@ namespace svl
     template<typename T, std::size_t Tstart, std::size_t Tend>
     struct bit_field
     {
+        using type_t = T;
+        static constexpr 
         /**
          * @brief convert the value from bits to T
          * 

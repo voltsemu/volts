@@ -4,7 +4,11 @@
 
 #include <xxhash.h>
 
-#include "vfs/vfs.h"
+#include "vfs.h"
+
+#include <spdlog/spdlog.h>
+
+#include <bitfield.h>
 
 namespace volts::ppu
 {
@@ -95,8 +99,8 @@ namespace volts::ppu
             if(prog.type != 0x700000A4)
                 continue;
 
-            mod.file.seek(prog.offset);
-            auto relocs = mod.file.read<relocation_info>(prog.file_size / sizeof(relocation_info));
+            mod.data.seek(prog.offset);
+            auto relocs = mod.data.read<relocation_info>(prog.file_size / sizeof(relocation_info));
 
             for(auto reloc : relocs)
             {
@@ -118,10 +122,10 @@ namespace volts::ppu
                     vm::write<u16>(addr, (data >> 16) + (data & 0x8000 ? 1 : 0));
                     break;
                 case 10:
-                    vm::write<bit_field<endian::big<u32>, 6, 30>(addr, (data - addr) >> 2);
+                    vm::write<bit_field<endian::big<u32>, 6, 30>>(addr, static_cast<u32>((data - addr) >> 2));
                     break;
                 case 11:
-                    vm::write<bit_field<endian::big<u32>, 16, 30>(addr, (data - addr) >> 2);
+                    vm::write<bit_field<endian::big<u32>, 16, 30>>(addr, static_cast<u32>((data - addr) >> 2));
                     break;
                 case 38:
                     vm::write<u64>(addr, data);
@@ -130,7 +134,7 @@ namespace volts::ppu
                     vm::write<u64>(addr, data - addr);
                     break;
                 case 57:
-                    vm::write<bit_field<endian::big<u16>, 0, 14>(addr, data >> 2);
+                    vm::write<bit_field<endian::big<u16>, 0, 14>>(addr, static_cast<u16>(data >> 2));
                     break;
                 default:
                     spdlog::error("invalid relocation type {}", reloc.type);

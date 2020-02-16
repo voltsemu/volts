@@ -13,25 +13,25 @@ namespace volts::vm
     template<typename T>
     T read(addr at)
     {
-        return *static_cast<T*>(base(at));
+        return *reinterpret_cast<T*>(base(at));
     }
 
     template<typename T>
     void write(addr at, T val)
     {
-        *static_cast<T*>(base(at)) = val;
+        *reinterpret_cast<T*>(base(at)) = val;
     }
 
     template<typename T>
     T* ptr(addr at)
     {
-        return static_cast<T*>(base(at));
+        return reinterpret_cast<T*>(base(at));
     }
 
     template<typename T>
     T& ref(addr at)
     {
-        return *static_cast<T*>(base(at));
+        return *reinterpret_cast<T*>(base(at));
     }
 
     /**
