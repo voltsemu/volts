@@ -61,9 +61,15 @@
 #endif
 
 #ifndef CL_GNU
-#   define CL_GNU 1
+#   define CL_GNU 0
 #endif
 
 #ifndef CL_MSVC
 #   define CL_MSVC 0
+#endif
+
+#if CL_CLANG || CL_GNU
+#   define PACKED(name, ...) struct __attribute__ ((packed)) name __VA_ARGS__;
+#elif CL_MSVC
+#   define PACKED(name, ...) __pragma(pack(push, r1, 1)) struct name __VA_ARGS__; __pragma(pack(pop, r1, 2));
 #endif

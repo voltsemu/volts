@@ -8,20 +8,23 @@
 
 #include <spdlog/spdlog.h>
 
+#include <map>
+
 #include <bitrange.h>
 
 namespace volts::ppu
 {
     using namespace svl;
+    using namespace endian;
 
     struct relocation_info
     {
-        endian::big<u64> offset;
-        endian::big<u16> pad;
+        big<u64> offset;
+        big<u16> pad;
         u8 idx_val;
         u8 idx_addr;
-        endian::big<u32> type;
-        endian::big<u64> ptr;
+        big<u32> type;
+        big<u64> ptr;
     };
 
     static_assert(sizeof(relocation_info) == 24);
@@ -35,6 +38,61 @@ namespace volts::ppu
         u64 file_size;
     };
 
+    std::map<u32, u32> load_symbols(u32 front, u32 back)
+    {
+        struct module_info
+        {
+            u8 len;
+            pad unk1;
+
+            big<u16> version;
+            big<u16> attrib;
+            big<u16> funcs;
+            big<u16> vars;
+            big<u16> tlsvars;
+            
+            u8 hash;
+            u8 tlshash;
+            pad unk2[2];
+            
+            big<vm::addr> name;
+            big<vm::addr> nids;
+            big<vm::addr> addrs;
+            big<vm::addr> vnids;
+            big<vm::addr> vstubs;
+            
+            pad unk3[8];
+        };
+
+        std::map<u32, u32> symbols = {};
+
+        auto addr = front;
+
+        while(addr < back)
+        {
+            spdlog::info("offset {}", addr);
+            auto lib = vm::read<module_info>(addr);
+
+            spdlog::info("name offset {}", lib.name.get());
+
+            // special symbols
+            if(!lib.name.get())
+            {
+                // we add 44 because thats how large module_info is meant to be but msvc
+                // refuses to pack the thing correctly
+                addr += lib.len ? lib.len : 44;
+                continue;
+            }
+
+            std::string name = (char*)vm::base(lib.name.get());
+            spdlog::info("symbol name: {}", name);
+
+            addr += lib.len ? lib.len : 44;
+        }
+
+        return symbols;
+    }
+
     // TODO: all this
     void load_prx(elf::ppu_prx& mod)
     {
@@ -43,6 +101,7 @@ namespace volts::ppu
         
         std::vector<segment> segments;
 
+        // load data into memory
         for(auto prog : mod.progs)
         {
             if(prog.type != 1 || !prog.file_size)
@@ -52,11 +111,12 @@ namespace volts::ppu
             auto dat = mod.data.read<u8>(prog.file_size);
 
             vm::addr addr = (vm::addr)vm::main->alloc(prog.mem_size);
-            spdlog::info("addr {}", addr);
 
             if(!addr)
-                spdlog::info("out of memory");
+                spdlog::error("out of memory");
 
+            spdlog::info("loaded module at {}", addr);
+            
             std::memcpy(vm::base(addr), dat.data(), prog.file_size);
         
             segments.push_back(segment{
@@ -72,6 +132,7 @@ namespace volts::ppu
 
         std::vector<segment> sections;
 
+        // get information about relocations
         for(auto sect : mod.sects)
         {
             if(sect.type != 1)
@@ -94,6 +155,7 @@ namespace volts::ppu
             }
         }
 
+        // do the relocations
         for(auto prog : mod.progs)
         {
             if(prog.type != 0x700000A4)
@@ -106,6 +168,8 @@ namespace volts::ppu
             {
                 auto addr = vm::read<u32>(segments.at(reloc.idx_addr).addr + reloc.offset);
                 auto data = reloc.idx_val == 0xFF ? vm::read<u64>(reloc.ptr) : segments.at(reloc.idx_addr).addr + reloc.ptr;
+
+                // TODO: clean up the bitfield syntax
 
                 switch(reloc.type)
                 {
@@ -122,10 +186,10 @@ namespace volts::ppu
                     vm::write<u16>(addr, (data >> 16) + (data & 0x8000 ? 1 : 0));
                     break;
                 case 10:
-                    //vm::write<bitrange<endian::big<u32>, 6, 30>>(addr, static_cast<u32>((data - addr) >> 2));
+                    vm::write<endian::big<bitrange<u32, 6, 30>>>(addr, bitrange<u32, 6, 30>(static_cast<u32>((data - addr) >> 2)));
                     break;
                 case 11:
-                    //vm::write<bitrange<endian::big<u32>, 16, 30>>(addr, static_cast<u32>((data - addr) >> 2));
+                    vm::write<endian::big<bitrange<u32, 16, 30>>>(addr, bitrange<u32, 16, 30>(static_cast<u32>((data - addr) >> 2)));
                     break;
                 case 38:
                     vm::write<u64>(addr, data);
@@ -134,7 +198,7 @@ namespace volts::ppu
                     vm::write<u64>(addr, data - addr);
                     break;
                 case 57:
-                    vm::write<bitrange<u16, 0, 14>>(addr, static_cast<u16>(data >> 2));
+                    vm::write<endian::big<bitrange<u16, 0, 14>>>(addr, bitrange<u16, 0, 14>(static_cast<u16>(data >> 2)));
                     break;
                 default:
                     spdlog::error("invalid relocation type {}", reloc.type);
@@ -145,126 +209,27 @@ namespace volts::ppu
         
         auto hash = XXH64_digest(hasher.get());
         spdlog::info("prx hash: {}", hash);
+
+        struct library_info
+        {
+            big<u16> attrib;
+            u8 version[2];
+            char name[28];
+
+            big<u32> toc;
+
+            big<u32> symbols_front;
+            big<u32> symbols_back;
+
+            big<u32> deps_front;
+            big<u32> deps_back;
+        };
+
+        auto info = vm::read<library_info>(segments[0].addr + mod.progs[0].paddress - mod.progs[0].offset);
+        auto name = std::string(info.name);
+
+        spdlog::info("name {}, version {}.{}", name, info.version[0], info.version[1]);
+
+        auto symbols = load_symbols(info.symbols_front, info.symbols_back);
     }
 }
-
-#if 0
-
-        std::vector<elf::program_header<u64>> segments;
-
-        for(auto prog : mod.progs)
-        {
-            if(prog.type != 1)
-                continue;
-
-            if(!prog.file_size)
-                continue;
-
-            mod.data.seek(prog.offset);
-            auto sect = mod.data.read<u8>(prog.file_size);
-
-            std::memcpy(vm::real(prog.vaddress), sect.data(), prog.file_size);
-
-            if(prog.mem_size > prog.file_size)
-                std::memset(vm::real(prog.vaddress + prog.file_size), 0, prog.mem_size - prog.file_size);
-
-            segments.push_back(prog);
-        }
-
-        for(auto sect : mod.sects)
-        {
-
-        }
-
-        for(auto prog : mod.progs)
-        {
-            if(prog.type != 0x700000a4)
-                continue;
-
-            mod.data.seek(prog.offset);
-            auto bin = mod.data.read<u8>(prog.file_size);
-
-            for(int i = 0; i < prog.file_size; i += sizeof(relocation_info))
-            {
-                auto rel = ((relocation_info*)(bin.data()))[i];
-
-                u64 addr = vm::read64(segments[rel.idx_addr].vaddress + rel.offset);
-                u64 data = rel.idx_val == 0xFF ? rel.ptr : segments[rel.idx_val].vaddress + rel.ptr;
-
-                switch(rel.type)
-                {
-                case 1:
-                    vm::read32(addr) = data;
-                    break;
-                case 4:
-                    vm::read16(addr) = data;
-                    break;
-                case 5:
-                    vm::read16(addr) = data >> 16;
-                    break;
-                case 6:
-                    vm::read16(addr) = (data >> 16) + (data & 0x8000 ? 1 : 0);
-                    break;
-                case 10:
-                    vm::read32(addr) = ((data - addr) >> 2) >> 6;
-                    break;
-                case 11:
-                    vm::read32(addr) = ((data - addr) >> 2) >> 16;
-                    break;
-                case 38:
-                    vm::read64(addr) = data;
-                    break;
-                case 44:
-                    vm::read64(addr) = data - addr;
-                    break;
-                case 57:
-                    vm::read16(addr) = (data >> 2) & ~3;
-                    break;
-                default:
-                    spdlog::error("invalid relocation type");
-                    break;
-                }
-            }
-        }
-
-        /* for(auto& prog : mod.progs)
-        {
-            XXH64_update(hasher.get(), reinterpret_cast<void*>(&prog.vaddress), sizeof(decltype(prog.vaddress)));
-            
-            spdlog::info("loading program header");
-
-            if(prog.type == 1)
-            {
-                if(prog.mem_size)
-                {
-
-                }
-            }
-            else if(prog.type == 0x700000A4)
-            {
-                continue;
-            }
-            else
-            {
-                spdlog::error("invalid segment type");
-            }
-
-            mod.data.seek(prog.offset);
-            auto data = mod.data.read<svl::byte>(prog.file_size);
-
-            spdlog::info("read in section {} {}", prog.offset, data.size());
-
-            std::memcpy(vm::real(prog.vaddress), data.data(), data.size());
-        }
-
-        for(auto& sect : mod.sects)
-        {
-            XXH64_update(hasher.get(), reinterpret_cast<void*>(&sect.address), sizeof(decltype(sect.address)));
-
-            spdlog::info("loading section header");
-
-            mod.data.seek(sect.offset);
-            auto data = mod.data.read<svl::byte>(sect.size);
-            std::memcpy(vm::real(sect.address), data.data(), data.size());
-        } */
-#endif

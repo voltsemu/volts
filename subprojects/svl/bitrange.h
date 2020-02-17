@@ -14,10 +14,11 @@ namespace svl
     template<typename T, std::size_t I, std::size_t N>
     struct bitrange
     {
+        bitrange() = default;
         bitrange(T v)
             : val(v)
         {}
-        
+
         static constexpr T mask = ~((1 << N) - 1) << I;
         void write(T data)
         {

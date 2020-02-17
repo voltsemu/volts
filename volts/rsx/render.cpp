@@ -61,7 +61,7 @@ namespace volts::rsx
 #endif
 
         // TODO: configure
-        auto* current = renders()->at(1);
+        auto* current = renders()->at(0);
 
         glfwSetErrorCallback([](auto err, auto msg) {
             spdlog::info("glfw error {}: {}", err, msg);

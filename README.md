@@ -34,6 +34,7 @@ Planned features
 ## Sideprojects
 
 * Debugger
+* GUI frontend
 
 # Developer Q&A
 
@@ -145,7 +146,7 @@ ninja -C build
 - No warnings while building
 - Uses meson
 - Fully cross platform
-- Has command line utilities build in
+- Has command line utilities built in
 
 ##### Cons
 - Cant run ps3 games

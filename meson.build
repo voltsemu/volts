@@ -86,7 +86,7 @@ endif
 subdir('volts')
 
 cli = executable('cli', [ 'volts/cli.cpp' ],
-    link_with : [ libload, libcrypt, librsx ],
+    link_with : [ libload, libcrypt, librsx, libvm, libppu ],
     dependencies : [ spdlog, svl, elf, vfs, cxxopts, rapidjson ]
 )
 

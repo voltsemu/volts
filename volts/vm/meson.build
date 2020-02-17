@@ -1,4 +1,4 @@
-vm = library('vm', 'vm.cpp',
+libvm = library('vm', 'vm.cpp',
     dependencies : [ spdlog, svl ]
 )
 

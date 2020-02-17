@@ -92,6 +92,10 @@ namespace svl::endian
     template<typename T, endian_order order>
     struct endian_value
     {
+        constexpr endian_value() = default;
+        constexpr endian_value(const endian_value&) = default;
+        constexpr endian_value(T v) : val(v) {}
+
         /**
          * @brief get the value converted to the platforms native byte ordering
          * @see endian_value::get

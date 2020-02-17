@@ -7,6 +7,10 @@
 #include <file.h>
 #include <vfs.h>
 
+#include "vm/vm.h"
+#include "vm/ppu/module.h"
+#include "vm/ppu/thread.h"
+
 #include "elf.h"
 
 #include "loader/sfo.h"
@@ -44,7 +48,7 @@ namespace volts::cmd
             ("sfo", "parse an sfo file", opts::value<std::string>())
             ("pup", "parse a pup file", opts::value<std::string>())
             ("self", "parse a self file", opts::value<std::string>())
-            // ("boot", "boot the emulator")
+            ("boot", "boot the emulator", opts::value<std::string>())
             ;
 
         auto res = opts.parse(argc, argv);
@@ -223,19 +227,19 @@ namespace volts::cmd
             }
         }
 
-        /* if(res.count("boot"))
+        if(res.count("boot"))
         {
-            svl::file liblv2 = svl::open(vfs::get("dev_flash/sys/external/liblv2.sprx"), svl::mode::read);
+            svl::file liblv2 = svl::open(res["boot"].as<std::string>(), svl::mode::read);
 
-            auto lib = unself::load_self(liblv2);
+            auto lib = self::load(liblv2);
 
             auto elf = elf::load<elf::ppu_prx>(lib);
 
             vm::init();
 
             ppu::load_prx(elf.value());
-            ppu::thread(elf->head.entry);
-        } */
+            //ppu::thread(elf->head.entry);
+        }
     }
 }
 
@@ -248,5 +252,5 @@ int main(int argc, char** argv)
 #endif
     volts::cmd::parse(argc, argv);
 
-    volts::rsx::run("bonk");
+    //volts::rsx::run("bonk");
 }
