@@ -37,26 +37,27 @@ namespace volts::vm
 
         LOCKED({
             link* cur = begin;
+            vm::addr offset = cur->addr + cur->len;
             for(;;)
             {
-                // if this block wont overlap with the next one we can allocate
-                if(((s + cur->len + cur->addr) - cur->next->addr) > 0)
+                // check if the chain is empty
+                if(!cur->next)
                 {
-                    link* lk = new link{cur, cur->next, cur->addr + cur->len, s};
-                    cur->next->behind = lk;
-                    cur->next = lk;
-
-                    return (void*)lk->addr;
-                }
-                else if(cur == end)
-                {
-                    // we've run out of space
                     return nullptr;
+                }
+                else if(offset > cur->next->addr)
+                {
+                    // if there isnt space then check the next link
+                    cur = cur->next;
+                    offset = cur->len + cur->addr;
                 }
                 else
                 {
-                    // check the next node
-                    cur = cur->next;
+                    // there is space
+                    link* in = new link{cur->next, cur, offset, s};
+                    cur->next = in;
+                    cur->next->behind = in;
+                    return (void*)in->addr;
                 }
             }
         });
