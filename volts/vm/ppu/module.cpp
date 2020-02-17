@@ -8,7 +8,7 @@
 
 #include <spdlog/spdlog.h>
 
-#include <bitfield.h>
+#include <bitrange.h>
 
 namespace volts::ppu
 {
@@ -122,10 +122,10 @@ namespace volts::ppu
                     vm::write<u16>(addr, (data >> 16) + (data & 0x8000 ? 1 : 0));
                     break;
                 case 10:
-                    vm::write<bit_field<endian::big<u32>, 6, 30>>(addr, static_cast<u32>((data - addr) >> 2));
+                    //vm::write<bitrange<endian::big<u32>, 6, 30>>(addr, static_cast<u32>((data - addr) >> 2));
                     break;
                 case 11:
-                    vm::write<bit_field<endian::big<u32>, 16, 30>>(addr, static_cast<u32>((data - addr) >> 2));
+                    //vm::write<bitrange<endian::big<u32>, 16, 30>>(addr, static_cast<u32>((data - addr) >> 2));
                     break;
                 case 38:
                     vm::write<u64>(addr, data);
@@ -134,7 +134,7 @@ namespace volts::ppu
                     vm::write<u64>(addr, data - addr);
                     break;
                 case 57:
-                    vm::write<bit_field<endian::big<u16>, 0, 14>>(addr, static_cast<u16>(data >> 2));
+                    vm::write<bitrange<u16, 0, 14>>(addr, static_cast<u16>(data >> 2));
                     break;
                 default:
                     spdlog::error("invalid relocation type {}", reloc.type);

@@ -1,5 +1,6 @@
 #include "thread.h"
 #include <endian.h>
+#include <bitrange.h>
 
 #include "vm.h"
 
@@ -13,25 +14,25 @@ namespace volts::ppu
     {
         svl::u32 raw;
 
-        svl::bit_field<svl::u32, 6, 11> rs;
-        svl::bit_field<svl::u32, 11, 16> ra;
-        svl::bit_field<svl::u32, 16, 20> rb;
-        svl::bit_field<svl::u32, 6, 10> rd;
+        svl::bitrange<svl::u32, 6, 5> rs;
+        svl::bitrange<svl::u32, 11, 5> ra;
+        svl::bitrange<svl::u32, 16, 5> rb;
+        svl::bitrange<svl::u32, 6, 5> rd;
 
-        svl::bit_field<svl::u32, 11, 15> va;
-        svl::bit_field<svl::u32, 16, 20> vb;
-        svl::bit_field<svl::u32, 21, 25> vc;
-        svl::bit_field<svl::u32, 6, 10> vd;
+        svl::bitrange<svl::u32, 11, 5> va;
+        svl::bitrange<svl::u32, 16, 5> vb;
+        svl::bitrange<svl::u32, 21, 5> vc;
+        svl::bitrange<svl::u32, 6, 5> vd;
 
-        svl::bit_field<svl::u32, 6, 10> bo;
+        svl::bitrange<svl::u32, 6, 5> bo;
 
-        svl::bit_field<svl::u32, 16, 30> ds;
+        svl::bitrange<svl::u32, 16, 14> ds;
 
-        svl::bit_field<svl::u32, 6, 10> frs;
-        svl::bit_field<svl::u32, 6, 10> frd;
+        svl::bitrange<svl::u32, 6, 5> frs;
+        svl::bitrange<svl::u32, 6, 5> frd;
 
-        svl::bit_field<svl::i32, 16, 31> simm16;
-        svl::bit_field<svl::u32, 16, 31> uimm16;
+        svl::bitrange<svl::i32, 16, 16> simm16;
+        svl::bitrange<svl::u32, 16, 16> uimm16;
     };
 
     static_assert(sizeof(form) == sizeof(svl::u32));
@@ -41,11 +42,6 @@ namespace volts::ppu
     svl::u32 decode(svl::u32 op)
     {
         return (op >> 26 | op << (32 - 26)) & 0x1FFFF; 
-    }
-
-    void stub(thread& ppu, form op)
-    {
-        spdlog::error("unimplemented ppu op {:x}", op.raw);
     }
 
     void tdi(thread& ppu, form op)
@@ -86,8 +82,8 @@ namespace volts::ppu
 
     void stw(thread& ppu, form op)
     {
-        const vm::addr addr = op.ra ? ppu.gpr[op.ra] + op.simm16 : op.simm16;
-        const u32 val = (u32)ppu.gpr[op.rs];
+        u64 addr = op.ra ? ppu.gpr[op.ra] + op.simm16 : (i32)op.simm16;
+        u32 val = ppu.gpr[op.rs];
         vm::write<u32>(addr, val);
     }
 
@@ -113,7 +109,7 @@ namespace volts::ppu
 
     void lbz(thread& ppu, form op)
     {
-        vm::addr addr = op.ra ? ppu.gpr[op.ra] + op.simm16 : op.simm16;
+        vm::addr addr = op.ra ? ppu.gpr[op.ra] + op.simm16 : (i32)op.simm16;
         ppu.gpr[op.rd] = vm::read<u8>(addr);
     }
 
@@ -154,13 +150,13 @@ namespace volts::ppu
     void lfs(thread& ppu, form op)
     {
         // TODO: is this right
-        vm::addr addr = op.ra ? ppu.gpr[op.ra] + op.simm16 : op.simm16;
+        vm::addr addr = op.ra ? ppu.gpr[op.ra] + op.simm16 : (i32)op.simm16;
         ppu.fpr[op.frd] = vm::ref<f32>(addr);
     }
 
     void stfs(thread& ppu, form op)
     {
-        vm::addr addr = op.ra ? ppu.gpr[op.ra] + op.simm16 : op.simm16;
+        vm::addr addr = op.ra ? ppu.gpr[op.ra] + op.simm16 : (i32)op.simm16;
         vm::write<f32>(addr, ppu.fpr[op.frs]);
     }
 
@@ -221,7 +217,7 @@ namespace volts::ppu
     {
         if(sh < 11)
         {   
-            for(auto& e : instr)
+            for(const auto& e : instr)
             {
                 for(int i = 0; i < (e.magn + (11 - sh - num)); i++)
                 {
@@ -234,7 +230,7 @@ namespace volts::ppu
         }
         else
         {
-            for(auto& e : instr)
+            for(const auto& e : instr)
             {
                 for(int i = 0; i < 1u << 11; i++)
                 {
@@ -246,8 +242,10 @@ namespace volts::ppu
 
     void init_table()
     {
-        // fill the table with stub ops to stop random crashes
-        std::fill(std::begin(ops), std::end(ops), stub);
+        // fill the table with stub ops to detect invalid opcodes
+        std::fill(std::begin(ops), std::end(ops), [](thread& t, form op) {
+            spdlog::critical("invalid op {}", op.raw);
+        });
 
         fill(0, 6, -1, {
             { 0x02, tdi },
