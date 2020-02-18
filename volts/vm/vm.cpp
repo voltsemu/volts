@@ -37,7 +37,6 @@ namespace volts::vm
 
         LOCKED({
             link* cur = begin;
-            vm::addr offset = cur->addr + cur->len;
             for(;;)
             {
                 // check if the chain is empty
@@ -45,16 +44,15 @@ namespace volts::vm
                 {
                     return nullptr;
                 }
-                else if(offset + s > cur->next->addr)
+                else if(cur->len + cur->addr + s > cur->next->addr)
                 {
                     // if there isnt space then check the next link
                     cur = cur->next;
-                    offset = cur->len + cur->addr;
                 }
                 else
                 {
                     // there is space
-                    link* in = new link{cur->next, offset, s};
+                    link* in = new link{cur->next, cur->addr + cur->len, s};
                     cur->next = in;
                     return (void*)in->addr;
                 }

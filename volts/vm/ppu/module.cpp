@@ -256,6 +256,8 @@ namespace volts::ppu
 
         spdlog::info("name {}, version {}.{}", name, info.version[0], info.version[1]);
 
+        spdlog::info("symbol range: {}-{}", info.symbols_front, info.symbols_back);
+
         auto symbols = load_symbols(info.symbols_front, info.symbols_back);
     }
 }

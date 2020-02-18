@@ -59,7 +59,7 @@ namespace volts::vm
             , page_size(ps)
             , offset_pages(op)
         {
-            end = new link{nullptr, (vm::addr)a + width, 0};
+            link* end = new link{nullptr, (vm::addr)a + width, 0};
             begin = new link{end, (vm::addr)a, 0};
         }
 
@@ -79,9 +79,6 @@ namespace volts::vm
 
         /// first link
         link* begin;
-
-        /// last link
-        link* end;
 
         /**
          * @brief allocate pages from the block
