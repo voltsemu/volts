@@ -73,11 +73,37 @@ namespace volts::ppu
             spdlog::info("offset {}", addr);
             auto lib = vm::read<module_info>(addr);
 
+            spdlog::info("lib(len={},version={},attrib={},funcs={},vars={},tlsvars={},hash={},tlshash={},name={},nids={},addrs={},vnids={},vstubs={})", 
+                lib.len,
+                lib.version.get(),
+                lib.attrib.get(),
+                lib.funcs.get(),
+                lib.vars.get(),
+                lib.tlsvars.get(),
+                lib.hash,
+                lib.tlshash,
+                lib.name.get(),
+                lib.nids.get(),
+                lib.addrs.get(),
+                lib.vnids.get(),
+                lib.vstubs.get()
+            );
+
             spdlog::info("name offset {}", lib.name.get());
 
             // special symbols
-            if(!lib.name.get())
+            if(lib.name.get() == 0)
             {
+                auto* nids = (big<vm::addr>*)vm::base(lib.nids);
+                auto* addrs = (big<vm::addr>*)vm::base(lib.addrs);
+
+                for(int i = 0, end = lib.funcs + lib.vars; i < end; i++)
+                {
+                    u32 nid = nids[i];
+                    u32 addr = addrs[i];
+
+                    spdlog::info("{} = {}", nid, addr);
+                }
                 // we add 44 because thats how large module_info is meant to be but msvc
                 // refuses to pack the thing correctly
                 addr += lib.len ? lib.len : 44;

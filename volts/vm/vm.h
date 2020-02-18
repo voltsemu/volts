@@ -43,9 +43,6 @@ namespace volts::vm
         /// next link in the chain
         link* next;
 
-        /// previous link in the chain
-        link* behind;
-
         /// address of a link
         vm::addr addr;
 
@@ -62,9 +59,8 @@ namespace volts::vm
             , page_size(ps)
             , offset_pages(op)
         {
-            begin = new link{nullptr, nullptr, (vm::addr)a, 0};
-            end = new link{nullptr, begin, (vm::addr)a + width, 0};
-            begin->next = end;
+            end = new link{nullptr, (vm::addr)a + width, 0};
+            begin = new link{end, (vm::addr)a, 0};
         }
 
         ~block();

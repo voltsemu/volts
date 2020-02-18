@@ -45,7 +45,7 @@ namespace volts::vm
                 {
                     return nullptr;
                 }
-                else if(offset > cur->next->addr)
+                else if(offset + s > cur->next->addr)
                 {
                     // if there isnt space then check the next link
                     cur = cur->next;
@@ -54,9 +54,8 @@ namespace volts::vm
                 else
                 {
                     // there is space
-                    link* in = new link{cur->next, cur, offset, s};
+                    link* in = new link{cur->next, offset, s};
                     cur->next = in;
-                    cur->next->behind = in;
                     return (void*)in->addr;
                 }
             }
@@ -66,31 +65,8 @@ namespace volts::vm
     void block::dealloc(void* ptr)
     {
         LOCKED({
-            link* cur = begin;
-            for(;;)
-            {
-                if(cur->addr == (vm::addr)ptr)
-                {
-                    // remove link in chain
-                    link* behind = cur->behind;
-                    link* next = cur->next;
-                    behind->next = next;
-                    next->behind = behind;
-                    delete cur;
-                }
-                else if(cur == end)
-                {
-                    // if we've reached the end then something went wrong
-                    spdlog::info("invalid free of address {:x}", ptr);
-                    break;
-                }
-                else
-                {
-                    // next item in chain
-                    cur = cur->next;
-                }
-            }
-        })
+            // TODO
+        });
     }
 
     void* base(addr of)
