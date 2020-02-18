@@ -61,16 +61,38 @@ namespace volts::ppu
             big<vm::addr> vnids;
             big<vm::addr> vstubs;
             
-            pad unk3[8];
+            big<u32> unk3;
+            big<u32> unk4;
         };
 
         std::map<u32, u32> symbols = {};
 
         auto addr = front;
 
-        while(addr < back)
+        //while(addr < back)
         {
             spdlog::info("offset {}", addr);
+            spdlog::info("len = {}", vm::read<u8>(addr));
+            spdlog::info("version = {}", vm::read<big<u16>>(addr + 2));
+
+            auto lib = vm::read<module_info>(addr);
+            spdlog::info("lib(len={},version={},attrib={},funcs={},vars={},tlsvars={},hash={},tlshash={},name={},nids={},addrs={},vnids={},vstubs={})", 
+                lib.len,
+                lib.version.get(),
+                lib.attrib.get(),
+                lib.funcs.get(),
+                lib.vars.get(),
+                lib.tlsvars.get(),
+                lib.hash,
+                lib.tlshash,
+                lib.name.get(),
+                lib.nids.get(),
+                lib.addrs.get(),
+                lib.vnids.get(),
+                lib.vstubs.get()
+            );
+
+            /*
             auto lib = vm::read<module_info>(addr);
 
             spdlog::info("lib(len={},version={},attrib={},funcs={},vars={},tlsvars={},hash={},tlshash={},name={},nids={},addrs={},vnids={},vstubs={})", 
@@ -89,7 +111,8 @@ namespace volts::ppu
                 lib.vstubs.get()
             );
 
-            spdlog::info("name offset {}", lib.name.get());
+            spdlog::info("name offset {}", lib.name.val);
+            
 
             // special symbols
             if(lib.name.get() == 0)
@@ -110,10 +133,10 @@ namespace volts::ppu
                 continue;
             }
 
-            std::string name = (char*)vm::base(lib.name.get());
+            std::string name = (char*)vm::base(lib.name.val);
             spdlog::info("symbol name: {}", name);
 
-            addr += lib.len ? lib.len : 44;
+            addr += lib.len ? lib.len : 44;*/
         }
 
         return symbols;
@@ -141,7 +164,7 @@ namespace volts::ppu
             if(!addr)
                 spdlog::error("out of memory");
 
-            spdlog::info("loaded module at {}", addr);
+            spdlog::info("loaded program data at {}", addr);
             
             std::memcpy(vm::base(addr), dat.data(), prog.file_size);
         
@@ -173,7 +196,7 @@ namespace volts::ppu
                         sect.address - sect_addr + segments[i].addr,
                         sect.size,
                         sect.type,
-                        sect.flags & 7,
+                        static_cast<u32>(sect.flags & 7),
                         0
                     });
                     break;
@@ -192,10 +215,12 @@ namespace volts::ppu
 
             for(auto reloc : relocs)
             {
-                auto addr = vm::read<u32>(segments.at(reloc.idx_addr).addr + reloc.offset);
+                auto addr = vm::read<big<u32>>(segments.at(reloc.idx_addr).addr + reloc.offset);
                 auto data = reloc.idx_val == 0xFF ? vm::read<u64>(reloc.ptr) : segments.at(reloc.idx_addr).addr + reloc.ptr;
 
                 // TODO: clean up the bitfield syntax
+
+                spdlog::debug("relocation at {}", addr);
 
                 switch(reloc.type)
                 {
@@ -212,10 +237,12 @@ namespace volts::ppu
                     vm::write<u16>(addr, (data >> 16) + (data & 0x8000 ? 1 : 0));
                     break;
                 case 10:
-                    vm::write<endian::big<bitrange<u32, 6, 30>>>(addr, bitrange<u32, 6, 30>(static_cast<u32>((data - addr) >> 2)));
+                    spdlog::debug("relocation 10 at {}", addr);
+                    vm::write<u32>(addr, byte_swap(bitrange<u32, 7, 30>(static_cast<u32>((data - addr) >> 2)).read()));
                     break;
                 case 11:
-                    vm::write<endian::big<bitrange<u32, 16, 30>>>(addr, bitrange<u32, 16, 30>(static_cast<u32>((data - addr) >> 2)));
+                    spdlog::debug("relocation 11 at {}", addr);
+                    vm::write<u32>(addr, byte_swap(bitrange<u32, 17, 30>(static_cast<u32>((data - addr) >> 2)).read()));
                     break;
                 case 38:
                     vm::write<u64>(addr, data);
@@ -224,7 +251,8 @@ namespace volts::ppu
                     vm::write<u64>(addr, data - addr);
                     break;
                 case 57:
-                    vm::write<endian::big<bitrange<u16, 0, 14>>>(addr, bitrange<u16, 0, 14>(static_cast<u16>(data >> 2)));
+                    spdlog::debug("relocation 57 at {}", addr);
+                    vm::write<u16>(addr, byte_swap(bitrange<u16, 1, 14>(static_cast<u16>(data >> 2)).read()));
                     break;
                 default:
                     spdlog::error("invalid relocation type {}", reloc.type);

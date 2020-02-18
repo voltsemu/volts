@@ -7,6 +7,8 @@
 #include <file.h>
 #include <vfs.h>
 
+#include <future>
+
 #include "vm/vm.h"
 #include "vm/ppu/module.h"
 #include "vm/ppu/thread.h"
@@ -69,24 +71,28 @@ namespace volts::cmd
                 spdlog::info("disaling logging");
                 spdlog::set_level(spdlog::level::off);
                 break;
-            case '1': case 'i': case 'I':
+            case '1': case 'd': case 'D':
+                spdlog::info("setting log level to debug");
+                spdlog::set_level(spdlog::level::debug);
+                break;
+            case '2': case 'i': case 'I':
                 spdlog::info("setting log level to info");
                 spdlog::set_level(spdlog::level::info);
                 break;
-            case '2': case 'w': case 'W':
+            case '3': case 'w': case 'W':
                 spdlog::info("setting log level to warn");
                 spdlog::set_level(spdlog::level::warn);
                 break;
-            case '3': case 'e': case 'E':
+            case '4': case 'e': case 'E':
                 spdlog::info("setting log level to error");
                 spdlog::set_level(spdlog::level::err);
                 break;
-            case '4': case 'c': case 'C':
+            case '5': case 'c': case 'C':
                 spdlog::info("setting log level to critical");
                 spdlog::set_level(spdlog::level::critical);
                 break;
             default:
-                spdlog::warn("invalid log level {}. must be one of [off | info | warn | err | critical]", str);
+                spdlog::warn("invalid log level {}. must be one of [off | debug | info | warn | err | critical]", str);
                 break;
             }
         }
@@ -188,22 +194,28 @@ namespace volts::cmd
 
                     auto tar = tar::load(pup->get_file(0x300));
 
-                    for(auto& [key, off] : tar.offsets)
+                    // create a vector of all decryption tasks
+                    // when this exits scope all the futures destructors
+                    // will be called and everything will be decrypted at the same time
+                    std::vector<std::future<void>> tasks = {};
+
+                    for(auto& [key, _] : tar.offsets)
                     {
                         if(key.rfind("dev_flash_", 0) != 0)
                             continue;
 
-                        spdlog::info("decrypting pup entry {}", key);
+                        tasks.push_back(std::async(std::launch::async, [name = key, file = tar.get_file(key)]{
+                            spdlog::info("decrypting pup entry {}", name);
+                            auto update = sce::load(file);
 
-                        auto update = sce::load(tar.get_file(key));
+                            update[2].seek(0);
 
-                        update[2].seek(0);
+                            auto dec = tar::load(update[2]);
+                            
+                            spdlog::info("extracing entry into vfs");
 
-                        auto dec = tar::load(update[2]);
-
-                        spdlog::info("extracing entry into vfs");
-
-                        dec.extract(vfs::root());
+                            dec.extract(vfs::root());
+                        }));
                     }
                 }
             }
