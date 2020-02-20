@@ -241,15 +241,18 @@ namespace volts::cmd
 
         if(res.count("boot"))
         {
-            svl::file liblv2 = svl::open(res["boot"].as<std::string>(), svl::mode::read);
+            // TODO: boot elf games
+            svl::file f = svl::open(res["boot"].as<std::string>(), svl::mode::read);
 
-            auto lib = self::load(liblv2);
+            auto lib = self::load(f);
 
-            auto elf = elf::load<elf::ppu_prx>(lib);
+            f.seek(0);
+
+            auto elf = elf::load<elf::ppu_exec>(lib.size() ? lib : f);
 
             vm::init();
 
-            ppu::load_prx(elf.value());
+            //ppu::load_prx(elf.value());
             //ppu::thread(elf->head.entry);
         }
     }

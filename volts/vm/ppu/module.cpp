@@ -215,12 +215,18 @@ namespace volts::ppu
 
             for(auto reloc : relocs)
             {
+                //spdlog::debug("ptr {} {}", reloc.ptr.get(), vm::read<u64>(reloc.ptr));
                 auto addr = vm::read<big<u32>>(segments.at(reloc.idx_addr).addr + reloc.offset);
-                auto data = reloc.idx_val == 0xFF ? vm::read<u64>(reloc.ptr) : segments.at(reloc.idx_addr).addr + reloc.ptr;
+                auto data = reloc.idx_val == 0xFF ? byte_swap(vm::read<u64>(reloc.ptr)) : segments.at(reloc.idx_addr).addr + reloc.ptr;
 
                 // TODO: clean up the bitfield syntax
 
-                spdlog::debug("relocation {} at {}", reloc.type, addr);
+                //spdlog::debug("relocation {} at {}", reloc.type, addr);
+
+                if(addr > 75396 && addr < 75536)
+                {
+                    spdlog::info("reloc {} puts {} at {}", reloc.type, data, addr);
+                }
 
                 switch(reloc.type)
                 {
@@ -256,6 +262,8 @@ namespace volts::ppu
                     break;
                 }
             }
+
+            break;
         }
         
         auto hash = XXH64_digest(hasher.get());
