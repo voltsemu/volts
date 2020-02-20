@@ -30,7 +30,7 @@ namespace volts::rsx::vulkan::debug
     extern PFN_vkCreateDebugUtilsMessengerEXT vkCreateDebugUtilsMessengerEXT;
     extern PFN_vkDestroyDebugUtilsMessengerEXT vkDestroyDebugUtilsMessengerEXT;
 
-    void setup(const VkInstance& instance)
+    void setup(const VkInstance& instance, PFN_vkDebugUtilsMessengerCallbackEXT callback = debug_callback)
     {
         vkCreateDebugUtilsMessengerEXT = reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT"));
         vkDestroyDebugUtilsMessengerEXT = reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT"));
@@ -41,6 +41,8 @@ namespace volts::rsx::vulkan::debug
         messenger.pfnUserCallback = debug_callback;
 
         VK_ENSURE(vkCreateDebugUtilsMessengerEXT(instance, &messenger, nullptr, &utilsMessenger));
+
+        spdlog::info("installed debug messaging");
     }
 
     void cleanup(const VkInstance& instance)

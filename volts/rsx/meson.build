@@ -22,7 +22,7 @@ endif
 
 librsx = library('rsx', [ 'render.cpp' ] + rsx_src,
     dependencies : [ glfw, vfs, imgui, spdlog, glm ] + rsx_deps,
-    include_directories : rsx_inc,
+    include_directories : [ rsx_inc, volts_inc ],
     objcpp_args : [ '-std=c++17' ],
     cpp_args : rsx_args
 )

@@ -2,6 +2,8 @@
 
 #define VK_ENSURE(expr) { if(VkResult res = (expr); res != VK_SUCCESS) { spdlog::error("vk error {} = {}", #expr, res); } }
 
+#include "volts.h"
+
 #include <platform.h>
 
 #if SYS_WINDOWS
@@ -20,7 +22,6 @@ namespace volts::rsx
 {
     struct physical_device : device
     {
-        physical_device() = default;
         physical_device(VkPhysicalDevice phys)
             : physical(phys)
         {
@@ -40,6 +41,9 @@ namespace volts::rsx
                 VK_ENSURE(vkEnumerateDeviceExtensionProperties(physical, nullptr, &num, extensions.data()));
             }
 
+            for(auto ext : extensions)
+                spdlog::info("device extension: {}", ext.extensionName);
+
             // get queue families
             {
                 // get number of family properties
@@ -47,15 +51,8 @@ namespace volts::rsx
                 vkGetPhysicalDeviceQueueFamilyProperties(physical, &num, nullptr);
 
                 // get the families
-                families.reserve(num);
+                families.resize(num);
                 vkGetPhysicalDeviceQueueFamilyProperties(physical, &num, families.data());
-            }
-
-            // get queue indicies
-            {
-                for(int i = 0; i < families.size(); i++)
-                    if(families[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
-                        queues.graphics = i;
             }
         }
 
@@ -66,40 +63,61 @@ namespace volts::rsx
             return props.deviceName;
         }
 
-        VkDevice graphics_device() const 
+        template<VkQueueFlags T>
+        VkDevice device(bool swapchain = false) const
         {
-            if(!queues.graphics.has_value())
-                return VK_NULL_HANDLE;
+            static_assert(T & (VK_QUEUE_TRANSFER_BIT | VK_QUEUE_COMPUTE_BIT | VK_QUEUE_GRAPHICS_BIT), "invalid device type");
+            
+            const float priority = 0.f;
 
-            VkDeviceQueueCreateInfo queueinfo = { VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO };
-            queueinfo.queueFamilyIndex = queues.graphics.value();
-            queueinfo.queueCount = 1;
+            std::vector<VkDeviceQueueCreateInfo> queues;
 
-            float priority = 0.f;
-            queueinfo.pQueuePriorities = &priority;
+            for(VkQueueFlagBits flag : { VK_QUEUE_TRANSFER_BIT, VK_QUEUE_COMPUTE_BIT, VK_QUEUE_GRAPHICS_BIT })
+            {
+                // check if we need this queue
+                if(!(T & flag))
+                    continue;
 
-            VkPhysicalDeviceFeatures feats = { };
+                VkDeviceQueueCreateInfo createinfo = { VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO };
+                
+                createinfo.queueFamilyIndex = queue_index(flag).value();
+                createinfo.queueCount = 1;
+                createinfo.pQueuePriorities = &priority;
 
-            VkDeviceCreateInfo createinfo = { VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO };
-            createinfo.pQueueCreateInfos = &queueinfo;
-            createinfo.queueCreateInfoCount = 1;
+                queues.push_back(createinfo);
+            }
 
-            createinfo.pEnabledFeatures = &feats;
+            std::vector<const char*> exts;
 
-            createinfo.enabledExtensionCount = 0;
+            if(swapchain)
+            {
+                V_ASSERT(supports(VK_KHR_SWAPCHAIN_EXTENSION_NAME));
+                exts.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+            }
+
+            VkDeviceCreateInfo device_create_info = { VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO };
+            device_create_info.queueCreateInfoCount = (uint32_t)queues.size();
+            device_create_info.pQueueCreateInfos = queues.data();
+
+            // TODO: probably isnt needed
+            // device_create_info.pEnabledFeatures
 
 #if VK_VALIDATION
-            const char* layers[] = { "VK_LAYER_KHRONOS_validation" };
-            createinfo.ppEnabledLayerNames = layers;
-            createinfo.enabledLayerCount = 1;
-#else
-            createinfo.enabledLayerCount = 0;
+            if(supports(VK_EXT_DEBUG_MARKER_EXTENSION_NAME))
+            {
+                exts.push_back(VK_EXT_DEBUG_MARKER_EXTENSION_NAME);
+                spdlog::info("added debug marker extension");
+            }
 #endif
-            VkDevice out;
 
-            VK_ENSURE(vkCreateDevice(physical, &createinfo, nullptr, &out));
+            device_create_info.enabledExtensionCount = (uint32_t)exts.size();
+            device_create_info.ppEnabledExtensionNames = exts.data();
+            
+            VkDevice logical;
 
-            return out;
+            VK_ENSURE(vkCreateDevice(physical, &device_create_info, nullptr, &logical));
+
+            return logical;
         }
 
         bool supports(const std::string& extension) const
@@ -111,13 +129,37 @@ namespace volts::rsx
             return false;
         }
 
+        std::optional<VkFormat> best_format() const
+        {
+            for(VkFormat format : {
+                VK_FORMAT_D32_SFLOAT_S8_UINT, 
+                VK_FORMAT_D32_SFLOAT, 
+                VK_FORMAT_D24_UNORM_S8_UINT, 
+                VK_FORMAT_D16_UNORM_S8_UINT, 
+                VK_FORMAT_D16_UNORM
+            })
+            {
+                VkFormatProperties props;
+                vkGetPhysicalDeviceFormatProperties(physical, format, &props);
+
+                if(props.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT)
+                    return format;
+            }
+
+            return std::nullopt;
+        }
+
         operator VkPhysicalDevice() const { return physical; }
 
-        struct {
-            std::optional<uint32_t> graphics = std::nullopt;
-            std::optional<uint32_t> compute = std::nullopt;
-            std::optional<uint32_t> transfer = std::nullopt;
-        } queues;
+        std::optional<uint32_t> queue_index(VkQueueFlags flags) const
+        {
+            // get queue indicies
+            for(uint32_t i = 0; i < families.size(); i++)
+                if((families[i].queueFlags & flags) == flags)
+                    return i;
+
+            return std::nullopt;
+        }
 
         VkPhysicalDevice physical;
         VkPhysicalDeviceProperties props;
@@ -126,6 +168,14 @@ namespace volts::rsx
 
         std::vector<VkExtensionProperties> extensions;
         std::vector<VkQueueFamilyProperties> families;
+    };
+
+    struct swapchain
+    {
+        swapchain(GLFWwindow* window)
+        {
+            
+        }
     };
 }
 
@@ -225,28 +275,30 @@ namespace volts::rsx::vulkan
             else
                 exts.push_back(ext.c_str());
 
+
+
         VkInstanceCreateInfo createinfo = { VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO };
         createinfo.pApplicationInfo = &appinfo;
         
 #if VK_VALIDATE
-        // todo: maybe clean this up
-        const char* layer_name[] = { "VK_LAYER_KHRONOS_validation" };
-        if(has_layer(layer_name[0]))
-        {
-            createinfo.ppEnabledLayerNames = layer_name;
-            createinfo.enabledLayerCount = 1;
-        }
-        else
-        {
-            spdlog::error("validation was enabled but not supported");
-        }
+        // if validation is enabled then add the needed layers and extensions
+        const char* layer_name = "VK_LAYER_KHRONOS_validation";
+        V_ASSERT(has_layer(layer_name));
+        
+        createinfo.ppEnabledLayerNames = &layer_name;
+        createinfo.enabledLayerCount = 1;
 
-        exts.push_back("VK_EXT_debug_utils");
+
+        V_ASSERT(has_extension(VK_EXT_DEBUG_UTILS_EXTENSION_NAME));
+
+        exts.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 #endif
 
         createinfo.enabledExtensionCount = exts.size();
         createinfo.ppEnabledExtensionNames = exts.data();
 
+
+        // create instance
         VkInstance inst;
         VK_ENSURE(vkCreateInstance(&createinfo, nullptr, &inst));
         return inst;

@@ -267,5 +267,5 @@ int main(int argc, char** argv)
 #endif
     volts::cmd::parse(argc, argv);
 
-    //volts::rsx::run("bonk");
+    volts::rsx::run("volts");
 }

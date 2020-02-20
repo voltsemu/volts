@@ -31,7 +31,10 @@ namespace volts::rsx
             for(auto device : devices)
                 spdlog::info("device {}", device.name());
 
-            physical = devices[0];
+            device = physical().device<VK_QUEUE_GRAPHICS_BIT>();
+            auto format = physical().best_format();
+
+            vkGetDeviceQueue(device, physical().queue_index(VK_QUEUE_GRAPHICS_BIT).value(), 0, &queue);
         }
 
         virtual void postinit() override
@@ -56,9 +59,16 @@ namespace volts::rsx
 
     private:
         VkInstance instance;
+        
+        using idx_type = typename std::vector<physical_device>::size_type;
+
+        idx_type device_index = 0;
         std::vector<physical_device> devices;
 
-        physical_device physical;
+        const physical_device& physical() const { return devices[device_index]; }
+
+        VkDevice device;
+        VkQueue queue;
     };
 
     void vulkan::connect()
