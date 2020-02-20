@@ -220,7 +220,7 @@ namespace volts::ppu
 
                 // TODO: clean up the bitfield syntax
 
-                spdlog::debug("relocation at {}", addr);
+                spdlog::debug("relocation {} at {}", reloc.type, addr);
 
                 switch(reloc.type)
                 {
@@ -237,11 +237,9 @@ namespace volts::ppu
                     vm::write<u16>(addr, (data >> 16) + (data & 0x8000 ? 1 : 0));
                     break;
                 case 10:
-                    spdlog::debug("relocation 10 at {}", addr);
                     vm::write<u32>(addr, byte_swap(bitrange<u32, 7, 30>(static_cast<u32>((data - addr) >> 2)).read()));
                     break;
                 case 11:
-                    spdlog::debug("relocation 11 at {}", addr);
                     vm::write<u32>(addr, byte_swap(bitrange<u32, 17, 30>(static_cast<u32>((data - addr) >> 2)).read()));
                     break;
                 case 38:
@@ -251,7 +249,6 @@ namespace volts::ppu
                     vm::write<u64>(addr, data - addr);
                     break;
                 case 57:
-                    spdlog::debug("relocation 57 at {}", addr);
                     vm::write<u16>(addr, byte_swap(bitrange<u16, 1, 14>(static_cast<u16>(data >> 2)).read()));
                     break;
                 default:
