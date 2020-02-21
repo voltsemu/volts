@@ -51,6 +51,7 @@ namespace volts::cmd
             ("pup", "parse a pup file", opts::value<std::string>())
             ("self", "parse a self file", opts::value<std::string>())
             ("boot", "boot the emulator", opts::value<std::string>())
+            ("gui", "run gui", opts::value<std::string>())
             ;
 
         auto res = opts.parse(argc, argv);
@@ -255,6 +256,9 @@ namespace volts::cmd
             //ppu::load_prx(elf.value());
             //ppu::thread(elf->head.entry);
         }
+
+        if(res.count("gui"))
+            volts::rsx::run(res["gui"].as<std::string>());
     }
 }
 
@@ -266,6 +270,4 @@ int main(int argc, char** argv)
     setvbuf(stdout, nullptr, _IOFBF, 1024);
 #endif
     volts::cmd::parse(argc, argv);
-
-    volts::rsx::run("metal");
 }

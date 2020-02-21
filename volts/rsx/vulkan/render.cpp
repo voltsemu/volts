@@ -2,39 +2,36 @@
 #include "backend.h"
 #include "support.h"
 
-#if VK_VALIDATE
-#   include "debug.h"
-#endif
-
 namespace volts::rsx
 {
-#if VK_VALIDATE
-    VkDebugUtilsMessengerEXT vulkan::debug::utilsMessenger = {};
-    
-    PFN_vkCreateDebugUtilsMessengerEXT vulkan::debug::vkCreateDebugUtilsMessengerEXT = {};
-    PFN_vkDestroyDebugUtilsMessengerEXT vulkan::debug::vkDestroyDebugUtilsMessengerEXT = {};
-#endif
-
     struct vk : render
     {
         virtual ~vk() override {}
 
         virtual void preinit() override
         {
-            instance = vulkan::instance();
+            // TODO: configure name
+            instance = vulkan::instance("vulkan").expect("failed to create vulkan instance");
+            extensions = vulkan::extensions().expect("failed to get instance extensions");
 
-#if VK_VALIDATE
-            vulkan::debug::setup(instance);
-#endif
-            devices = vulkan::phsyical_devices(instance);
+            spdlog::debug("supported extensions");
 
-            for(auto device : devices)
-                spdlog::info("device {}", device.name());
+            for(const auto& extension : extensions)
+                spdlog::debug("{} : {}", extension.extensionName, extension.specVersion);
 
-            device = physical().device<VK_QUEUE_GRAPHICS_BIT>();
-            auto format = physical().best_format();
+            physicalDevices = vulkan::physicalDevices(instance).expect("failed to get physical extensions");
 
-            vkGetDeviceQueue(device, physical().queue_index(VK_QUEUE_GRAPHICS_BIT).value(), 0, &queue);
+            spdlog::debug("available devices");
+
+            for(const auto& physicalDevice : physicalDevices)
+            {
+                VkPhysicalDeviceProperties props = {};
+                vkGetPhysicalDeviceProperties(physicalDevice, &props);
+
+                spdlog::debug("{} : {}", props.deviceName, vulkan::to_string(props.deviceType));
+            }
+
+            
         }
 
         virtual void postinit() override
@@ -61,16 +58,9 @@ namespace volts::rsx
 
     private:
         VkInstance instance;
-        
-        using idx_type = typename std::vector<physical_device>::size_type;
 
-        idx_type device_index = 0;
-        std::vector<physical_device> devices;
-
-        const physical_device& physical() const { return devices[device_index]; }
-
-        VkDevice device;
-        VkQueue queue;
+        std::vector<VkExtensionProperties> extensions;
+        std::vector<VkPhysicalDevice> physicalDevices;
     };
 
     void vulkan::connect()

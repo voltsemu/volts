@@ -73,3 +73,11 @@
 #elif CL_MSVC
 #   define PACKED(name, ...) __pragma(pack(push, r1, 1)) struct name __VA_ARGS__; __pragma(pack(pop, r1, 2));
 #endif
+
+#if SYS_WINDOWS
+#   include <Windows.h>
+    // alloca is deprecated on windows so we alias it for all platforms
+#   define salloc(s) _malloca(s)
+#else
+#   define salloc(s) alloca(s)
+#endif

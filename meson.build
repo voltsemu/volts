@@ -71,11 +71,15 @@ glm = subproject('glm').get_variable('glm_dep')
 
 sources = []
 dependencies = [ aes, xxhash, rapidjson, svl, elf, vfs, imgui, cxxopts, spdlog, zlib ]
-cpp_args = [ '-std=c++17', '-fno-exceptions' ]
+cpp_args = []
 include_directories = []
 
 if host_machine.system() == 'darwin'
     dependencies += dependency('appleframeworks', modules : [ 'Cocoa', 'Foundation' ])
+endif
+
+if host_machine.system() != 'windows'
+    cpp_args += [ '-std=c++17', '-fno-exceptions' ]
 endif
 
 subdir('volts')

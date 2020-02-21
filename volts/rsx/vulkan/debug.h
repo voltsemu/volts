@@ -2,6 +2,10 @@
 
 #include <vulkan/vulkan.h>
 
+
+
+
+#if 0
 namespace volts::rsx::vulkan::debug
 {
     VKAPI_ATTR VkBool32 VKAPI_CALL debug_callback(
@@ -51,3 +55,4 @@ namespace volts::rsx::vulkan::debug
             vkDestroyDebugUtilsMessengerEXT(instance, utilsMessenger, nullptr);
     }
 }
+#endif
