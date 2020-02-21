@@ -57,6 +57,8 @@ namespace volts::rsx
 
         }
 
+        virtual std::string_view name() const override { return "vulkan"; }
+
     private:
         VkInstance instance;
         

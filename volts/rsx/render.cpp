@@ -60,8 +60,16 @@ namespace volts::rsx
         metal::connect();
 #endif
 
-        // TODO: configure
-        auto* current = renders()->at(1);
+        // TODO: fallback
+        auto render = std::find_if(renders()->begin(), renders()->end(), [name](auto* render) { return render->name() == name; });
+        
+        if(render == renders()->end())
+        {
+            spdlog::error("render backend {} not found", name);
+            return;
+        }
+
+        auto* current = *render;
 
         glfwSetErrorCallback([](auto err, auto msg) {
             spdlog::info("glfw error {}: {}", err, msg);
@@ -97,11 +105,6 @@ namespace volts::rsx
 
             if(static bool a = true; a)
                 ImGui::ShowDemoWindow(&a);
-
-
-            ImGui::Begin("utils");
-            ImGui::Text("fps %.2f", frames/last_frame);
-            ImGui::End();
             
             current->end();
             last_frame = glfwGetTime();

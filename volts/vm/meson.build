@@ -1,8 +1,6 @@
-libvm = library('vm', 'vm.cpp',
-    dependencies : [ spdlog, svl ]
-)
+sources += 'volts/vm/vm.cpp'
 
-vm_inc = include_directories('.')
+include_directories += include_directories('.')
 
 foreach module : ['ppu', 'spu', 'sys']
     subdir(module)

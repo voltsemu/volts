@@ -119,6 +119,8 @@ namespace volts::rsx
             ImGui::DestroyContext();
         }
 
+        virtual std::string_view name() const override { return "metal"; }
+
     private:
         
         // global data

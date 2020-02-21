@@ -63,6 +63,8 @@ namespace volts::rsx
             ImGui::DestroyContext();
         }
 
+        virtual std::string_view name() const override { return "opengl"; }
+
     private:
         int width;
         int height;

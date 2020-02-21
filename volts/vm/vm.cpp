@@ -31,7 +31,7 @@ namespace volts::vm
         free_link_chain(begin);
     }
 
-    void* block::alloc(u64 size, u64 alignto)
+    vm::addr block::alloc(u64 size, u64 alignto)
     {
         u32 s = align(size, page_size) + (offset_pages ? 0x2000 : 0);
 
@@ -42,7 +42,7 @@ namespace volts::vm
                 // check if the chain is empty
                 if(!cur->next)
                 {
-                    return nullptr;
+                    return 0;
                 }
                 else if(cur->len + cur->addr + s > cur->next->addr)
                 {
@@ -54,13 +54,18 @@ namespace volts::vm
                     // there is space
                     link* in = new link{cur->next, cur->addr + cur->len, s};
                     cur->next = in;
-                    return (void*)in->addr;
+                    return in->addr;
                 }
             }
         });
     }
 
-    void block::dealloc(void* ptr)
+    vm::addr block::falloc(vm::addr addr, u64 size)
+    {
+        return addr;
+    }
+
+    void block::dealloc(vm::addr ptr)
     {
         LOCKED({
             // TODO

@@ -9,5 +9,5 @@ glad = subproject('glad').get_variable('glad_dep')
 #    ]
 #).dependency('glm')
 
-rsx_deps += [ glad ]
-rsx_src += 'ogl/render.cpp'
+dependencies += glad
+sources += 'volts/rsx/ogl/render.cpp'

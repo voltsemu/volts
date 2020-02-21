@@ -293,4 +293,15 @@ namespace volts::ppu
 
         auto symbols = load_symbols(info.symbols_front, info.symbols_back);
     }
+
+    void load_exec(elf::ppu_exec& exec)
+    {
+        for(auto prog : exec.progs)
+        {
+            if(prog.type != 1 || !prog.mem_size)
+                continue;
+
+            
+        }
+    }
 }

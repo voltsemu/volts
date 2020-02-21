@@ -87,14 +87,16 @@ namespace volts::vm
          * @param align the alignment of the block
          * @return void* the returned pointer, nullptr if out of memory
          */
-        void* alloc(svl::u64 size, svl::u64 align = 0x10000);
+        vm::addr alloc(svl::u64 size, svl::u64 align = 0x10000);
         
         /**
          * @brief deallocate a peice of memory in the block
          * 
          * @param ptr the block to deallocate
          */
-        void dealloc(void* ptr);
+        void dealloc(vm::addr ptr);
+
+        vm::addr falloc(vm::addr addr, svl::u64 size);
 
     private:
         std::mutex mut;

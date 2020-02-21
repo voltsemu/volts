@@ -68,26 +68,31 @@ cxxopts = subproject('cxxopts').get_variable('cxxopts_dep')
 
 glm = subproject('glm').get_variable('glm_dep')
 
-# we structure the emulator by splitting it into core parts
-# we have 
-#   - a decryption library
-#   - a loader library 
-#   - a cpu emulation library <- loader
-#   - a gpu emulation library <- cpu
-#   - a frontend gui executable <- gpu
-#   - a cli toolkit executable <- decryption
-
-extra_deps = []
+sources = []
+dependencies = [ aes, xxhash, rapidjson, svl, elf, vfs, imgui, cxxopts, spdlog, zlib ]
+cpp_args = [ '-std=c++17', '-fno-exceptions' ]
+include_directories = []
 
 if host_machine.system() == 'darwin'
-    extra_deps += dependency('appleframeworks', modules : [ 'Cocoa', 'Foundation' ])
+    dependencies += dependency('appleframeworks', modules : [ 'Cocoa', 'Foundation' ])
 endif
 
 subdir('volts')
 
-cli = executable('cli', [ 'volts/cli.cpp' ],
-    link_with : [ libload, libcrypt, librsx, libvm, libppu ],
-    dependencies : [ spdlog, svl, elf, vfs, cxxopts, rapidjson ]
+libvolts = library('volts', sources,
+    cpp_args : cpp_args,
+    objcpp_args : cpp_args,
+    include_directories : include_directories,
+    dependencies : dependencies
+)
+
+
+cli = executable('cli', 'volts/cli.cpp',
+    cpp_args : cpp_args,
+    objcpp_args : cpp_args,
+    include_directories : include_directories,
+    dependencies : dependencies,
+    link_with : libvolts
 )
 
 doxygen = find_program('doxygen', required : false)

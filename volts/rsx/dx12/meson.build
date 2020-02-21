@@ -1,1 +1,1 @@
-rsx_src += 'dx12/render.cpp'
+sources += 'volts/rsx/dx12/render.cpp'

@@ -1,8 +1,7 @@
-libcrypt = library('crypt', [
-        'sce.cpp',
-        'self.cpp',
-        'keys/keys.cpp',
-    ],
-    include_directories : [ include_directories('.') ],
-    dependencies : [ aes, zlib, svl, spdlog, elf ]
-)
+sources += [
+    'volts/crypt/sce.cpp',
+    'volts/crypt/self.cpp',
+    'volts/crypt/keys/keys.cpp'
+]
+
+include_directories += include_directories('.')

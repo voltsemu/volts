@@ -31,6 +31,8 @@ namespace volts::rsx
 
         // finish rendering and cleanup
         virtual void cleanup() = 0;
+
+        virtual std::string_view name() const = 0;
     };
 
     GLFWwindow* window();
