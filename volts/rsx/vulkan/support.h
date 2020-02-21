@@ -304,3 +304,63 @@ namespace volts::rsx::vulkan
         return inst;
     }
 }
+
+namespace volts::rsx::vulkan
+{
+    VkInstance instance(
+        const std::string& name,
+        const std::vector<std::string>& layers = {},
+        const std::vector<std::string>& extensions = {})
+    {
+        VkApplicationInfo appInfo = { VK_STRUCTURE_TYPE_APPLICATION_INFO };
+        
+        appInfo.pApplicationName = name.c_str();
+        appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
+        
+        appInfo.pEngineName = "emulated rsx";
+        appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
+        appInfo.apiVersion = VK_API_VERSION_1_0;
+
+        VkApplicationCreateInfo createInfo = { VK_STRUCTURE_TYPE_APPLICATION_CREATE_INFO };
+        createInfo.pApplicationInfo = &appInfo;
+
+        char** layerNames = alloca(sizeof(char*) * layers.size());
+        char** extensionNames = alloca(sizeof(char*) * extensions.size());
+
+        for(uint32_t i = 0; i < layers.size(); i++)
+            layerNames[i] = layers[i].c_str();
+
+        for(uint32_t i = 0; i < extensions.size(); i++)
+            extensionNames[i] = extensions[i].c_str();
+
+        // TODO: allocator and result type to handle errors
+        VkInstance out;
+        VK_ENSURE(vkCreateInstance(&createInfo, nullptr, &out));
+        return out;
+    }
+
+    const std::vector<std::string>& extensions()
+    {
+
+    }
+
+    const std::vector<std::string>& layers()
+    {
+        static auto layerNames = []{
+            uint32_t num = 0;
+            vkEnumerateInstanceLayerProperties(&num, nullptr);
+
+            VkLayerProperties* props = alloca(sizeof(VkLayerProperties) * num);
+            vkEnumerateInstanceLayerProperties(&num, props);
+
+            std::vector<std::string> names(num);
+
+            for(uint32_t i = 0; i < num; i++)
+                names.push_back(props[i].layerName);
+
+            return std::move(names);
+        }();
+
+        return layerNames;
+    }
+}

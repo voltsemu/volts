@@ -244,13 +244,13 @@ namespace volts::cmd
             // TODO: boot elf games
             svl::file f = svl::open(res["boot"].as<std::string>(), svl::mode::read);
 
-            auto lib = self::load(f);
+            //auto lib = self::load(f);
 
-            f.seek(0);
+            //f.seek(0);
 
-            auto elf = elf::load<elf::ppu_exec>(lib.size() ? lib : f);
+            //auto elf = elf::load<elf::ppu_exec>(lib.size() ? lib : f);
 
-            vm::init();
+            //vm::init();
 
             //ppu::load_prx(elf.value());
             //ppu::thread(elf->head.entry);
