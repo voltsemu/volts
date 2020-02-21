@@ -1,0 +1,27 @@
+import Cocoa
+import SwiftUI
+
+@NSApplicationMain
+class AppDelegate: NSObject, NSApplicationDelegate {
+    var window: NSWindow!
+
+    func applicationDidFinishLaunching(_ notif: Notification) {
+        let content = ContentView()
+
+        window = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 480, height: 300),
+            styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView],
+            backing: .buffered, 
+            defer: false
+        )
+
+        window.center()
+        window.setFrameAutosaveName("Main Window")
+        window.contentView = NSHostingView(rootView: content)
+        window.makeKeyAndOrderFront(nil)
+    }
+
+    func applicationDidTerminate(_ notif: Notification) {
+
+    }
+}
