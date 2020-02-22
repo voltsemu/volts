@@ -71,11 +71,7 @@ namespace volts::rsx::vulkan
         }
     }
 
-    svl::result<VkDevice, VkResult> createDevice(VkPhysicalDevice physical,
-                                                 VkAllocationCallbacks* allocator = VK_NULL_HANDLE)
-    {
-        VkDeviceCreateInfo createInfo = { VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO };
-    }
+
 
     svl::result<std::vector<VkPhysicalDevice>, VkResult> physicalDevices(VkInstance instance)
     {
