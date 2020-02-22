@@ -28,7 +28,7 @@ zlib = dependency('zlib', fallback : [ 'zlib', 'zlib_dep' ])
 glfw = dependency('glfw3', required : false)
 
 if not glfw.found()
-    glfw = cmake.subproject('glfw').dependency('glfw')
+    glfw = subproject('glfw').get_variable('glfw_dep')
 endif
 
 spdlog_opts = [

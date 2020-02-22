@@ -11,3 +11,6 @@
 	path = subprojects/glm/glm
 	url = https://github.com/g-truc/glm
 	branch = 13724cfae64a8b5313d1cabc9a963d2c9dbeda12
+[submodule "subprojects/glfw/glfw"]
+	path = subprojects/glfw/glfw
+	url = https://github.com/glfw/glfw

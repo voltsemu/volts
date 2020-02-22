@@ -31,8 +31,7 @@ if host_machine.system() != 'darwin'
     glfw = dependency('glfw3', required : false)
 
     if not glfw.found()
-        cmake = import('cmake')
-        glfw = cmake.subproject('glfw').dependency('glfw')
+        glfw = subproject('glfw').get_variable('glfw_dep')
     endif
 
     glad = subproject('glad').get_variable('glad_dep')
