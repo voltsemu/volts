@@ -195,7 +195,7 @@ namespace volts::rsx::vulkan
         if(VkResult res = vkCreateInstance(&createInfo, allocator, &out); res < 0)
             return svl::err(res);
 
-        spdlog::debug("created vulkan instance");
+        spdlog::debug("created vulkan instance for {}", name);
 
         return svl::ok(out);
     }
