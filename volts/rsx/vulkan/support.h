@@ -23,6 +23,7 @@
 #include <result.h>
 #include <vector>
 #include <string>
+#include <tuple>
 
 #define VK_ENSURE(expr) { if(VkResult res = (expr); res != VK_SUCCESS) { spdlog::error("vk error {} = {}", #expr, res); } }
 
@@ -71,10 +72,13 @@ namespace volts::rsx::vulkan
         }
     }
 
+
+#if 0
     struct swapchainBuffer
     {
         VkImage image;
         VkImageView view;
+        VkFramebuffer framebuffer;
     };
 
     struct chain
@@ -82,6 +86,7 @@ namespace volts::rsx::vulkan
         VkSwapchainKHR swap;
         std::vector<swapchainBuffer> buffers;
     };
+#endif
 
     struct queueIndicies
     {
@@ -91,7 +96,9 @@ namespace volts::rsx::vulkan
         svl::expected<uint32_t> present = svl::none();
     };
 
-    svl::result<chain, VkResult> swapchain(VkDevice device,
+
+#if 0
+    svl::result<std::tuple<VkSwapchainKHR, std::vector<swapchainBuffer>>, VkResult> swapchain(VkDevice device,
                                                VkPhysicalDevice physical,
                                                VkSurfaceKHR surface,
                                                glm::uvec2 size,
@@ -185,8 +192,6 @@ namespace volts::rsx::vulkan
             createInfo.queueFamilyIndexCount = 0;
         }
 
-        chain swap;
-
         if(VkResult res = vkCreateSwapchainKHR(device, &createInfo, nullptr, &swap.swap); res < 0)
             return svl::err(res);
 
@@ -227,6 +232,8 @@ namespace volts::rsx::vulkan
 
         return svl::ok(swap);
     }
+#endif
+
 
     svl::result<VkSurfaceKHR, VkResult> surface(VkInstance instance, GLFWwindow* window)
     {
@@ -330,6 +337,8 @@ namespace volts::rsx::vulkan
         return svl::ok(out);
     }
 
+
+#if 0
     struct commandPool
     {
         VkCommandPool pool = nullptr;
@@ -356,6 +365,8 @@ namespace volts::rsx::vulkan
 
         return svl::ok(out);
     }
+#endif
+
 
     svl::result<std::vector<VkPhysicalDevice>, VkResult> physicalDevices(VkInstance instance)
     {
