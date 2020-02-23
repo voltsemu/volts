@@ -27,7 +27,7 @@ namespace volts::rsx
             glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         }
 
-        virtual void postinit() override
+        virtual void postinit(bool debug) override
         {
             ImGui_ImplMetal_Init(device);
             // TODO: at some point imgui will be getting a metal glfw backend

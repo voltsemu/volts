@@ -1,7 +1,6 @@
 #pragma once
 
-#include <optional>
-
+#include <expected.h>
 #include <types.h>
 
 namespace volts::crypt
@@ -94,8 +93,8 @@ namespace volts::crypt
          * @param type the type of key required
          * @param rev the revision of key required
          * @param ver the version of key required
-         * @return std::optional<key> a key if one was found
+         * @return svl::expected<key> a key if one was found
          */
-        std::optional<key> get_self_key(key_type type, svl::u16 rev, svl::u64 ver);
+        svl::expected<key> get_self_key(key_type type, svl::u16 rev, svl::u64 ver);
     }
 }

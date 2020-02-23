@@ -46,6 +46,16 @@ namespace svl
         bool valid() const { return success; }
         operator bool() const { return success; }
 
+        template<typename F>
+        T expect(const std::string& message, F&& func) const
+        {
+            if(success)
+                return val;
+
+            spdlog::critical("{} {}", message, func(err));
+            std::abort();
+        }
+
         T expect(const std::string& message) const
         {
             if(success)
@@ -56,12 +66,12 @@ namespace svl
         }
 
         template<typename F>
-        T unwrap(F&& func = [](E err) -> void {}) const
+        T unwrap(F&& func = [](E err) -> std::string {}) const
         {
             if(success)
                 return val;
 
-            func(err);
+            spdlog::critical(func(err));
             std::abort();
         }
 

@@ -52,6 +52,7 @@ namespace volts::cmd
             ("self", "parse a self file", opts::value<std::string>())
             ("boot", "boot the emulator", opts::value<std::string>())
             ("gui", "run gui", opts::value<std::string>())
+            ("debug", "enable debugging")
             ;
 
         auto res = opts.parse(argc, argv);
@@ -123,50 +124,44 @@ namespace volts::cmd
             if(fs::path path = res["sfo"].as<std::string>(); fs::exists(path))
             {
                 auto file = svl::open(path, svl::mode::read);
-                auto obj = sfo::load(file);
+                auto obj = sfo::load(file).expect("failed to parse sfo file");
 
-                if(!obj)
+                json::StringBuffer s;
+                json::Writer w(s);
+
+                w.StartObject();
+
+                for(auto& [key, val] : obj)
                 {
-                    spdlog::error("failed to parse sfo file");
-                }
-                else
-                {
-                    json::StringBuffer s;
-                    json::Writer w(s);
+                    w.Key(key.c_str());
 
-                    w.StartObject();
-
-                    for(auto& [key, val] : *obj)
+                    switch(val.type)
                     {
-                        w.Key(key.c_str());
+                    case sfo::format::array:
+                        w.StartArray();
 
-                        switch(val.type)
-                        {
-                        case sfo::format::array:
-                            w.StartArray();
+                        for(auto b : val.data)
+                            w.Int(b);
 
-                            for(auto b : val.data)
-                                w.Int(b);
+                        w.EndArray();
+                        break;
 
-                            w.EndArray();
-                            break;
-
-                        case sfo::format::string:
-                            w.String((char*)val.data.data());
-                            break;
-                        case sfo::format::integer:
-                            w.Int(*(int*)val.data.data());
-                            break;
-                        default:
-                            w.Null();
-                            break;
-                        }
+                    case sfo::format::string:
+                        w.String((char*)val.data.data());
+                        break;
+                    case sfo::format::integer:
+                        w.Int(*(int*)val.data.data());
+                        break;
+                    default:
+                        w.Null();
+                        break;
                     }
-
-                    w.EndObject();
-
-                    spdlog::info(s.GetString());
                 }
+
+                w.EndObject();
+
+                spdlog::info(s.GetString());
+        
             }
             else
             {
@@ -181,44 +176,36 @@ namespace volts::cmd
                 spdlog::info("starting pup decryption");
                 
                 auto file = svl::open(path, svl::mode::read);
-                auto pup = pup::load(file);
+                auto pup = pup::load(file).expect("failed to load pup file");
 
-                spdlog::info("pup decryption finished");
+                spdlog::info("starting pup extraction");
 
-                if(!pup)
+                auto tar = tar::load(pup.get_file(0x300));
+
+                // create a vector of all decryption tasks
+                // when this exits scope all the futures destructors
+                // will be called and everything will be decrypted at the same time
+                std::vector<std::future<void>> tasks = {};
+
+                for(auto& [key, _] : tar.offsets)
                 {
-                    spdlog::error("failed to load pup file");
+                    if(key.rfind("dev_flash_", 0) != 0)
+                        continue;
+
+                    tasks.push_back(std::async(std::launch::async, [name = key, file = tar.get_file(key)]{
+                        spdlog::info("decrypting pup entry {}", name);
+                        auto update = sce::load(file);
+
+                        update[2].seek(0);
+
+                        auto dec = tar::load(update[2]);
+                        
+                        spdlog::info("extracing entry into vfs");
+
+                        dec.extract(vfs::root());
+                    }));
                 }
-                else
-                {
-                    spdlog::info("starting pup extraction");
-
-                    auto tar = tar::load(pup->get_file(0x300));
-
-                    // create a vector of all decryption tasks
-                    // when this exits scope all the futures destructors
-                    // will be called and everything will be decrypted at the same time
-                    std::vector<std::future<void>> tasks = {};
-
-                    for(auto& [key, _] : tar.offsets)
-                    {
-                        if(key.rfind("dev_flash_", 0) != 0)
-                            continue;
-
-                        tasks.push_back(std::async(std::launch::async, [name = key, file = tar.get_file(key)]{
-                            spdlog::info("decrypting pup entry {}", name);
-                            auto update = sce::load(file);
-
-                            update[2].seek(0);
-
-                            auto dec = tar::load(update[2]);
-                            
-                            spdlog::info("extracing entry into vfs");
-
-                            dec.extract(vfs::root());
-                        }));
-                    }
-                }
+            
             }
             else
             {
@@ -258,7 +245,7 @@ namespace volts::cmd
         }
 
         if(res.count("gui"))
-            volts::rsx::run(res["gui"].as<std::string>());
+            volts::rsx::run(res["gui"].as<std::string>(), res.count("debug") != 0);
     }
 }
 

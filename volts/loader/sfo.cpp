@@ -56,7 +56,7 @@ namespace volts::loader::sfo
         u32 total_entries;
     };
 
-    std::optional<object> load(svl::file stream)
+    svl::expected<object> load(svl::file stream)
     {
         // read in the header
         const auto head = stream.read<header>();
@@ -65,14 +65,14 @@ namespace volts::loader::sfo
         if(head.magic != cvt::to_u32("\0PSF"))
         {
             spdlog::error("invalid magic");
-            return std::nullopt;
+            return svl::none();
         }
 
         // make sure this is a supported version
         if(head.version != 0x101)
         {
             spdlog::error("unsupported version");
-            return std::nullopt;
+            return svl::none();
         }
 
         object val;

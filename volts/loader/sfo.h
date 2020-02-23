@@ -2,10 +2,10 @@
 
 #include <types.h>
 #include <file.h>
+#include <expected.h>
 
 #include <cstdint>
 #include <map>
-#include <optional>
 
 namespace volts::loader::sfo
 {
@@ -45,7 +45,7 @@ namespace volts::loader::sfo
      * @brief parse an sfo value into a usable object
      * 
      * @param stream the file to parse
-     * @return std::optional<object> the parsed object if the file was valid
+     * @return svl::expected<object> the parsed object if the file was valid
      */
-    std::optional<object> load(svl::file stream);
+    svl::expected<object> load(svl::file stream);
 }

@@ -38,14 +38,14 @@ namespace volts::loader::pup
         return {};
     }
 
-    std::optional<object> load(svl::file stream)
+    svl::expected<object> load(svl::file stream)
     {
         auto head = stream.read<header>();
 
         if(head.magic != cvt::to_u64("SCEUF\0\0\0"))
         {
             spdlog::error("invalid pup magic");
-            return std::nullopt;
+            return svl::none();
         }
 
         object ret = { stream };

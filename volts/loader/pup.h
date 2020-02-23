@@ -1,12 +1,12 @@
 #pragma once
 
 #include <vector>
-#include <optional>
 #include <memory>
 
 #include <endian.h>
 #include <types.h>
 #include <file.h>
+#include <expected.h>
 
 namespace volts::loader::pup
 {
@@ -54,11 +54,12 @@ namespace volts::loader::pup
      */
     struct object
     {
+        object() {}
         /// all the files in the object
-        std::vector<entry> files; 
+        std::vector<entry> files = {}; 
 
         /// the hashes of the file entries
-        std::vector<hash> hashes; 
+        std::vector<hash> hashes = {};
 
         /**
          * @brief get a file from the update object
@@ -67,7 +68,7 @@ namespace volts::loader::pup
          */
         svl::file get_file(svl::u64 id);
 
-        friend std::optional<object> load(svl::file);
+        friend svl::expected<object> load(svl::file);
 
     private:
         /**
@@ -87,5 +88,5 @@ namespace volts::loader::pup
      * @param stream the file to parse
      * @return the parsed object or an empty option
      */
-    std::optional<object> load(svl::file stream);
+    svl::expected<object> load(svl::file stream);
 }

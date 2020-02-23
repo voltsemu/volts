@@ -4,6 +4,10 @@
 
 #include <spdlog/spdlog.h>
 
+#if HAS_VULKAN
+#   define GLFW_INCLUDE_VULKAN
+#endif
+
 #include <GLFW/glfw3.h>
 
 #include <vector>
@@ -14,17 +18,19 @@
 
 #include <platform.h>
 
-#if !SYS_OSX
-#   include "ogl/render.h"
-#   if HAS_VULKAN
-#       include "vulkan/render.h"
-#   endif
-#   if SYS_WINDOWS
-#       include "dx12/render.h"
-#   endif
-#else
-#   include "metal/render.h"
+#if HAS_VULKAN
+#   include "vulkan/render.h"
 #endif
+
+#if SYS_WINDOWS
+#   include "dx12/render.h"
+#endif
+
+#if SYS_OSX
+#   include "metal/render.h"
+#else
+#   include "ogl/render.h"
+#endif 
 
 namespace volts::rsx
 {
@@ -46,18 +52,21 @@ namespace volts::rsx
         return win;
     }
 
-    void run(const std::string& name)
+    void run(const std::string& name, bool debug)
     {
-#if !SYS_OSX
-        opengl::connect();
-#   if HAS_VULKAN
+
+#if HAS_VULKAN
         vulkan::connect();
-#   endif
-#   if SYS_WINDOWS
+#endif
+
+#if SYS_WINDOWS
         directx12::connect();
-#   endif
-#else
+#endif
+
+#if SYS_OSX
         metal::connect();
+#else
+        opengl::connect();
 #endif
 
         // TODO: fallback
@@ -81,7 +90,7 @@ namespace volts::rsx
             return;
         }
 
-        current->preinit();
+        current->preinit(debug);
 
         win = glfwCreateWindow(640, 480, name.c_str(), nullptr, nullptr);
 

@@ -128,16 +128,16 @@ namespace volts::crypt::keys
     };
     
     template<typename F, std::size_t N>
-    std::optional<key> get_key(const key (&val)[N], F func)
+    svl::expected<key> get_key(const key (&val)[N], F func)
     {
         for(auto k : val)
             if(func(k))
                 return k;
 
-        return std::nullopt;
+        return svl::none();
     }
 
-    std::optional<key> get_self_key(key_type type, u16 rev, u64 ver)
+    svl::expected<key> get_self_key(key_type type, u16 rev, u64 ver)
     {
         switch(type)
         {
@@ -158,7 +158,7 @@ namespace volts::crypt::keys
         case key_type::npdrm:
             return get_key(npdrm_keys, [=](auto& k) { return k.revision == rev; });
         default:
-            return std::nullopt;
+            return svl::none();
         }
     }
 }

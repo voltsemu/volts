@@ -73,25 +73,19 @@ namespace volts::crypt::self
 
             aes_context aes;
 
-            auto k = keys::get_self_key((key_type)info.type.get(), sce_header.type, info.version);
-
-            if(!k)
-            {
-                spdlog::error("couldnt find key");
-                return false;
-            }
+            auto k = keys::get_self_key((key_type)info.type.get(), sce_header.type, info.version).expect("failed to find key");
 
             if((sce_header.type & 0x8000) != 0x8000)
             {
                 if(!decrypt_npdrm(cvt::as_bytes(meta_info), key))
                     return false;
 
-                aes_setkey_dec(&aes, k->erk, 256);
+                aes_setkey_dec(&aes, k.erk, 256);
                 aes_crypt_cbc(
                     &aes, 
                     AES_DECRYPT, 
                     sizeof(metadata::info), 
-                    k->riv, 
+                    k.riv, 
                     (byte*)&meta_info, 
                     (byte*)&meta_info
                 );

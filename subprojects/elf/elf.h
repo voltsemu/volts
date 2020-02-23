@@ -1,7 +1,6 @@
 #pragma once
 
-#include <optional>
-
+#include <expected.h>
 #include <file.h>
 #include <endian.h>
 #include <convert.h>
@@ -167,11 +166,11 @@ namespace elf
      * 
      * @tparam T the elf file type
      * @param stream the stream to parse
-     * @return std::optional<T> if the file was properly formatted then a loaded elf
+     * @return svl::expected<T> if the file was properly formatted then a loaded elf
      *         otherwise nullopt
      */
     template<typename T>
-    std::optional<T> load(svl::file stream)
+    svl::expected<T> load(svl::file stream)
     {
         T ret = { stream };
 
@@ -181,7 +180,7 @@ namespace elf
 
         if(ret.head.magic != cvt::to_u32("\177ELF"))
         {
-            return std::nullopt;
+            return svl::none();
         }
 
         stream.seek(ret.head.prog_offset);
