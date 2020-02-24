@@ -159,6 +159,8 @@ namespace elf
         object(svl::file d)
             : data(d)
         {}
+
+        object() {}
     };
 
     /**

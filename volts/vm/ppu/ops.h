@@ -14,6 +14,8 @@ namespace volts::ppu
     {
         svl::u32 raw;
 
+        svl::bitrange<svl::u32, 30, 1> aa;
+
         svl::bitrange<svl::u32, 6, 5> rs;
         svl::bitrange<svl::u32, 11, 5> ra;
         svl::bitrange<svl::u32, 16, 5> rb;
@@ -31,8 +33,13 @@ namespace volts::ppu
         svl::bitrange<svl::u32, 6, 5> frs;
         svl::bitrange<svl::u32, 6, 5> frd;
 
+        svl::bitrange<svl::u32, 31, 1> lk;
+
         svl::bitrange<svl::i32, 16, 16> simm16;
         svl::bitrange<svl::u32, 16, 16> uimm16;
+
+        svl::bitrange<svl::i32, 16, 14> bt14;
+        svl::bitrange<svl::i32, 6, 24> bt24;
     };
 
     static_assert(sizeof(form) == sizeof(svl::u32));
@@ -57,7 +64,7 @@ namespace volts::ppu
             ((a > s) && (op.bo & 0x1))
         )
         {
-            spdlog::error("trap");
+            spdlog::critical("trap dword");
             // todo: pause
         }
     }
@@ -75,7 +82,7 @@ namespace volts::ppu
             ((a > s) && (op.bo & 0x1))
         )
         {
-            spdlog::error("trap");
+            spdlog::critical("trap word");
             // todo: pause
         }
     }
@@ -85,6 +92,13 @@ namespace volts::ppu
         u64 addr = op.ra ? ppu.gpr[op.ra] + op.simm16 : (i32)op.simm16;
         u32 val = ppu.gpr[op.rs];
         vm::write<u32>(addr, val);
+    }
+
+    void stwu(thread& ppu, form op)
+    {
+        u64 addr = ppu.gpr[op.ra] + op.simm16;
+        vm::write<u32>(addr, ppu.gpr[op.rs]);
+        ppu.gpr[op.ra] = addr;
     }
 
     void ori(thread& ppu, form op)
@@ -188,6 +202,14 @@ namespace volts::ppu
 
     }
 
+    void b(thread& ppu, form op)
+    {
+        vm::addr link = ppu.cia + 4;
+        ppu.cia = (op.aa ? 0 : ppu.cia) + op.bt24;
+
+        if(op.lk) ppu.link = link;
+    }
+
     void vmhaddshs(thread& ppu, form op)
     {
         auto a = ppu.vr[op.va].ints;
@@ -244,7 +266,7 @@ namespace volts::ppu
     {
         // fill the table with stub ops to detect invalid opcodes
         std::fill(std::begin(ops), std::end(ops), [](thread& t, form op) {
-            spdlog::critical("invalid op {}", op.raw);
+            spdlog::critical("invalid op {:x} at {:x}", op.raw, t.cia);
         });
 
         fill(0, 6, -1, {
@@ -262,6 +284,7 @@ namespace volts::ppu
             { 0x23, lbzu },
 
             { 0x24, stw },
+            { 0x25, stwu },
 
             { 0x29, lhzu },
 

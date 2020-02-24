@@ -39,6 +39,8 @@ namespace volts::cmd
     using namespace loader;
     using namespace crypt;
 
+    namespace cvt = svl::convert;
+
     void parse(int argc, char** argv)
     {
         opts::Options opts = { "volts", "ps3 command line tools" };
@@ -216,7 +218,8 @@ namespace volts::cmd
         {
             if(fs::path path = res["self"].as<std::string>(); fs::exists(path))
             {
-                auto self = self::load(svl::open(path, svl::mode::read));
+                auto self = self::load(svl::open(path, svl::mode::read))
+                    .expect("failed to decrypt self");
                 self.save("eboot.elf");
                 spdlog::info("saved decrypted elf to eboot.elf");
             }
@@ -231,16 +234,14 @@ namespace volts::cmd
             // TODO: boot elf games
             svl::file f = svl::open(res["boot"].as<std::string>(), svl::mode::read);
 
-            //auto lib = self::load(f);
+            auto exec = (f.read<svl::u32>() == cvt::to_u32("\177ELF") 
+                ? elf::load<elf::ppu_exec>(f)
+                : elf::load<elf::ppu_exec>(self::load(f).expect("failed to decrypt self")))
+                    .expect("failed to load (s)elf file");
 
-            //f.seek(0);
+            vm::init();
 
-            //auto elf = elf::load<elf::ppu_exec>(lib.size() ? lib : f);
-
-            //vm::init();
-
-            //ppu::load_prx(elf.value());
-            //ppu::thread(elf->head.entry);
+            ppu::load_exec(exec);
         }
 
         if(res.count("gui"))

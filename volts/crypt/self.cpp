@@ -331,49 +331,14 @@ namespace volts::crypt::self
         u8* headers = nullptr;
     };
 
-    svl::file load(svl::file file, std::vector<byte> key)
+    svl::expected<svl::file> load(svl::file file, std::vector<byte> key)
     {
-        // check for debug self
-        file.seek(8);
-        if(auto version = file.read<endian::little<u16>>(); version == 0x80 || version == 0xC0)
-        {
-            spdlog::info("debug self");
-        }
-        else
-        {  
-            spdlog::info("release self");
-        }
-
-        // check for 32/64 bit elf
-        file.seek(sizeof(sce::header));
-        auto selfhead = file.read<self::header>();
-
-        file.seek(selfhead.elf_offset);
-
-        auto cls = file.read<u8>(8);
-
-        if(cls[4] == 1)
-        {
-            spdlog::info("32 bit");
-        }
-        else
-        {
-            spdlog::info("64 bit");
-        }
-
         file.seek(0);
 
         self_decrypter dec(file);
 
-        if(!dec.load_headers())
-        {
-            return {};
-        }
-
-        if(!dec.load_metadata(key))
-        {
-            return {};
-        }
+        if(!dec.load_headers() || !dec.load_metadata(key))
+            return svl::none();
 
         dec.decrypt();
 

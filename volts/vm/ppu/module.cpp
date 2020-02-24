@@ -12,6 +12,8 @@
 
 #include <bitrange.h>
 
+#include "thread.h"
+
 namespace volts::ppu
 {
     using namespace svl;
@@ -301,7 +303,14 @@ namespace volts::ppu
             if(prog.type != 1 || !prog.mem_size)
                 continue;
 
-            
+            vm::addr addr = vm::any->falloc(prog.vaddress, prog.mem_size);
+
+            exec.data.seek(prog.offset);
+            auto data = exec.data.read<byte>(prog.file_size);
+
+            std::memcpy(vm::base(addr), data.data(), data.size());
         }
+
+        ppu::thread(exec.head.entry);
     }
 }
