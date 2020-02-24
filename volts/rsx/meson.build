@@ -1,15 +1,15 @@
 include_directories += include_directories('.')
 
-if host_machine.system() != 'darwin'
-    subdir('ogl')
+subdir('vulkan')
 
-    subdir('vulkan')
+if host_machine.system() == 'darwin'
+    subdir('metal')
+else
+    subdir('ogl')
 
     if host_machine.system() == 'windows'
         subdir('dx12')
     endif
-else
-    subdir('metal')
 endif
 
 dependencies += [ glfw, imgui, glm ]

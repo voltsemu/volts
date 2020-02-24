@@ -5,16 +5,8 @@ project('fuzzy', 'cpp',
     ]
 )
 
-source = 'fuzzy_match.cpp'
-
 include = include_directories('.')
 
-libfuzzy = library('fuzzy', source,
-    include_directories : include,
-    install : true
-)
-
 fuzzy_dep = declare_dependency(
-    include_directories : include,
-    link_with : libfuzzy
+    include_directories : include
 )

@@ -10,7 +10,6 @@ project('volts', ['cpp', 'c'],
 
 if host_machine.system() == 'darwin'
     add_languages('objcpp')
-    add_languages('swift')
 endif
 
 # TODO: using cpp_eh=none makes meson do funky stuff on windows, feels like a bug, should report
