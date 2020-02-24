@@ -1,0 +1,10 @@
+[wrap-file]
+directory = glslang-darwin
+
+source_url = 
+source_filename = 
+source_hash = 
+
+patch_url = 
+patch_filename = 
+patch_hash = 
