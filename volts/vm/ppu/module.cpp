@@ -300,15 +300,31 @@ namespace volts::ppu
     {
         for(auto prog : exec.progs)
         {
-            if(prog.type != 1 || !prog.mem_size)
-                continue;
+            if(prog.type == 1)
+            {
+                if(!prog.mem_size)
+                    continue;
 
-            vm::addr addr = vm::any->falloc(prog.vaddress, prog.mem_size);
+                vm::addr addr = vm::any->falloc(prog.vaddress, prog.mem_size);
 
-            exec.data.seek(prog.offset);
-            auto data = exec.data.read<byte>(prog.file_size);
+                exec.data.seek(prog.offset);
+                auto data = exec.data.read<byte>(prog.file_size);
 
-            std::memcpy(vm::base(addr), data.data(), data.size());
+                std::memcpy(vm::base(addr), data.data(), data.size());
+            }
+            else if(prog.type == 7)
+            {
+            }
+            else if(prog.type == 0x60000001)
+            {
+            }
+            else if(prog.type == 0x60000002)
+            {
+            }
+            else
+            {
+                spdlog::critical("invalid elf section type {:x}", prog.type);
+            }
         }
 
         ppu::thread(exec.head.entry);

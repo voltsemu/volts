@@ -91,6 +91,18 @@ namespace volts::rsx::vulkan
         return svl::err(VK_SUCCESS);
     }
 
+    using depthStencil = std::tuple<VkImage, VkDeviceMemory, VkImageView>;
+
+    svl::result<depthStencil, VkResult> depthStencil(VkDevice device, 
+                                                     VkFormat format, 
+                                                     VkExtent extent)
+    {
+        VkImageCreateInfo imageInfo = { VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO };
+        imageInfo.imageType = VK_IMAGE_TYPE_2D;
+        imageInfo.format = format;
+        imageInfo.
+    }
+
     svl::result<std::vector<VkFramebuffer>, VkResult> framebuffers(VkDevice device,
                                                                    VkExtent2D size,
                                                                    VkRenderPass pass,

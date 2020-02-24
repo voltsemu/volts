@@ -273,6 +273,8 @@ namespace volts::ppu
             { 0x02, tdi },
             { 0x03, twi },
 
+            { 0x12, b },
+
             { 0x18, ori },
             { 0x19, oris },
             { 0x1A, xori },

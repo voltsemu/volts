@@ -53,7 +53,7 @@ namespace volts::cmd
             ("pup", "parse a pup file", opts::value<std::string>())
             ("self", "parse a self file", opts::value<std::string>())
             ("boot", "boot the emulator", opts::value<std::string>())
-            ("gui", "run gui", opts::value<std::string>())
+            ("render", "enable rendering window", opts::value<std::string>())
             ;
 
         auto res = opts.parse(argc, argv);
@@ -244,8 +244,8 @@ namespace volts::cmd
             ppu::load_exec(exec);
         }
 
-        if(res.count("gui"))
-            volts::rsx::run(res["gui"].as<std::string>());
+        if(res.count("render"))
+            volts::rsx::run(res["render"].as<std::string>());
     }
 }
 
