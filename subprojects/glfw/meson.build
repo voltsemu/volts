@@ -72,9 +72,5 @@ libglfw = library('glfw3', sources,
 
 glfw_dep = declare_dependency(
     link_with : libglfw,
-    include_directories : include_directories('glfw/include'),
-    c_args : args,
-    cpp_args : args,
-    objc_args : args,
-    objcpp_args : args
+    include_directories : include_directories('glfw/include')
 )

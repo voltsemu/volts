@@ -10,9 +10,8 @@ namespace volts::rsx
     {
         virtual ~vk() override {}
 
-        virtual void preinit(bool shouldDebug) override
+        virtual void preinit() override
         {
-            debug = shouldDebug;
             std::vector<std::string> exts = {};
             std::vector<std::string> layers = {};
 
@@ -23,20 +22,22 @@ namespace volts::rsx
                 for(uint32_t i = 0; i < num; i++)
                     exts.push_back(names[i]);
 
+#if VK_VALIDATE
                 // this layer is required for the debugger to work
-                if(debug)
-                    exts.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+                exts.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 
-                if(debug)
-                    layers.push_back("VK_LAYER_LUNARG_standard_validation");
+                layers.push_back("VK_LAYER_LUNARG_standard_validation");
+#endif
             }
 
             // TODO: configure name
             instance = vulkan::instance("vulkan", exts, layers)
                 .expect("failed to create vulkan instance", vulkan::err_to_string);
 
-            if(debug)
-                debugger = vulkan::addDebugger(instance).expect("failed to install debug messenger");
+#if VK_VALIDATE
+            debugger = vulkan::addDebugger(instance)
+                .expect("failed to install debug messenger");
+#endif
         }
 
         virtual void postinit() override
@@ -88,8 +89,9 @@ namespace volts::rsx
 
         virtual void cleanup() override
         {
-            if(debug)
-                vulkan::removeDebugger(instance, debugger);
+#if VK_VALIDATE
+            vulkan::removeDebugger(instance, debugger);
+#endif
         }
 
         virtual std::string_view name() const override { return "vulkan"; }
@@ -121,9 +123,9 @@ namespace volts::rsx
 
         VkPhysicalDevice physical() { return physicalDevices[physicalIndex]; }
 
-
-        bool debug;
+#if VK_VALIDATE
         VkDebugUtilsMessengerEXT debugger;
+#endif
     };
 
     void vulkan::connect()

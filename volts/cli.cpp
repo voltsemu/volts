@@ -52,7 +52,6 @@ namespace volts::cmd
             ("self", "parse a self file", opts::value<std::string>())
             ("boot", "boot the emulator", opts::value<std::string>())
             ("gui", "run gui", opts::value<std::string>())
-            ("debug", "enable debugging")
             ;
 
         auto res = opts.parse(argc, argv);
@@ -245,7 +244,7 @@ namespace volts::cmd
         }
 
         if(res.count("gui"))
-            volts::rsx::run(res["gui"].as<std::string>(), res.count("debug") != 0);
+            volts::rsx::run(res["gui"].as<std::string>());
     }
 }
 

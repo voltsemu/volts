@@ -18,9 +18,7 @@
 
 #include <platform.h>
 
-#if HAS_VULKAN
-#   include "vulkan/render.h"
-#endif
+#include "vulkan/render.h"
 
 #if SYS_WINDOWS
 #   include "dx12/render.h"
@@ -40,24 +38,16 @@ namespace volts::rsx
         return &list;
     }
 
-    void add(render* r)
-    {
-        renders()->push_back(r);
-    }
+    void add(render* r) { renders()->push_back(r); }
     
     GLFWwindow* win;
 
-    GLFWwindow* window()
-    {
-        return win;
-    }
+    GLFWwindow* window() { return win; }
 
-    void run(const std::string& name, bool debug)
+    void run(const std::string& name)
     {
-
-#if HAS_VULKAN
+        // all platforms have vulkan (or moltenvk)
         vulkan::connect();
-#endif
 
 #if SYS_WINDOWS
         directx12::connect();
@@ -69,12 +59,11 @@ namespace volts::rsx
         opengl::connect();
 #endif
 
-        // TODO: fallback
         auto render = std::find_if(renders()->begin(), renders()->end(), [name](auto* render) { return render->name() == name; });
         
         if(render == renders()->end())
         {
-            spdlog::error("render backend {} not found", name);
+            spdlog::critical("render backend {} not found", name);
             return;
         }
 
@@ -90,7 +79,7 @@ namespace volts::rsx
             return;
         }
 
-        current->preinit(debug);
+        current->preinit();
 
         win = glfwCreateWindow(640, 480, name.c_str(), nullptr, nullptr);
 

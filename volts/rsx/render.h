@@ -5,5 +5,5 @@
 namespace volts::rsx
 {
     // run the rsx window using a backend
-    void run(const std::string& name, bool debug);
+    void run(const std::string& name);
 }

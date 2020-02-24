@@ -85,7 +85,10 @@ namespace volts::rsx::vulkan
                                                   const std::string& shader, 
                                                   const std::string& name)
     {
-        
+        // TODO: this is going to require shaderc or glsl
+        // what fun
+
+        return svl::err(VK_SUCCESS);
     }
 
     svl::result<std::vector<VkFramebuffer>, VkResult> framebuffers(VkDevice device,
@@ -438,36 +441,6 @@ namespace volts::rsx::vulkan
         return svl::ok(out);
     }
 
-#if 0
-    struct commandPool
-    {
-        VkCommandPool pool = nullptr;
-        VkCommandBuffer buffer = nullptr;
-    };
-
-    svl::result<commandPool, VkResult> pool(VkDevice device, uint32_t queueIndex)
-    {
-        VkCommandPoolCreateInfo poolInfo = { VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO };
-        poolInfo.queueFamilyIndex = queueIndex;
-
-        commandPool out;
-
-        if(VkResult res = vkCreateCommandPool(device, &poolInfo, nullptr, &out.pool); res < 0)
-            return svl::err(res);
-
-        VkCommandBufferAllocateInfo bufferInfo = { VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO };
-        bufferInfo.commandPool = out.pool;
-        bufferInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        bufferInfo.commandBufferCount = 1;
-
-        if(VkResult res = vkAllocateCommandBuffers(device, &bufferInfo, &out.buffer); res < 0)
-            return svl::err(res);
-
-        return svl::ok(out);
-    }
-#endif
-
-
     svl::result<std::vector<VkPhysicalDevice>, VkResult> physicalDevices(VkInstance instance)
     {
         uint32_t num = 0;
@@ -589,8 +562,6 @@ namespace volts::rsx::vulkan
         if(VkResult res = vkCreateInstance(&createInfo, nullptr, &out); res < 0)
             return svl::err(res);
 
-        spdlog::debug("created vulkan instance");
-
         return svl::ok(out);
     }
 
@@ -637,7 +608,6 @@ namespace volts::rsx::vulkan
     {
         auto vkDestroyDebugUtilsMessengerEXT = reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT"));
 
-        if(messenger != VK_NULL_HANDLE)
-            vkDestroyDebugUtilsMessengerEXT(instance, messenger, nullptr);
+        vkDestroyDebugUtilsMessengerEXT(instance, messenger, nullptr);
     }
 }
