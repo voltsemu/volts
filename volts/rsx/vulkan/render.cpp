@@ -12,6 +12,8 @@ namespace volts::rsx
 
         virtual void preinit() override
         {
+            glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+            
             std::vector<std::string> exts = {};
             std::vector<std::string> layers = {};
 

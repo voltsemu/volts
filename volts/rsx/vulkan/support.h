@@ -258,7 +258,10 @@ namespace volts::rsx::vulkan
             : caps.currentTransform;
 
         // get the minimum amount of images needed
-        auto count = std::min<uint32_t>(caps.maxImageCount || 1u, caps.minImageCount + 1);
+        auto count = std::min<uint32_t>(
+            caps.maxImageCount ? caps.maxImageCount : 1,
+            caps.minImageCount + 1
+        );
 
         // find the best supported composite alpha flag
         VkCompositeAlphaFlagBitsKHR alphaFlag = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
@@ -329,18 +332,10 @@ namespace volts::rsx::vulkan
     svl::result<VkSurfaceKHR, VkResult> surface(VkInstance instance, GLFWwindow* window)
     {
         VkSurfaceKHR surface;
-#if SYS_WINDOWS
-        VkWin32SurfaceCreateInfoKHR createInfo = { VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR };
-        createInfo.hinstance = GetModuleHandleA(nullptr);
-        createInfo.hwnd = glfwGetWin32Window(window);
-
-        if(VkResult res = vkCreateWin32SurfaceKHR(instance, &createInfo, nullptr, &surface); res < 0)
+        
+        if(VkResult res = glfwCreateWindowSurface(instance, window, nullptr, &surface); res < 0)
             return svl::err(res);
-#elif SYS_OSX
-        // TODO
-#elif SYS_LINUX
-        // TODO
-#endif
+
         return svl::ok(surface);
     }
 
