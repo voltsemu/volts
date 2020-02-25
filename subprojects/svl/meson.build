@@ -13,16 +13,32 @@ endif
 
 inc = include_directories('.')
 
+spdlog_opts = [
+    'enable_tests=false',
+    'enable_examples=false',
+    'no_exceptions=true',
+    'no_thread_id=true',
+    'no_tls=true'
+]
+
+if host_machine.system() == 'windows'
+    spdlog_opts += 'wchar_support=true'
+endif
+
+spdlog = subproject('spdlog', default_options : spdlog_opts).get_variable('spdlog_dep')
+
 libsvl = library('svl', [
         'endian.cpp',
         'file.cpp'
     ],
     include_directories : inc,
     install : true,
-    cpp_args : args
+    cpp_args : args,
+    dependencies : [ spdlog ]
 )
 
 svl_dep = declare_dependency(
     include_directories : inc,
-    link_with : libsvl
+    link_with : libsvl,
+    dependencies : [ spdlog ]
 )

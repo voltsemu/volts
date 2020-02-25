@@ -88,10 +88,10 @@ namespace volts::rsx
             swapImages = vulkan::images(device, swap)
                 .expect("failed to get swapchain images");
 
-            swapViews = vulkan::imageViews(device, format, images)
+            swapViews = vulkan::imageViews(device, format, swapImages)
                 .expect("failed to create image views");
 
-            swapBuffers = vulkan::framebuffers(device, extent, pass, views)
+            swapBuffers = vulkan::framebuffers(device, extent, pass, swapViews)
                 .expect("failed to create framebuffers");
 
             std::tie(depth.image, depth.memory, depth.view) = vulkan::depthStencil(device, physical, VK_FORMAT_D16_UNORM, extent)
@@ -140,10 +140,9 @@ namespace volts::rsx
         VkCommandPool pool;
         VkRenderPass pass;
 
-
         // framedata
         std::vector<VkImage> swapImages;
-        std::vector<VkImageViews> swapViews;
+        std::vector<VkImageView> swapViews;
         std::vector<VkFramebuffer> swapBuffers;
 
         // depth buffer
@@ -152,10 +151,6 @@ namespace volts::rsx
             VkImageView view;
             VkDeviceMemory memory;
         } depth;
-
-        VkSemaphore drawLock;
-        VkSemaphore presentLock;
-
 
         std::vector<VkPhysicalDevice> physicalDevices;
 

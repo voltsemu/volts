@@ -2,6 +2,7 @@ project('volts', ['cpp', 'c'],
     default_options : [
         'cpp_std=c++17',
         'cpp_rtti=false',
+        'cpp_eh=none',
         'default_library=static'
     ],
     version : '0.2.1',
@@ -18,8 +19,6 @@ if meson.get_compiler('cpp').get_id() == 'msvc'
 endif
 
 # collect all the dependencies that lots of things share
-
-cmake = import('cmake')
 
 zlib = dependency('zlib', fallback : [ 'zlib', 'zlib_dep' ])
 
@@ -43,7 +42,6 @@ if host_machine.system() == 'windows'
 endif
 
 spdlog = subproject('spdlog', default_options : spdlog_opts).get_variable('spdlog_dep')
-
 
 xxhash = subproject('xxhash').get_variable('xxhash_dep')
 
@@ -72,7 +70,7 @@ glm = subproject('glm').get_variable('glm_dep')
 
 sources = []
 dependencies = [ aes, xxhash, rapidjson, svl, elf, vfs, imgui, cxxopts, spdlog, zlib ]
-cpp_args = []
+cpp_args = [ '-DFMT_EXCEPTIONS=0' ]
 include_directories = []
 
 if host_machine.system() == 'darwin'
@@ -80,7 +78,7 @@ if host_machine.system() == 'darwin'
 endif
 
 if host_machine.system() != 'windows'
-    cpp_args += [ '-std=c++17', '-fno-exceptions' ]
+    cpp_args += [ '-std=c++17' ]
 endif
 
 subdir('volts')
