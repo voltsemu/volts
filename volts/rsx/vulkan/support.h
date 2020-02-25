@@ -81,6 +81,12 @@ namespace volts::rsx::vulkan
         svl::expected<uint32_t> present = svl::none();
     };
 
+    svl::result<VkPipeline, VkResult> pipeline(VkDevice device,
+                                                       VkRenderPass pass)
+    {
+        return svl::err(VK_SUCCESS);
+    }
+
     svl::result<VkShaderModule, VkResult> compile(VkShaderStageFlagBits type,
                                                   const std::string& shader, 
                                                   const std::string& name)
@@ -516,17 +522,30 @@ namespace volts::rsx::vulkan
         return svl::ok(out);
     }
 
-    svl::result<VkCommandPool, VkResult> commandPool(VkDevice device, uint32_t index)
+    using commandData = std::tuple<VkCommandPool, VkCommandBuffer>;
+
+    svl::result<commandData, VkResult> commandPool(VkDevice device, uint32_t index)
     {
         VkCommandPoolCreateInfo createInfo = { VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO };
         createInfo.queueFamilyIndex = index;
 
-        VkCommandPool out;
+        VkCommandPool pool;
 
-        if(VkResult res = vkCreateCommandPool(device, &createInfo, nullptr, &out); res < 0)
+        if(VkResult res = vkCreateCommandPool(device, &createInfo, nullptr, &pool); res < 0)
             return svl::err(res);
 
-        return svl::ok(out);
+
+        VkCommandBufferAllocateInfo allocInfo = { VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO };
+        allocInfo.commandPool = pool;
+        allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+        allocInfo.commandBufferCount = 1;
+
+        VkCommandBuffer buffer;
+
+        if(VkResult res = vkAllocateCommandBuffers(device, &allocInfo, &buffer); res < 0)
+            return svl::err(res);
+
+        return svl::ok(std::make_tuple(pool, buffer));
     }
 
     svl::result<std::vector<VkPhysicalDevice>, VkResult> physicalDevices(VkInstance instance)

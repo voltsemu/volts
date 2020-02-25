@@ -13,3 +13,5 @@
 !glad/**/*
 !glm/
 !glfw/
+!shaderc/
+!shaderc/extract.vbs

@@ -73,7 +73,7 @@ namespace volts::rsx
                 VK_KHR_SWAPCHAIN_EXTENSION_NAME
             }).expect("failed to create logical device");
 
-            pool = vulkan::commandPool(device, queues.graphics.value())
+            std::tie(pool, buffer) = vulkan::commandPool(device, queues.graphics.value())
                 .expect("failed to create command pool");
 
             int w, h;
@@ -138,6 +138,7 @@ namespace volts::rsx
 
         // pipeline data
         VkCommandPool pool;
+        VkCommandBuffer buffer;
         VkRenderPass pass;
 
         // framedata

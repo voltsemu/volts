@@ -68,8 +68,10 @@ glm = subproject('glm').get_variable('glm_dep')
 #TODO: turns out because of the way google provides shaderc's prebuilt binaries
 # its basically impossible to meson wrap it so some workaround will be needed
 
+shaderc = subproject('shaderc').get_variable('shaderc_dep')
+
 sources = []
-dependencies = [ aes, xxhash, rapidjson, svl, elf, vfs, imgui, cxxopts, spdlog, zlib ]
+dependencies = [ aes, xxhash, rapidjson, svl, elf, vfs, imgui, cxxopts, spdlog, zlib, shaderc ]
 cpp_args = [ '-DFMT_EXCEPTIONS=0' ]
 include_directories = []
 
