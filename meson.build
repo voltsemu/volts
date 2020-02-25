@@ -67,6 +67,9 @@ cxxopts = subproject('cxxopts').get_variable('cxxopts_dep')
 
 glm = subproject('glm').get_variable('glm_dep')
 
+#TODO: turns out because of the way google provides shaderc's prebuilt binaries
+# its basically impossible to meson wrap it so some workaround will be needed
+
 sources = []
 dependencies = [ aes, xxhash, rapidjson, svl, elf, vfs, imgui, cxxopts, spdlog, zlib ]
 cpp_args = []

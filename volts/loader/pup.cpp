@@ -24,7 +24,7 @@ namespace volts::loader::pup
 
     static_assert(sizeof(header) == 48);
 
-    svl::file object::get_file(svl::u64 id)
+    svl::expected<svl::file> object::get_file(svl::u64 id)
     {
         for(const auto& f : files)
         {
@@ -35,7 +35,7 @@ namespace volts::loader::pup
             }
         }
 
-        return {};
+        return svl::none();
     }
 
     svl::expected<object> load(svl::file stream)

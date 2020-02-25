@@ -1,3 +1,5 @@
+#define NUM_SAMPLES VK_SAMPLE_COUNT_1_BIT
+
 #include "render.h"
 #include "backend.h"
 #include "support.h"
@@ -6,14 +8,26 @@
 
 namespace volts::rsx
 {
+    struct frameData
+    {
+        VkImage image;
+        VkImageView view;
+        VkFramebuffer buffer;
+    };
+
     struct vk : render
     {
+        vk()
+        {
+
+        }
+
         virtual ~vk() override {}
 
         virtual void preinit() override
         {
             glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-            
+
             std::vector<std::string> exts = {};
             std::vector<std::string> layers = {};
 
@@ -40,6 +54,11 @@ namespace volts::rsx
             debugger = vulkan::addDebugger(instance)
                 .expect("failed to install debug messenger");
 #endif
+
+            physicalDevices = vulkan::physicalDevices(instance)
+                .expect("failed to get physical devices");
+
+            physical = physicalDevices[0];
         }
 
         virtual void postinit() override
@@ -47,21 +66,12 @@ namespace volts::rsx
             surface = vulkan::surface(instance, rsx::window())
                 .expect("failed to create vulkan surface");
             
-            physicalDevices = vulkan::physicalDevices(instance)
-                .expect("failed to get physical devices");
-
-            queues = vulkan::queues(physical(), surface)
+            queues = vulkan::queues(physical, surface)
                 .expect("failed to get queue indicies");
 
-            device = vulkan::device(physical(), queues.graphics.value(), { 
-                VK_KHR_SWAPCHAIN_EXTENSION_NAME 
+            device = vulkan::device(physical, queues.graphics.value(), { 
+                VK_KHR_SWAPCHAIN_EXTENSION_NAME
             }).expect("failed to create logical device");
-
-            drawLock = vulkan::semaphore(device)
-                .expect("failed to create draw semaphore");
-
-            presentLock = vulkan::semaphore(device)
-                .expect("failed to create present semaphore");
 
             pool = vulkan::commandPool(device, queues.graphics.value())
                 .expect("failed to create command pool");
@@ -69,14 +79,26 @@ namespace volts::rsx
             int w, h;
             glfwGetFramebufferSize(rsx::window(), &w, &h);
 
-            std::tie(swap, format, extent) = vulkan::swapchain(device, physical(), surface, { w, h }, queues)
+            std::tie(swap, format, extent) = vulkan::swapchain(device, physical, surface, { w, h }, queues)
                 .expect("failed to create swapchain");
 
             pass = vulkan::renderpass(device, format)
                 .expect("failed to create renderpass");
 
-            buffers = vulkan::framebuffers(device, extent, pass, frameViews)
+            swapImages = vulkan::images(device, swap)
+                .expect("failed to get swapchain images");
+
+            swapViews = vulkan::imageViews(device, format, images)
+                .expect("failed to create image views");
+
+            swapBuffers = vulkan::framebuffers(device, extent, pass, views)
                 .expect("failed to create framebuffers");
+
+            std::tie(depth.image, depth.memory, depth.view) = vulkan::depthStencil(device, physical, VK_FORMAT_D16_UNORM, extent)
+                .expect("failed to create depth stencil");
+
+            
+
         }
 
         virtual void begin() override
@@ -99,31 +121,43 @@ namespace volts::rsx
         virtual std::string_view name() const override { return "vulkan"; }
 
     private:
+        // global data, ordered by creation
+    
         VkInstance instance;
-        VkDevice device;
-        VkSurfaceKHR surface;
         
-        VkCommandPool pool;
+        // device data
+        vulkan::queueIndicies queues;
+        VkPhysicalDevice physical = VK_NULL_HANDLE;
+        VkDevice device;
+
+        // presentation data
+        VkSurfaceKHR surface;
         VkSwapchainKHR swap;
         VkFormat format;
         VkExtent2D extent;
+
+        // pipeline data
+        VkCommandPool pool;
         VkRenderPass pass;
 
-        std::vector<VkImage> frames;
-        std::vector<VkImageView> frameViews;
-        std::vector<VkFramebuffer> buffers;
+
+        // framedata
+        std::vector<VkImage> swapImages;
+        std::vector<VkImageViews> swapViews;
+        std::vector<VkFramebuffer> swapBuffers;
+
+        // depth buffer
+        struct {
+            VkImage image;
+            VkImageView view;
+            VkDeviceMemory memory;
+        } depth;
 
         VkSemaphore drawLock;
         VkSemaphore presentLock;
 
 
-        vulkan::queueIndicies queues;
-
-
         std::vector<VkPhysicalDevice> physicalDevices;
-        uint32_t physicalIndex = 0;
-
-        VkPhysicalDevice physical() { return physicalDevices[physicalIndex]; }
 
 #if VK_VALIDATE
         VkDebugUtilsMessengerEXT debugger;

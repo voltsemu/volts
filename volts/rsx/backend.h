@@ -3,17 +3,13 @@
 #include <string>
 
 #include <types.h>
+#include <expected.h>
+#include <result.h>
 
 struct GLFWwindow;
 
 namespace volts::rsx
 {
-    struct device
-    {
-        virtual ~device() {}
-        virtual std::string name() const = 0;
-    };
-
     struct render
     {
         virtual ~render() {}

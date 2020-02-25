@@ -181,7 +181,7 @@ namespace volts::cmd
 
                 spdlog::info("starting pup extraction");
 
-                auto tar = tar::load(pup.get_file(0x300));
+                auto tar = tar::load(pup.get_file(0x300).expect("failed to find file 0x300"));
 
                 // create a vector of all decryption tasks
                 // when this exits scope all the futures destructors

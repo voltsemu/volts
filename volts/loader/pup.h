@@ -66,7 +66,7 @@ namespace volts::loader::pup
          * @param id the id of the entry to retrive
          * @return the extracted file
          */
-        svl::file get_file(svl::u64 id);
+        svl::expected<svl::file> get_file(svl::u64 id);
 
         friend svl::expected<object> load(svl::file);
 

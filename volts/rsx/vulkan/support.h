@@ -91,16 +91,97 @@ namespace volts::rsx::vulkan
         return svl::err(VK_SUCCESS);
     }
 
-    using depthStencil = std::tuple<VkImage, VkDeviceMemory, VkImageView>;
+    using depthstencil = std::tuple<VkImage, VkDeviceMemory, VkImageView>;
 
-    svl::result<depthStencil, VkResult> depthStencil(VkDevice device, 
+    svl::result<depthstencil, VkResult> depthStencil(VkDevice device, 
+                                                     VkPhysicalDevice physical,
                                                      VkFormat format, 
-                                                     VkExtent extent)
+                                                     VkExtent2D extent)
     {
+        // image
+
         VkImageCreateInfo imageInfo = { VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO };
         imageInfo.imageType = VK_IMAGE_TYPE_2D;
         imageInfo.format = format;
-        imageInfo.
+        imageInfo.extent = { extent.width, extent.height, 1 };
+        imageInfo.mipLevels = 1;
+        imageInfo.arrayLayers = 1;
+        imageInfo.samples = NUM_SAMPLES;
+        imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        imageInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+        imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        
+        VkFormatProperties props;
+        vkGetPhysicalDeviceFormatProperties(physical, VK_FORMAT_D16_UNORM, &props);
+
+        if(props.linearTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT)
+            imageInfo.tiling = VK_IMAGE_TILING_LINEAR;
+        else if(props.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT)
+            imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+        else
+            V_ASSERT(false);
+
+        VkImage image;
+        if(VkResult res = vkCreateImage(device, &imageInfo, nullptr, &image); res < 0)
+            return svl::err(res);
+
+        // memory allocate
+
+        VkMemoryRequirements require;
+        vkGetImageMemoryRequirements(device, image, &require);
+
+        VkPhysicalDeviceMemoryProperties memoryProps;
+        vkGetPhysicalDeviceMemoryProperties(physical, &memoryProps);
+
+        VkMemoryAllocateInfo allocInfo = { VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO };
+        allocInfo.allocationSize = require.size;
+
+        uint32_t bits = require.memoryTypeBits;
+
+        for(uint32_t i = 0; i < memoryProps.memoryTypeCount; i++)
+        {
+            if(bits & 1 && memoryProps.memoryTypes[i].propertyFlags & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
+            {
+                allocInfo.memoryTypeIndex = i;
+                break;
+            }
+
+            bits >>= 1;
+        }
+
+        VkDeviceMemory memory;
+
+        if(VkResult res = vkAllocateMemory(device, &allocInfo, nullptr, &memory); res < 0)
+            return svl::err(res);
+
+        if(VkResult res = vkBindImageMemory(device, image, memory, 0); res < 0)
+            return svl::err(res);
+
+        // image view
+        
+        VkImageViewCreateInfo viewInfo = { VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO };
+        viewInfo.format = format;
+        viewInfo.image = image;
+        viewInfo.components = {
+            VK_COMPONENT_SWIZZLE_R,
+            VK_COMPONENT_SWIZZLE_G,
+            VK_COMPONENT_SWIZZLE_B,
+            VK_COMPONENT_SWIZZLE_A
+        };
+
+        viewInfo.subresourceRange = {
+            VK_IMAGE_ASPECT_DEPTH_BIT,
+            0, 1,
+            0, 1
+        };
+
+        viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+
+        VkImageView view;
+        if(VkResult res = vkCreateImageView(device, &viewInfo, nullptr, &view); res < 0)
+            return svl::err(res);
+
+        return svl::ok(std::make_tuple(image, memory, view));
     }
 
     svl::result<std::vector<VkFramebuffer>, VkResult> framebuffers(VkDevice device,

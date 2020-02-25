@@ -216,15 +216,8 @@ namespace volts::crypt::sce
     {
         sce_decrypter dec(file);
         
-        if(!dec.load_headers())
-        {
+        if(!dec.load_headers() || !dec.load_metadata())
             return {};
-        }
-
-        if(!dec.load_metadata())
-        {
-            return {};
-        }
 
         dec.decrypt();
         return dec.files();
