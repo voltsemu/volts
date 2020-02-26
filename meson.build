@@ -65,16 +65,12 @@ cxxopts = subproject('cxxopts').get_variable('cxxopts_dep')
 
 glm = subproject('glm').get_variable('glm_dep')
 
+glsl = subproject('glslang').get_variable('glslang_dep')
+
 sources = []
-dependencies = [ aes, xxhash, rapidjson, svl, elf, vfs, imgui, cxxopts, spdlog, zlib ]
+dependencies = [ aes, xxhash, rapidjson, svl, elf, vfs, imgui, cxxopts, spdlog, zlib, glsl ]
 cpp_args = [ '-DFMT_EXCEPTIONS=0' ]
 include_directories = []
-links = []
-
-shaderc = subproject('shaderc')
-
-cpp_args += shaderc.get_variable('shaderc_args')
-links += shaderc.get_variable('shaderc_links')
 
 if host_machine.system() == 'darwin'
     dependencies += dependency('appleframeworks', modules : [ 'Cocoa', 'Foundation' ])
@@ -89,7 +85,6 @@ subdir('volts')
 libvolts = library('volts', sources,
     cpp_args : cpp_args,
     objcpp_args : cpp_args,
-    link_args : links,
     include_directories : include_directories,
     dependencies : dependencies
 )
@@ -100,7 +95,6 @@ cli = executable('cli', 'volts/cli.cpp',
     include_directories : include_directories,
     dependencies : dependencies,
     link_with : libvolts,
-    link_args : links
 )
 
 subdir('gui'/host_machine.system())
