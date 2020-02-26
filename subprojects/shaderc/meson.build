@@ -1,47 +1,27 @@
 project('shaderc', [ 'c', 'cpp' ])
 
+name = host_machine.system() + '-'
+
 if get_option('buildtype').startswith('debug')
-    if host_machine.system() == 'windows'
-        url = 'https://storage.googleapis.com/shaderc/badges/build_link_windows_vs2017_debug.html'
-    elif host_machine.system() == 'darwin'
-        url = 'https://storage.googleapis.com/shaderc/badges/build_link_macos_clang_debug.html'
-    else
-        #todo: match to current compiler
-        url = 'https://storage.googleapis.com/shaderc/badges/build_link_linux_clang_debug.html'
-    endif
+    name += 'debug'
 else
-    if host_machine.system() == 'windows'
-        url = 'https://storage.googleapis.com/shaderc/badges/build_link_windows_vs2017_release.html'
-    elif host_machine.system() == 'darwin'
-        url = 'https://storage.googleapis.com/shaderc/badges/build_link_macos_clang_release.html'
-    else
-        # todo: match to current compiler on linux
-        url = 'https://storage.googleapis.com/shaderc/badges/build_link_linux_clang_release.html'
-    endif
+    name += 'release'
 endif
 
-curl = find_program('curl')
+python = import('python3').find_python()
 
-download = custom_target('download',
-    input : url,
-    output : 'install.zip',
-    command : [ curl, '@INPUT@', '--output', '@OUTPUT@' ]
-)
+download = run_command(python, 'install.py', name, meson.current_source_dir())
 
-if host_machine.system() == 'windows'
-    extract = run_command('extract.vbs', download, meson.current_source_dir())
+if download.returncode() == 0
+    shaderc_args = []
+    shaderc_links = []
+    if host_machine.system() == 'windows'
+        shaderc_args += [ '/I' + meson.current_source_dir() / 'include' ]
+        shaderc_links += [ '/LIBPATH:"' + meson.current_source_dir() / 'lib"' ]
+    else
+        shaderc_args += [ '-I' + meson.current_source_dir() / 'include' ]
+        shaderc_links += [ '-L' + meson.current_source_dir() / 'lib/shaderc.a' ]
+    endif
 else
-    unzip = find_program('unzip')
-
-    extract = custom_target('extract',
-        input : download,
-        output : 'shaderc',
-        command : [ unzip, '@INPUT@', '-d', '@OUTPUT@' ]
-    )
+    error('failed to download shaderc source')
 endif
-
-libshaderc = static_library('shaderc', extract)
-
-shaderc_dep = declare_dependency(
-    link_with : libshaderc
-)

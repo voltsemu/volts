@@ -65,15 +65,16 @@ cxxopts = subproject('cxxopts').get_variable('cxxopts_dep')
 
 glm = subproject('glm').get_variable('glm_dep')
 
-#TODO: turns out because of the way google provides shaderc's prebuilt binaries
-# its basically impossible to meson wrap it so some workaround will be needed
-
-shaderc = subproject('shaderc').get_variable('shaderc_dep')
-
 sources = []
-dependencies = [ aes, xxhash, rapidjson, svl, elf, vfs, imgui, cxxopts, spdlog, zlib, shaderc ]
+dependencies = [ aes, xxhash, rapidjson, svl, elf, vfs, imgui, cxxopts, spdlog, zlib ]
 cpp_args = [ '-DFMT_EXCEPTIONS=0' ]
 include_directories = []
+links = []
+
+shaderc = subproject('shaderc')
+
+cpp_args += shaderc.get_variable('shaderc_args')
+links += shaderc.get_variable('shaderc_links')
 
 if host_machine.system() == 'darwin'
     dependencies += dependency('appleframeworks', modules : [ 'Cocoa', 'Foundation' ])
@@ -88,17 +89,18 @@ subdir('volts')
 libvolts = library('volts', sources,
     cpp_args : cpp_args,
     objcpp_args : cpp_args,
+    link_args : links,
     include_directories : include_directories,
     dependencies : dependencies
 )
-
 
 cli = executable('cli', 'volts/cli.cpp',
     cpp_args : cpp_args,
     objcpp_args : cpp_args,
     include_directories : include_directories,
     dependencies : dependencies,
-    link_with : libvolts
+    link_with : libvolts,
+    link_args : links
 )
 
 subdir('gui'/host_machine.system())

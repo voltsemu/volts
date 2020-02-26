@@ -6,6 +6,10 @@
 
 #include <algorithm>
 
+#if SYS_WINDOWS
+#   pragma comment(lib, "shaderc")
+#endif
+
 namespace volts::rsx
 {
     struct frameData
