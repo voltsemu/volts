@@ -91,9 +91,6 @@ namespace volts::rsx::vulkan
                                                   const std::string& shader, 
                                                   const std::string& name)
     {
-        // TODO: this is going to require shaderc or glsl
-        // what fun
-
         return svl::err(VK_SUCCESS);
     }
 

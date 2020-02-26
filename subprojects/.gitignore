@@ -13,4 +13,4 @@
 !glad/**/*
 !glm/
 !glfw/
-glslang/
+!glslang/

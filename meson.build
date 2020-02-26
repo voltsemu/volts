@@ -65,7 +65,7 @@ cxxopts = subproject('cxxopts').get_variable('cxxopts_dep')
 
 glm = subproject('glm').get_variable('glm_dep')
 
-glsl = subproject('glslang').get_variable('glslang_dep')
+glsl = subproject('glslang').get_variable('glsl_dep')
 
 sources = []
 dependencies = [ aes, xxhash, rapidjson, svl, elf, vfs, imgui, cxxopts, spdlog, zlib, glsl ]
