@@ -30,6 +30,12 @@ namespace volts::rsx
 
         virtual void preinit() override
         {
+            if(!glslang::InitializeProcess())
+            {
+                spdlog::critical("failed to initialize glslang");
+                std::abort();
+            }
+
             glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
             std::vector<std::string> exts = {};
@@ -41,6 +47,7 @@ namespace volts::rsx
 
                 for(uint32_t i = 0; i < num; i++)
                     exts.push_back(names[i]);
+            }
 
 #if VK_VALIDATE
                 // this layer is required for the debugger to work
@@ -48,7 +55,6 @@ namespace volts::rsx
 
                 layers.push_back("VK_LAYER_LUNARG_standard_validation");
 #endif
-            }
 
             // TODO: configure name
             instance = vulkan::instance("vulkan", exts, layers)
@@ -101,8 +107,42 @@ namespace volts::rsx
             std::tie(depth.image, depth.memory, depth.view) = vulkan::depthStencil(device, physical, VK_FORMAT_D16_UNORM, extent)
                 .expect("failed to create depth stencil");
 
-            
+            const char* vert = R"(
+                #version 400
+                #extension GL_ARB_separate_shader_objects : enable
+                #extension GL_ARB_shading_language_420pack : enable
+                
+                layout (std140, binding = 0) uniform bufferVals { 
+                    mat4 mvp; 
+                } myBufferVals;
 
+                layout (location = 0) in vec4 pos;
+                layout (location = 1) in vec4 colour;
+                layout (location = 0) out vec4 ret;
+
+                void main() {
+                    ret = colour;
+                    gl_Position = myBufferVals.mvp * pos;
+                }
+            )";
+
+            const char* frag = R"(
+                #version 400
+                #extension GL_ARB_separate_shader_objects : enable
+                #extension GL_ARB_shading_language_420pack : enable
+                
+                layout (location = 0) in vec4 colour;
+                layout (location = 0) out vec4 res;
+
+                void main() {
+                    res = colour;
+                }
+            )";
+            
+            auto shaders = vulkan::modules(device, {
+                { vert, VK_SHADER_STAGE_VERTEX_BIT },
+                { frag, VK_SHADER_STAGE_FRAGMENT_BIT }
+            }).expect("failed to create shader modules");
         }
 
         virtual void begin() override
@@ -117,6 +157,7 @@ namespace volts::rsx
 
         virtual void cleanup() override
         {
+            glslang::FinalizeProcess();
 #if VK_VALIDATE
             vulkan::removeDebugger(instance, debugger);
 #endif

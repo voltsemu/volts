@@ -25,6 +25,9 @@
 #include <string>
 #include <tuple>
 
+#include <glslang/Public/ShaderLang.h>
+#include <SPIRV/GlslangToSpv.h>
+
 #define VK_ENSURE(expr) { if(VkResult res = (expr); res != VK_SUCCESS) { spdlog::error("vk error {} = {}", #expr, res); } }
 
 namespace volts::rsx::vulkan
@@ -82,16 +85,97 @@ namespace volts::rsx::vulkan
     };
 
     svl::result<VkPipeline, VkResult> pipeline(VkDevice device,
-                                                       VkRenderPass pass)
+                                               VkRenderPass pass)
     {
         return svl::err(VK_SUCCESS);
     }
 
-    svl::result<VkShaderModule, VkResult> compile(VkShaderStageFlagBits type,
-                                                  const std::string& shader, 
-                                                  const std::string& name)
+    using shader = std::tuple<std::string, VkShaderStageFlagBits>;
+
+    using shaderModules = std::vector<VkShaderModule>;
+
+    svl::result<shaderModules, VkResult> modules(VkDevice device,
+                                                 const std::vector<shader>& shaders)
     {
-        return svl::err(VK_SUCCESS);
+        // constants
+        auto getLang = [](VkShaderStageFlagBits bits) {
+            switch(bits)
+            {
+            case VK_SHADER_STAGE_VERTEX_BIT:
+                return EShLangVertex;
+            case VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT:
+                return EShLangTessControl;
+            case VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT:
+                return EShLangTessEvaluation;
+            case VK_SHADER_STAGE_GEOMETRY_BIT:
+                return EShLangGeometry;
+            case VK_SHADER_STAGE_FRAGMENT_BIT:
+                return EShLangFragment;
+            case VK_SHADER_STAGE_COMPUTE_BIT:
+                return EShLangCompute;
+            default:
+                spdlog::critical("failed to find compile type");
+                std::abort();
+            }
+        };
+
+        auto rules = (EShMessages)(EShMsgSpvRules | EShMsgVulkanRules);
+
+        shaderModules mods = {};
+
+        for(uint32_t i = 0; i < shaders.size(); i++)
+        {
+            auto [source, bits] = shaders[i];
+            auto lang = getLang(bits);
+
+            glslang::TShader shader(lang);
+
+            const char* strings[] = { source.c_str() };
+            shader.setStrings(strings, 1);
+            TBuiltInResource res = {};
+
+            if(!shader.parse(&res, 100, false, rules))
+            {
+                spdlog::error("failed to parse glsl shader\n{}\n{}", 
+                    shader.getInfoLog(), 
+                    shader.getInfoDebugLog()
+                );
+                std::abort();
+            }
+
+            glslang::TProgram program;
+            program.addShader(&shader);
+
+            if(!program.link(rules))
+            {
+                spdlog::error("failed to link glsl program\n{}\n{}", 
+                    program.getInfoLog(),
+                    program.getInfoDebugLog()
+                );
+                std::abort();
+            }
+
+            std::vector<uint32_t> spirv;
+
+            glslang::GlslangToSpv(*program.getIntermediate(lang), spirv);
+
+
+            VkPipelineShaderStageCreateInfo stageInfo = { VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO };
+            stageInfo.stage = bits;
+            stageInfo.pName = "main";
+
+            VkShaderModuleCreateInfo moduleInfo = { VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO };
+            moduleInfo.codeSize = spirv.size() * sizeof(uint32_t);
+            moduleInfo.pCode = spirv.data();
+
+            VkShaderModule mod;
+            if(VkResult res = vkCreateShaderModule(device, &moduleInfo, nullptr, &mod); res < 0)
+                return svl::err(res);
+
+            mods.push_back(mod);
+        }
+
+        return svl::ok(mods);
     }
 
     using depthstencil = std::tuple<VkImage, VkDeviceMemory, VkImageView>;
