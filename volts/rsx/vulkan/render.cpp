@@ -70,14 +70,17 @@ namespace volts::rsx
                 VK_ENSURE(vkCreateInstance(&createInfo, nullptr, &instance));
             }
 
-            {
-                
-            }
+            // get all physical devices
+            physicals = vk::physicalDevices(instance);
         }
 
         virtual void postinit() override
         {
+            // create a surface for the current window
+            VK_ENSURE(glfwCreateWindowSurface(instance, rsx::window(), nullptr, &surface));
 
+            // set the current device to the first device
+            setDevice(0);
         }
 
         virtual void begin() override
@@ -98,10 +101,87 @@ namespace volts::rsx
         virtual std::string_view name() const override { return "vulkan"; }
     
     private:
+        /// unchanging data
+        
+        // the toplevel instance
         VkInstance instance;
 
+        // list of all available physical devices
         std::vector<VkPhysicalDevice> physicals;
-        VkPhysicalDevice physical;
+        
+        // the current window surface
+        VkSurfaceKHR surface = VK_NULL_HANDLE;
+
+        void setDevice(uint32_t idx)
+        {
+            device.physical = physicals[idx];
+            initQueues();
+        }
+
+        /// data for the current device
+
+        // current device data
+        struct {
+            // the current physical device
+            VkPhysicalDevice physical = VK_NULL_HANDLE;
+
+            // the current logical device created from the physical device
+            VkDevice logical = VK_NULL_HANDLE;
+        } device;
+
+        struct {
+            uint32_t graphics = 0;
+            uint32_t compute = 0;
+            uint32_t transfer = 0;
+            uint32_t present = 0;
+        } queues;
+
+#define IF_ONCE(expr, ...) if(bool once = true; (expr) && once) { once = false; { __VA_ARGS__ } }
+
+        void initQueues()
+        {
+            uint32_t num = 0;
+            vkGetPhysicalDeviceQueueFamilyProperties(device.physical, &num, nullptr);
+
+            auto* props = VK_SALLOC(VkQueueFamilyProperties, num);
+            vkGetPhysicalDeviceQueueFamilyProperties(device.physical, &num, props);
+
+            bool graphics = true,
+                 compute = true,
+                 transfer = true,
+                 present = true;
+
+            for(uint32_t i = 0; i < num; i++)
+            {
+                if(props[i].queueFlags & VK_QUEUE_GRAPHICS_BIT && graphics) 
+                {
+                    graphics = false;
+                    queues.graphics = i;
+                }
+
+                if(props[i].queueFlags & VK_QUEUE_COMPUTE_BIT && compute)
+                {
+                    compute = false;
+                    queues.compute = i;
+                }
+
+                if(props[i].queueFlags & VK_QUEUE_TRANSFER_BIT && transfer) 
+                {
+                    transfer = false;
+                    queues.transfer = i;
+                }
+
+                VkBool32 presentSupport = VK_FALSE;
+                vkGetPhysicalDeviceSurfaceSupportKHR(device.physical, i, surface, &presentSupport);
+                if(present && presentSupport) 
+                {
+                    present = false;
+                    queues.present = i;
+                }
+            }
+
+            spdlog::debug("queues g={} c={} t={} p={}", queues.graphics, queues.compute, queues.transfer, queues.present);
+        }
     };
 
     void vk::connect()

@@ -26,7 +26,9 @@
 #include <glslang/Public/ShaderLang.h>
 #include <SPIRV/GlslangToSpv.h>
 
-namespace volts::vk
+#define VK_SALLOC(type, num) (type*)salloc(sizeof(type) * num)
+
+namespace volts::rsx::vk
 {
 #define STR_CASE(val) case val: return #val;
     const char* to_string(VkResult res)
@@ -72,11 +74,17 @@ namespace volts::vk
     }
 #undef STR_CAST
 
-#define VK_ENSURE(expr) { if(VkResult res = (expr); res) { spdlog::error("[{}:{}] = {}", __FILE__, __LINE__, volts::vk::to_string(res)); } }
+#define VK_ENSURE(...) { if(VkResult res = (__VA_ARGS__); res) { spdlog::error("[{}:{}] = {}", __FILE__, __LINE__, volts::rsx::vk::to_string(res)); } }
 
     std::vector<VkPhysicalDevice> physicalDevices(VkInstance instance)
     {
-        
+        uint32_t num = 0;
+        VK_ENSURE(vkEnumeratePhysicalDevices(instance, &num, nullptr));
+
+        std::vector<VkPhysicalDevice> devices(num);
+        VK_ENSURE(vkEnumeratePhysicalDevices(instance, &num, devices.data()));
+
+        return devices;
     }
 }
 
