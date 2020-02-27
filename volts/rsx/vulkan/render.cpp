@@ -6,9 +6,14 @@
 #include "support.h"
 
 #include <algorithm>
+#include <limits>
 
 namespace volts::rsx
 {
+    const std::vector<const char*> deviceExtensions = {
+        VK_KHR_SWAPCHAIN_EXTENSION_NAME
+    };
+
     struct vulkan : render
     {
         vulkan() 
@@ -116,6 +121,12 @@ namespace volts::rsx
         {
             device.physical = physicals[idx];
             initQueues();
+
+            if((queues.graphics | queues.present) == std::numeric_limits<uint32_t>::max())
+            {
+                spdlog::critical("device {} is not suitable as its missing a graphics queue", device.physical);
+                std::abort();
+            }
         }
 
         /// data for the current device
@@ -129,14 +140,48 @@ namespace volts::rsx
             VkDevice logical = VK_NULL_HANDLE;
         } device;
 
-        struct {
-            uint32_t graphics = 0;
-            uint32_t compute = 0;
-            uint32_t transfer = 0;
-            uint32_t present = 0;
-        } queues;
+        VkQueue graphicsQueue = VK_NULL_HANDLE;
+        VkQueue presentQueue = VK_NULL_HANDLE;
+        
+        void initDevice() 
+        {
+            std::vector<VkDeviceQueueCreateInfo> queueInfos;
 
-#define IF_ONCE(expr, ...) if(bool once = true; (expr) && once) { once = false; { __VA_ARGS__ } }
+            float priority = 1.f;
+            for(auto family : {queues.graphics, queues.present})
+            {
+                VkDeviceQueueCreateInfo queueInfo = { VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO };
+                queueInfo.queueFamilyIndex = family;
+                queueInfo.queueCount = 1;
+
+                
+                queueInfo.pQueuePriorities = &priority;
+
+                queueInfos.push_back(queueInfo);
+            }
+
+            // TODO: we may need to populate this later
+            VkPhysicalDeviceFeatures features = {};
+
+            VkDeviceCreateInfo createInfo = { VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO };
+            createInfo.pQueueCreateInfos = queueInfos.data();
+            createInfo.queueCreateInfoCount = queueInfos.size();s
+
+            createInfo.pEnabledFeatures = &features;
+
+            createInfo.enabledExtensionCount = deviceExtensions.size();
+            createInfo.ppEnabledExtensions = deviceExtensions.data();
+
+            vkGetDeviceQueue(device, queues.graphics, 0, &graphicsQueue);
+            vkGetDeviceQueue(device, queues.present, 0, &presentQueue);
+        }
+
+        struct {
+            uint32_t graphics = std::numeric_limits<uint32_t>::max();
+            uint32_t compute = std::numeric_limits<uint32_t>::max();
+            uint32_t transfer = std::numeric_limits<uint32_t>::max();
+            uint32_t present = std::numeric_limits<uint32_t>::max();
+        } queues;
 
         void initQueues()
         {
@@ -179,8 +224,6 @@ namespace volts::rsx
                     queues.present = i;
                 }
             }
-
-            spdlog::debug("queues g={} c={} t={} p={}", queues.graphics, queues.compute, queues.transfer, queues.present);
         }
     };
 

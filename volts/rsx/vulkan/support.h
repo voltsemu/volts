@@ -88,7 +88,18 @@ namespace volts::rsx::vk
     }
 }
 
-
+template<>
+struct fmt::formatter<VkPhysicalDevice> : fmt::formatter<std::string>
+{
+    template<typename T>
+    auto format(VkPhysicalDevice physical, T& ctx)
+    {
+        VkPhysicalDeviceProperties props;
+        vkGetPhysicalDeviceProperties(physical, &props);
+        return fmt::formatter<std::string>::format(props.deviceName, ctx);
+        //return format_to(ctx.out(), props.deviceName);
+    }
+};
 
 
 
