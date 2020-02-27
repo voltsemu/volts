@@ -1,4 +1,5 @@
-#define NUM_SAMPLES VK_SAMPLE_COUNT_1_BIT
+#define V_REQUIRED_VERSION VK_API_VERSION_1_0
+#define V_VERSION VK_MAKE_VERSION(1, 0, 0)
 
 #include "render.h"
 #include "backend.h"
@@ -6,27 +7,111 @@
 
 #include <algorithm>
 
-#if SYS_WINDOWS
-#   pragma comment(lib, "shaderc")
-#endif
-
 namespace volts::rsx
 {
-    struct frameData
+    struct vulkan : render
     {
-        VkImage image;
-        VkImageView view;
-        VkFramebuffer buffer;
-    };
+        vulkan() 
+        { 
+#if VK_VALIDATE
+            spdlog::debug("vulkan validation is enabled");
+#endif
+        }
 
-    struct vk : render
-    {
-        vk()
+        virtual ~vulkan() override {}
+
+        virtual void preinit(const std::string& name) override
+        {
+            // we want to use vulkan so we tell glfw to not do any opengl initialization
+            glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+
+            // create a vulkan instance to use
+            {
+                VkApplicationInfo appInfo = { VK_STRUCTURE_TYPE_APPLICATION_INFO };
+                appInfo.apiVersion = V_REQUIRED_VERSION;
+
+                appInfo.pApplicationName = name.c_str();
+                // TODO: get game version
+                appInfo.applicationVersion = V_VERSION;
+
+                // TODO: configurable extensions, layers, engine name/version
+                appInfo.pEngineName = "emulated rsx";
+                appInfo.engineVersion = V_VERSION;
+
+                VkInstanceCreateInfo createInfo = { VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO };
+                createInfo.pApplicationInfo = &appInfo;
+                
+                // get all the vulkan extensions that glfw requires
+                std::vector<const char*> extensions;
+                {
+                    uint32_t num = 0;
+                    const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&num);
+                
+                    for(uint32_t i = 0; i < num; i++)
+                        extensions.push_back(glfwExtensions[i]);
+
+#if VK_VALIDATE
+                    extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+#endif
+                }
+
+                createInfo.ppEnabledExtensionNames = extensions.data();
+                createInfo.enabledExtensionCount = extensions.size();
+
+                std::vector<const char*> layers = {
+#if VK_VALIDATE
+                    "VK_LAYER_LUNARG_standard_validation"
+#endif
+                };
+
+                createInfo.ppEnabledLayerNames = layers.data();
+                createInfo.enabledLayerCount = layers.size();
+
+                VK_ENSURE(vkCreateInstance(&createInfo, nullptr, &instance));
+            }
+
+            {
+                
+            }
+        }
+
+        virtual void postinit() override
         {
 
         }
 
-        virtual ~vk() override {}
+        virtual void begin() override
+        {
+
+        }
+
+        virtual void end() override
+        {
+
+        }
+
+        virtual void cleanup() override
+        {
+            vkDestroyInstance(instance, nullptr);
+        }
+
+        virtual std::string_view name() const override { return "vulkan"; }
+    
+    private:
+        VkInstance instance;
+
+        std::vector<VkPhysicalDevice> physicals;
+        VkPhysicalDevice physical;
+    };
+
+    void vk::connect()
+    {
+        add(new vulkan());
+    }
+}
+
+
+#if 0
 
         virtual void preinit() override
         {
@@ -132,17 +217,69 @@ namespace volts::rsx
                 #extension GL_ARB_shading_language_420pack : enable
                 
                 layout (location = 0) in vec4 colour;
-                layout (location = 0) out vec4 res;
+                layout (location = 0) out vec4 ret;
 
                 void main() {
-                    res = colour;
+                    ret = colour;
                 }
             )";
             
             auto shaders = vulkan::modules(device, {
-                { vert, VK_SHADER_STAGE_VERTEX_BIT },
-                { frag, VK_SHADER_STAGE_FRAGMENT_BIT }
+                { vert, "vert", VK_SHADER_STAGE_VERTEX_BIT },
+                { frag, "frag", VK_SHADER_STAGE_FRAGMENT_BIT }
             }).expect("failed to create shader modules");
+
+            drawSemaphore = vulkan::semaphore(device).expect("failed to create draw semaphore");
+            presentSemaphore = vulkan::semaphore(device).expect("failed to create present semaphore");
+
+            for(uint32_t i = 0; i < swapBuffers.size(); i++)
+                fences.push_back(vulkan::fence(device).expect("failed to create fence"));
+
+
+            {
+                using vertex = struct {
+                    glm::vec3 pos;
+                    glm::vec3 col;
+                }
+
+                vertex vertBuffer[] = {
+                    { { 1.f, 1.f, 0.f }, { 1.f, 0.f, 0.f } },
+                    { { -1.f, 1.f, 0.f }, { 0.f, 1.f, 0.f } },
+                    { { 0.f, -1.f, 0.f }, { 0.f, 0.f, 1.f } }
+                };
+                uint32_t bufferSize = sizeof(verts) / sizeof(vertex);
+
+                uint32_t indexBuffer[] = { 0, 1, 2 };
+                verts.count = sizeof(indexBuffer) / sizeof(uint32_t);
+
+                VkMemoryAllocateInfo allocInfo = { VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO };
+                VkMemoryRequirements reqs;
+
+                using staging = struct {
+                    VkDeviceMemory memory;
+                    VkBuffer buffer;
+                };
+
+                staging stageVerts;
+                staging stageIndicies;
+
+                VkBufferCreateInfo bufInfo = { VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
+                bufInfo.size = bufferSize;
+
+                bufInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+                
+                V_ASSERT(vkCreateBuffer(device, &bufInfo, nullptr, &stageVerts.buffer));
+                vkGetBufferMemoryRequirements(device, stageVerts.buffer, &reqs);
+                allocInfo.allocationSize = reqs.size;
+
+                // TODO: this could not be more jank
+                allocInfo.memoryTypeIndex = 0;
+                V_ASSERT(vkAllocateMemory(device, &allocInfo, nullptr, &stageVerts.memory));
+
+                void* data;
+
+                V_ASSERT(vkMapMemory(device, stageVerts.memory, 0, allocInfo.allocationSize, 0, &data));
+            }
         }
 
         virtual void begin() override
@@ -186,10 +323,14 @@ namespace volts::rsx
         VkCommandBuffer buffer;
         VkRenderPass pass;
 
+        VkSemaphore presentSemaphore;
+        VkSemaphore drawSemaphore;
+
         // framedata
         std::vector<VkImage> swapImages;
         std::vector<VkImageView> swapViews;
         std::vector<VkFramebuffer> swapBuffers;
+        std::vector<VkFence> fences;
 
         // depth buffer
         struct {
@@ -198,15 +339,19 @@ namespace volts::rsx
             VkDeviceMemory memory;
         } depth;
 
+
+        struct {
+            VkDeviceMemory memory;
+            VkBuffer buffer;
+            uint32_t count;
+        } verts;
+
         std::vector<VkPhysicalDevice> physicalDevices;
 
 #if VK_VALIDATE
         VkDebugUtilsMessengerEXT debugger;
 #endif
+
     };
 
-    void vulkan::connect()
-    {
-        add(new vk());
-    }
-}
+#endif

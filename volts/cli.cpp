@@ -52,8 +52,9 @@ namespace volts::cmd
             ("sfo", "parse an sfo file", opts::value<std::string>())
             ("pup", "parse a pup file", opts::value<std::string>())
             ("self", "parse a self file", opts::value<std::string>())
-            ("boot", "boot the emulator", opts::value<std::string>())
+            ("boot", "boot a game in the emulator", opts::value<std::string>())
             ("render", "enable rendering window", opts::value<std::string>())
+            ("name", "set the game name", opts::value<std::string>())
             ;
 
         auto res = opts.parse(argc, argv);
@@ -245,7 +246,7 @@ namespace volts::cmd
         }
 
         if(res.count("render"))
-            volts::rsx::run(res["render"].as<std::string>());
+            volts::rsx::run(res["render"].as<std::string>(), res.count("name") ? res["name"].as<std::string>() : "volts");
     }
 }
 

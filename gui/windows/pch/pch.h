@@ -7,6 +7,7 @@
 #pragma warning(push)
 #pragma warning(disable : 4002)
 #pragma warning(disable : 4715)
+#pragma warning(disable : 4530)
 
 #include <Windows.h>
 

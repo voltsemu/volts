@@ -19,8 +19,6 @@
 
 #include "volts.h"
 
-#include <expected.h>
-#include <result.h>
 #include <vector>
 #include <string>
 #include <tuple>
@@ -28,12 +26,10 @@
 #include <glslang/Public/ShaderLang.h>
 #include <SPIRV/GlslangToSpv.h>
 
-#define VK_ENSURE(expr) { if(VkResult res = (expr); res != VK_SUCCESS) { spdlog::error("vk error {} = {}", #expr, res); } }
-
-namespace volts::rsx::vulkan
+namespace volts::vk
 {
 #define STR_CASE(val) case val: return #val;
-    std::string err_to_string(VkResult res)
+    const char* to_string(VkResult res)
     {
         switch(res)
         {
@@ -74,7 +70,30 @@ namespace volts::rsx::vulkan
             return "VK_ERROR_UNKNOWN";
         }
     }
+#undef STR_CAST
 
+#define VK_ENSURE(expr) { if(VkResult res = (expr); res) { spdlog::error("[{}:{}] = {}", __FILE__, __LINE__, volts::vk::to_string(res)); } }
+
+    std::vector<VkPhysicalDevice> physicalDevices(VkInstance instance)
+    {
+        
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#if 0
 
     struct queueIndicies
     {
@@ -90,11 +109,9 @@ namespace volts::rsx::vulkan
         return svl::err(VK_SUCCESS);
     }
 
-    using shader = std::tuple<std::string, VkShaderStageFlagBits>;
+    using shader = std::tuple<std::string, std::string, VkShaderStageFlagBits>;
 
-    using shaderModules = std::vector<VkShaderModule>;
-
-    svl::result<shaderModules, VkResult> modules(VkDevice device,
+    svl::result<std::vector<VkShaderModule>, VkResult> modules(VkDevice device,
                                                  const std::vector<shader>& shaders)
     {
         // constants
@@ -119,20 +136,129 @@ namespace volts::rsx::vulkan
             }
         };
 
+        auto resources = [] {
+            TBuiltInResource res;
+
+            res.maxLights = 32;
+            res.maxClipPlanes = 6;
+            res.maxTextureUnits = 32;
+            res.maxTextureCoords = 32;
+            res.maxVertexAttribs = 64;
+            res.maxVertexUniformComponents = 4096;
+            res.maxVaryingFloats = 64;
+            res.maxVertexTextureImageUnits = 32;
+            res.maxCombinedTextureImageUnits = 80;
+            res.maxTextureImageUnits = 32;
+            res.maxFragmentUniformComponents = 4096;
+            res.maxDrawBuffers = 32;
+            res.maxVertexUniformVectors = 128;
+            res.maxVaryingVectors = 8;
+            res.maxFragmentUniformVectors = 16;
+            res.maxVertexOutputVectors = 16;
+            res.maxFragmentInputVectors = 15;
+            res.minProgramTexelOffset = -8;
+            res.maxProgramTexelOffset = 7;
+            res.maxClipDistances = 8;
+            res.maxComputeWorkGroupCountX = 65535;
+            res.maxComputeWorkGroupCountY = 65535;
+            res.maxComputeWorkGroupCountZ = 65535;
+            res.maxComputeWorkGroupSizeX = 1024;
+            res.maxComputeWorkGroupSizeY = 1024;
+            res.maxComputeWorkGroupSizeZ = 64;
+            res.maxComputeUniformComponents = 1024;
+            res.maxComputeTextureImageUnits = 16;
+            res.maxComputeImageUniforms = 8;
+            res.maxComputeAtomicCounters = 8;
+            res.maxComputeAtomicCounterBuffers = 1;
+            res.maxVaryingComponents = 60;
+            res.maxVertexOutputComponents = 64;
+            res.maxGeometryInputComponents = 64;
+            res.maxGeometryOutputComponents = 128;
+            res.maxFragmentInputComponents = 128;
+            res.maxImageUnits = 8;
+            res.maxCombinedImageUnitsAndFragmentOutputs = 8;
+            res.maxCombinedShaderOutputResources = 8;
+            res.maxImageSamples = 0;
+            res.maxVertexImageUniforms = 0;
+            res.maxTessControlImageUniforms = 0;
+            res.maxTessEvaluationImageUniforms = 0;
+            res.maxGeometryImageUniforms = 0;
+            res.maxFragmentImageUniforms = 8;
+            res.maxCombinedImageUniforms = 8;
+            res.maxGeometryTextureImageUnits = 16;
+            res.maxGeometryOutputVertices = 256;
+            res.maxGeometryTotalOutputComponents = 1024;
+            res.maxGeometryUniformComponents = 1024;
+            res.maxGeometryVaryingComponents = 64;
+            res.maxTessControlInputComponents = 128;
+            res.maxTessControlOutputComponents = 128;
+            res.maxTessControlTextureImageUnits = 16;
+            res.maxTessControlUniformComponents = 1024;
+            res.maxTessControlTotalOutputComponents = 4096;
+            res.maxTessEvaluationInputComponents = 128;
+            res.maxTessEvaluationOutputComponents = 128;
+            res.maxTessEvaluationTextureImageUnits = 16;
+            res.maxTessEvaluationUniformComponents = 1024;
+            res.maxTessPatchComponents = 120;
+            res.maxPatchVertices = 32;
+            res.maxTessGenLevel = 64;
+            res.maxViewports = 16;
+            res.maxVertexAtomicCounters = 0;
+            res.maxTessControlAtomicCounters = 0;
+            res.maxTessEvaluationAtomicCounters = 0;
+            res.maxGeometryAtomicCounters = 0;
+            res.maxFragmentAtomicCounters = 8;
+            res.maxCombinedAtomicCounters = 8;
+            res.maxAtomicCounterBindings = 1;
+            res.maxVertexAtomicCounterBuffers = 0;
+            res.maxTessControlAtomicCounterBuffers = 0;
+            res.maxTessEvaluationAtomicCounterBuffers = 0;
+            res.maxGeometryAtomicCounterBuffers = 0;
+            res.maxFragmentAtomicCounterBuffers = 1;
+            res.maxCombinedAtomicCounterBuffers = 1;
+            res.maxAtomicCounterBufferSize = 16384;
+            res.maxTransformFeedbackBuffers = 4;
+            res.maxTransformFeedbackInterleavedComponents = 64;
+            res.maxCullDistances = 8;
+            res.maxCombinedClipAndCullDistances = 8;
+            res.maxSamples = 4;
+            res.maxMeshOutputVerticesNV = 256;
+            res.maxMeshOutputPrimitivesNV = 512;
+            res.maxMeshWorkGroupSizeX_NV = 32;
+            res.maxMeshWorkGroupSizeY_NV = 1;
+            res.maxMeshWorkGroupSizeZ_NV = 1;
+            res.maxTaskWorkGroupSizeX_NV = 32;
+            res.maxTaskWorkGroupSizeY_NV = 1;
+            res.maxTaskWorkGroupSizeZ_NV = 1;
+            res.maxMeshViewCountNV = 4;
+            res.limits.nonInductiveForLoops = 1;
+            res.limits.whileLoops = 1;
+            res.limits.doWhileLoops = 1;
+            res.limits.generalUniformIndexing = 1;
+            res.limits.generalAttributeMatrixVectorIndexing = 1;
+            res.limits.generalVaryingIndexing = 1;
+            res.limits.generalSamplerIndexing = 1;
+            res.limits.generalVariableIndexing = 1;
+            res.limits.generalConstantMatrixVectorIndexing = 1;
+
+            return res;
+        };
+
         auto rules = (EShMessages)(EShMsgSpvRules | EShMsgVulkanRules);
 
-        shaderModules mods = {};
+        std::vector<VkShaderModule> mods = {};
 
-        for(uint32_t i = 0; i < shaders.size(); i++)
+        for(auto& [source, name, bits] : shaders)
         {
-            auto [source, bits] = shaders[i];
+            spdlog::debug("compiling shader {}", name);
             auto lang = getLang(bits);
 
             glslang::TShader shader(lang);
 
+            auto res = resources();
+
             const char* strings[] = { source.c_str() };
             shader.setStrings(strings, 1);
-            TBuiltInResource res = {};
 
             if(!shader.parse(&res, 100, false, rules))
             {
@@ -498,6 +624,19 @@ namespace volts::rsx::vulkan
         return svl::ok(std::make_tuple(out, format.format, extent));
     }
 
+    svl::result<VkFence, VkResult> fence(VkDevice device)
+    {
+        VkFenceCreateInfo createInfo = { VK_STRUCTURE_TYPE_FENCE_CREATE_INFO };
+        createInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+        VkFence out;
+
+        if(VkResult res = vkCreateDevice(device, &createInfo, nullptr, &out); res < 0)
+            return svl::err(res);
+
+        return svl::ok(out);
+    }
+
     svl::result<VkSemaphore, VkResult> semaphore(VkDevice device) 
     {
         VkSemaphoreCreateInfo createInfo = { VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO };
@@ -799,3 +938,5 @@ namespace volts::rsx::vulkan
         vkDestroyDebugUtilsMessengerEXT(instance, messenger, nullptr);
     }
 }
+
+#endif

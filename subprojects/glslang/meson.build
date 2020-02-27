@@ -81,5 +81,5 @@ libglsl = library('glsl', sources,
 
 glsl_dep = declare_dependency(
     link_with : libglsl,
-    include_directories : include_directories('glslang/glslang/Include')
+    include_directories : include_directories
 )

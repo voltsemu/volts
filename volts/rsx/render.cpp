@@ -44,10 +44,10 @@ namespace volts::rsx
 
     GLFWwindow* window() { return win; }
 
-    void run(const std::string& name)
+    void run(const std::string& render_name, const std::string& game_name)
     {
         // all platforms have vulkan (or moltenvk)
-        vulkan::connect();
+        vk::connect();
 
 #if SYS_WINDOWS
         directx12::connect();
@@ -59,11 +59,11 @@ namespace volts::rsx
         opengl::connect();
 #endif
 
-        auto render = std::find_if(renders()->begin(), renders()->end(), [name](auto* render) { return render->name() == name; });
+        auto render = std::find_if(renders()->begin(), renders()->end(), [&render_name](auto* render) { return render->name() == render_name; });
         
         if(render == renders()->end())
         {
-            spdlog::critical("render backend {} not found", name);
+            spdlog::critical("render backend {} not found", render_name);
             return;
         }
 
@@ -79,9 +79,9 @@ namespace volts::rsx
             return;
         }
 
-        current->preinit();
+        current->preinit(game_name);
 
-        win = glfwCreateWindow(640, 480, name.c_str(), nullptr, nullptr);
+        win = glfwCreateWindow(640, 480, game_name.c_str(), nullptr, nullptr);
 
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();

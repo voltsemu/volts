@@ -1,6 +1,6 @@
 #pragma once
 
-namespace volts::rsx::vulkan
+namespace volts::rsx::vk
 {
     void connect();
 }

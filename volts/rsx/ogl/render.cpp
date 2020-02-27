@@ -17,7 +17,7 @@ namespace volts::rsx
     {
         virtual ~ogl() override {}
 
-        virtual void preinit() override
+        virtual void preinit(const std::string& name) override
         {
             glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
             glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);

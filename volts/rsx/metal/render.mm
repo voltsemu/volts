@@ -20,7 +20,7 @@ namespace volts::rsx
     {
         virtual ~mtl() override {}
 
-        virtual void preinit() override
+        virtual void preinit(const std::string& name) override
         {
             device = MTLCreateSystemDefaultDevice();
 

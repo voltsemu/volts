@@ -14,7 +14,7 @@ namespace volts::rsx
     {
         virtual ~render() {}
         // called before window creation
-        virtual void preinit() = 0;
+        virtual void preinit(const std::string& name) = 0;
 
         // called after window creation
         virtual void postinit() = 0;
