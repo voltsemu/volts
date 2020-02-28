@@ -39,10 +39,22 @@ namespace volts::rsx
 #else
             instance = fvck::Instance(name);
 #endif
+
+            physicalDevices = instance.devices();
+
+            // pick the best physical device to use
+            {
+                uint32_t best = 0;
+                for(auto physical : physicalDevices)
+                    if(physical.score() > best)
+                        physicalDevice = physical;
+            }
         }
 
         virtual void postinit() override
         {
+            surface = instance.surface(rsx::window());
+
 
         }
 
@@ -58,13 +70,19 @@ namespace volts::rsx
 
         virtual void cleanup() override
         {
-            
+            instance.removeMessenger(messenger);
+            instance.destroy();
         }
 
         virtual std::string_view name() const override { return "vulkan"; }
     
     private:
         fvck::Instance instance;
+
+        std::vector<fvck::PhysicalDevice> physicalDevices;
+        fvck::PhysicalDevice physicalDevice;
+
+        fvck::Surface surface;
 
 #if VK_VALIDATE
         VkDebugUtilsMessengerEXT messenger;

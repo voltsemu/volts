@@ -1,52 +1,25 @@
 #pragma once
 
-#ifndef FVCK_TARGET_WIN32
-#   define FVCK_TARGET_WIN32 0
-#endif
-
-#ifndef FVCK_TARGET_MACOS
-#   define FVCK_TARGET_MACOS 0
-#endif
-
-#ifndef FVCK_TARGET_IOS
-#   define FVCK_TARGET_IOS 0
-#endif
-
-#ifndef FVCK_TARGET_WAYLAND
-#   define FVCK_TARGET_WAYLAND 0
-#endif
-
-#ifndef FVCK_TARGET_XLIB
-#   define FVCK_TARGET_XLIB 0
-#endif
-
-// if a user doesnt define a target assume glfw
-// because it does everything for us
-#if !FVCK_TARGET_WIN32 && !FVCK_TARGET_MACOS && !FVCK_TARGET_IOS && !FVCK_TARGET_WAYLAND && !FVCK_TARGET_XLIB && !FVCK_TARGET_GLFW
-#   define FVCK_TARGET_GLFW 1
-#endif
-
-#ifndef FVCK_TARGET_GLFW
-#   define FVCK_TARGET_GLFW 0
-#endif
-
 #include <vulkan/vulkan.h>
 
-#if FVCK_TARGET_GLFW
-#   define GLFW_INCLUDE_VULKAN
-#   include <GLFW/glfw3.h>
-#   include <GLFW/glfw3native.h>
-#endif
+#define GLFW_INCLUDE_VULKAN
+#include <GLFW/glfw3.h>
+#include <GLFW/glfw3native.h>
 
 #include <vector>
 #include <string>
 #include <string_view>
+#include <optional>
+#include <set>
+#include <algorithm>
+
+#include <spdlog/spdlog.h>
 
 #ifndef FVCK_MIN_VERSION 
 #   define FVCK_MIN_VERSION VK_API_VERSION_1_0
 #endif
 
-#define FVCK_ENSURE(...) { if(VkResult res = (__VA_ARGS__); res) { spdlog::error("[{}:{}] = {}", __FILE__, __LINE__, volts::rsx::vk::to_string(res)); } }
+#define FVCK_ENSURE(...) { if(VkResult res = (__VA_ARGS__); res) { spdlog::error("[{}:{}] = {}", __FILE__, __LINE__, fvck::to_string(res)); } }
 
 namespace fvck
 {
@@ -118,20 +91,144 @@ namespace fvck
 
 #undef FVCK_CAST
 
-    struct PhysicalDevice
+    struct Surface
     {
-        PhysicalDevice(VkPhysicalDevice device)
-            : physical(device)
+        Surface() : surface(VK_NULL_HANDLE) {}
+
+        Surface(VkSurfaceKHR surf)
+            : surface(surf)
         {}
 
-    private:
+        VkSurfaceKHR surface;
+    };
+
+    struct Queue
+    {
+        Queue() : queue(VK_NULL_HANDLE) {}
+        Queue(VkQueue q)
+            : queue(q)
+        {}
+
+        VkQueue queue;
+    };
+
+    struct Device
+    {
+        Device() : device(VK_NULL_HANDLE) {}
+        Device(VkDevice d)
+            : device(d)
+        {}
+
+        VkDevice device;
+    };
+
+    struct PhysicalDevice
+    {
+        PhysicalDevice() : physical(VK_NULL_HANDLE) {}
+        PhysicalDevice(VkPhysicalDevice device)
+            : physical(device)
+        {
+            vkGetPhysicalDeviceProperties(physical, &props);
+            vkGetPhysicalDeviceFeatures(physical, &features);
+
+            {
+                uint32_t num = 0;
+                vkGetPhysicalDeviceQueueFamilyProperties(physical, &num, nullptr);
+
+                queues.resize(num);
+                vkGetPhysicalDeviceQueueFamilyProperties(physical, &num, queues.data());
+            }
+        }
+
+        uint32_t score() const
+        {
+            // we require geometry shaders
+            if(!features.geometryShader)
+                return 0;
+
+            uint32_t ret = 0;
+            if(props.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
+                ret += 1000;
+
+            ret += props.limits.maxImageDimension2D;
+
+            return ret;
+        }
+
+        Device device(const Surface& surface,
+                      const std::vector<std::string>& extensions = {}) const
+        {
+            uint32_t graphics = UINT32_MAX;
+            uint32_t present = UINT32_MAX;
+
+            for(uint32_t i = 0; i < queues.size(); i++)
+            {
+                if(graphics == UINT32_MAX && queues[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
+                    graphics = i;
+
+                if(present == UINT32_MAX)
+                {
+                    VkBool32 supportsPresent = VK_FALSE;
+                    vkGetPhysicalDeviceSurfaceSupportKHR(physical, i, surface.surface, &supportsPresent);
+
+                    if(supportsPresent)
+                        present = i;
+                }
+            }
+
+            if((present | graphics) == UINT32_MAX)
+            {
+                spdlog::critical("lacking present or graphics support");
+                std::abort();
+            }
+
+            float priority = 1.f;
+
+            std::vector<VkDeviceQueueCreateInfo> queueInfos = {};
+
+            for(auto index : { present, graphics })
+            {
+                VkDeviceQueueCreateInfo queueInfo = { VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO };
+                queueInfo.queueFamilyIndex = index;
+                queueInfo.queueCount = 1;
+                queueInfo.pQueuePriorities = &priority;
+                
+                queueInfos.push_back(queueInfo);
+            }
+
+            VkDeviceCreateInfo createInfo = { VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO };
+
+            createInfo.pQueueCreateInfos = queueInfos.data();
+            createInfo.queueCreateInfoCount = queueInfos.size();
+
+            VkPhysicalDeviceFeatures requiredFeatures = {};
+            createInfo.pEnabledFeatures = &requiredFeatures;
+
+            std::vector<const char*> extensionNames = {};
+            for(auto ext : extensions)
+                extensionNames.push_back(ext.c_str());
+
+            VkDevice out;
+
+            FVCK_ENSURE(vkCreateDevice(physical, &createInfo, nullptr, &out));
+
+            return out;
+        }
+        
+        const VkPhysicalDeviceProperties& properties() const { return props; }
+        const VkPhysicalDeviceFeatures& feats() const { return features; }
+
         VkPhysicalDevice physical;
+        VkPhysicalDeviceProperties props;
+        VkPhysicalDeviceFeatures features;
+        std::vector<VkQueueFamilyProperties> queues;
     };
 
     struct Instance
     {
+        Instance() : instance(VK_NULL_HANDLE) {}
         Instance(
-            const std::string& appName = "",
+            const std::string& appName,
             const std::vector<std::string>& extensions = {},
             const std::vector<std::string>& layers = {},
             uint32_t appVersion = VK_MAKE_VERSION(1, 0, 0)
@@ -144,7 +241,6 @@ namespace fvck
                 extensionNames.push_back(ext.c_str());
 
             // add the glfw required extensions
-    #if FVCK_TARGET_GLFW
             {
                 uint32_t num = 0;
                 const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&num);
@@ -152,7 +248,6 @@ namespace fvck
                 for(uint32_t i = 0; i < num; i++)
                     extensionNames.push_back(glfwExtensions[i]);
             }
-    #endif
 
             std::vector<const char*> layerNames;
 
@@ -178,6 +273,11 @@ namespace fvck
             createInfo.enabledLayerCount = layerNames.size();
 
             FVCK_ENSURE(vkCreateInstance(&createInfo, nullptr, &instance));
+        }
+
+        void destroy()
+        {
+            vkDestroyInstance(instance);
         }
 
         std::vector<PhysicalDevice> devices() const
@@ -210,7 +310,19 @@ namespace fvck
             return out;
         }
 
-    private:
+        void removeMessenger(VkDebugUtilsMessengerEXT messenger)
+        {
+            FVCK_ENSURE(vkDestroyDebugUtilsMessengerEXT(instance, messenger, nullptr));
+        }
+
+        Surface surface(GLFWwindow* window) const
+        {
+            VkSurfaceKHR surf;
+            FVCK_ENSURE(glfwCreateWindowSurface(instance, window, nullptr, &surf));
+
+            return surf;
+        }
+
         VkInstance instance;
     };
 
