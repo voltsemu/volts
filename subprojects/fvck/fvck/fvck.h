@@ -8,7 +8,7 @@
 
 #include <vector>
 #include <string>
-#include <string_view>
+#include <string>
 #include <optional>
 #include <set>
 #include <algorithm>
@@ -26,7 +26,7 @@ namespace fvck
 
 #define FVCK_CASE(val) case val: return #val;
     
-    std::string_view to_string(VkResult res)
+    const char* to_string(VkResult res)
     {
         switch(res)
         {
@@ -91,14 +91,24 @@ namespace fvck
 
 #undef FVCK_CAST
 
+    struct QueueIndicies
+    {
+        uint32_t graphics = UINT32_MAX;
+        uint32_t compute = UINT32_MAX;
+        uint32_t present = UINT32_MAX;
+        uint32_t transfer = UINT32_MAX;
+    };
+
     struct Surface
     {
         Surface() : surface(VK_NULL_HANDLE) {}
 
-        Surface(VkSurfaceKHR surf)
+        Surface(VkSurfaceKHR surf, GLFWwindow* parent)
             : surface(surf)
+            , window(parent)
         {}
 
+        GLFWwindow* window;
         VkSurfaceKHR surface;
     };
 
@@ -112,14 +122,114 @@ namespace fvck
         VkQueue queue;
     };
 
+    struct Swapchain
+    {
+        Swapchain() : swapchain(VK_NULL_HANDLE) {}
+        Swapchain(VkSwapchainKHR swap)
+            : swapchain(swap)
+        {}
+
+        VkSwapchainKHR swapchain;
+    };
+
     struct Device
     {
         Device() : device(VK_NULL_HANDLE) {}
-        Device(VkDevice d)
+        Device(VkDevice d, QueueIndicies queues, VkPhysicalDevice parent)
             : device(d)
+            , indicies(queues)
+            , physical(parent)
         {}
 
+        Swapchain swapchain(const Surface& surface) const
+        {
+            VkSurfaceCapabilitiesKHR caps;
+            vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physical, surface.surface, &caps);
+
+
+            uint32_t numFormats = 0;
+            vkGetPhysicalDeviceSurfaceFormatsKHR(physical, surface.surface, &numFormats, nullptr);
+
+            std::vector<VkSurfaceFormatKHR> formats(numFormats);
+            vkGetPhysicalDeviceSurfaceFormatsKHR(physical, surface.surface, &numFormats, formats.data());
+        
+            
+            uint32_t numModes = 0;
+            vkGetPhysicalDeviceSurfacePresentModesKHR(physical, surface.surface, &numModes, nullptr);
+
+            std::vector<VkPresentModeKHR> modes(numModes);
+            vkGetPhysicalDeviceSurfacePresentModesKHR(physical, surface.surface, &numModes, modes.data());
+        
+        
+            if(formats.empty() || modes.empty())
+            {
+                spdlog::critical("swapchain modes or formats are empty");
+                std::abort();
+            }
+
+            VkSurfaceFormatKHR format = [&formats] {
+                for(auto format : formats)
+                    if(format.format == VK_FORMAT_R8G8B8A8_UNORM)
+                        return format;
+            }();
+
+            VkPresentModeKHR mode = [&modes] {
+                for(auto mode : modes)
+                    if(mode == VK_PRESENT_MODE_MAILBOX_KHR)
+                        return mode;
+
+                return VK_PRESENT_MODE_FIFO_KHR;
+            }();
+
+            VkExtent2D extent = [&caps, &surface] {
+                if(caps.currentExtent.width != UINT32_MAX)
+                    return caps.currentExtent;
+
+                int w, h;
+                glfwGetFramebufferSize(surface.window, &w, &h);
+
+                VkExtent2D extent;
+
+                extent.width = std::clamp<uint32_t>(w, caps.minImageExtent.width, caps.maxImageExtent.width);
+                extent.height = std::clamp<uint32_t>(h, caps.minImageExtent.height, caps.maxImageExtent.height);
+            }();
+        }
+
+        Queue presentQueue() const
+        {
+            VkQueue out;
+            vkGetDeviceQueue(device, indicies.present, 0, &out);
+
+            return out;
+        }
+
+        Queue graphicsQueue() const
+        {
+            VkQueue out;
+            vkGetDeviceQueue(device, indicies.graphics, 0, &out);
+
+            return out;
+        }
+
+        Queue computeQueue() const
+        {
+            VkQueue out;
+            vkGetDeviceQueue(device, indicies.compute, 0, &out);
+
+            return out;
+        }
+
+        Queue transferQueue() const
+        {
+            VkQueue out;
+            vkGetDeviceQueue(device, indicies.transfer, 0, &out);
+
+            return out;
+        }
+
+        QueueIndicies indicies;
         VkDevice device;
+        VkPhysicalDevice physical;
     };
 
     struct PhysicalDevice
@@ -155,28 +265,59 @@ namespace fvck
             return ret;
         }
 
-        Device device(const Surface& surface,
-                      const std::vector<std::string>& extensions = {}) const
+        QueueIndicies indicies() const
         {
-            uint32_t graphics = UINT32_MAX;
-            uint32_t present = UINT32_MAX;
+            QueueIndicies out = {};
 
             for(uint32_t i = 0; i < queues.size(); i++)
             {
-                if(graphics == UINT32_MAX && queues[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
-                    graphics = i;
+                if(out.graphics == UINT32_MAX && queues[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
+                    out.graphics = i;
 
-                if(present == UINT32_MAX)
+                if(out.compute == UINT32_MAX && queues[i].queueFlags & VK_QUEUE_COMPUTE_BIT)
+                    out.compute = i;
+
+                if(out.transfer == UINT32_MAX && queues[i].queueFlags & VK_QUEUE_TRANSFER_BIT)
+                    out.transfer = i;
+            }
+
+            return out;
+        }
+
+        QueueIndicies indicies(const Surface& surface) const
+        {
+            QueueIndicies out = {};
+
+            for(uint32_t i = 0; i < queues.size(); i++)
+            {
+                if(out.graphics == UINT32_MAX && queues[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
+                    out.graphics = i;
+
+                if(out.compute == UINT32_MAX && queues[i].queueFlags & VK_QUEUE_COMPUTE_BIT)
+                    out.compute = i;
+
+                if(out.transfer == UINT32_MAX && queues[i].queueFlags & VK_QUEUE_TRANSFER_BIT)
+                    out.transfer = i;
+
+                if(out.present == UINT32_MAX)
                 {
                     VkBool32 supportsPresent = VK_FALSE;
                     vkGetPhysicalDeviceSurfaceSupportKHR(physical, i, surface.surface, &supportsPresent);
 
                     if(supportsPresent)
-                        present = i;
+                        out.present = i;
                 }
             }
 
-            if((present | graphics) == UINT32_MAX)
+            return out;
+        }
+
+        Device device(const Surface& surface,
+                      const std::vector<const char*>& extensions = {}) const
+        {
+            QueueIndicies queues = indicies(surface);
+
+            if((queues.present | queues.graphics) == UINT32_MAX)
             {
                 spdlog::critical("lacking present or graphics support");
                 std::abort();
@@ -186,10 +327,12 @@ namespace fvck
 
             std::vector<VkDeviceQueueCreateInfo> queueInfos = {};
 
-            for(auto index : { present, graphics })
+            // we use a set to make sure we dont create multiple queues with the same family index
+            // https://www.khronos.org/registry/vulkan/specs/1.1-extensions/html/vkspec.html#VUID-VkDeviceCreateInfo-queueFamilyIndex-00372
+            for(auto queueIndex : std::set<uint32_t>({ queues.present, queues.graphics }))
             {
                 VkDeviceQueueCreateInfo queueInfo = { VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO };
-                queueInfo.queueFamilyIndex = index;
+                queueInfo.queueFamilyIndex = queueIndex;
                 queueInfo.queueCount = 1;
                 queueInfo.pQueuePriorities = &priority;
                 
@@ -204,15 +347,14 @@ namespace fvck
             VkPhysicalDeviceFeatures requiredFeatures = {};
             createInfo.pEnabledFeatures = &requiredFeatures;
 
-            std::vector<const char*> extensionNames = {};
-            for(auto ext : extensions)
-                extensionNames.push_back(ext.c_str());
+            createInfo.ppEnabledExtensionNames = extensions.data();
+            createInfo.enabledExtensionCount = extensions.size();
 
             VkDevice out;
 
             FVCK_ENSURE(vkCreateDevice(physical, &createInfo, nullptr, &out));
 
-            return out;
+            return { out, queues, physical };
         }
         
         const VkPhysicalDeviceProperties& properties() const { return props; }
@@ -229,31 +371,19 @@ namespace fvck
         Instance() : instance(VK_NULL_HANDLE) {}
         Instance(
             const std::string& appName,
-            const std::vector<std::string>& extensions = {},
-            const std::vector<std::string>& layers = {},
+            std::vector<const char*> extensions = {},
+            std::vector<const char*> layers = {},
             uint32_t appVersion = VK_MAKE_VERSION(1, 0, 0)
         )
         {
-
-            std::vector<const char*> extensionNames;
-
-            for(auto ext : extensions)
-                extensionNames.push_back(ext.c_str());
-
             // add the glfw required extensions
             {
                 uint32_t num = 0;
                 const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&num);
 
                 for(uint32_t i = 0; i < num; i++)
-                    extensionNames.push_back(glfwExtensions[i]);
+                    extensions.push_back(glfwExtensions[i]);
             }
-
-            std::vector<const char*> layerNames;
-
-            for(auto layer : layers)
-                layerNames.push_back(layer.c_str());
-
             
             VkApplicationInfo appInfo = { VK_STRUCTURE_TYPE_APPLICATION_INFO };
 
@@ -266,18 +396,18 @@ namespace fvck
             VkInstanceCreateInfo createInfo = { VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO };
             createInfo.pApplicationInfo = &appInfo;
 
-            createInfo.ppEnabledExtensionNames = extensionNames.data();
-            createInfo.enabledExtensionCount = extensionNames.size();
+            createInfo.ppEnabledExtensionNames = extensions.data();
+            createInfo.enabledExtensionCount = extensions.size();
 
-            createInfo.ppEnabledLayerNames = layerNames.data();
-            createInfo.enabledLayerCount = layerNames.size();
+            createInfo.ppEnabledLayerNames = layers.data();
+            createInfo.enabledLayerCount = layers.size();
 
             FVCK_ENSURE(vkCreateInstance(&createInfo, nullptr, &instance));
         }
 
         void destroy()
         {
-            vkDestroyInstance(instance);
+            vkDestroyInstance(instance, nullptr);
         }
 
         std::vector<PhysicalDevice> devices() const
@@ -312,7 +442,8 @@ namespace fvck
 
         void removeMessenger(VkDebugUtilsMessengerEXT messenger)
         {
-            FVCK_ENSURE(vkDestroyDebugUtilsMessengerEXT(instance, messenger, nullptr));
+            auto vkDestroyDebugUtilsMessengerEXT = reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT"));
+            vkDestroyDebugUtilsMessengerEXT(instance, messenger, nullptr);
         }
 
         Surface surface(GLFWwindow* window) const

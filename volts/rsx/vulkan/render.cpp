@@ -35,7 +35,10 @@ namespace volts::rsx
                 spdlog::debug("layer {}:{}:{}:{}", layer.layerName, layer.specVersion, layer.implementationVersion, layer.description);
 
 #if VK_VALIDATE
-            instance = fvck::Instance(name, { VK_EXT_DEBUG_UTILS_EXTENSION_NAME }, { "VK_LAYER_LUNARG_standard_validation" });
+            instance = fvck::Instance(name,
+                { VK_EXT_DEBUG_UTILS_EXTENSION_NAME },
+                { "VK_LAYER_LUNARG_standard_validation" }
+            );
 #else
             instance = fvck::Instance(name);
 #endif
@@ -55,7 +58,10 @@ namespace volts::rsx
         {
             surface = instance.surface(rsx::window());
 
+            device = physicalDevice.device(surface, { VK_KHR_SWAPCHAIN_EXTENSION_NAME });
 
+            presentQueue = device.presentQueue();
+            graphicsQueue = device.graphicsQueue();
         }
 
         virtual void begin() override
@@ -81,6 +87,10 @@ namespace volts::rsx
 
         std::vector<fvck::PhysicalDevice> physicalDevices;
         fvck::PhysicalDevice physicalDevice;
+        fvck::Device device;
+
+        fvck::Queue presentQueue;
+        fvck::Queue graphicsQueue;
 
         fvck::Surface surface;
 
