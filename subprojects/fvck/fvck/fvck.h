@@ -192,6 +192,8 @@ namespace fvck
 
                 extent.width = std::clamp<uint32_t>(w, caps.minImageExtent.width, caps.maxImageExtent.width);
                 extent.height = std::clamp<uint32_t>(h, caps.minImageExtent.height, caps.maxImageExtent.height);
+            
+                return extent;
             }();
         }
 
@@ -451,7 +453,7 @@ namespace fvck
             VkSurfaceKHR surf;
             FVCK_ENSURE(glfwCreateWindowSurface(instance, window, nullptr, &surf));
 
-            return surf;
+            return { surf, window };
         }
 
         VkInstance instance;
