@@ -86,6 +86,17 @@ namespace volts::rsx::vk
 
         return devices;
     }
+
+    std::vector<VkExtensionProperties> extensions(VkPhysicalDevice device)
+    {
+        uint32_t num = 0;
+        vkEnumerateDeviceExtensionProperties(device, nullptr, &num, nullptr);
+
+        std::vector<VkExtensionProperties> props(num);
+        vkEnumerateDeviceExtensionProperties(device, nullptr, &num, props.data());
+
+        return props;
+    }
 }
 
 template<>

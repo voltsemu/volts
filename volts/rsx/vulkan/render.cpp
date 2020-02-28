@@ -5,15 +5,13 @@
 #include "backend.h"
 #include "support.h"
 
+#include <fvck/fvck.h>
+
 #include <algorithm>
 #include <limits>
 
 namespace volts::rsx
 {
-    const std::vector<const char*> deviceExtensions = {
-        VK_KHR_SWAPCHAIN_EXTENSION_NAME
-    };
-
     struct vulkan : render
     {
         vulkan() 
@@ -30,62 +28,22 @@ namespace volts::rsx
             // we want to use vulkan so we tell glfw to not do any opengl initialization
             glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
-            // create a vulkan instance to use
-            {
-                VkApplicationInfo appInfo = { VK_STRUCTURE_TYPE_APPLICATION_INFO };
-                appInfo.apiVersion = V_REQUIRED_VERSION;
+            for(auto extension : fvck::extensions())
+                spdlog::debug("extension {}:{}", extension.extensionName, extension.specVersion);
 
-                appInfo.pApplicationName = name.c_str();
-                // TODO: get game version
-                appInfo.applicationVersion = V_VERSION;
-
-                // TODO: configurable extensions, layers, engine name/version
-                appInfo.pEngineName = "emulated rsx";
-                appInfo.engineVersion = V_VERSION;
-
-                VkInstanceCreateInfo createInfo = { VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO };
-                createInfo.pApplicationInfo = &appInfo;
-                
-                // get all the vulkan extensions that glfw requires
-                std::vector<const char*> extensions;
-                {
-                    uint32_t num = 0;
-                    const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&num);
-                
-                    for(uint32_t i = 0; i < num; i++)
-                        extensions.push_back(glfwExtensions[i]);
+            for(auto layer : fvck::layers())
+                spdlog::debug("layer {}:{}:{}:{}", layer.layerName, layer.specVersion, layer.implementationVersion, layer.description);
 
 #if VK_VALIDATE
-                    extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+            instance = fvck::Instance(name, { VK_EXT_DEBUG_UTILS_EXTENSION_NAME }, { "VK_LAYER_LUNARG_standard_validation" });
+#else
+            instance = fvck::Instance(name);
 #endif
-                }
-
-                createInfo.ppEnabledExtensionNames = extensions.data();
-                createInfo.enabledExtensionCount = extensions.size();
-
-                std::vector<const char*> layers = {
-#if VK_VALIDATE
-                    "VK_LAYER_LUNARG_standard_validation"
-#endif
-                };
-
-                createInfo.ppEnabledLayerNames = layers.data();
-                createInfo.enabledLayerCount = layers.size();
-
-                VK_ENSURE(vkCreateInstance(&createInfo, nullptr, &instance));
-            }
-
-            // get all physical devices
-            physicals = vk::physicalDevices(instance);
         }
 
         virtual void postinit() override
         {
-            // create a surface for the current window
-            VK_ENSURE(glfwCreateWindowSurface(instance, rsx::window(), nullptr, &surface));
 
-            // set the current device to the first device
-            setDevice(0);
         }
 
         virtual void begin() override
@@ -100,131 +58,17 @@ namespace volts::rsx
 
         virtual void cleanup() override
         {
-            vkDestroyInstance(instance, nullptr);
+            
         }
 
         virtual std::string_view name() const override { return "vulkan"; }
     
     private:
-        /// unchanging data
-        
-        // the toplevel instance
-        VkInstance instance;
+        fvck::Instance instance;
 
-        // list of all available physical devices
-        std::vector<VkPhysicalDevice> physicals;
-        
-        // the current window surface
-        VkSurfaceKHR surface = VK_NULL_HANDLE;
-
-        void setDevice(uint32_t idx)
-        {
-            device.physical = physicals[idx];
-            initQueues();
-
-            if((queues.graphics | queues.present) == std::numeric_limits<uint32_t>::max())
-            {
-                spdlog::critical("device {} is not suitable as its missing a graphics queue", device.physical);
-                std::abort();
-            }
-        }
-
-        /// data for the current device
-
-        // current device data
-        struct {
-            // the current physical device
-            VkPhysicalDevice physical = VK_NULL_HANDLE;
-
-            // the current logical device created from the physical device
-            VkDevice logical = VK_NULL_HANDLE;
-        } device;
-
-        VkQueue graphicsQueue = VK_NULL_HANDLE;
-        VkQueue presentQueue = VK_NULL_HANDLE;
-        
-        void initDevice() 
-        {
-            std::vector<VkDeviceQueueCreateInfo> queueInfos;
-
-            float priority = 1.f;
-            for(auto family : {queues.graphics, queues.present})
-            {
-                VkDeviceQueueCreateInfo queueInfo = { VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO };
-                queueInfo.queueFamilyIndex = family;
-                queueInfo.queueCount = 1;
-
-                
-                queueInfo.pQueuePriorities = &priority;
-
-                queueInfos.push_back(queueInfo);
-            }
-
-            // TODO: we may need to populate this later
-            VkPhysicalDeviceFeatures features = {};
-
-            VkDeviceCreateInfo createInfo = { VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO };
-            createInfo.pQueueCreateInfos = queueInfos.data();
-            createInfo.queueCreateInfoCount = queueInfos.size();s
-
-            createInfo.pEnabledFeatures = &features;
-
-            createInfo.enabledExtensionCount = deviceExtensions.size();
-            createInfo.ppEnabledExtensions = deviceExtensions.data();
-
-            vkGetDeviceQueue(device, queues.graphics, 0, &graphicsQueue);
-            vkGetDeviceQueue(device, queues.present, 0, &presentQueue);
-        }
-
-        struct {
-            uint32_t graphics = std::numeric_limits<uint32_t>::max();
-            uint32_t compute = std::numeric_limits<uint32_t>::max();
-            uint32_t transfer = std::numeric_limits<uint32_t>::max();
-            uint32_t present = std::numeric_limits<uint32_t>::max();
-        } queues;
-
-        void initQueues()
-        {
-            uint32_t num = 0;
-            vkGetPhysicalDeviceQueueFamilyProperties(device.physical, &num, nullptr);
-
-            auto* props = VK_SALLOC(VkQueueFamilyProperties, num);
-            vkGetPhysicalDeviceQueueFamilyProperties(device.physical, &num, props);
-
-            bool graphics = true,
-                 compute = true,
-                 transfer = true,
-                 present = true;
-
-            for(uint32_t i = 0; i < num; i++)
-            {
-                if(props[i].queueFlags & VK_QUEUE_GRAPHICS_BIT && graphics) 
-                {
-                    graphics = false;
-                    queues.graphics = i;
-                }
-
-                if(props[i].queueFlags & VK_QUEUE_COMPUTE_BIT && compute)
-                {
-                    compute = false;
-                    queues.compute = i;
-                }
-
-                if(props[i].queueFlags & VK_QUEUE_TRANSFER_BIT && transfer) 
-                {
-                    transfer = false;
-                    queues.transfer = i;
-                }
-
-                VkBool32 presentSupport = VK_FALSE;
-                vkGetPhysicalDeviceSurfaceSupportKHR(device.physical, i, surface, &presentSupport);
-                if(present && presentSupport) 
-                {
-                    present = false;
-                    queues.present = i;
-                }
-            }
-        }
+#if VK_VALIDATE
+        VkDebugUtilsMessengerEXT messenger;
+#endif
     };
 
     void vk::connect()

@@ -67,8 +67,10 @@ glm = subproject('glm').get_variable('glm_dep')
 
 glsl = subproject('glslang').get_variable('glsl_dep')
 
+fuvk = subproject('fvck').get_variable('fvck_dep')
+
 sources = []
-dependencies = [ aes, xxhash, rapidjson, svl, elf, vfs, imgui, cxxopts, spdlog, zlib, glsl ]
+dependencies = [ aes, xxhash, rapidjson, svl, elf, vfs, imgui, cxxopts, spdlog, zlib, glsl, fuvk ]
 cpp_args = [ '-DFMT_EXCEPTIONS=0' ]
 include_directories = []
 
