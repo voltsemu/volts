@@ -13,6 +13,9 @@
 #include <set>
 #include <algorithm>
 
+#include <glslang/Public/ShaderLang.h>
+#include <SPIRV/GlslangToSpv.h>
+
 #include <spdlog/spdlog.h>
 
 #ifndef FVCK_MIN_VERSION 
@@ -99,6 +102,11 @@ namespace fvck
         uint32_t transfer = UINT32_MAX;
     };
 
+    struct ShaderModule
+    {
+        VkShaderModule shader;
+    };
+
     struct Surface
     {
         Surface() : surface(VK_NULL_HANDLE) {}
@@ -122,14 +130,77 @@ namespace fvck
         VkQueue queue;
     };
 
+    struct SwapchainImage
+    {
+        SwapchainImage(VkImage img, VkImageView v)
+            : image(img)
+            , view(v)
+        {}
+
+        VkImage image;
+        VkImageView view;
+    };
+
     struct Swapchain
     {
         Swapchain() : swapchain(VK_NULL_HANDLE) {}
-        Swapchain(VkSwapchainKHR swap)
+        
+        Swapchain(VkSwapchainKHR swap, VkDevice parent, VkFormat f)
             : swapchain(swap)
+            , device(parent)
+            , format(f)
         {}
 
+        std::vector<SwapchainImage> images() const
+        {
+            uint32_t num = 0;
+            vkGetSwapchainImagesKHR(device, swapchain, &num, nullptr);
+
+            std::vector<VkImage> imgs(num);
+            vkGetSwapchainImagesKHR(device, swapchain, &num, imgs.data());
+
+            std::vector<SwapchainImage> out;
+            for(auto img : imgs)
+            {
+                VkImageViewCreateInfo createInfo = { VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO };
+                createInfo.image = img;
+                createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+                createInfo.format = format;
+
+                createInfo.components = {
+                    VK_COMPONENT_SWIZZLE_IDENTITY,
+                    VK_COMPONENT_SWIZZLE_IDENTITY,
+                    VK_COMPONENT_SWIZZLE_IDENTITY,
+                    VK_COMPONENT_SWIZZLE_IDENTITY
+                };
+
+                createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+                createInfo.subresourceRange.baseMipLevel = 0;
+                createInfo.subresourceRange.levelCount = 1;
+                createInfo.subresourceRange.levelCount = 1;
+                createInfo.subresourceRange.baseArrayLayer = 0;
+                createInfo.subresourceRange.layerCount = 1;
+
+                VkImageView view;
+
+                FVCK_ENSURE(vkCreateImageView(device, &createInfo, nullptr, &view));
+
+                out.push_back({ img, view });
+            }
+
+            return out;
+        }
+
         VkSwapchainKHR swapchain;
+        VkDevice device;
+        VkFormat format;
+    };
+
+    struct ShaderData
+    {
+        const char* source;
+        const char* name;
+        VkShaderStageFlagBits stage;
     };
 
     struct Device
@@ -140,6 +211,190 @@ namespace fvck
             , indicies(queues)
             , physical(parent)
         {}
+
+        ShaderModule compile(const ShaderData& shaderData)
+        {
+            auto getLang = [](VkShaderStageFlagBits bits) {
+                switch(bits)
+                {
+                case VK_SHADER_STAGE_VERTEX_BIT:
+                    return EShLangVertex;
+                case VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT:
+                    return EShLangTessControl;
+                case VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT:
+                    return EShLangTessEvaluation;
+                case VK_SHADER_STAGE_GEOMETRY_BIT:
+                    return EShLangGeometry;
+                case VK_SHADER_STAGE_FRAGMENT_BIT:
+                    return EShLangFragment;
+                case VK_SHADER_STAGE_COMPUTE_BIT:
+                    return EShLangCompute;
+                default:
+                    spdlog::critical("failed to find compile type");
+                    std::abort();
+                }
+            };
+
+            auto resources = [] {
+                TBuiltInResource res;
+
+                res.maxLights = 32;
+                res.maxClipPlanes = 6;
+                res.maxTextureUnits = 32;
+                res.maxTextureCoords = 32;
+                res.maxVertexAttribs = 64;
+                res.maxVertexUniformComponents = 4096;
+                res.maxVaryingFloats = 64;
+                res.maxVertexTextureImageUnits = 32;
+                res.maxCombinedTextureImageUnits = 80;
+                res.maxTextureImageUnits = 32;
+                res.maxFragmentUniformComponents = 4096;
+                res.maxDrawBuffers = 32;
+                res.maxVertexUniformVectors = 128;
+                res.maxVaryingVectors = 8;
+                res.maxFragmentUniformVectors = 16;
+                res.maxVertexOutputVectors = 16;
+                res.maxFragmentInputVectors = 15;
+                res.minProgramTexelOffset = -8;
+                res.maxProgramTexelOffset = 7;
+                res.maxClipDistances = 8;
+                res.maxComputeWorkGroupCountX = 65535;
+                res.maxComputeWorkGroupCountY = 65535;
+                res.maxComputeWorkGroupCountZ = 65535;
+                res.maxComputeWorkGroupSizeX = 1024;
+                res.maxComputeWorkGroupSizeY = 1024;
+                res.maxComputeWorkGroupSizeZ = 64;
+                res.maxComputeUniformComponents = 1024;
+                res.maxComputeTextureImageUnits = 16;
+                res.maxComputeImageUniforms = 8;
+                res.maxComputeAtomicCounters = 8;
+                res.maxComputeAtomicCounterBuffers = 1;
+                res.maxVaryingComponents = 60;
+                res.maxVertexOutputComponents = 64;
+                res.maxGeometryInputComponents = 64;
+                res.maxGeometryOutputComponents = 128;
+                res.maxFragmentInputComponents = 128;
+                res.maxImageUnits = 8;
+                res.maxCombinedImageUnitsAndFragmentOutputs = 8;
+                res.maxCombinedShaderOutputResources = 8;
+                res.maxImageSamples = 0;
+                res.maxVertexImageUniforms = 0;
+                res.maxTessControlImageUniforms = 0;
+                res.maxTessEvaluationImageUniforms = 0;
+                res.maxGeometryImageUniforms = 0;
+                res.maxFragmentImageUniforms = 8;
+                res.maxCombinedImageUniforms = 8;
+                res.maxGeometryTextureImageUnits = 16;
+                res.maxGeometryOutputVertices = 256;
+                res.maxGeometryTotalOutputComponents = 1024;
+                res.maxGeometryUniformComponents = 1024;
+                res.maxGeometryVaryingComponents = 64;
+                res.maxTessControlInputComponents = 128;
+                res.maxTessControlOutputComponents = 128;
+                res.maxTessControlTextureImageUnits = 16;
+                res.maxTessControlUniformComponents = 1024;
+                res.maxTessControlTotalOutputComponents = 4096;
+                res.maxTessEvaluationInputComponents = 128;
+                res.maxTessEvaluationOutputComponents = 128;
+                res.maxTessEvaluationTextureImageUnits = 16;
+                res.maxTessEvaluationUniformComponents = 1024;
+                res.maxTessPatchComponents = 120;
+                res.maxPatchVertices = 32;
+                res.maxTessGenLevel = 64;
+                res.maxViewports = 16;
+                res.maxVertexAtomicCounters = 0;
+                res.maxTessControlAtomicCounters = 0;
+                res.maxTessEvaluationAtomicCounters = 0;
+                res.maxGeometryAtomicCounters = 0;
+                res.maxFragmentAtomicCounters = 8;
+                res.maxCombinedAtomicCounters = 8;
+                res.maxAtomicCounterBindings = 1;
+                res.maxVertexAtomicCounterBuffers = 0;
+                res.maxTessControlAtomicCounterBuffers = 0;
+                res.maxTessEvaluationAtomicCounterBuffers = 0;
+                res.maxGeometryAtomicCounterBuffers = 0;
+                res.maxFragmentAtomicCounterBuffers = 1;
+                res.maxCombinedAtomicCounterBuffers = 1;
+                res.maxAtomicCounterBufferSize = 16384;
+                res.maxTransformFeedbackBuffers = 4;
+                res.maxTransformFeedbackInterleavedComponents = 64;
+                res.maxCullDistances = 8;
+                res.maxCombinedClipAndCullDistances = 8;
+                res.maxSamples = 4;
+                res.maxMeshOutputVerticesNV = 256;
+                res.maxMeshOutputPrimitivesNV = 512;
+                res.maxMeshWorkGroupSizeX_NV = 32;
+                res.maxMeshWorkGroupSizeY_NV = 1;
+                res.maxMeshWorkGroupSizeZ_NV = 1;
+                res.maxTaskWorkGroupSizeX_NV = 32;
+                res.maxTaskWorkGroupSizeY_NV = 1;
+                res.maxTaskWorkGroupSizeZ_NV = 1;
+                res.maxMeshViewCountNV = 4;
+                res.limits.nonInductiveForLoops = 1;
+                res.limits.whileLoops = 1;
+                res.limits.doWhileLoops = 1;
+                res.limits.generalUniformIndexing = 1;
+                res.limits.generalAttributeMatrixVectorIndexing = 1;
+                res.limits.generalVaryingIndexing = 1;
+                res.limits.generalSamplerIndexing = 1;
+                res.limits.generalVariableIndexing = 1;
+                res.limits.generalConstantMatrixVectorIndexing = 1;
+
+                return res;
+            };
+
+            auto rules = (EShMessages)(EShMsgSpvRules | EShMsgVulkanRules);
+
+            auto& [source, name, bits] = shaderData;
+                
+            spdlog::debug("compiling shader {}", name);
+            auto lang = getLang(bits);
+
+            glslang::TShader shader(lang);
+
+            auto res = resources();
+
+            const char* strings[] = { source };
+            shader.setStrings(strings, 1);
+
+            if(!shader.parse(&res, 100, false, rules))
+            {
+                spdlog::error("failed to parse glsl shader\n{}\n{}", 
+                    shader.getInfoLog(), 
+                    shader.getInfoDebugLog()
+                );
+                std::abort();
+            }
+
+            glslang::TProgram program;
+            program.addShader(&shader);
+
+            if(!program.link(rules))
+            {
+                spdlog::error("failed to link glsl program\n{}\n{}", 
+                    program.getInfoLog(),
+                    program.getInfoDebugLog()
+                );
+                std::abort();
+            }
+
+            std::vector<uint32_t> spirv;
+
+            glslang::GlslangToSpv(*program.getIntermediate(lang), spirv);
+
+            VkPipelineShaderStageCreateInfo stageInfo = { VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO };
+            stageInfo.stage = bits;
+            stageInfo.pName = "main";
+
+            VkShaderModuleCreateInfo moduleInfo = { VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO };
+            moduleInfo.codeSize = spirv.size() * sizeof(uint32_t);
+            moduleInfo.pCode = spirv.data();
+
+            VkShaderModule mod;
+            FVCK_ENSURE(vkCreateShaderModule(device, &moduleInfo, nullptr, &mod));
+            
+            return {mod};
+        }
 
         Swapchain swapchain(const Surface& surface) const
         {
@@ -171,6 +426,8 @@ namespace fvck
                 for(auto format : formats)
                     if(format.format == VK_FORMAT_R8G8B8A8_UNORM)
                         return format;
+
+                return formats[0];
             }();
 
             VkPresentModeKHR mode = [&modes] {
@@ -195,6 +452,53 @@ namespace fvck
             
                 return extent;
             }();
+        
+            uint32_t imageCount = std::min<uint32_t>(
+                caps.maxImageCount ? caps.maxImageCount : 1,
+                caps.minImageCount + 1
+            );
+
+            auto transform = caps.supportedTransforms & VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR
+                ? VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR
+                : caps.currentTransform;
+
+
+            VkSwapchainCreateInfoKHR createInfo = { VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR };
+            createInfo.imageFormat = format.format;
+            createInfo.imageColorSpace = format.colorSpace;
+            createInfo.imageExtent = extent;
+            createInfo.imageArrayLayers = 1;
+            createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+
+            uint32_t families[] = { indicies.graphics, indicies.present };
+
+            if(indicies.graphics != indicies.present)
+            {
+                createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
+                createInfo.queueFamilyIndexCount = 2;
+                createInfo.pQueueFamilyIndices = families;
+            }
+            else
+            {
+                createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+            }
+
+            createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+
+            createInfo.presentMode = mode;
+            createInfo.clipped = VK_TRUE;
+            createInfo.surface = surface.surface;
+            createInfo.preTransform = transform;
+            createInfo.minImageCount = imageCount;
+
+            // TODO: we may need to provide a new swapchain
+            createInfo.oldSwapchain = VK_NULL_HANDLE;
+
+            VkSwapchainKHR out;
+
+            FVCK_ENSURE(vkCreateSwapchainKHR(device, &createInfo, nullptr, &out));
+
+            return { out, device, format.format };
         }
 
         Queue presentQueue() const

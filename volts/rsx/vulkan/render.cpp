@@ -62,6 +62,44 @@ namespace volts::rsx
 
             presentQueue = device.presentQueue();
             graphicsQueue = device.graphicsQueue();
+
+            swap = device.swapchain(surface);
+
+            frames = swap.images();
+
+            frag = device.compile({ R"(
+                #version 400
+                #extension GL_ARB_separate_shader_objects : enable
+                #extension GL_ARB_shading_language_420pack : enable
+
+                layout (std140, binding = 0) uniform bufferVals {
+                    mat4 mvp;
+                } buffers;
+
+                layout (location = 0) in vec4 pos;
+                layout (location = 1) in vec4 colour;
+                layout (location = 0) out vec4 ret;
+
+                void main()
+                {
+                    out = colour;
+                    gl_Position = buffers.mvp * pos;
+                }
+            )", "frag", VK_SHADER_STAGE_FRAGMENT_BIT });
+
+            vert = device.compile({ R"(
+                #version 400
+                #extension GL_ARB_separate_shader_objects : enable
+                #extension GL_ARB_shading_language_420pack : enable
+                
+                layout (location = 0) in vec4 colour;
+                layout (location = 0) out vec4 ret;
+
+                void main()
+                {
+                    ret = colour;
+                }
+            )", "vert", VK_SHADER_STAGE_VERTEX_BIT });
         }
 
         virtual void begin() override
@@ -88,6 +126,11 @@ namespace volts::rsx
         std::vector<fvck::PhysicalDevice> physicalDevices;
         fvck::PhysicalDevice physicalDevice;
         fvck::Device device;
+        fvck::Swapchain swap;
+        std::vector<fvck::SwapchainImage> frames;
+
+        fvck::ShaderModule frag;
+        fvck::ShaderModule vert;
 
         fvck::Queue presentQueue;
         fvck::Queue graphicsQueue;
