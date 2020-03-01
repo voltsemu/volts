@@ -5,8 +5,18 @@
 #include "backend.h"
 #include "support.h"
 
+#include <optional>
+
 namespace volts::rsx
 {
+    struct queues
+    {
+        std::optional<uint32_t> graphics = std::nullopt;
+        std::optional<uint32_t> compute = std::nullopt;
+        std::optional<uint32_t> transfer = std::nullopt;
+        std::optional<uint32_t> present = std::nullopt;
+    };
+
     struct vulkan : render
     {
         virtual ~vulkan() override {}
@@ -21,6 +31,8 @@ namespace volts::rsx
             list_devices();
 
             select_device();
+
+            create_device();
         }
 
         virtual void postinit() override
@@ -115,6 +127,8 @@ namespace volts::rsx
             layers.push_back("VK_LAYER_LUNARG_standard_validation");
 #endif
         }
+
+
 
         create.enabledExtensionCount = extensions.size();
         create.ppEnabledExtensionNames = extensions.data();
