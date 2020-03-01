@@ -19,6 +19,8 @@ namespace volts::rsx
             create_instance();
 
             list_devices();
+
+            select_device();
         }
 
         virtual void postinit() override
@@ -61,6 +63,12 @@ namespace volts::rsx
 
         void select_device();
         VkPhysicalDevice physical_device;
+
+        void create_device();
+        VkDevice device;
+
+        void create_surface();
+        VkSurfaceKHR surface;
     };
 
     void vk::connect()
@@ -137,6 +145,11 @@ namespace volts::rsx
     {
         // TODO: we'll have a config at some point
         physical_device = physical_devices[0];
+    }
+
+    void vulkan::create_device()
+    {
+
     }
 }
 

@@ -234,17 +234,17 @@ namespace toml
 
         double parse_number(const std::string& buffer)
         {
-
+            return 0;
         }
 
         double parse_notation(const std::string& buffer)
         {
-
+            return 0;
         }
 
         int_fast64_t parse_integer(const std::string& buffer)
         {
-
+            return 0;
         }
 
         token parse_other(int c)

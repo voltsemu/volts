@@ -66,10 +66,10 @@ glm = subproject('glm').get_variable('glm_dep')
 
 glsl = subproject('glslang').get_variable('glsl_dep')
 
-toml = subproject('toml').get_variable('toml_dep')
+#toml = subproject('toml').get_variable('toml_dep')
 
 sources = []
-dependencies = [ aes, xxhash, rapidjson, svl, elf, vfs, imgui, cxxopts, spdlog, zlib, glsl, toml ]
+dependencies = [ aes, xxhash, rapidjson, svl, elf, vfs, imgui, cxxopts, spdlog, zlib, glsl ]
 cpp_args = [ '-DFMT_EXCEPTIONS=0' ]
 include_directories = []
 
