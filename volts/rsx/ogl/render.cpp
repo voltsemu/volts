@@ -17,7 +17,7 @@ namespace volts::rsx
     {
         virtual ~ogl() override {}
 
-        virtual void preinit(const std::string& name) override
+        virtual void preinit() override
         {
             glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
             glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
@@ -63,7 +63,7 @@ namespace volts::rsx
             ImGui::DestroyContext();
         }
 
-        virtual std::string_view name() const override { return "opengl"; }
+        virtual const char* name() const override { return "opengl"; }
 
     private:
         int width;

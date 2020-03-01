@@ -44,8 +44,16 @@ namespace volts::rsx
 
     GLFWwindow* window() { return win; }
 
+    const char* game_title = nullptr;
+
+    const char* title()
+    {
+        return game_title;
+    }
+
     void run(const std::string& render_name, const std::string& game_name)
     {
+        game_title = game_name.c_str();
         // all platforms have vulkan (or moltenvk)
         vk::connect();
 
@@ -79,7 +87,7 @@ namespace volts::rsx
             return;
         }
 
-        current->preinit(game_name);
+        current->preinit();
 
         win = glfwCreateWindow(640, 480, game_name.c_str(), nullptr, nullptr);
 

@@ -14,7 +14,7 @@ namespace volts::rsx
     {
         virtual ~render() {}
         // called before window creation
-        virtual void preinit(const std::string& name) = 0;
+        virtual void preinit() = 0;
 
         // called after window creation
         virtual void postinit() = 0;
@@ -28,10 +28,11 @@ namespace volts::rsx
         // finish rendering and cleanup
         virtual void cleanup() = 0;
 
-        virtual std::string_view name() const = 0;
+        virtual const char* name() const = 0;
     };
 
     GLFWwindow* window();
+    const char* title();
 
     void add(render* r);
 }

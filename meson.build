@@ -22,7 +22,6 @@ endif
 
 zlib = dependency('zlib', fallback : [ 'zlib', 'zlib_dep' ])
 
-#TODO: this is really noisy on some windows systems but not all
 glfw = dependency('glfw3', required : false)
 
 if not glfw.found()
@@ -67,10 +66,10 @@ glm = subproject('glm').get_variable('glm_dep')
 
 glsl = subproject('glslang').get_variable('glsl_dep')
 
-fuvk = subproject('fvck').get_variable('fvck_dep')
+toml = subproject('toml').get_variable('toml_dep')
 
 sources = []
-dependencies = [ aes, xxhash, rapidjson, svl, elf, vfs, imgui, cxxopts, spdlog, zlib, glsl, fuvk ]
+dependencies = [ aes, xxhash, rapidjson, svl, elf, vfs, imgui, cxxopts, spdlog, zlib, glsl, toml ]
 cpp_args = [ '-DFMT_EXCEPTIONS=0' ]
 include_directories = []
 

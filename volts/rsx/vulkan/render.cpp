@@ -5,14 +5,143 @@
 #include "backend.h"
 #include "support.h"
 
-#include <fvck/fvck.h>
-
-#include <algorithm>
-#include <limits>
-
 namespace volts::rsx
 {
     struct vulkan : render
+    {
+        virtual ~vulkan() override {}
+
+        virtual void preinit() override
+        {
+            glslang::InitializeProcess();
+            glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+
+            create_instance();
+
+            list_devices();
+        }
+
+        virtual void postinit() override
+        {
+
+        }
+
+        virtual void begin() override
+        {
+
+        }
+
+        virtual void end() override
+        {
+
+        }
+
+        virtual void cleanup() override
+        {
+            glslang::FinalizeProcess();
+
+            destroy_instance();
+        }
+
+        virtual const char* name() const override { return "vulkan"; }
+
+    private:
+
+        // create the VkInstance
+        void create_instance();
+
+        // destroy the VkInstance
+        void destroy_instance();
+        VkInstance instance;
+
+
+
+        void list_devices();
+        std::vector<VkPhysicalDevice> physical_devices;
+
+        void select_device();
+        VkPhysicalDevice physical_device;
+    };
+
+    void vk::connect()
+    {
+        add(new vulkan());
+    }
+
+    void vulkan::create_instance()
+    {
+        VkApplicationInfo app = { VK_STRUCTURE_TYPE_APPLICATION_INFO };
+        app.apiVersion = V_REQUIRED_VERSION;
+
+        app.pEngineName = "emulated rsx";
+        app.engineVersion = VK_MAKE_VERSION(1, 0, 0);
+        
+        app.pApplicationName = rsx::title();
+
+        // TODO: get game version
+        app.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
+
+        VkInstanceCreateInfo create = { VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO };
+        create.pApplicationInfo = &app;
+
+
+
+        std::vector<const char*> extensions; 
+        {
+            uint32_t num = 0;
+            const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&num);
+
+            for(uint32_t i = 0; i < num; i++)
+                extensions.push_back(glfwExtensions[i]);
+
+#if VK_VALIDATE
+            extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+#endif
+        }
+
+
+
+        std::vector<const char*> layers;
+        {
+#if VK_VALIDATE
+            layers.push_back("VK_LAYER_LUNARG_standard_validation");
+#endif
+        }
+
+        create.enabledExtensionCount = extensions.size();
+        create.ppEnabledExtensionNames = extensions.data();
+
+        create.enabledLayerCount = layers.size();
+        create.ppEnabledLayerNames = layers.data();
+
+        VK_ENSURE(vkCreateInstance(&create, nullptr, &instance));
+
+        spdlog::debug("created vulkan instance");
+    }
+
+    void vulkan::destroy_instance()
+    {
+        vkDestroyInstance(instance, nullptr);
+    }
+
+    void vulkan::list_devices()
+    {
+        uint32_t num = 0;
+        VK_ENSURE(vkEnumeratePhysicalDevices(instance, &num, nullptr));
+
+        physical_devices.resize(num);
+        VK_ENSURE(vkEnumeratePhysicalDevices(instance, &num, physical_devices.data()));
+    }
+
+    void vulkan::select_device()
+    {
+        // TODO: we'll have a config at some point
+        physical_device = physical_devices[0];
+    }
+}
+
+#if 0
+struct vulkan : render
     {
         vulkan() 
         { 
@@ -25,6 +154,12 @@ namespace volts::rsx
 
         virtual void preinit(const std::string& name) override
         {
+            if(!glslang::InitializeProcess())
+            {
+                spdlog::critical("failed to initialize glslang");
+                std::abort();
+            }
+
             // we want to use vulkan so we tell glfw to not do any opengl initialization
             glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
@@ -67,7 +202,7 @@ namespace volts::rsx
 
             frames = swap.images();
 
-            frag = device.compile({ R"(
+            vert = device.compile({ R"(
                 #version 400
                 #extension GL_ARB_separate_shader_objects : enable
                 #extension GL_ARB_shading_language_420pack : enable
@@ -82,12 +217,12 @@ namespace volts::rsx
 
                 void main()
                 {
-                    out = colour;
+                    ret = colour;
                     gl_Position = buffers.mvp * pos;
                 }
-            )", "frag", VK_SHADER_STAGE_FRAGMENT_BIT });
+            )", "vert", VK_SHADER_STAGE_VERTEX_BIT });
 
-            vert = device.compile({ R"(
+            frag = device.compile({ R"(
                 #version 400
                 #extension GL_ARB_separate_shader_objects : enable
                 #extension GL_ARB_shading_language_420pack : enable
@@ -99,7 +234,7 @@ namespace volts::rsx
                 {
                     ret = colour;
                 }
-            )", "vert", VK_SHADER_STAGE_VERTEX_BIT });
+            )", "frag", VK_SHADER_STAGE_FRAGMENT_BIT });
         }
 
         virtual void begin() override
@@ -114,6 +249,8 @@ namespace volts::rsx
 
         virtual void cleanup() override
         {
+            glslang::FinalizeProcess();
+
             instance.removeMessenger(messenger);
             instance.destroy();
         }
@@ -141,13 +278,7 @@ namespace volts::rsx
         VkDebugUtilsMessengerEXT messenger;
 #endif
     };
-
-    void vk::connect()
-    {
-        add(new vulkan());
-    }
-}
-
+#endif
 
 #if 0
 

@@ -20,7 +20,7 @@ namespace volts::rsx
     {
         virtual ~mtl() override {}
 
-        virtual void preinit(const std::string& name) override
+        virtual void preinit() override
         {
             device = MTLCreateSystemDefaultDevice();
 
@@ -119,7 +119,7 @@ namespace volts::rsx
             ImGui::DestroyContext();
         }
 
-        virtual std::string_view name() const override { return "metal"; }
+        virtual const char* name() const override { return "metal"; }
 
     private:
         
