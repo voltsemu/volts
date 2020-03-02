@@ -1,5 +1,6 @@
 #define V_REQUIRED_VERSION VK_API_VERSION_1_0
 #define V_VERSION VK_MAKE_VERSION(1, 0, 0)
+#define V_MAX_FRAMES 2
 
 #include "render.h"
 #include "backend.h"
@@ -27,6 +28,10 @@ namespace volts::rsx
             glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
             create_instance();
+
+#if VK_VALIDATE
+            create_messenger();
+#endif
 
             list_devices();
 
@@ -88,33 +93,44 @@ namespace volts::rsx
                 shader_stage(frag, VK_SHADER_STAGE_FRAGMENT_BIT),
                 shader_stage(vert, VK_SHADER_STAGE_VERTEX_BIT)
             });
+
+            create_framebuffers();
+            create_pool();
+            create_buffers();
+            create_locks();
         }
 
         virtual void begin() override
         {
-            uint32_t index;
-            vkAcquireNextImageKHR(device, swapchain, UINT64_MAX, draw_semaphore, VK_NULL_HANDLE, &index);
+            VK_ENSURE(vkAcquireNextImageKHR(device, swapchain, UINT64_MAX, present_semaphore, VK_NULL_HANDLE, &current_frame));
 
-            VkSubmitInfo submit_info = { VK_STRUCTURE_TYPE_SUBMIT_INFO };
-            submit_info.waitSemaphoreCount = 1;
-            submit_info.pWaitSemaphores = &image_semaphore;
+            VK_ENSURE(vkWaitForFences(device, 1, &fences[current_frame], VK_TRUE, UINT64_MAX));
+            VK_ENSURE(vkResetFences(device, 1, &fences[current_frame]));
 
-            VkPipelineStageFlags waits[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-            submit_info.pWaitDstStageMask = &waits;
+            VkPipelineStageFlags mask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 
-            submit_info.commandBufferCount = 1;
-            submit_info.pCommandBuffers = &command_buffers[index];
+            VkSubmitInfo submit = { VK_STRUCTURE_TYPE_SUBMIT_INFO };
+            submit.pWaitDstStageMask = &mask;
+            submit.pWaitSemaphores = &present_semaphore;
+            submit.waitSemaphoreCount = 1;
 
-            submit_info.signalSemaphoreCount = 1;
-            submit_info.pSignalSemaphores = &render_semaphore;
+            submit.pSignalSemaphores = &render_semaphore;
+            submit.waitSemaphoreCount = 1;
 
-            VK_ENSURE(vkQueueSubmit(graphicsQueue, 1, &submit_info, VK_NULL_HANDLE));
+            submit.pCommandBuffers = &command_buffers[current_frame];
+            submit.commandBufferCount = 1;
 
-            VkSubpassDependency deps = {};
-            deps.srcSubpass = VK_SUBPASS_EXTERNAL;
-            deps.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-            deps.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-            
+            VK_ENSURE(vkQueueSubmit(graphics_queue, 1, &submit, fences[current_frame]));
+
+            VkPresentInfoKHR present = { VK_STRUCTURE_TYPE_PRESENT_INFO_KHR };
+            present.swapchainCount = 1;
+            present.pSwapchains = &swapchain;
+            present.pImageIndices = &current_frame;
+
+            present.pWaitSemaphores = &render_semaphore;
+            present.waitSemaphoreCount = 1;
+
+            VK_ENSURE(vkQueuePresentKHR(present_queue, &present));
         }
 
         virtual void end() override
@@ -124,6 +140,8 @@ namespace volts::rsx
 
         virtual void cleanup() override
         {
+            vkDeviceWaitIdle(device);
+
             glslang::FinalizeProcess();
 
             vkDestroyPipelineLayout(device, layout, nullptr);
@@ -140,60 +158,59 @@ namespace volts::rsx
 
     private:
 
-        // create the VkInstance
-        void create_instance();
         VkInstance instance;
-
-        void list_devices();
         std::vector<VkPhysicalDevice> physical_devices;
-
-        void select_device();
         VkPhysicalDevice physical_device;
-
-        void create_device();
         VkDevice device;
-
-        queues queue_families();
-
-        void create_surface();
         VkSurfaceKHR surface;
 
-        void create_queues();
         VkQueue graphics_queue;
         VkQueue present_queue;
 
-        void create_swapchain();
         VkSwapchainKHR swapchain = VK_NULL_HANDLE;
         VkSurfaceFormatKHR swapchain_format;
         VkExtent2D swapchain_extent;
-
-        void create_images();
-        std::vector<VkImage> swapchain_images;
-
-        void create_views();
-        std::vector<VkImageView> swapchain_views;
-
-        void create_layout();
         VkPipelineLayout layout;
-
-        void create_renderpass();
-        VkRenderPass renderpass;
-
-        void create_pipeline(const std::vector<VkPipelineShaderStageCreateInfo>& stages);
         VkPipeline pipeline;
 
-        void create_framebuffers();
+        VkRenderPass renderpass;
+        std::vector<VkImage> swapchain_images;
+        std::vector<VkImageView> swapchain_views;
         std::vector<VkFramebuffer> framebuffers;
 
-        void create_pool();
         VkCommandPool command_pool;
-
-        void create_buffers();
         std::vector<VkCommandBuffer> command_buffers;
 
-        void create_semaphores();
-        VkSemaphore image_semaphore;
+        VkSemaphore present_semaphore;
         VkSemaphore render_semaphore;
+
+        std::vector<VkFence> fences;
+        uint32_t current_frame = 0;
+
+#if VK_VALIDATE
+        VkDebugUtilsMessengerEXT messenger;
+
+        void create_messenger();
+        void remove_messenger();
+#endif
+
+        void create_instance();
+        void list_devices();
+        void select_device();
+        void create_device();
+        queues queue_families();
+        void create_surface();
+        void create_queues();
+        void create_swapchain();
+        void create_images();
+        void create_views();
+        void create_layout();
+        void create_renderpass();
+        void create_pipeline(const std::vector<VkPipelineShaderStageCreateInfo>& stages);
+        void create_framebuffers();
+        void create_pool();
+        void create_buffers();
+        void create_locks();
 
         VkShaderModule compile(const char* source, EShLanguage lang);
         VkPipelineShaderStageCreateInfo shader_stage(VkShaderModule mod, VkShaderStageFlagBits stage);
@@ -832,13 +849,65 @@ namespace volts::rsx
         }
     }
 
-    void vulkan::create_semaphores()
+    void vulkan::create_locks()
     {
+        fences.resize(V_MAX_FRAMES);
+
+        VkFenceCreateInfo fence_info = { VK_STRUCTURE_TYPE_FENCE_CREATE_INFO };
+        fence_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+        for(auto& fence : fences)
+        {
+            VK_ENSURE(vkCreateFence(device, &fence_info, nullptr, &fence));
+        }
+
         VkSemaphoreCreateInfo create_info = { VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO };
 
-        VK_ENSURE(vkCreateSemaphore(device, &create_info, nullptr, &image_semaphore));
+        VK_ENSURE(vkCreateSemaphore(device, &create_info, nullptr, &present_semaphore));
         VK_ENSURE(vkCreateSemaphore(device, &create_info, nullptr, &render_semaphore));
     }
+
+#if VK_VALIDATE
+    VKAPI_ATTR VkBool32 VKAPI_CALL debug_callback(
+        VkDebugUtilsMessageSeverityFlagBitsEXT severity,
+        VkDebugUtilsMessageTypeFlagsEXT type,
+        const VkDebugUtilsMessengerCallbackDataEXT* data,
+        void* userdata
+    )
+    {
+        if(severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT)
+            spdlog::debug("[{}:{}] {}", data->messageIdNumber, data->pMessageIdName, data->pMessage);
+        else if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)
+            spdlog::info("[{}:{}] {}", data->messageIdNumber, data->pMessageIdName, data->pMessage);
+        else if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
+            spdlog::warn("[{}:{}] {}", data->messageIdNumber, data->pMessageIdName, data->pMessage);
+        else if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
+            spdlog::error("[{}:{}] {}", data->messageIdNumber, data->pMessageIdName, data->pMessage);
+        else
+            spdlog::critical("[{}:{}] {}", data->messageIdNumber, data->pMessageIdName, data->pMessage);
+
+        return VK_FALSE;
+    }
+
+    void vulkan::create_messenger()
+    {
+        auto vkCreateDebugUtilsMessengerEXT = reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT"));
+        
+        VkDebugUtilsMessengerCreateInfoEXT info = { VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT };
+        info.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+        info.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT;
+        info.pfnUserCallback = debug_callback;
+
+        VK_ENSURE(vkCreateDebugUtilsMessengerEXT(instance, &info, nullptr, &messenger));
+    }
+
+    void vulkan::remove_messenger()
+    {
+        auto vkDestroyDebugUtilsMessengerEXT = reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT"));
+
+        vkDestroyDebugUtilsMessengerEXT(instance, messenger, nullptr);
+    }
+#endif
 }
 
 #if 0

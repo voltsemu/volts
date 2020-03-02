@@ -100,20 +100,15 @@ namespace volts::rsx
 
         current->postinit();
 
-        double last_frame = 0.0;
-        int frames = 0;
-
         while(!glfwWindowShouldClose(win))
         {
-            frames++;
             glfwPollEvents();
             current->begin();
 
-            if(static bool a = true; a)
-                ImGui::ShowDemoWindow(&a);
+            //if(static bool a = true; a)
+            //    ImGui::ShowDemoWindow(&a);
             
             current->end();
-            last_frame = glfwGetTime();
         }
 
         current->cleanup();
