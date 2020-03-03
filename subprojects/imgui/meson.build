@@ -11,7 +11,8 @@ sources = [
     'imgui/imgui_draw.cpp',
     'imgui/imgui_demo.cpp',
     'imgui/imgui_widgets.cpp',
-    'imgui/examples/imgui_impl_glfw.cpp'
+    'imgui/examples/imgui_impl_glfw.cpp',
+    'imgui/examples/imgui_impl_vulkan.cpp'
 ]
 
 if host_machine.system() == 'windows'
@@ -24,6 +25,8 @@ else
 endif
 
 deps = []
+
+deps += dependency('vulkan')
 
 if host_machine.system() != 'darwin'
     sources += 'imgui/examples/imgui_impl_opengl3.cpp'

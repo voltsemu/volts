@@ -8,6 +8,10 @@
 
 #include <optional>
 
+#include "imgui/imgui.h"
+#include "imgui/examples/imgui_impl_glfw.h"
+#include "imgui/examples/imgui_impl_vulkan.h"
+
 namespace volts::rsx
 {
     struct queues
@@ -16,6 +20,29 @@ namespace volts::rsx
         std::optional<uint32_t> compute = std::nullopt;
         std::optional<uint32_t> transfer = std::nullopt;
         std::optional<uint32_t> present = std::nullopt;
+    };
+
+    struct vertex
+    {
+        glm::vec2 position;
+        glm::vec3 colour;
+
+        static VkVertexInputBindingDescription binding()
+        {
+            VkVertexInputBindingDescription desc = {};
+            desc.stride = sizeof(vertex);
+            desc.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+            return desc;
+        }
+
+        static std::vector<VkVertexInputAttributeDescription> attributes()
+        {
+            return {
+                { 0, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(vertex, position) },
+                { 1, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(vertex, colour) }
+            };
+        }
     };
 
     struct vulkan : render
@@ -64,25 +91,17 @@ namespace volts::rsx
 
             auto vert = compile(R"(
                 #version 450
+                #extension GL_ARB_separate_shader_objects : enable
 
-                vec2 positions[] = {
-                    vec2(0, -0.5),
-                    vec2(0.5, 0.5),
-                    vec2(-0.5, 0.5)
-                };
+                layout (location = 0) in vec2 position;
+                layout (location = 1) in vec3 colour;
 
-                vec3 colours[] = {
-                    vec3(1, 0, 0),
-                    vec3(0, 1, 0),
-                    vec3(0, 0, 1)
-                };
-
-                layout (location = 0) out vec3 colour;
+                layout (location = 0) out vec3 out_colour;
 
                 void main()
                 {
-                    colour = colours[gl_VertexIndex];
-                    gl_Position = vec4(positions[gl_VertexIndex], 0.0, 1.0);
+                    gl_Position = vec4(position, 0, 1);
+                    out_colour = colour;
                 }
             )", EShLangVertex);
 
@@ -96,8 +115,36 @@ namespace volts::rsx
 
             create_framebuffers();
             create_pool();
+
+            create_vertex_buffer();
+
             create_buffers();
             create_locks();
+
+            vkDestroyShaderModule(device, vert, nullptr);
+            vkDestroyShaderModule(device, frag, nullptr);
+
+            // imgui stuff
+
+            //ImGui_ImplGlfw_InitForVulkan(rsx::window(), true);
+
+            ImGui_ImplVulkan_InitInfo imgui_info = {};
+            imgui_info.Instance = instance;
+            imgui_info.PhysicalDevice = physical_device;
+            imgui_info.Device = device;
+            imgui_info.QueueFamily = queue_families().graphics.value();
+            imgui_info.Queue = graphics_queue;
+            // imgui_info.DescriptorPool = descriptor_pool;
+            imgui_info.MinImageCount = image_count;
+            imgui_info.ImageCount = image_count;
+            imgui_info.CheckVkResultFn = [](auto err) { VK_ENSURE(err) };
+            //ImGui_ImplVulkan_Init(&imgui_info, renderpass);
+
+            //auto temp = buffer();
+
+            //ImGui_ImplVulkan_CreateFontsTexture(temp);
+
+            //execute(temp);
         }
 
         virtual void begin() override
@@ -115,7 +162,7 @@ namespace volts::rsx
             submit.waitSemaphoreCount = 1;
 
             submit.pSignalSemaphores = &render_semaphore;
-            submit.waitSemaphoreCount = 1;
+            submit.signalSemaphoreCount = 1;
 
             submit.pCommandBuffers = &command_buffers[current_frame];
             submit.commandBufferCount = 1;
@@ -144,19 +191,50 @@ namespace volts::rsx
 
             glslang::FinalizeProcess();
 
+            vkFreeMemory(device, vert_memory, nullptr);
+            vkDestroyBuffer(device, vert_buffer, nullptr);
+
+            for(auto fence : fences)
+            {
+                vkDestroyFence(device, fence, nullptr);
+            }
+
+            vkDestroyCommandPool(device, command_pool, nullptr);
+
+            for(auto buffer : framebuffers)
+            {
+                vkDestroyFramebuffer(device, buffer, nullptr);
+            }
+
+            vkDestroySemaphore(device, present_semaphore, nullptr);
+            vkDestroySemaphore(device, render_semaphore, nullptr);
+
+            vkDestroyPipeline(device, pipeline, nullptr);
             vkDestroyPipelineLayout(device, layout, nullptr);
+            vkDestroyRenderPass(device, renderpass, nullptr);
+
+            for(auto view : swapchain_views)
+            {
+                vkDestroyImageView(device, view, nullptr);
+            }
 
             vkDestroySwapchainKHR(device, swapchain, nullptr);
 
             vkDestroyDevice(device, nullptr);
 
             vkDestroySurfaceKHR(instance, surface, nullptr);
+
+#if VK_VALIDATE
+            remove_messenger();
+#endif
             vkDestroyInstance(instance, nullptr);
         }
 
         virtual const char* name() const override { return "vulkan"; }
 
     private:
+
+        using memory = std::tuple<VkBuffer, VkDeviceMemory>;
 
         VkInstance instance;
         std::vector<VkPhysicalDevice> physical_devices;
@@ -170,8 +248,10 @@ namespace volts::rsx
         VkSwapchainKHR swapchain = VK_NULL_HANDLE;
         VkSurfaceFormatKHR swapchain_format;
         VkExtent2D swapchain_extent;
+
         VkPipelineLayout layout;
         VkPipeline pipeline;
+        uint32_t image_count = 0;
 
         VkRenderPass renderpass;
         std::vector<VkImage> swapchain_images;
@@ -186,6 +266,15 @@ namespace volts::rsx
 
         std::vector<VkFence> fences;
         uint32_t current_frame = 0;
+
+        const std::vector<vertex> verts = {
+            {{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+            {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
+            {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
+        };
+        VkBuffer vert_buffer;
+        VkDeviceMemory vert_memory;
+
 
 #if VK_VALIDATE
         VkDebugUtilsMessengerEXT messenger;
@@ -206,11 +295,21 @@ namespace volts::rsx
         void create_views();
         void create_layout();
         void create_renderpass();
+
+        void create_vertex_buffer();
+        std::tuple<VkBuffer, VkDeviceMemory> create_buffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags flags);
+        void copy_buffer(VkBuffer dest, VkBuffer source, VkDeviceSize length);
+
         void create_pipeline(const std::vector<VkPipelineShaderStageCreateInfo>& stages);
         void create_framebuffers();
         void create_pool();
         void create_buffers();
         void create_locks();
+
+        VkCommandBuffer buffer();
+        void execute(VkCommandBuffer buffer);
+
+        uint32_t memory_type(uint32_t filter, VkMemoryPropertyFlags flags);
 
         VkShaderModule compile(const char* source, EShLanguage lang);
         VkPipelineShaderStageCreateInfo shader_stage(VkShaderModule mod, VkShaderStageFlagBits stage);
@@ -219,6 +318,37 @@ namespace volts::rsx
     void vk::connect()
     {
         add(new vulkan());
+    }
+
+    VkCommandBuffer vulkan::buffer()
+    {
+        VkCommandBufferAllocateInfo alloc_info = { VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO };
+        alloc_info.commandPool = command_pool;
+        alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+        alloc_info.commandBufferCount = 1;
+
+        VkCommandBuffer out;
+        VK_ENSURE(vkAllocateCommandBuffers(device, &alloc_info, &out));
+
+        VkCommandBufferBeginInfo buffer_info = { VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO };
+        buffer_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+        VK_ENSURE(vkBeginCommandBuffer(out, &buffer_info));
+
+        return out;
+    }
+
+    void vulkan::execute(VkCommandBuffer buffer)
+    {
+        VK_ENSURE(vkEndCommandBuffer(buffer));
+
+        VkSubmitInfo submit = { VK_STRUCTURE_TYPE_SUBMIT_INFO };
+        submit.commandBufferCount = 1;
+        submit.pCommandBuffers = &buffer;
+
+        VK_ENSURE(vkQueueSubmit(graphics_queue, 1, &submit, VK_NULL_HANDLE));
+        VK_ENSURE(vkQueueWaitIdle(graphics_queue));
+
+        vkFreeCommandBuffers(device, command_pool, 1, &buffer);
     }
 
     VkPipelineShaderStageCreateInfo vulkan::shader_stage(VkShaderModule mod, VkShaderStageFlagBits stage)
@@ -443,7 +573,7 @@ namespace volts::rsx
         auto mode = choose_mode(modes);
         swapchain_extent = choose_extent(caps);
 
-        uint32_t image_count = std::min(caps.minImageCount ? caps.minImageCount + 1 : 1, caps.maxImageCount);
+        image_count = std::min(caps.minImageCount ? caps.minImageCount + 1 : 1, caps.maxImageCount);
     
         VkSwapchainCreateInfoKHR create_info = { VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR };
 
@@ -711,6 +841,15 @@ namespace volts::rsx
     {
         VkPipelineVertexInputStateCreateInfo vert_info = { VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO };
 
+        auto binding = vertex::binding();
+        auto attribs = vertex::attributes();
+
+        vert_info.vertexBindingDescriptionCount = 1;
+        vert_info.pVertexBindingDescriptions = &binding;
+
+        vert_info.vertexAttributeDescriptionCount = attribs.size();
+        vert_info.pVertexAttributeDescriptions = attribs.data();
+
         VkPipelineInputAssemblyStateCreateInfo assembly = { VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO };
         assembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
         assembly.primitiveRestartEnable = VK_FALSE;
@@ -785,6 +924,86 @@ namespace volts::rsx
         VK_ENSURE(vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &create_info, nullptr, &pipeline));
     }
 
+    uint32_t vulkan::memory_type(uint32_t filter, VkMemoryPropertyFlags flags)
+    {
+        VkPhysicalDeviceMemoryProperties props;
+        vkGetPhysicalDeviceMemoryProperties(physical_device, &props);
+
+        for(uint32_t i = 0; i < props.memoryTypeCount; i++)
+            if(filter & (1 << i) && (props.memoryTypes[i].propertyFlags & flags) == flags)
+                return i;
+
+        V_ASSERT(false);
+    }
+
+    std::tuple<VkBuffer, VkDeviceMemory> vulkan::create_buffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags flags)
+    {
+        VkBufferCreateInfo buffer_info = { VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
+        buffer_info.size = size;
+        buffer_info.usage = usage;
+        buffer_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+        VkBuffer buffer;
+
+        VK_ENSURE(vkCreateBuffer(device, &buffer_info, nullptr, &buffer));
+
+        VkMemoryRequirements reqs;
+        vkGetBufferMemoryRequirements(device, buffer, &reqs);
+
+        VkMemoryAllocateInfo alloc_info = { VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO };
+        alloc_info.allocationSize = reqs.size;
+        alloc_info.memoryTypeIndex = memory_type(reqs.memoryTypeBits, flags);
+
+        VkDeviceMemory memory;
+
+        VK_ENSURE(vkAllocateMemory(device, &alloc_info, nullptr, &memory));
+
+        vkBindBufferMemory(device, buffer, memory, 0);
+
+        return { buffer, memory };
+    }
+
+    void vulkan::copy_buffer(VkBuffer dest, VkBuffer source, VkDeviceSize length)
+    {
+        auto buf = buffer();
+
+        VkBufferCopy region = {};
+        region.size = length;
+
+        vkCmdCopyBuffer(buf, source, dest, 1, &region);
+
+        execute(buf);
+    }
+
+    void vulkan::create_vertex_buffer()
+    {
+        VkDeviceSize size = verts.size() * sizeof(vertex);
+
+        auto [ staging_buffer, staging_memory ] = create_buffer(
+            size, 
+            VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+        );
+
+        void* data;
+        vkMapMemory(device, staging_memory, 0, size, 0, &data);
+
+        memcpy(data, verts.data(), size);
+
+        vkUnmapMemory(device, staging_memory);
+
+        std::tie(vert_buffer, vert_memory) = create_buffer(
+            size, 
+            VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+        );
+
+        copy_buffer(vert_buffer, staging_buffer, size);
+        
+        vkDestroyBuffer(device, staging_buffer, nullptr);
+        vkFreeMemory(device, staging_memory, nullptr);
+    }
+
     void vulkan::create_framebuffers()
     {
         framebuffers.resize(swapchain_images.size());
@@ -841,7 +1060,11 @@ namespace volts::rsx
 
             vkCmdBindPipeline(command_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
-            vkCmdDraw(command_buffers[i], 3, 1, 0, 0);
+            VkDeviceSize offsets[] = { 0 };
+
+            vkCmdBindVertexBuffers(command_buffers[i], 0, 1, &vert_buffer, offsets);
+
+            vkCmdDraw(command_buffers[i], verts.size(), 1, 0, 0);
 
             vkCmdEndRenderPass(command_buffers[i]);
 
