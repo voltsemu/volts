@@ -40,16 +40,14 @@ namespace volts::rsx
 
     void add(render* r) { renders()->push_back(r); }
     
+    
     GLFWwindow* win;
-
     GLFWwindow* window() { return win; }
 
-    const char* game_title = nullptr;
 
-    const char* title()
-    {
-        return game_title;
-    }
+    const char* game_title = nullptr;
+    const char* title() { return game_title; }
+
 
     void run(const std::string& render_name, const std::string& game_name)
     {
@@ -64,6 +62,7 @@ namespace volts::rsx
 #if SYS_OSX
         metal::connect();
 #else
+        // macos doesnt support opengl anymore so dont use it on mac
         opengl::connect();
 #endif
 
