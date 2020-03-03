@@ -104,8 +104,8 @@ namespace volts::rsx
             glfwPollEvents();
             current->begin();
 
-            //if(static bool a = true; a)
-            //    ImGui::ShowDemoWindow(&a);
+            if(static bool a = true; a)
+                ImGui::ShowDemoWindow(&a);
             
             current->end();
         }

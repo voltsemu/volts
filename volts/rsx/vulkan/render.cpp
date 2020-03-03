@@ -123,9 +123,11 @@ namespace volts::rsx
             vkDestroyShaderModule(device, vert, nullptr);
             vkDestroyShaderModule(device, frag, nullptr);
 
+            create_descriptor_pool();
+
             // imgui stuff
 
-            //ImGui_ImplGlfw_InitForVulkan(rsx::window(), true);
+            ImGui_ImplGlfw_InitForVulkan(rsx::window(), true);
 
             ImGui_ImplVulkan_InitInfo imgui_info = {};
             imgui_info.Instance = instance;
@@ -133,21 +135,29 @@ namespace volts::rsx
             imgui_info.Device = device;
             imgui_info.QueueFamily = queue_families().graphics.value();
             imgui_info.Queue = graphics_queue;
-            // imgui_info.DescriptorPool = descriptor_pool;
+            imgui_info.DescriptorPool = descriptor_pool;
             imgui_info.MinImageCount = image_count;
             imgui_info.ImageCount = image_count;
             imgui_info.CheckVkResultFn = [](auto err) { VK_ENSURE(err) };
-            //ImGui_ImplVulkan_Init(&imgui_info, renderpass);
+            ImGui_ImplVulkan_Init(&imgui_info, renderpass);
 
-            //auto temp = buffer();
+            auto temp = buffer();
 
-            //ImGui_ImplVulkan_CreateFontsTexture(temp);
+            ImGui_ImplVulkan_CreateFontsTexture(temp);
 
-            //execute(temp);
+            execute(temp);
         }
 
         virtual void begin() override
         {
+            ImGui_ImplVulkan_NewFrame();
+            ImGui_ImplGlfw_NewFrame();
+            ImGui::NewFrame();
+        }
+
+        virtual void end() override
+        {
+            ImGui::Render();
             VK_ENSURE(vkAcquireNextImageKHR(device, swapchain, UINT64_MAX, present_semaphore, VK_NULL_HANDLE, &current_frame));
 
             VK_ENSURE(vkWaitForFences(device, 1, &fences[current_frame], VK_TRUE, UINT64_MAX));
@@ -179,14 +189,13 @@ namespace volts::rsx
             VK_ENSURE(vkQueuePresentKHR(present_queue, &present));
         }
 
-        virtual void end() override
-        {
-
-        }
-
         virtual void cleanup() override
         {
             vkDeviceWaitIdle(device);
+
+            ImGui_ImplVulkan_Shutdown();
+            ImGui_ImplGlfw_Shutdown();
+            ImGui::DestroyContext();
 
             glslang::FinalizeProcess();
 
@@ -198,6 +207,7 @@ namespace volts::rsx
                 vkDestroyFence(device, fence, nullptr);
             }
 
+            vkDestroyDescriptorPool(device, descriptor_pool, nullptr);
             vkDestroyCommandPool(device, command_pool, nullptr);
 
             for(auto buffer : framebuffers)
@@ -275,6 +285,8 @@ namespace volts::rsx
         VkDeviceMemory vert_memory;
 
 
+        VkDescriptorPool descriptor_pool;
+
 #if VK_VALIDATE
         VkDebugUtilsMessengerEXT messenger;
 
@@ -304,6 +316,7 @@ namespace volts::rsx
         void create_pool();
         void create_buffers();
         void create_locks();
+        void create_descriptor_pool();
 
         VkCommandBuffer buffer();
         void execute(VkCommandBuffer buffer);
@@ -317,6 +330,30 @@ namespace volts::rsx
     void vk::connect()
     {
         add(new vulkan());
+    }
+
+    void vulkan::create_descriptor_pool()
+    {
+        std::vector<VkDescriptorPoolSize> sizes = {
+            { VK_DESCRIPTOR_TYPE_SAMPLER, 1024 },
+            { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1024 },
+            { VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1024 },
+            { VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1024 },
+            { VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1024 },
+            { VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1024 },
+            { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1024 },
+            { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1024 },
+            { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1024 },
+            { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1024 },
+            { VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1024 }
+        };
+
+        VkDescriptorPoolCreateInfo create_info = { VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO };
+        create_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+        create_info.maxSets = 1024 * sizes.size();
+        create_info.poolSizeCount = sizes.size();
+        create_info.pPoolSizes = sizes.data();
+        VK_ENSURE(vkCreateDescriptorPool(device, &create_info, nullptr, &descriptor_pool));
     }
 
     VkCommandBuffer vulkan::buffer()
