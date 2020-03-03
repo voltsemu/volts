@@ -128,7 +128,7 @@ namespace volts::crypt::keys
     };
     
     template<typename F, std::size_t N>
-    svl::expected<key> get_key(const key (&val)[N], F func)
+    svl::expected<key> get_key(const key (&val)[N], F&& func)
     {
         for(auto k : val)
             if(func(k))

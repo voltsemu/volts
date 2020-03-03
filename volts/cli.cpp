@@ -52,9 +52,10 @@ namespace volts::cmd
             ("sfo", "parse an sfo file", opts::value<std::string>())
             ("pup", "parse a pup file", opts::value<std::string>())
             ("self", "parse a self file", opts::value<std::string>())
-            ("boot", "boot a game in the emulator", opts::value<std::string>())
             ("render", "enable rendering window", opts::value<std::string>())
             ("name", "set the game name", opts::value<std::string>())
+            ("exec", "load a ps3 executable", opts::value<std::string>())
+            ("prx", "load a ps3 prx", opts::value<std::string>())
             ;
 
         auto res = opts.parse(argc, argv);
@@ -230,10 +231,23 @@ namespace volts::cmd
             }
         }
 
-        if(res.count("boot"))
+        if(res.count("prx"))
         {
-            // TODO: boot elf games
-            svl::file f = svl::open(res["boot"].as<std::string>(), svl::mode::read);
+            svl::file f = svl::open(res["prx"].as<std::string>(), svl::mode::read);
+
+            auto prx = (f.read<svl::u32>() == cvt::to_u32("\177ELF") 
+                ? elf::load<elf::ppu_prx>(f)
+                : elf::load<elf::ppu_prx>(self::load(f).expect("failed to decrypt self")))
+                    .expect("failed to load (s)elf file");
+
+            vm::init();
+
+            ppu::load_prx(prx);
+        }
+
+        if(res.count("exec"))
+        {
+            svl::file f = svl::open(res["exec"].as<std::string>(), svl::mode::read);
 
             auto exec = (f.read<svl::u32>() == cvt::to_u32("\177ELF") 
                 ? elf::load<elf::ppu_exec>(f)

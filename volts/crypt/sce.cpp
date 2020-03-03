@@ -47,8 +47,8 @@ namespace volts::crypt::sce
             byte key[32];
             byte iv[16];
 
-            memcpy(key, keys::scepkg_erk, sizeof(key));
-            memcpy(iv, keys::scepkg_riv, sizeof(iv));
+            std::memcpy(key, keys::scepkg_erk, sizeof(key));
+            std::memcpy(iv, keys::scepkg_riv, sizeof(iv));
 
             aes_context aes;
 
@@ -110,8 +110,8 @@ namespace volts::crypt::sce
                     size_t offset = 0;
                     byte block[16] = {};
                     
-                    memcpy(key, data_keys + sect.key_index * 16, 16);
-                    memcpy(iv, data_keys + sect.iv_index * 16, 16);
+                    std::memcpy(key, data_keys + sect.key_index * 16, 16);
+                    std::memcpy(iv, data_keys + sect.iv_index * 16, 16);
 
                     stream.seek(sect.offset);
                     auto buffer = stream.read<byte>(sect.size);
@@ -119,13 +119,13 @@ namespace volts::crypt::sce
                     aes_setkey_enc(&aes, key, 128);
                     aes_crypt_ctr(&aes, sect.size, &offset, iv, block, buffer.data(), buffer.data());
 
-                    memcpy(data_buf + buffer_offset, buffer.data(), sect.size);
+                    std::memcpy(data_buf + buffer_offset, buffer.data(), sect.size);
                 }
                 else
                 {
                     stream.seek(sect.offset);
                     auto buffer = stream.read<byte>(sect.size);
-                    memcpy(data_buf + buffer_offset, buffer.data(), sect.size);
+                    std::memcpy(data_buf + buffer_offset, buffer.data(), sect.size);
                 }
 
                 buffer_offset += sect.size;
@@ -158,7 +158,7 @@ namespace volts::crypt::sce
                     
                     int ret = inflateInit(&zstream);
 
-                    file = svl::from({ 0 });
+                    file = svl::from({ });
                     file.seek(0);
 
                     while(zstream.avail_in)

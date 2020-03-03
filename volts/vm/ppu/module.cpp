@@ -300,6 +300,7 @@ namespace volts::ppu
     {
         for(auto prog : exec.progs)
         {
+            // LOAD
             if(prog.type == 1)
             {
                 if(!prog.mem_size)
@@ -312,15 +313,45 @@ namespace volts::ppu
 
                 std::memcpy(vm::base(addr), data.data(), data.size());
             }
+            // TLS
             else if(prog.type == 7)
             {
             }
+            // LOOS+1
             else if(prog.type == 0x60000001)
             {
+                if(!prog.file_size)
+                    continue;
+
+                struct process_data
+                {
+                    big<u32> size;
+                    big<u32> magic;
+                    big<u32> version;
+                    big<u32> sdk;
+                    big<u32> priority;
+                    big<u32> stacksize;
+                    big<u32> pagesize;
+                    big<u32> segment;
+                };
+
+                auto info = vm::read<process_data>(prog.vaddress);
+
+                if(info.size != sizeof(process_data))
+                {
+                    spdlog::error("invalid process data size {}", info.size);
+                }
+
+                if(info.magic != 0x13BCC5f6)
+                {
+                    spdlog::error("invalid process magic {}", info.magic);
+                }
             }
+            // LOOS+2
             else if(prog.type == 0x60000002)
             {
             }
+            // oh no
             else
             {
                 spdlog::critical("invalid elf section type {:x}", prog.type);
