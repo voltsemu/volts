@@ -1,6 +1,5 @@
 #define V_REQUIRED_VERSION VK_API_VERSION_1_0
 #define V_VERSION VK_MAKE_VERSION(1, 0, 0)
-#define V_MAX_FRAMES 2
 
 #include "render.h"
 #include "backend.h"
@@ -1074,7 +1073,7 @@ namespace volts::rsx
 
     void vulkan::create_locks()
     {
-        fences.resize(V_MAX_FRAMES);
+        fences.resize(swapchain_images.size());
 
         VkFenceCreateInfo fence_info = { VK_STRUCTURE_TYPE_FENCE_CREATE_INFO };
         fence_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
