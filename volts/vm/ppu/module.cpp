@@ -19,6 +19,50 @@ namespace volts::ppu
     using namespace svl;
     using namespace endian;
 
+    struct module_info
+    {
+        u8 size;
+        pad pad1[1];
+
+        big<u16> version;
+        big<u16> funcs;
+        big<u16> vars;
+        big<u16> tlsvars;
+        u8 hash;
+        u8 tlshash;
+
+        pad pad2[2];
+
+        big<u32> name;
+        big<u32> nids;
+        big<u32> addrs;
+        big<u32> vnids;
+        big<u32> vstubs;
+
+        pad pad3[8];
+    };
+
+    std::map<u32, u32> load_exports(u32 begin, u32 end)
+    {
+        u32 addr = begin;
+        while(addr < end)
+        {
+            auto lib = vm::read<module_info>(addr);
+
+            if(!lib.name)
+            {
+
+            }
+            else
+            {
+                spdlog::info("name {}", std::string((char*)lib.name.get()));
+            }
+            
+        }
+
+        return {};
+    }
+
     struct relocation_info
     {
         big<u64> offset;
@@ -71,74 +115,14 @@ namespace volts::ppu
 
         auto addr = front;
 
-        //while(addr < back)
+        while(addr < back)
         {
             spdlog::info("offset {}", addr);
             spdlog::info("len = {}", vm::read<u8>(addr));
             spdlog::info("version = {}", vm::read<big<u16>>(addr + 2));
 
-            auto lib = vm::read<module_info>(addr);
-            spdlog::info("lib(len={},version={},attrib={},funcs={},vars={},tlsvars={},hash={},tlshash={},name={},nids={},addrs={},vnids={},vstubs={})", 
-                lib.len,
-                lib.version.get(),
-                lib.attrib.get(),
-                lib.funcs.get(),
-                lib.vars.get(),
-                lib.tlsvars.get(),
-                lib.hash,
-                lib.tlshash,
-                lib.name.get(),
-                lib.nids.get(),
-                lib.addrs.get(),
-                lib.vnids.get(),
-                lib.vstubs.get()
-            );
-
-            /*
-            auto lib = vm::read<module_info>(addr);
-
-            spdlog::info("lib(len={},version={},attrib={},funcs={},vars={},tlsvars={},hash={},tlshash={},name={},nids={},addrs={},vnids={},vstubs={})", 
-                lib.len,
-                lib.version.get(),
-                lib.attrib.get(),
-                lib.funcs.get(),
-                lib.vars.get(),
-                lib.tlsvars.get(),
-                lib.hash,
-                lib.tlshash,
-                lib.name.get(),
-                lib.nids.get(),
-                lib.addrs.get(),
-                lib.vnids.get(),
-                lib.vstubs.get()
-            );
-
-            spdlog::info("name offset {}", lib.name.val);
-            
-
-            // special symbols
-            if(lib.name.get() == 0)
-            {
-                auto* nids = (big<vm::addr>*)vm::base(lib.nids);
-                auto* addrs = (big<vm::addr>*)vm::base(lib.addrs);
-
-                for(int i = 0, end = lib.funcs + lib.vars; i < end; i++)
-                {
-                    u32 nid = nids[i];
-                    u32 addr = addrs[i];
-
-                    spdlog::info("{} = {}", nid, addr);
-                }
-                // we add 44 because thats how large module_info is meant to be but msvc
-                // refuses to pack the thing correctly
-                addr += lib.len ? lib.len : 44;
-                continue;
-            }
-
-            std::string name = (char*)vm::base(lib.name.val);
-            spdlog::info("symbol name: {}", name);
-
-            addr += lib.len ? lib.len : 44;*/
+            auto info = vm::read<module_info>(addr);
+            // Todo
         }
 
         return symbols;
@@ -217,19 +201,10 @@ namespace volts::ppu
 
             for(auto reloc : relocs)
             {
-                //spdlog::debug("ptr {} {}", reloc.ptr.get(), vm::read<u64>(reloc.ptr));
                 auto addr = vm::read<big<u32>>(segments.at(reloc.idx_addr).addr + reloc.offset);
                 auto data = reloc.idx_val == 0xFF ? byte_swap(vm::read<u64>(reloc.ptr)) : segments.at(reloc.idx_addr).addr + reloc.ptr;
 
                 // TODO: clean up the bitfield syntax
-
-                //spdlog::debug("relocation {} at {}", reloc.type, addr);
-
-                if(addr > 75396 && addr < 75536)
-                {
-                    spdlog::info("reloc {} puts {} at {}", reloc.type, data, addr);
-                }
-
                 switch(reloc.type)
                 {
                 case 1:
@@ -298,6 +273,9 @@ namespace volts::ppu
 
     void load_exec(elf::ppu_exec& exec)
     {
+        u32 pagesize = 0x100000;
+        u32 stacksize = 0x100000;
+        u32 segment = 0;
         for(auto prog : exec.progs)
         {
             // LOAD
@@ -333,6 +311,8 @@ namespace volts::ppu
                     big<u32> stacksize;
                     big<u32> pagesize;
                     big<u32> segment;
+
+                    pad padding[4];
                 };
 
                 auto info = vm::read<process_data>(prog.vaddress);
@@ -344,18 +324,62 @@ namespace volts::ppu
 
                 if(info.magic != 0x13BCC5f6)
                 {
-                    spdlog::error("invalid process magic {}", info.magic);
+                    spdlog::error("invalid process magic {:x}", info.magic);
                 }
+
+                stacksize = info.stacksize;
+                segment = info.segment;
+                pagesize = info.pagesize;
             }
             // LOOS+2
             else if(prog.type == 0x60000002)
             {
+                struct proc_param
+                {
+                    big<u32> size;
+                    big<u32> magic;
+                    big<u32> version;
+                    
+                    pad pad1[4];
+                    
+                    big<u32> libent_begin;
+                    big<u32> libent_end;
+
+                    big<u32> libstub_begin;
+                    big<u32> libstub_end;
+                };
+
+                if(!prog.file_size)
+                    continue;
+
+                auto param = vm::read<proc_param>(prog.vaddress);
+
+                if(param.magic != 0x1B434CEC)
+                {
+                    spdlog::error("invalid parameter magic {:x}", param.magic.get());
+                }
+
+                auto modules = load_exports(param.libent_begin, param.libent_end);
             }
             // oh no
             else
             {
                 spdlog::critical("invalid elf section type {:x}", prog.type);
             }
+        }
+
+        switch(stacksize)
+        {
+        case 0x10: stacksize = 32 * 1024; break;
+        case 0x20: stacksize = 64 * 1024; break;
+        case 0x30: stacksize = 96 * 1024; break;
+        case 0x40: stacksize = 128 * 1024; break;
+        case 0x50: stacksize = 256 * 1024; break;
+        case 0x60: stacksize = 512 * 1024; break;
+        case 0x70: stacksize = 1024 * 1024; break;
+        default:
+            stacksize = std::clamp<u32>(stacksize, 0x10000, 0x100000);
+            break;
         }
 
         ppu::thread(exec.head.entry);
