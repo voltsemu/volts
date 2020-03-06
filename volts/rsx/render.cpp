@@ -102,6 +102,7 @@ namespace volts::rsx
         while(!glfwWindowShouldClose(win))
         {
             glfwPollEvents();
+            
             current->begin();
 
             if(static bool a = true; a)

@@ -68,6 +68,7 @@ glsl = subproject('glslang').get_variable('glsl_dep')
 
 #toml = subproject('toml').get_variable('toml_dep')
 
+links = []
 sources = []
 dependencies = [ aes, xxhash, rapidjson, svl, elf, vfs, imgui, cxxopts, spdlog, zlib, glsl ]
 cpp_args = [ '-DFMT_EXCEPTIONS=0' ]
@@ -87,7 +88,8 @@ libvolts = library('volts', sources,
     cpp_args : cpp_args,
     objcpp_args : cpp_args,
     include_directories : include_directories,
-    dependencies : dependencies
+    dependencies : dependencies,
+    link_args : links
 )
 
 cli = executable('cli', 'volts/cli.cpp',
@@ -96,6 +98,7 @@ cli = executable('cli', 'volts/cli.cpp',
     include_directories : include_directories,
     dependencies : dependencies,
     link_with : libvolts,
+    link_args : links
 )
 
 subdir('gui'/host_machine.system())
