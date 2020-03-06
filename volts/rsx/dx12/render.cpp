@@ -110,7 +110,6 @@ namespace volts::rsx
         void create_device();
         void load_device();
         void load_data();
-        void load_resources();
 
         void populate_commands();
         void wait();
@@ -164,7 +163,7 @@ namespace volts::rsx
         desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
         DX_ENSURE(device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&rtvheap)));
 
-        desc.NumDescriptors = 1;
+        desc.NumDescriptors = DX_FRAME_COUNT;
         desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
         desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
         DX_ENSURE(device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&srvheap)));
@@ -176,9 +175,9 @@ namespace volts::rsx
             DX_ENSURE(swap->GetBuffer(i, IID_PPV_ARGS(&targets[i])));
             device->CreateRenderTargetView(targets[i].Get(), nullptr, handle);
 
-            DX_ENSURE(device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&allocators[i])));
-
             handle.Offset(1, rtvsize);
+
+            DX_ENSURE(device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&allocators[i])));
         }
     }
 
@@ -413,34 +412,9 @@ namespace volts::rsx
         wait();
     }
 
-    void d3d12::load_resources()
-    {
-        int w, h;
-        glfwGetFramebufferSize(rsx::window(), &w, &h);
-
-        viewport = CD3DX12_VIEWPORT(
-            0.f, 0.f,
-            static_cast<float>(w), static_cast<float>(h)
-        );
-
-        scissor = CD3DX12_RECT(0, 0, w, h);
-
-        CD3DX12_CPU_DESCRIPTOR_HANDLE handle(rtvheap->GetCPUDescriptorHandleForHeapStart());
-
-        for(int i = 0; i < DX_FRAME_COUNT; i++)
-        {
-            DX_ENSURE(swap->GetBuffer(i, IID_PPV_ARGS(&targets[i])));
-            device->CreateRenderTargetView(targets[i].Get(), nullptr, handle);
-
-            DX_ENSURE(device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&allocators[i])));
-
-            handle.Offset(1, rtvsize);
-        }
-    }
-
     void d3d12::populate_commands()
     {
-        auto cmd = commands[frame];
+        auto cmd = commands[frame].Get();
         DX_ENSURE(allocators[frame]->Reset());
         DX_ENSURE(cmd->Reset(allocators[frame].Get(), state.Get()));
 
@@ -467,7 +441,7 @@ namespace volts::rsx
         cmd->IASetVertexBuffers(0, 1, &buffer_view);
         cmd->DrawInstanced(3, 1, 0, 0);
 
-        ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), cmd.Get());
+        ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), cmd);
 
         cmd->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(
             targets[frame].Get(),
