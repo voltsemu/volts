@@ -5,8 +5,3 @@
 #include <wrapfs.h>
 #include <string>
 #include <map>
-
-namespace volts::cfg
-{
-
-}

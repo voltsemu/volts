@@ -64,7 +64,10 @@ sources += [
 ]
 
 if host_machine.system() == 'windows'
-    cpp_args += '-DGLSLANG_OSINCLUDE_WIN32'
+    cpp_args += [
+        '-DGLSLANG_OSINCLUDE_WIN32',
+        '/wd4146'
+    ]
     sources += 'glslang/glslang/OSDependent/Windows/ossource.cpp'
 else
     cpp_args += [

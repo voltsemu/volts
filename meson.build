@@ -101,8 +101,6 @@ cli = executable('cli', 'volts/cli.cpp',
     link_args : links
 )
 
-subdir('gui'/host_machine.system())
-
 doxygen = find_program('doxygen', required : false)
 
 if doxygen.found()

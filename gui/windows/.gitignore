@@ -1,0 +1,15 @@
+Generated Files/
+packages/
+Debug/
+x64/
+!*.idl
+!*.xaml
+!*.props
+!*.txt
+!*.sln
+!*.pfx
+!*.vcxproj
+!*.vcxproj.*
+!*.config
+!*.appxmanifest
+!*.png
