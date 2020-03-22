@@ -55,7 +55,7 @@ namespace volts::ppu
             }
             else
             {
-                spdlog::info("name {}", std::string((char*)lib.name.get()));
+                spdlog::info("name {}", std::string(vm::ptr<char>(lib.name.get())));
             }
             
         }
