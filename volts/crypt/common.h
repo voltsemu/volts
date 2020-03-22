@@ -48,7 +48,7 @@ namespace volts::crypt
             big<u64> version_offset;
             big<u64> control_offset;
             big<u64> control_length;
-            pad padding[8];  
+            padding<8> pad;  
         };
 
         static_assert(sizeof(header) == 80);
@@ -64,7 +64,7 @@ namespace volts::crypt
                 struct 
                 {
                     big<u32> flags;
-                    pad padding[28];
+                    padding<28> pad;
                 } control_flags;
 
                 static_assert(sizeof(control_flags) == 32);
@@ -81,7 +81,7 @@ namespace volts::crypt
                 struct
                 {
                     u8 const_or_digest[20];
-                    pad padding[12];
+                    padding<12> pad;
                 } elf_digest_32;
 
                 static_assert(sizeof(elf_digest_32) == 32);
@@ -96,7 +96,7 @@ namespace volts::crypt
                     byte digest[16];
                     byte inv_digest[16];
                     byte xor_digest[16];
-                    pad padding[16];
+                    padding<16> pad;
                 } npdrm_info;
 
                 static_assert(sizeof(npdrm_info) == 128);
@@ -109,10 +109,10 @@ namespace volts::crypt
         struct info
         {
             byte key[16];
-            pad key_pad[16];
+            padding<16> key_pad;
 
             byte iv[16];
-            pad iv_pad[16];
+            padding<16> iv_pad;
         };
 
         static_assert(sizeof(info) == 64);
@@ -124,7 +124,7 @@ namespace volts::crypt
             big<u32> sect_count;
             big<u32> key_count;
             big<u32> header_size;
-            pad padding[8];
+            padding<8> pad;
         };
 
         static_assert(sizeof(header) == 32);
@@ -154,7 +154,7 @@ namespace volts::crypt
         big<u32> vendor;
         big<u32> type;
         big<u64> version;
-        pad padding[8];
+        padding<8> pad;
     };
 
     static_assert(sizeof(app_info) == 32);

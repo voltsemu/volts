@@ -26,7 +26,7 @@ namespace volts::loader::pup
         svl::endian::big<svl::u64> length; 
 
         /// structure padding
-        svl::pad padding[8]; 
+        svl::padding<8> padding; 
     };
 
     static_assert(sizeof(entry) == 32);
@@ -44,7 +44,7 @@ namespace volts::loader::pup
         svl::byte hash[20]; 
 
         /// padding
-        svl::pad padding[4]; 
+        svl::padding<4> padding; 
     };
 
     static_assert(sizeof(hash) == 32);

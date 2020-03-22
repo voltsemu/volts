@@ -31,7 +31,7 @@ namespace volts::loader::tar
         char dev_major[8];
         char dev_minor[8];
         char prefix[155];
-        svl::pad padding[12];
+        svl::padding<12> padding;
     };
 
     static_assert(sizeof(header) == 512);

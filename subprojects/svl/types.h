@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <cstring>
 
 #include <emmintrin.h>
 
@@ -33,8 +34,8 @@ namespace svl
     /// 8 bit unsigned integer
     using byte = std::uint8_t;
 
-    /// 1 byte of padding
-    using pad = std::uint8_t;
+    template<std::size_t N = 1>
+    using padding = byte[N];
 
     /// 32 bit floating point number
     using f32 = float;

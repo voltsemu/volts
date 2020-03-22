@@ -48,7 +48,7 @@ namespace elf
         os abi;
         svl::u8 abi_verson;
 
-        svl::pad padding[7];
+        svl::padding<7> padding;
 
         svl::endian::big<type> elf_type;
         svl::endian::big<machine> machine_type;

@@ -22,7 +22,7 @@ namespace volts::ppu
     struct module_info
     {
         u8 size;
-        pad pad1[1];
+        padding<1> pad1;
 
         big<u16> version;
         big<u16> funcs;
@@ -31,7 +31,7 @@ namespace volts::ppu
         u8 hash;
         u8 tlshash;
 
-        pad pad2[2];
+        padding<2> pad2;
 
         big<u32> name;
         big<u32> nids;
@@ -39,7 +39,7 @@ namespace volts::ppu
         big<u32> vnids;
         big<u32> vstubs;
 
-        pad pad3[8];
+        padding<8> pad3;
     };
 
     std::map<u32, u32> load_exports(u32 begin, u32 end)
@@ -66,7 +66,7 @@ namespace volts::ppu
     struct relocation_info
     {
         big<u64> offset;
-        big<u16> pad;
+        padding<2> pad;
         u8 idx_val;
         u8 idx_addr;
         big<u32> type;
@@ -89,7 +89,7 @@ namespace volts::ppu
         struct module_info
         {
             u8 len;
-            pad unk1;
+            padding<1> unk1;
 
             big<u16> version;
             big<u16> attrib;
@@ -99,7 +99,7 @@ namespace volts::ppu
             
             u8 hash;
             u8 tlshash;
-            pad unk2[2];
+            padding<2> unk2;
             
             big<vm::addr> name;
             big<vm::addr> nids;
@@ -312,7 +312,7 @@ namespace volts::ppu
                     big<u32> pagesize;
                     big<u32> segment;
 
-                    pad padding[4];
+                    padding<4> pad;
                 };
 
                 auto info = vm::read<process_data>(prog.vaddress);
@@ -340,7 +340,7 @@ namespace volts::ppu
                     big<u32> magic;
                     big<u32> version;
                     
-                    pad pad1[4];
+                    padding<4> pad1;
                     
                     big<u32> libent_begin;
                     big<u32> libent_end;
