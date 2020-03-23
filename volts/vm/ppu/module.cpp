@@ -14,54 +14,12 @@
 
 #include "thread.h"
 
+#include "macros.h"
+
 namespace volts::ppu
 {
     using namespace svl;
     using namespace endian;
-
-    struct module_info
-    {
-        u8 size;
-        padding<1> pad1;
-
-        big<u16> version;
-        big<u16> funcs;
-        big<u16> vars;
-        big<u16> tlsvars;
-        u8 hash;
-        u8 tlshash;
-
-        padding<2> pad2;
-
-        big<u32> name;
-        big<u32> nids;
-        big<u32> addrs;
-        big<u32> vnids;
-        big<u32> vstubs;
-
-        padding<8> pad3;
-    };
-
-    std::map<u32, u32> load_exports(u32 begin, u32 end)
-    {
-        u32 addr = begin;
-        while(addr < end)
-        {
-            auto lib = vm::read<module_info>(addr);
-
-            if(!lib.name)
-            {
-
-            }
-            else
-            {
-                spdlog::info("name {}", std::string(vm::ptr<char>(lib.name.get())));
-            }
-            
-        }
-
-        return {};
-    }
 
     struct relocation_info
     {
@@ -84,40 +42,52 @@ namespace volts::ppu
         u64 file_size;
     };
 
-    std::map<u32, u32> load_symbols(u32 front, u32 back)
+    VPACKED(module_info,
     {
-        struct module_info
+        u8 len;
+        padding<1> unk1;
+
+        big<u16> version;
+        big<u16> attrib;
+        big<u16> funcs;
+        big<u16> vars;
+        big<u16> tlsvars;
+        
+        u8 hash;
+        u8 tlshash;
+        padding<2> unk2;
+        
+        big<vm::addr> name;
+        big<vm::addr> nids;
+        big<vm::addr> addrs;
+        big<vm::addr> vnids;
+        big<vm::addr> vstubs;
+        
+        padding<8> unk3;
+    });
+
+    static std::map<u32, void*> load_imports(u32 front, u32 back)
+    {
+        std::map<u32, void*> symbols = {};
+
+        auto addr = front;
+        while(addr < back)
         {
-            u8 len;
-            padding<1> unk1;
+            auto lib = vm::read<module_info>(addr);
+        }
 
-            big<u16> version;
-            big<u16> attrib;
-            big<u16> funcs;
-            big<u16> vars;
-            big<u16> tlsvars;
-            
-            u8 hash;
-            u8 tlshash;
-            padding<2> unk2;
-            
-            big<vm::addr> name;
-            big<vm::addr> nids;
-            big<vm::addr> addrs;
-            big<vm::addr> vnids;
-            big<vm::addr> vstubs;
-            
-            big<u32> unk3;
-            big<u32> unk4;
-        };
+        return symbols;
+    }
 
+    static std::map<u32, u32> load_exports(u32 front, u32 back)
+    {
         std::map<u32, u32> symbols = {};
 
         auto addr = front;
 
         while(addr < back)
         {
-            spdlog::info("offset {}", addr);
+            spdlog::info("offset = {}", addr);
             spdlog::info("len = {}", vm::read<u8>(addr));
             spdlog::info("version = {}", vm::read<big<u16>>(addr + 2));
 
@@ -268,7 +238,8 @@ namespace volts::ppu
 
         spdlog::info("symbol range: {}-{}", info.symbols_front, info.symbols_back);
 
-        auto symbols = load_symbols(info.symbols_front, info.symbols_back);
+        auto exports = load_exports(info.symbols_front, info.symbols_back);
+        auto imports = load_imports(info.deps_front, info.deps_back);
     }
 
     void load_exec(elf::ppu_exec& exec)
@@ -359,7 +330,8 @@ namespace volts::ppu
                     spdlog::error("invalid parameter magic {:x}", param.magic.get());
                 }
 
-                auto modules = load_exports(param.libent_begin, param.libent_end);
+                auto exports = load_exports(param.libent_begin, param.libent_end);
+                auto imports = load_imports(param.libstub_begin, param.libstub_end);
             }
             // oh no
             else
