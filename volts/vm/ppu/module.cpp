@@ -57,14 +57,16 @@ namespace volts::ppu
         u8 tlshash;
         padding<2> unk2;
         
-        big<vm::addr> name;
-        big<vm::addr> nids;
-        big<vm::addr> addrs;
-        big<vm::addr> vnids;
-        big<vm::addr> vstubs;
+        vm::b32ptr<char> name;
+        vm::b32ptr<big<u32>> nids;
+        vm::b32ptr<big<u32>> addrs;
+        vm::b32ptr<big<u32>> vnids;
+        vm::b32ptr<big<u32>> vstubs;
         
         padding<8> unk3;
     });
+
+    static_assert(sizeof(module_info) == 44);
 
     static std::map<u32, void*> load_imports(u32 front, u32 back)
     {
@@ -87,12 +89,34 @@ namespace volts::ppu
 
         while(addr < back)
         {
-            spdlog::info("offset = {}", addr);
-            spdlog::info("len = {}", vm::read<u8>(addr));
-            spdlog::info("version = {}", vm::read<big<u16>>(addr + 2));
+            auto lib = vm::read<module_info>(addr);
+            
+            if(!lib.name)
+            {
+                const auto end = lib.funcs + lib.vars;
+                for(int i = 0; i < end; i++)
+                {
+                    u32 nid = lib.nids[i];
+                    u32 addr = lib.addrs[i];
 
-            auto info = vm::read<module_info>(addr);
-            // Todo
+                    if(i < lib.funcs)
+                    {
+
+                    }
+                    else
+                    {
+                        
+                    }
+
+                    symbols[nid] = addr;
+                }
+
+                addr += lib.len ? lib.len : sizeof(module_info);
+            }
+
+            const char* name = (char*)vm::base(lib.name);
+
+
         }
 
         return symbols;

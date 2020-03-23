@@ -4,6 +4,8 @@
 
 #include <mutex>
 
+#include <endian.h>
+
 namespace volts::vm
 {
     using addr = svl::u64;
@@ -33,6 +35,19 @@ namespace volts::vm
     {
         return *reinterpret_cast<T*>(base(at));
     }
+
+    template<typename T, typename TAddr>
+    struct pointer
+    {
+        operator vm::addr() const { return at; }
+        operator T*() const { return (T*)base(at); }
+        T operator*() const { return read<T>(at); }
+        T& operator[](std::size_t idx) const { return ref<T>(at + (idx * sizeof(T))); }
+        TAddr at;
+    };
+
+    template<typename T>
+    using b32ptr = pointer<T, svl::endian::big<svl::u32>>;
 
     /**
      * @brief link in a free chain
