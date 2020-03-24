@@ -62,14 +62,31 @@ namespace volts::vm
 
     vm::addr block::falloc(vm::addr addr, u64 size)
     {
-        // TODO
+        LOCKED({
+            // push the allocated memory to the front of the free chain (its nice and quick)
+            begin = new link{begin, addr, size};
+
+            // TODO: make sure falloc memory is not already used
+        });
+
         return addr;
     }
 
     void block::dealloc(vm::addr ptr)
     {
         LOCKED({
-            // TODO
+            link* cur = begin;
+            while(cur && cur->next)
+            {
+                if(cur->next->addr == ptr)
+                {
+                    link* temp = cur->next;
+                    cur->next = temp->next;
+                    delete temp;
+                    return;
+                }
+                cur = cur->next;
+            }
         });
     }
 
