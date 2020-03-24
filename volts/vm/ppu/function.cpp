@@ -4,9 +4,9 @@
 
 namespace volts::ppu
 {
-    const std::string& get_function_name(svl::u32 fnid, const std::string& mod_name)
+    const char* get_function_name(svl::u32 fnid, const char* name)
     {
-        if(mod_name.empty())
+        if(!name)
         {
             switch(fnid)
             {
@@ -22,7 +22,7 @@ namespace volts::ppu
         return "unkf";
     }
 
-    const std::string& var_name(svl::u32 vnid, const std::string& mod_name)
+    const char* var_name(svl::u32 vnid, const char* name)
     {
         return "unkv";
     }

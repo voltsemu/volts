@@ -39,10 +39,14 @@ namespace volts::vm
     template<typename T, typename TAddr>
     struct pointer
     {
-        operator vm::addr() const { return at; }
+        using self = pointer<T, TAddr>;
+
+        self operator+(TAddr offset) const { return self(at + (offset * sizeof(T))); }
+        vm::addr addr() const { return at; }
         operator T*() const { return (T*)base(at); }
         T operator*() const { return read<T>(at); }
         T& operator[](std::size_t idx) const { return ref<T>(at + (idx * sizeof(T))); }
+        
         TAddr at;
     };
 

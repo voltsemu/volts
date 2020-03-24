@@ -6,6 +6,6 @@
 
 namespace volts::ppu
 {
-    const std::string& function_name(svl::u32 fnid, const std::string& mod_name = "");
-    const std::string& var_name(svl::u32 vnid, const std::string& mod_name = "");
+    const char* function_name(svl::u32 fnid, const char* name = nullptr);
+    const char* var_name(svl::u32 vnid, const char* name = nullptr);
 }

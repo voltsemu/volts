@@ -110,13 +110,36 @@ namespace volts::ppu
 
                     symbols[nid] = addr;
                 }
-
-                addr += lib.len ? lib.len : sizeof(module_info);
             }
+            else
+            {
+                const char* name = (char*)vm::base(lib.name.addr());
 
-            const char* name = (char*)vm::base(lib.name);
 
+                auto fnids = lib.nids;
+                auto faddrs = lib.addrs;
 
+                for(int i = 0; i < lib.funcs; i++)
+                {
+                    auto nid = fnids[i];
+                    auto addr = faddrs[i];
+
+                    // TODO: linkage stuff
+                }
+
+                auto vnids = lib.nids + lib.funcs;
+                auto vaddrs = lib.addrs + lib.funcs;
+
+                for(int i = 0; i < lib.vars; i++)
+                {
+                    auto nid = vnids[i];
+                    auto addr = vaddrs[i];
+
+                    // TODO: linkage stuff
+                }
+            }
+            
+            addr += lib.len ? lib.len : sizeof(module_info);
         }
 
         return symbols;
