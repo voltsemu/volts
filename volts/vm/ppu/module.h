@@ -1,6 +1,7 @@
 #pragma once
 
 #include <elf.h>
+#include <map>
 
 namespace volts::ppu
 {
@@ -28,7 +29,7 @@ namespace volts::ppu
 
     struct linkage_module
     {
-        std::map<u32, linkage_info<function_info>> functions;
-        std::map<u32, linkage_info<variable_info>> variables;
+        std::map<svl::u32, linkage_info<function_info>> functions;
+        std::map<svl::u32, linkage_info<variable_info>> variables;
     };
 }
