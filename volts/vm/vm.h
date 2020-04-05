@@ -66,7 +66,7 @@ namespace volts::vm
         vm::addr addr;
 
         /// length of the section
-        svl::u32 len;
+        svl::u64 len;
     };
 
     struct block
@@ -115,6 +115,13 @@ namespace volts::vm
          */
         void dealloc(vm::addr ptr);
 
+        /**
+         * @brief allocate a block of memory at a specific location in physical memory
+         * 
+         * @param addr the address to allocate the block at
+         * @param size the size of the block to allocate
+         * @return vm::addr the allocated address, will equal addr
+         */
         vm::addr falloc(vm::addr addr, svl::u64 size);
 
     private:

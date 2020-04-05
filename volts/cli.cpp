@@ -54,8 +54,9 @@ namespace volts::cmd
             ("self", "parse a self file", opts::value<std::string>())
             ("render", "enable rendering window", opts::value<std::string>())
             ("name", "set the game name", opts::value<std::string>())
-            ("exec", "load a ps3 executable", opts::value<std::string>())
+            ("exec", "load a ps3 (s)elf executable", opts::value<std::string>())
             ("prx", "load a ps3 prx", opts::value<std::string>())
+            ("boot", "boot a ps3 game from a directory", opts::value<std::string>())
             ;
 
         auto res = opts.parse(argc, argv);
@@ -120,6 +121,22 @@ namespace volts::cmd
 
             vfs::root(path);
             spdlog::info("updated vfs root to {}", fs::absolute(path).string());
+        }
+
+        if(res.count("boot"))
+        {
+            fs::path path = res["boot"].as<std::string>(); 
+
+            if(!fs::exists(path))
+            {
+                spdlog::critical("cannot boot nonexistant directory");
+                std::abort();
+            }
+            path /= "PS3_GAME";
+
+            spdlog::info((path/"PARAM.SFO").c_str());
+            auto sfo = sfo::load(svl::open(path/"PARAM.SFO", svl::mode::read)).expect("failed to read PARAM.SFO file");
+            rsx::run("vulkan", (char*)sfo["TITLE"].data.data(), (char*)sfo["VERSION"].data.data());
         }
 
         if(res.count("sfo"))
@@ -260,7 +277,7 @@ namespace volts::cmd
         }
 
         if(res.count("render"))
-            volts::rsx::run(res["render"].as<std::string>(), res.count("name") ? res["name"].as<std::string>() : "volts");
+            volts::rsx::run(res["render"].as<std::string>(), res.count("name") ? res["name"].as<std::string>().c_str() : "volts", "1.00");
     }
 }
 

@@ -48,10 +48,14 @@ namespace volts::rsx
     const char* game_title = nullptr;
     const char* title() { return game_title; }
 
+    uint32_t game_version = 0;
+    uint32_t version() { return game_version; }
 
-    void run(const std::string& render_name, const std::string& game_name)
+    void run(const std::string& render_name, const char* name, const char* version)
     {
-        game_title = game_name.c_str();
+        game_title = name;
+        game_version = VK_MAKE_VERSION(version[0] - 48, version[2] - 48, version[3] - 48);
+
         // all platforms have vulkan (or moltenvk)
         vk::connect();
 
@@ -88,7 +92,7 @@ namespace volts::rsx
 
         current->preinit();
 
-        win = glfwCreateWindow(640, 480, game_name.c_str(), nullptr, nullptr);
+        win = glfwCreateWindow(640, 480, fmt::format("{} {}", name, version).c_str(), nullptr, nullptr);
 
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();

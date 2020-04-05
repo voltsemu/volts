@@ -43,7 +43,7 @@ namespace svl
         T value_or(T val) const { return has_value ? data : val; }
 
         template<typename F>
-        expected<T> map(F&& func) const { return has_value ? func(data) : data; }
+        expected<T> map(F&& func) const { return has_value ? func(data) : none(); }
 
         operator bool() const { return has_value; }
         bool valid() const { return has_value; }

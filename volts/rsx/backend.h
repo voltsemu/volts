@@ -33,6 +33,7 @@ namespace volts::rsx
 
     GLFWwindow* window();
     const char* title();
+    uint32_t version();
 
     void add(render* r);
 }
