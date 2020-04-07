@@ -1,5 +1,7 @@
 #include <platform.h>
 
+#include <glfw/glfw3.h>
+
 void vmain();
 
 #if SYS_WINDOWS

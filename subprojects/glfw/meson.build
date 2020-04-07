@@ -35,7 +35,7 @@ elif host_machine.system() == 'windows'
         'glfw/src/osmesa_context.c'
     ]
 
-    args += [ '/D_GLFW_WIN32' ]
+    args += '-D_GLFW_WIN32'
 elif host_machine.system() == 'linux'
     sources += [
         'glfw/src/x11_init.c',
