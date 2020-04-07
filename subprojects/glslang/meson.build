@@ -48,7 +48,7 @@ sources = [
 
 include_directories = [
     include_directories('glslang/glslang'),
-    include_directories('glslang/hlsl'),
+    #include_directories('glslang/hlsl'),
     include_directories('glslang')
 ]
 

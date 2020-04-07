@@ -3,8 +3,6 @@
 #include <string>
 #include <map>
 
-#include <vulkan/vulkan.h>
-
 namespace volts::rsx
 {
     // run the rsx window using a backend

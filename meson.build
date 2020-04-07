@@ -101,16 +101,7 @@ cli = executable('cli', 'volts/cli.cpp',
     link_args : links
 )
 
-exe = executable('gui', 'volts/gui.cpp',
-    cpp_args : cpp_args,
-    objcpp_args : cpp_args,
-    include_directories : include_directories,
-    dependencies : dependencies,
-    link_with : libvolts,
-    link_args : links,
-    gui_app : true,
-    build_by_default : false
-)
+subdir('gui'/build_machine.system())
 
 doxygen = find_program('doxygen', required : false)
 

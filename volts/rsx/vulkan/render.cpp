@@ -441,8 +441,8 @@ namespace volts::rsx
         
         app.pApplicationName = rsx::title();
 
-        // TODO: get game version
-        app.applicationVersion = rsx::version();
+        auto* version = rsx::version();
+        app.applicationVersion =  VK_MAKE_VERSION(version[0] - 48, version[2] - 48, version[3] - 48);
 
         VkInstanceCreateInfo create = { VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO };
         create.pApplicationInfo = &app;
