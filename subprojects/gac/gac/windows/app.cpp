@@ -16,8 +16,6 @@ namespace gac
         case WM_CREATE:
             //SetWindowLongPtrA(wnd, GWLP_USERDATA, (LONG_PTR)reinterpret_cast<app*>(((LPCREATESTRUCT)lparam)->lpCreateParams));
             break;
-        default:
-            return DefWindowProc(wnd, code, wparam, lparam);
         }
 
         return DefWindowProc(wnd, code, wparam, lparam);
@@ -65,52 +63,44 @@ namespace gac
             std::abort();
         }
 
-        MessageBox(nullptr, "here1", "error", 0);
-
         winrt::init_apartment(apartment_type::single_threaded);
-
-        MessageBox(nullptr, "here2", "error", 0);
 
         auto manager = WindowsXamlManager::InitializeForCurrentThread();
     
-        MessageBox(nullptr, "here10", "error", 0);
-
         DesktopWindowXamlSource source;
-
-        MessageBox(nullptr, "here11", "error", 0);
 
         auto interop = source.as<IDesktopWindowXamlSourceNative>();
 
-        MessageBox(nullptr, "here12", "error", 0);
-
-        // TODO: check error
         winrt::check_hresult(interop->AttachToWindow(wnd));
-
-        MessageBox(nullptr, "here5", "error", 0);
 
         HWND island = nullptr;
         interop->get_WindowHandle(&island);
         SetWindowPos(island, 0, 0, 0, width, height, SWP_SHOWWINDOW);
 
-        MessageBox(nullptr, "here6", "error", 0);
-
-        Windows::UI::Xaml::Controls::Grid container;
+        Windows::UI::Xaml::Controls::StackPanel container;
+        container.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
         
         Windows::UI::Xaml::Controls::TextBlock text;
         text.Text(L"hello");
+        text.VerticalAlignment(Windows::UI::Xaml::VerticalAlignment::Center);
+	    text.HorizontalAlignment(Windows::UI::Xaml::HorizontalAlignment::Center);
         text.FontSize(48);
         
         container.Children().Append(text);
         container.UpdateLayout();
-        source.Content(container);
 
-        MessageBox(nullptr, "here4", "error", 0);
+        source.Content(container);
 
         // TODO: we may need to get data from wWinMain
         ShowWindow(wnd, SW_SHOW);
         UpdateWindow(wnd);
 
-        MessageBox(nullptr, "here3", "error", 0);
+        MSG msg = {};
+        while(GetMessage(&msg, nullptr, 0, 0))
+        {
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+        }
     }
 
     void app::run()
