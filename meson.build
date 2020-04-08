@@ -101,7 +101,30 @@ cli = executable('cli', 'volts/cli.cpp',
     link_args : links
 )
 
-subdir('gui'/build_machine.system())
+gac = subproject('gac').get_variable('gac_dep')
+
+guiexec = executable('voltsgui', 'volts/gui.cpp',
+    cpp_args : cpp_args,
+    objcpp_args : cpp_args,
+    include_directories : include_directories,
+    dependencies : dependencies + [ gac ],
+    link_with : libvolts,
+    link_args : links,
+    gui_app : true
+)
+
+mt = find_program('mt.exe')
+
+gui = custom_target('gui',
+    output : 'volts.exe',
+    input : guiexec,
+    command : [
+        mt, '-nologo',
+        '-manifest', meson.current_source_dir()/'data/voltsgui.exe.manifest', 
+        '-outputresource:@INPUT@;#1'
+    ],
+    build_by_default : true
+)
 
 doxygen = find_program('doxygen', required : false)
 
