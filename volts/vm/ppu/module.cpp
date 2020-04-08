@@ -10,11 +10,11 @@
 
 #include <map>
 
-#include <bitrange.h>
+#include <svl/bitrange.h>
 
 #include "thread.h"
 
-#include "macros.h"
+#include <svl/macros.h>
 
 namespace volts::ppu
 {

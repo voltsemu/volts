@@ -1,10 +1,10 @@
 #pragma once
 
-#include <types.h>
+#include <svl/types.h>
 
 #include <mutex>
 
-#include <endian.h>
+#include <svl/endian.h>
 
 namespace volts::vm
 {

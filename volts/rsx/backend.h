@@ -2,9 +2,9 @@
 
 #include <string>
 
-#include <types.h>
-#include <expected.h>
-#include <result.h>
+#include <svl/types.h>
+#include <svl/expected.h>
+#include <svl/result.h>
 
 struct GLFWwindow;
 

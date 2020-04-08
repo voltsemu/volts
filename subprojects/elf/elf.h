@@ -1,10 +1,10 @@
 #pragma once
 
-#include <expected.h>
-#include <file.h>
-#include <endian.h>
-#include <convert.h>
-#include <types.h>
+#include <svl/expected.h>
+#include <svl/file.h>
+#include <svl/endian.h>
+#include <svl/convert.h>
+#include <svl/types.h>
 
 namespace elf
 {

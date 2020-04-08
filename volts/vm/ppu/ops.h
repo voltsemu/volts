@@ -1,6 +1,6 @@
 #include "thread.h"
-#include <endian.h>
-#include <bitrange.h>
+#include <svl/endian.h>
+#include <svl/bitrange.h>
 
 #include "vm.h"
 

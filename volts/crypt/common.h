@@ -1,7 +1,7 @@
 #pragma once
 
-#include <endian.h>
-#include <convert.h>
+#include <svl/endian.h>
+#include <svl/convert.h>
 
 #include <zlib.h>
 

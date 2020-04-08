@@ -3,10 +3,10 @@
 #include <vector>
 #include <memory>
 
-#include <endian.h>
-#include <types.h>
-#include <file.h>
-#include <expected.h>
+#include <svl/endian.h>
+#include <svl/types.h>
+#include <svl/file.h>
+#include <svl/expected.h>
 
 namespace volts::loader::pup
 {

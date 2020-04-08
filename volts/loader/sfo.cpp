@@ -1,8 +1,6 @@
 #include "sfo.h"
 
-#include <types.h>
-#include <file.h>
-#include <convert.h>
+#include <svl/convert.h>
 
 #include <spdlog/spdlog.h>
 

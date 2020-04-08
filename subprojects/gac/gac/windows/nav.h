@@ -4,6 +4,8 @@
 
 #include "item.h"
 
+#include "simple.h"
+
 namespace gac
 {
     enum class align : int32_t
@@ -15,10 +17,25 @@ namespace gac
 
     struct nav
     {
-        nav(std::initializer_list<navitem> items)
+        nav(std::initializer_list<navitem> nitems)
         {
-            for(auto i : items)
-                view.MenuItems().Append(i);
+            for(auto i : nitems)
+            {
+                view.MenuItems().Append(i.item);
+                items.push_back(i);
+            }
+
+            view.Content(content);
+            content.Content(text("aaaa"));
+
+            view.ItemInvoked([this](auto const& sender, auto const& args) {
+                //content.Navigate(
+                //    winrt::xaml_typename<temp>(), 
+                //    nullptr
+                //);
+            });
+
+            view.UpdateLayout();
         }
 
         nav& align(align a)
@@ -26,6 +43,10 @@ namespace gac
             view.PaneDisplayMode((winrt::Windows::UI::Xaml::Controls::NavigationViewPaneDisplayMode)a);
             return *this;
         }
+
+        std::vector<navitem> items;
+
+        winrt::Windows::UI::Xaml::Controls::Frame content;
 
         winrt::Windows::UI::Xaml::Controls::NavigationView view;
     };

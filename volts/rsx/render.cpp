@@ -16,7 +16,7 @@
 
 #include "vfs.h"
 
-#include <platform.h>
+#include <svl/platform.h>
 
 #include "vulkan/render.h"
 

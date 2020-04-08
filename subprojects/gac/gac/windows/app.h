@@ -14,7 +14,6 @@ namespace gac
 
         app& operator-(const nav& view)
         {
-            view.view.UpdateLayout();
             source.Content(view.view);
             return *this;
         }
@@ -26,5 +25,3 @@ namespace gac
         HWND island;
     };
 }
-
-#define GAC_MAIN(...) int WINAPI wWinMain(HINSTANCE inst, HINSTANCE prev, PWSTR cmd, int show) { __VA_ARGS__; }

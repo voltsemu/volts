@@ -28,8 +28,8 @@ endif
 spdlog = subproject('spdlog', default_options : spdlog_opts).get_variable('spdlog_dep')
 
 libsvl = library('svl', [
-        'endian.cpp',
-        'file.cpp'
+        'svl/endian.cpp',
+        'svl/file.cpp'
     ],
     include_directories : inc,
     install : true,

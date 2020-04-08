@@ -6,8 +6,6 @@
 #include <cstdlib>
 #include <cmath>
 
-#include <file.h>
-
 namespace volts::loader::tar
 {
     using namespace svl;
