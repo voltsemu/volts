@@ -2,6 +2,8 @@
 
 #include "pch.h"
 
+#include "nav.h"
+
 namespace gac
 {
     struct app
@@ -10,9 +12,18 @@ namespace gac
 
         void run();
 
-    private:
+        app& operator-(const nav& view)
+        {
+            view.view.UpdateLayout();
+            source.Content(view.view);
+            return *this;
+        }
+
+        winrt::Windows::UI::Xaml::Hosting::DesktopWindowXamlSource source;
+        winrt::Windows::UI::Xaml::Hosting::WindowsXamlManager manager = nullptr;
         HINSTANCE inst;
         HWND wnd;
+        HWND island;
     };
 }
 

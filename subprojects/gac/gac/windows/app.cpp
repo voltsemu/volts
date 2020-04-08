@@ -4,17 +4,24 @@ using namespace winrt;
 
 using namespace Windows::UI::Xaml::Hosting;
 
+#define SELF(wnd) ((app*)GetWindowLongPtrA(wnd, GWLP_USERDATA))
+
 namespace gac
 {
     LRESULT CALLBACK proc(HWND wnd, UINT code, WPARAM wparam, LPARAM lparam)
     {
+        RECT rect;
         switch(code)
         {
+        case WM_SIZE:
+            GetWindowRect(SELF(wnd)->wnd, &rect);
+            SetWindowPos(SELF(wnd)->island, nullptr, 0, 0, rect.right - rect.left - 16, rect.bottom - rect.top - 16, SWP_NOZORDER);
+            break;
         case WM_DESTROY:
             PostQuitMessage(0);
             break;
         case WM_CREATE:
-            //SetWindowLongPtrA(wnd, GWLP_USERDATA, (LONG_PTR)reinterpret_cast<app*>(((LPCREATESTRUCT)lparam)->lpCreateParams));
+            SetWindowLongPtrA(wnd, GWLP_USERDATA, (LONG_PTR)reinterpret_cast<app*>(((LPCREATESTRUCT)lparam)->lpCreateParams));
             break;
         }
 
@@ -65,49 +72,33 @@ namespace gac
 
         winrt::init_apartment(apartment_type::single_threaded);
 
-        auto manager = WindowsXamlManager::InitializeForCurrentThread();
-    
-        DesktopWindowXamlSource source;
+        manager = WindowsXamlManager::InitializeForCurrentThread();
 
         auto interop = source.as<IDesktopWindowXamlSourceNative>();
 
         winrt::check_hresult(interop->AttachToWindow(wnd));
 
-        HWND island = nullptr;
+        island = nullptr;
         interop->get_WindowHandle(&island);
-        SetWindowPos(island, 0, 0, 0, width, height, SWP_SHOWWINDOW);
-
-        Windows::UI::Xaml::Controls::StackPanel container;
-        container.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
-        
-        Windows::UI::Xaml::Controls::TextBlock text;
-        text.Text(L"hello");
-        text.VerticalAlignment(Windows::UI::Xaml::VerticalAlignment::Center);
-	    text.HorizontalAlignment(Windows::UI::Xaml::HorizontalAlignment::Center);
-        text.FontSize(48);
-        
-        container.Children().Append(text);
-        container.UpdateLayout();
-
-        source.Content(container);
-
-        // TODO: we may need to get data from wWinMain
-        ShowWindow(wnd, SW_SHOW);
-        UpdateWindow(wnd);
-
-        MSG msg = {};
-        while(GetMessage(&msg, nullptr, 0, 0))
-        {
-            TranslateMessage(&msg);
-            DispatchMessage(&msg);
-        }
+        SetWindowPos(island, 0, 0, 0, width - 16, height - 16, SWP_NOZORDER | SWP_SHOWWINDOW);
     }
 
     void app::run()
     {
+        // TODO: we may need to get data from wWinMain
+        ShowWindow(wnd, SW_SHOW);
+        UpdateWindow(wnd);
+
+        auto native = source.as<IDesktopWindowXamlSourceNative2>();
+
         MSG msg = {};
         while(GetMessage(&msg, nullptr, 0, 0))
         {
+            BOOL success = false;
+            winrt::check_hresult(native->PreTranslateMessage(&msg, &success));
+            if(success)
+                continue;
+
             TranslateMessage(&msg);
             DispatchMessage(&msg);
         }
