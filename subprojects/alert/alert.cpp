@@ -9,10 +9,10 @@
 
 namespace alert
 {
-    void alert(const std::wstring& title, const std::wstring& message)
+    void alert(const char* title, const char* message)
     {
 #ifdef _WIN32
-        MessageBoxW(nullptr, message.c_str(), title.c_str(), 0);
+        MessageBoxA(nullptr, message, title, 0);
 #else
         // TODO
 #endif

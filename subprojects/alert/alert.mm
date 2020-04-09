@@ -4,20 +4,16 @@
 
 namespace alert
 {
-    void alert(const std::wstring& title, const std::wstring& message)
+    void alert(const char* title, const char* message)
     {
         NSString* msg = [
-            [NSString alloc] 
-            initWithBytes:message.data()
-            length:message.size() * sizeof(wchar_t)
-            encoding:NSUTF32LittleEndianStringEncoding
+            NSString stringWithString:message
+            encoding:[NSString defaultCStringEncoding]
         ];
         
         NSString* tl = [
-            [NSString alloc] 
-            initWithBytes:title.data()
-            length:title.size() * sizeof(wchar_t)
-            encoding:NSUTF32LittleEndianStringEncoding
+            NSString stringWithString:title
+            encoding:[NSString defaultCStringEncoding]
         ];
         
         NSAlert* alert = [[NSAlert alloc] init];

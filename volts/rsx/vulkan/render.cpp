@@ -48,12 +48,12 @@ namespace volts::rsx
     {
         virtual ~vulkan() override {}
 
-        virtual void preinit() override
+        virtual void preinit(const game& game) override
         {
             glslang::InitializeProcess();
             glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
-            create_instance();
+            create_instance(game.title, game.version);
 
 #if VK_VALIDATE
             create_messenger();
@@ -431,7 +431,7 @@ namespace volts::rsx
         return out;
     }
 
-    void vulkan::create_instance()
+    void vulkan::create_instance(const char* title, const char* version)
     {
         VkApplicationInfo app = { VK_STRUCTURE_TYPE_APPLICATION_INFO };
         app.apiVersion = V_REQUIRED_VERSION;
@@ -439,9 +439,7 @@ namespace volts::rsx
         app.pEngineName = "emulated rsx";
         app.engineVersion = VK_MAKE_VERSION(1, 0, 0);
         
-        app.pApplicationName = rsx::title();
-
-        auto* version = rsx::version();
+        app.pApplicationName = title;
         app.applicationVersion =  VK_MAKE_VERSION(version[0] - 48, version[2] - 48, version[3] - 48);
 
         VkInstanceCreateInfo create = { VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO };

@@ -4,5 +4,5 @@
 
 namespace alert
 {
-    void alert(const std::wstring& title, const std::wstring& message);
+    void alert(const char* title, const char* message);
 }
