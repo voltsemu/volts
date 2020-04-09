@@ -9,6 +9,10 @@ So there can be another competing standard.
 
 # User Q&A
 
+Windows GUI requires Windows 10 version 1909 at least
+Mac GUI requires osx 10.15 at least
+Linux GUI is not currently planned for development but the cli should work file
+
 ## How do I Run a game?
 
 As of Sept 17, 2019. You don't. This emulator is still early stages.

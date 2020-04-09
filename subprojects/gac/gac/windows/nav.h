@@ -6,6 +6,8 @@
 
 #include "simple.h"
 
+#include "horror.h"
+
 namespace gac
 {
     enum class align : int32_t
@@ -29,10 +31,17 @@ namespace gac
             content.Content(text("aaaa"));
 
             view.ItemInvoked([this](auto const& sender, auto const& args) {
+                //MessageBoxW(nullptr, L"arse", L"arse", 0);
+                //Windows::UI::Xaml::Interop::TypeName type;
+                //type.Name = L"gac.GPage";
+                //type.Kind = Windows::UI::Xaml::Interop::TypeKind::Custom;
                 //content.Navigate(
-                //    winrt::xaml_typename<temp>(), 
-                //    nullptr
+                //    type,
+                //    text("jeff")
                 //);
+                //winrt::Windows::UI::Xaml::Controls::Page p;
+                //p.Content(text("ARSE"));
+                //content.Content(p);
             });
 
             view.UpdateLayout();

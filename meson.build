@@ -3,6 +3,10 @@ project('volts', ['cpp', 'c'],
         'cpp_std=c++17',
         'cpp_rtti=false',
         'cpp_eh=none',
+        # as the VC 2019 runtime isnt shipped by default on windows we need to link it statically
+        # this stops those weird dll errors that lead to downloading some random dll 
+        # and shoving it into system32
+        'b_vscrt=mt',
         'default_library=static'
     ],
     version : '0.2.1',
