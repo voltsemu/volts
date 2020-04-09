@@ -102,5 +102,7 @@ namespace gac
             TranslateMessage(&msg);
             DispatchMessage(&msg);
         }
+
+        source.Close();
     }
 }

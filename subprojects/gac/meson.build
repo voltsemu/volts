@@ -8,6 +8,7 @@ sources = []
 
 cpp_pch = ''
 
+
 subdir('gac'/build_machine.system())
 
 svl = subproject('svl').get_variable('svl_dep')
@@ -18,6 +19,6 @@ libgac = library('gac', sources,
 )
 
 gac_dep = declare_dependency(
-    link_with : libgac,
+    link_with : [ libgac ],
     include_directories : include_directories('.')
 )

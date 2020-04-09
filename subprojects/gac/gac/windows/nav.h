@@ -28,9 +28,16 @@ namespace gac
             }
 
             view.Content(content);
-            content.Content(text("aaaa"));
 
             view.ItemInvoked([this](auto const& sender, auto const& args) {
+                if(args.IsSettingsInvoked())
+                {
+
+                }
+                else if(args.InvokedItemContainer())
+                {
+                    content.Navigate(winrt::xaml_typename<GPage>(), nullptr);
+                }
                 //MessageBoxW(nullptr, L"arse", L"arse", 0);
                 //Windows::UI::Xaml::Interop::TypeName type;
                 //type.Name = L"gac.GPage";

@@ -34,7 +34,7 @@ namespace gac
         winrt::Windows::UI::Xaml::Controls::NavigationViewItem i;
         auto name = winrt::box_value(winrt::to_hstring(label));
         i.Content(name);
-        i.Tag(name);
+        i.Tag(winrt::box_value(L"Windows.UI.Xaml.Controls.Page"));
 
         navitem out = { i };
 
