@@ -64,8 +64,10 @@ namespace volts::rsx
             select_device();
         }
 
-        virtual void postinit() override
+        virtual void postinit(GLFWwindow* win) override
         {
+            window = win;
+
             create_surface();
             create_device();
             create_queues();
@@ -127,7 +129,7 @@ namespace volts::rsx
 
             // imgui stuff
 
-            ImGui_ImplGlfw_InitForVulkan(rsx::window(), true);
+            ImGui_ImplGlfw_InitForVulkan(window, true);
 
             ImGui_ImplVulkan_InitInfo imgui_info = {};
             imgui_info.Instance = instance;
@@ -143,7 +145,7 @@ namespace volts::rsx
 
             auto temp = buffer();
 
-            ImGui_ImplVulkan_CreateFontsTexture(temp);
+            ImGui_ImplVulkan_CreateFontsTexture(temp); 
 
             execute(temp);
         }
@@ -243,6 +245,8 @@ namespace volts::rsx
 
     private:
 
+        GLFWwindow* window;
+
         using memory = std::tuple<VkBuffer, VkDeviceMemory>;
 
         VkInstance instance;
@@ -294,7 +298,7 @@ namespace volts::rsx
         void remove_messenger();
 #endif
 
-        void create_instance();
+        void create_instance(const char* title, const char* version);
         void list_devices();
         void select_device();
         void create_device();
@@ -538,7 +542,7 @@ namespace volts::rsx
 
     void vulkan::create_surface()
     {
-        VK_ENSURE(glfwCreateWindowSurface(instance, rsx::window(), nullptr, &surface));
+        VK_ENSURE(glfwCreateWindowSurface(instance, window, nullptr, &surface));
     }
 
     void vulkan::create_queues()
@@ -567,14 +571,14 @@ namespace volts::rsx
         return VK_PRESENT_MODE_FIFO_KHR;
     }
 
-    VkExtent2D choose_extent(const VkSurfaceCapabilitiesKHR& caps)
+    VkExtent2D choose_extent(const VkSurfaceCapabilitiesKHR& caps, GLFWwindow* window)
     {
         if(caps.currentExtent.width != UINT32_MAX)
             return caps.currentExtent;
 
         int w, h;
 
-        glfwGetFramebufferSize(rsx::window(), &w, &h);
+        glfwGetFramebufferSize(window, &w, &h);
 
         VkExtent2D extent = { 
             std::clamp<uint32_t>(w, caps.minImageExtent.width, caps.maxImageExtent.width), 
@@ -605,7 +609,7 @@ namespace volts::rsx
     
         swapchain_format = choose_format(formats);
         auto mode = choose_mode(modes);
-        swapchain_extent = choose_extent(caps);
+        swapchain_extent = choose_extent(caps, window);
 
         image_count = std::min(caps.minImageCount ? caps.minImageCount + 1 : 1, caps.maxImageCount);
     

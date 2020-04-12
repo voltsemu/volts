@@ -17,23 +17,23 @@ namespace volts::rsx
     {
         virtual ~ogl() override {}
 
-        virtual void preinit() override
+        virtual void preinit(const game& game) override
         {
             glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
             glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
         }
 
-        virtual void postinit() override
+        virtual void postinit(GLFWwindow* win) override
         {
             // enable vsync (TODO)
-            glfwMakeContextCurrent(window());
+            glfwMakeContextCurrent(win);
             //glfwSwapInterval(1);
 
             gladLoadGL();
 
-            glfwGetFramebufferSize(window(), &width, &height);
+            glfwGetFramebufferSize(win, &width, &height);
 
-            ImGui_ImplGlfw_InitForOpenGL(window(), true);
+            ImGui_ImplGlfw_InitForOpenGL(win, true);
             ImGui_ImplOpenGL3_Init("#version 430");
         }
 
@@ -53,7 +53,7 @@ namespace volts::rsx
             ImGui::Render();
             ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-            glfwSwapBuffers(window());
+            glfwSwapBuffers(win);
         }
 
         virtual void cleanup() override
@@ -66,6 +66,7 @@ namespace volts::rsx
         virtual const char* name() const override { return "opengl"; }
 
     private:
+        GLFWwindow* win;
         int width;
         int height;
     };

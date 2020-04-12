@@ -12,7 +12,6 @@ namespace volts::rsx
 {
     struct game
     {
-        GLFWwindow* window;
         const char* title;
         const char* version;
     };
@@ -24,7 +23,7 @@ namespace volts::rsx
         virtual void preinit(const game& game) = 0;
 
         // called after window creation
-        virtual void postinit() = 0;
+        virtual void postinit(GLFWwindow* window) = 0;
 
         // start rendering a frame
         virtual void begin() = 0;

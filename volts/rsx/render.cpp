@@ -40,22 +40,8 @@ namespace volts::rsx
 
     void add(render* r) { renders()->push_back(r); }
     
-    
-    GLFWwindow* win;
-    GLFWwindow* window() { return win; }
-
-
-    const char* game_title = nullptr;
-    const char* title() { return game_title; }
-
-    const char* game_version = 0;
-    const char* version() { return game_version; }
-
     void run(const std::string& render_name, const char* name, const char* version)
     {
-        game_title = name;
-        game_version = version;
-
         // all platforms have vulkan (or moltenvk)
         vk::connect();
 
@@ -90,9 +76,9 @@ namespace volts::rsx
             return;
         }
 
-        current->preinit();
+        current->preinit({ name, version });
 
-        win = glfwCreateWindow(640, 480, fmt::format("{} {}", name, version).c_str(), nullptr, nullptr);
+        GLFWwindow* win = glfwCreateWindow(640, 480, fmt::format("{} {}", name, version).c_str(), nullptr, nullptr);
 
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
@@ -101,7 +87,7 @@ namespace volts::rsx
 
         ImGui::StyleColorsDark();
 
-        current->postinit();
+        current->postinit(win);
 
         while(!glfwWindowShouldClose(win))
         {

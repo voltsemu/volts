@@ -25,7 +25,7 @@ namespace volts::rsx
     {
         virtual ~d3d12() override {}
 
-        virtual void preinit() override
+        virtual void preinit(const game& game) override
         {
             glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
@@ -47,10 +47,12 @@ namespace volts::rsx
                 adapters.push_back(adapt);
         }
 
-        virtual void postinit() override
+        virtual void postinit(GLFWwindow* win) override
         {
+            window = win;
+
             int w, h;
-            glfwGetFramebufferSize(rsx::window(), &w, &h);
+            glfwGetFramebufferSize(win, &w, &h);
 
             viewport = CD3DX12_VIEWPORT(
                 0.f, 0.f,
@@ -64,7 +66,7 @@ namespace volts::rsx
             create_backbuffer();
             load_data();
 
-            ImGui_ImplGlfw_InitForOpenGL(rsx::window(), true);
+            ImGui_ImplGlfw_InitForOpenGL(win, true);
 
             ImGui_ImplDX12_Init(
                 device.Get(),
@@ -105,6 +107,7 @@ namespace volts::rsx
         virtual const char* name() const override { return "d3d12"; }
 
     private:
+        GLFWwindow* window;
 
         void create_backbuffer();
         void create_device();
@@ -198,7 +201,7 @@ namespace volts::rsx
     void d3d12::load_device()
     {
         int w, h;
-        glfwGetWindowSize(rsx::window(), &w, &h);
+        glfwGetWindowSize(window, &w, &h);
 
         DXGI_SWAP_CHAIN_DESC1 desc = {};
         desc.BufferCount = DX_FRAME_COUNT;
@@ -214,7 +217,7 @@ namespace volts::rsx
         ComPtr<IDXGISwapChain1> swapchain;
         DX_ENSURE(factory->CreateSwapChainForHwnd(
             queue.Get(),
-            glfwGetWin32Window(rsx::window()),
+            glfwGetWin32Window(window),
             &desc,
             nullptr,
             nullptr,
@@ -222,7 +225,7 @@ namespace volts::rsx
         ));
 
         DX_ENSURE(factory->MakeWindowAssociation(
-            glfwGetWin32Window(rsx::window()),
+            glfwGetWin32Window(window),
             DXGI_MWA_NO_ALT_ENTER
         ));
 

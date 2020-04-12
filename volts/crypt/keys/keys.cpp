@@ -144,19 +144,19 @@ namespace volts::crypt::keys
         case key_type::lvl0:
             return lvl0_key;
         case key_type::lvl1:
-            return get_key(lvl1_keys, [=](auto& k) { return k.version == ver; });
+            return get_key(lvl1_keys, [ver](auto& k) { return k.version == ver; });
         case key_type::lvl2:
-            return get_key(lvl2_keys, [=](auto& k) { return k.version == ver; });
+            return get_key(lvl2_keys, [ver](auto& k) { return k.version == ver; });
         case key_type::app:
-            return get_key(app_keys, [=](auto& k) { return k.revision == rev; });
+            return get_key(app_keys, [rev](auto& k) { return k.revision == rev; });
         case key_type::disk_img:
-            return get_key(image_keys, [=](auto& k) { return k.version == ver && k.revision == rev; });
+            return get_key(image_keys, [ver, rev](auto& k) { return k.version == ver && k.revision == rev; });
         case key_type::loader:
             return loader_key;
         case key_type::other:
-            return get_key(other_keys, [=](auto& k) { return k.version == ver; });
+            return get_key(other_keys, [ver](auto& k) { return k.version == ver; });
         case key_type::npdrm:
-            return get_key(npdrm_keys, [=](auto& k) { return k.revision == rev; });
+            return get_key(npdrm_keys, [rev](auto& k) { return k.revision == rev; });
         default:
             return svl::none();
         }

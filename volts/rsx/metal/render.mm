@@ -20,20 +20,21 @@ namespace volts::rsx
     {
         virtual ~mtl() override {}
 
-        virtual void preinit() override
+        virtual void preinit(const game& game) override
         {
             device = MTLCreateSystemDefaultDevice();
 
             glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         }
 
-        virtual void postinit() override
+        virtual void postinit(GLFWwindow* win) override
         {
+            window = win;
             ImGui_ImplMetal_Init(device);
             // TODO: at some point imgui will be getting a metal glfw backend
-            ImGui_ImplGlfw_InitForOpenGL(window(), true);
+            ImGui_ImplGlfw_InitForOpenGL(win, true);
 
-            NSWindow* win = glfwGetCocoaWindow(window());
+            NSWindow* win = glfwGetCocoaWindow(win);
 
             layer = [CAMetalLayer layer];
             layer.device = device;
@@ -81,7 +82,7 @@ namespace volts::rsx
         virtual void begin() override
         {
             // TODO: extract this to resize
-            glfwGetFramebufferSize(window(), &width, &height);
+            glfwGetFramebufferSize(window, &width, &height);
             layer.drawableSize = CGSizeMake(width, height);
 
             drawable = [layer nextDrawable];
@@ -122,7 +123,8 @@ namespace volts::rsx
         virtual const char* name() const override { return "metal"; }
 
     private:
-        
+        GLFWwindow* window;
+
         // global data
         id<MTLDevice> device;
         CAMetalLayer* layer;
