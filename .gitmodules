@@ -10,9 +10,9 @@
 [submodule "subprojects/glfw/glfw"]
 	path = subprojects/glfw/glfw
 	url = https://github.com/glfw/glfw
-[submodule "subprojects/glslang/glslang"]
-	path = subprojects/glslang/glslang
-	url = https://github.com/KhronosGroup/glslang
 [submodule "subprojects/glfw"]
 	path = subprojects/glfw
 	url = https://github.com/voltsemu/glfw3
+[submodule "subprojects/glm"]
+	path = subprojects/glm
+	url = https://github.com/voltsemu/glm
