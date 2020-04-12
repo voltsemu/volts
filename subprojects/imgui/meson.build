@@ -21,7 +21,7 @@ elif host_machine.system() == 'darwin'
     add_languages('objcpp')
     sources += 'imgui/examples/imgui_impl_metal.mm'
 else
-    #TODO: linux 
+    #TODO: does linux need anything
 endif
 
 deps = []

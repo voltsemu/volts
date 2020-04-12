@@ -7,13 +7,12 @@
 [submodule "subprojects/cxxopts/cxxopts"]
 	path = subprojects/cxxopts/cxxopts
 	url = https://github.com/jarro2783/cxxopts
-[submodule "subprojects/glm/glm"]
-	path = subprojects/glm/glm
-	url = https://github.com/g-truc/glm
-	branch = 13724cfae64a8b5313d1cabc9a963d2c9dbeda12
 [submodule "subprojects/glfw/glfw"]
 	path = subprojects/glfw/glfw
 	url = https://github.com/glfw/glfw
 [submodule "subprojects/glslang/glslang"]
 	path = subprojects/glslang/glslang
 	url = https://github.com/KhronosGroup/glslang
+[submodule "subprojects/glfw"]
+	path = subprojects/glfw
+	url = https://github.com/voltsemu/glfw3
