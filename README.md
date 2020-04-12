@@ -90,6 +90,7 @@ If you successfully build & boot the emulator on your system please provide a pu
 * Install visual studio C++ compiler (C++17 support or later)
 
 ```sh
+git submodule update --init --recursive
 meson build
 cd build
 ninja
@@ -103,7 +104,7 @@ This will only build on OSX 10.15 (Catalina) or later
 you will also need to install xcode 11.1
 
 ```sh
-git submodule update --init
+git submodule update --init --recursive
 meson build
 ninja -C build
 ./build/volt

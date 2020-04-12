@@ -16,3 +16,6 @@
 [submodule "subprojects/glm"]
 	path = subprojects/glm
 	url = https://github.com/voltsemu/glm
+[submodule "subprojects/glslang"]
+	path = subprojects/glslang
+	url = https://github.com/voltsemu/glslang

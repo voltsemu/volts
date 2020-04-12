@@ -23,17 +23,18 @@ namespace volts::rsx
             glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
         }
 
-        virtual void postinit(GLFWwindow* win) override
+        virtual void postinit(GLFWwindow* window) override
         {
+            win = window;
             // enable vsync (TODO)
-            glfwMakeContextCurrent(win);
+            glfwMakeContextCurrent(window);
             //glfwSwapInterval(1);
 
             gladLoadGL();
 
-            glfwGetFramebufferSize(win, &width, &height);
+            glfwGetFramebufferSize(window, &width, &height);
 
-            ImGui_ImplGlfw_InitForOpenGL(win, true);
+            ImGui_ImplGlfw_InitForOpenGL(window, true);
             ImGui_ImplOpenGL3_Init("#version 430");
         }
 
