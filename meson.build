@@ -7,7 +7,13 @@ project('volts', ['cpp', 'c'],
         # this stops those weird dll errors that lead to downloading some random dll 
         # and shoving it into system32
         'b_vscrt=mt',
-        'default_library=static'
+        'default_library=static',
+        'b_lto=true',
+        'werror=true',
+
+        # TODO: we will need to replace glfw and zlib at some point
+        # as they trigger all kinds of warnings at higher levels
+        #'warning_level=2'
     ],
     version : '0.2.1',
     license : 'Apache'
@@ -19,7 +25,9 @@ endif
 
 # TODO: using cpp_eh=none makes meson do funky stuff on windows, feels like a bug, should report
 if meson.get_compiler('cpp').get_id() == 'msvc'
-    add_global_arguments('/D_HAS_EXCEPTIONS=0', language : 'cpp')
+    add_global_arguments(['/D_HAS_EXCEPTIONS=0'], 
+        language : ['cpp', 'c']
+    )
 endif
 
 # collect all the dependencies that lots of things share
@@ -69,6 +77,8 @@ cxxopts = subproject('cxxopts').get_variable('cxxopts_dep')
 glm = subproject('glm').get_variable('glm_dep')
 
 glsl = subproject('glslang').get_variable('glsl_dep')
+
+#TODO: when we need config files https://github.com/marzer/tomlplusplus looks like the way to go
 
 links = []
 sources = []

@@ -113,8 +113,10 @@ namespace volts::ppu
             }
             else
             {
+                spdlog::info("lib {}", lib.name.addr());
                 const char* name = (char*)vm::base(lib.name.addr());
 
+                spdlog::info("loading library {}", name);
 
                 auto fnids = lib.nids;
                 auto faddrs = lib.addrs;
@@ -125,6 +127,7 @@ namespace volts::ppu
                     auto addr = faddrs[i];
 
                     // TODO: linkage stuff
+                    //auto& func = 
                 }
 
                 auto vnids = lib.nids + lib.funcs;
@@ -294,6 +297,10 @@ namespace volts::ppu
         u32 pagesize = 0x100000;
         u32 stacksize = 0x100000;
         u32 segment = 0;
+
+        u32 tls_addr = 0;
+        u32 tls_fsize = 0;
+        u32 tls_msize = 0;
         for(auto prog : exec.progs)
         {
             // LOAD
@@ -312,6 +319,9 @@ namespace volts::ppu
             // TLS
             else if(prog.type == 7)
             {
+                tls_addr = prog.vaddress;
+                tls_fsize = prog.file_size;
+                tls_msize = prog.mem_size;
             }
             // LOOS+1
             else if(prog.type == 0x60000001)

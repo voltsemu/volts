@@ -126,6 +126,8 @@ namespace volts::vm
             // map all memory
             any = new block(0x10000, 0xE0000000 + 0x20000000);
         }
+
+        spdlog::info("finished initializing vm memory");
     }
 
     void deinit()
