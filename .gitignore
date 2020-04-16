@@ -1,5 +1,4 @@
 *
-
 !*/
 
 !*.c
@@ -11,7 +10,7 @@
 !*.build
 !*.py
 
-[b|B]uild/
+*[b|B]uild/
 docs/
 .vscode/*
 volts/generated/version.gen.h

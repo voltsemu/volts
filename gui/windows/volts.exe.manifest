@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<assembly 
+  xmlns="urn:schemas-microsoft-com:asm.v1" 
+  xmlns:asmv3="urn:schemas-microsoft-com:asm.v3" 
+  manifestVersion="1.0">
+
+  <compatibility xmlns="urn:schemas-microsoft-com:compatibility.v1">
+    <application>
+      <maxversiontested Id="10.0.18362.0"/>
+    </application>
+  </compatibility>
+
+  <application xmlns="urn:schemas-microsoft-com:asm.v3">
+    <windowsSettings>
+      <dpiAwareness xmlns="http://schemas.microsoft.com/SMI/2016/WindowsSettings">PerMonitorV2</dpiAwareness>
+    </windowsSettings>
+  </application>
+
+  <!-- 
+    TODO: figure out how to embed a dll with custom controls inside the final exe 
+    Then figure out how to do it all using meson because msbuild isnt really viable
+  -->
+</assembly>
