@@ -27,6 +27,7 @@ Planned features
 * ~~Decrypt SELF files and generate ELFs~~
 * Working CELL interpreter
 * Minimal RSX implementation
+* Get the test cube rpcs3 has to boot and not crash (it can crash on exit and thats still a win)
 
 ## Longterm
 
@@ -34,11 +35,20 @@ Planned features
 * Disk decryptor
 * Controller input
 * Performance improvments
+* Code tidying
+* AES-NI accellerated game decryption
 
 ## Sideprojects
 
 * Debugger
-* GUI frontend
+* Native GUI frontends, xaml islands for windows, swiftui on macos, gtk or the like on linux
+* Github CI
+* Replace spdlog with nanolog
+* Replace zlib with something modern
+* Get glslang to properly unity build
+* Start building with `warning_level=3`
+* Get rid of glfw due to large memory footprint
+* Get full project unity builds working (glslang has to go if we try this)
 
 # Developer Q&A
 

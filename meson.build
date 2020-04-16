@@ -9,6 +9,7 @@ project('volts', ['cpp', 'c'],
         'b_vscrt=mt',
         'default_library=static',
         'b_lto=true',
+        'b_lto=true',
         'werror=true',
 
         # TODO: we will need to replace glfw and zlib at some point
