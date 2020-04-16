@@ -2,7 +2,6 @@
 #define V_VERSION VK_MAKE_VERSION(1, 0, 0)
 
 #include "render.h"
-#include "backend.h"
 #include "support.h"
 
 #include <optional>
@@ -331,9 +330,9 @@ namespace volts::rsx
         VkPipelineShaderStageCreateInfo shader_stage(VkShaderModule mod, VkShaderStageFlagBits stage);
     };
 
-    void vk::connect()
+    render* vk::connect()
     {
-        add(new vulkan());
+        return new vulkan();
     }
 
     void vulkan::create_descriptor_pool()

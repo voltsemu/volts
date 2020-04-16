@@ -1,5 +1,4 @@
 #include "render.h"
-#include "backend.h"
 #include "support.h"
 
 #define GLFW_EXPOSE_NATIVE_WIN32
@@ -58,8 +57,8 @@ namespace volts::rsx
         ComPtr<ID3D12Device> device;
     };
 
-    void directx12::connect()
+    render* directx12::connect()
     {
-        rsx::add(new d3d12());
+        return new d3d12();
     }
 }

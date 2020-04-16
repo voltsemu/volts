@@ -24,7 +24,7 @@ namespace volts::loader::tar
          * @param name the name of the file to find
          * @return svl::file the file if it was found, otherwise the stream is empty
          */
-        svl::file get_file(std::string name);
+        svl::file get_file(const char* name);
 
         /**
          * @brief extract the tar file to a path on disk

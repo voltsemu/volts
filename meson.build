@@ -25,6 +25,7 @@ endif
 
 # TODO: using cpp_eh=none makes meson do funky stuff on windows, feels like a bug, should report
 if meson.get_compiler('cpp').get_id() == 'msvc'
+    # TODO: remove _CRT_SECURE_NO_WARNINGS at the point we get rid of glfw and zlib
     add_global_arguments(['/D_HAS_EXCEPTIONS=0'], 
         language : ['cpp', 'c']
     )
@@ -34,11 +35,10 @@ endif
 
 zlib = dependency('zlib', fallback : [ 'zlib', 'zlib_dep' ])
 
-glfw = dependency('glfw3', required : false)
+#TODO: get rid of glfw all together
+glfw = subproject('glfw').get_variable('glfw_dep')
 
-if not glfw.found()
-    glfw = subproject('glfw').get_variable('glfw_dep')
-endif
+lmw = subproject('lmw').get_variable('lmw_dep')
 
 spdlog_opts = [
     'enable_tests=false',
@@ -82,7 +82,7 @@ glsl = subproject('glslang').get_variable('glsl_dep')
 
 links = []
 sources = []
-dependencies = [ aes, xxhash, rapidjson, svl, elf, vfs, imgui, cxxopts, spdlog, zlib, glsl ]
+dependencies = [ aes, xxhash, rapidjson, svl, elf, vfs, imgui, cxxopts, spdlog, zlib, glsl, lmw, glfw, glm ]
 cpp_args = [ '-DFMT_EXCEPTIONS=0' ]
 include_directories = []
 

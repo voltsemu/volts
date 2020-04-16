@@ -1,12 +1,10 @@
 #pragma once
 
-#include <string>
-
 #include <svl/types.h>
 #include <svl/expected.h>
 #include <svl/result.h>
 
-struct GLFWwindow;
+namespace lmw { struct window; }
 
 namespace volts::rsx
 {
@@ -23,7 +21,7 @@ namespace volts::rsx
         virtual void preinit(const game& game) = 0;
 
         // called after window creation
-        virtual void postinit(GLFWwindow* window) = 0;
+        virtual void postinit(lmw::window* window) = 0;
 
         // start rendering a frame
         virtual void begin() = 0;

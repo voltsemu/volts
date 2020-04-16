@@ -48,7 +48,7 @@ namespace volts::loader::tar
         return ret;
     }
 
-    svl::file object::get_file(std::string name)
+    svl::file object::get_file(const char* name)
     {
         if(offsets.find(name) == offsets.end())
         {
@@ -58,7 +58,7 @@ namespace volts::loader::tar
         auto offset = offsets[name];
         file.seek(offset - sizeof(header));
         auto head = file.read<header>();
-        if(strcmp(head.name, name.c_str()) == 0)
+        if(strcmp(head.name, name) == 0)
         {
             return svl::from(file.read<u8>(octal_to_decimal(atoi(head.size))));
         }

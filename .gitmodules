@@ -9,13 +9,13 @@
 	url = https://github.com/jarro2783/cxxopts
 [submodule "subprojects/glfw/glfw"]
 	path = subprojects/glfw/glfw
-	url = https://github.com/glfw/glfw
-[submodule "subprojects/glfw"]
-	path = subprojects/glfw
-	url = https://github.com/voltsemu/glfw3
-[submodule "subprojects/glm"]
-	path = subprojects/glm
-	url = https://github.com/voltsemu/glm
-[submodule "subprojects/glslang"]
-	path = subprojects/glslang
-	url = https://github.com/voltsemu/glslang
+	url = https://github.com/glfw/glfw/
+[submodule "subprojects/zlib-ng/zlib-ng"]
+	path = subprojects/zlib-ng/zlib-ng
+	url = https://github.com/zlib-ng/zlib-ng
+[submodule "subprojects/glm/glm"]
+	path = subprojects/glm/glm
+	url = https://github.com/g-truc/glm
+[submodule "subprojects/glslang/glslang"]
+	path = subprojects/glslang/glslang
+	url = https://github.com/KhronosGroup/glslang

@@ -282,7 +282,7 @@ namespace volts::ppu
         };
 
         auto info = vm::read<library_info>(segments[0].addr + mod.progs[0].paddress - mod.progs[0].offset);
-        auto name = std::string(info.name);
+        auto name = info.name;
 
         spdlog::info("name {}, version {}.{}", name, info.version[0], info.version[1]);
 

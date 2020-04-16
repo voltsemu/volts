@@ -212,7 +212,7 @@ namespace volts::cmd
                     if(key.rfind("dev_flash_", 0) != 0)
                         continue;
 
-                    tasks.push_back(std::async(std::launch::async, [name = key, file = tar.get_file(key)]{
+                    tasks.push_back(std::async(std::launch::async, [name = key, file = tar.get_file(key.c_str())]{
                         spdlog::info("decrypting pup entry {}", name);
                         auto update = sce::load(file);
 
@@ -277,7 +277,7 @@ namespace volts::cmd
         }
 
         if(res.count("render"))
-            volts::rsx::run(res["render"].as<std::string>(), res.count("name") ? res["name"].as<std::string>().c_str() : "volts", "1.00");
+            volts::rsx::run(res["render"].as<std::string>().c_str(), res.count("name") ? res["name"].as<std::string>().c_str() : "volts", "1.00");
     }
 }
 

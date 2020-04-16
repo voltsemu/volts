@@ -1,6 +1,8 @@
 #pragma once
 
+#include "backend.h"
+
 namespace volts::rsx::metal
 {
-    void connect();
+    render* connect();
 }

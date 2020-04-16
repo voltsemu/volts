@@ -1,16 +1,15 @@
 include_directories += include_directories('.')
 
-subdir('vulkan')
+#subdir('vulkan')
 
-if host_machine.system() == 'darwin'
-    subdir('metal')
-else
+#if host_machine.system() == 'darwin'
+#    subdir('metal')
+#else
     subdir('ogl')
 
-    if host_machine.system() == 'windows'
-        subdir('dx12')
-    endif
-endif
+#    if host_machine.system() == 'windows'
+#        subdir('dx12')
+#    endif
+#endif
 
-dependencies += [ glfw, imgui, glm ]
 sources += 'volts/rsx/render.cpp'

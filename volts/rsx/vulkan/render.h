@@ -1,6 +1,8 @@
 #pragma once
 
+#include "backend.h"
+
 namespace volts::rsx::vk
 {
-    void connect();
+    render* connect();
 }

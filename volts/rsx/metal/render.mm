@@ -1,5 +1,3 @@
-#include "backend.h"
-
 #include "render.h"
 
 #include <GLFW/glfw3.h>
@@ -140,8 +138,8 @@ namespace volts::rsx
         id<MTLRenderCommandEncoder> encoder;
     };
 
-    void metal::connect()
+    render* metal::connect()
     {
-        rsx::add(new mtl());
+        return new mtl();
     }
 }
