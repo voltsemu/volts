@@ -1,8 +1,0 @@
-namespace VoltsGUI
-{
-    [default_interface]
-    runtimeclass GamePage
-    {
-        GamePage();
-    }
-}

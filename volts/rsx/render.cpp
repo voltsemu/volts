@@ -29,7 +29,7 @@
 #if SYS_OSX
 #   include "metal/render.h"
 #else
-#   include "ogl/render.h"
+#   include "ogl/render.cpp"
 #endif 
 
 namespace volts::rsx
@@ -79,10 +79,16 @@ namespace volts::rsx
     }
 #endif
 
-    void loop(const char* name, const char* version, render* backend)
+    template<typename T>
+    void loop(const char* name, const char* version)
     {
+        static_assert(std::is_base_of<render, T>::value);
+
+        T backend = T();
+
+        backend.preinit({ name, version });
+
         lmw::window win(fmt::format("{} {}", name, version).c_str(), 640, 480);
-        backend->preinit({ name, version });
 
         //IMGUI_CHECKVERSION();
         //ImGui::CreateContext();
@@ -91,56 +97,40 @@ namespace volts::rsx
         
         //ImGui::StyleColorsDark();
 
-        backend->postinit(&win);
+        backend.postinit(&win);
 
         while(win.poll())
             ;
         {
-            backend->begin();
+            backend.begin();
 
             //if(static bool a = true; a)
                 //ImGui::ShowDemoWindow(&a);
 
-            backend->end();
+            backend.end();
         }
 
         win.close();
 
-        backend->cleanup();
+        backend.cleanup();
     }
+
+#define ENGINE(name, type) if(strcmp(engine, name) == 0) { loop<type>(name, version); return; }
 
     void run(const char* engine, const char* name, const char* version)
     {
-        render* backends[] = {
-            // all platforms have vulkan (or moltenvk)
-            //vk::connect(),
-#if SYS_WINDOWS
-            //directx12::connect(),
-#endif
-
+        //ENGINE("vulkan", vulkan);
 #if SYS_OSX
-            //metal::connect(),
+        ENGINE("metal", metal);
 #else
-            // macos doesnt support opengl anymore so dont use it on mac
-            opengl::connect()
+        ENGINE("opengl", ogl);
+
+#   if SYS_WINDOWS
+        //ENGINE("d3d12", dx12);
+#   endif
 #endif
-        };
 
-        auto* backend = [&]() -> render* {
-            for(auto* backend : backends)
-                if(strcmp(backend->name(), engine) == 0)
-                    return backend;
-            return nullptr;
-        }();
-
-        if(!!backend)
-        {
-            loop(name, version, backend);
-        }
-        else
-        {
-            spdlog::critical("render backend {} not found", engine);
-            return;   
-        }
+        spdlog::critical("render backend {} not found", engine);
+        return;   
     }
 }

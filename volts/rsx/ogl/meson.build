@@ -5,4 +5,4 @@ if host_machine.system() == 'windows'
 endif
 
 dependencies += glad
-sources += 'volts/rsx/ogl/render.cpp'
+#sources += 'volts/rsx/ogl/render.cpp'
