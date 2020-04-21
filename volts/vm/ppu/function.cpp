@@ -1,6 +1,6 @@
 #include "function.h"
 
-#include <spdlog/fmt/fmt.h>
+#include <spdlog/spdlog.h>
 
 namespace volts::ppu
 {
@@ -19,6 +19,7 @@ namespace volts::ppu
             }
         }
 
+        spdlog::warn("invalid fnid {:x}", fnid);
         return "unkf";
     }
 
