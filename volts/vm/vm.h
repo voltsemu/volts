@@ -46,6 +46,7 @@ namespace volts::vm
         operator T*() const { return (T*)base(at); }
         T operator*() const { return read<T>(at); }
         T& operator[](std::size_t idx) const { return ref<T>(at + (idx * sizeof(T))); }
+        T* ptr() const { return static_cast<T*>(base(at)); }
         
         TAddr at;
     };

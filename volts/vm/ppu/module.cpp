@@ -1,4 +1,5 @@
 #include "module.h"
+#include "function.h"
 
 #include "vm.h"
 
@@ -68,21 +69,39 @@ namespace volts::ppu
 
     static_assert(sizeof(module_info) == 44);
 
-    static std::map<u32, void*> load_imports(u32 front, u32 back)
+    std::map<u32, void*> load_imports(u32 front, u32 back)
     {
+        spdlog::info("imports {}:{}", front, back);
         std::map<u32, void*> symbols = {};
 
         auto addr = front;
+
         while(addr < back)
         {
             auto lib = vm::read<module_info>(addr);
+
+            spdlog::info("module {}", lib.name.ptr());
+
+            auto fnids = lib.vnids;
+            auto addrs = lib.addrs;
+
+            for(int i = 0; i < lib.funcs; i++)
+            {
+                auto fnid = fnids[i];
+                auto addr = addrs[i];
+
+                spdlog::info("func {}:{:x}:{:x}", func_name(fnid, lib.name.ptr()), fnid, addr);
+            }
+
+            addr += lib.len ? lib.len : sizeof(module_info);
         }
 
         return symbols;
     }
 
-    static std::map<u32, u32> load_exports(u32 front, u32 back)
+    std::map<u32, u32> load_exports(u32 front, u32 back)
     {
+        spdlog::info("exports {}:{}", front, back);
         std::map<u32, u32> symbols = {};
 
         auto addr = front;
@@ -90,6 +109,7 @@ namespace volts::ppu
         while(addr < back)
         {
             auto lib = vm::read<module_info>(addr);
+            spdlog::info("{:x} {:x}", addr, back);
             
             if(!lib.name)
             {
@@ -101,7 +121,7 @@ namespace volts::ppu
 
                     if(i < lib.funcs)
                     {
-
+                        spdlog::info("special {:x} -> {}", addr, ppu::func_name(nid, nullptr));
                     }
                     else
                     {
@@ -144,6 +164,8 @@ namespace volts::ppu
             
             addr += lib.len ? lib.len : sizeof(module_info);
         }
+
+        spdlog::info("here 2");
 
         return symbols;
     }
@@ -303,6 +325,8 @@ namespace volts::ppu
         u32 tls_msize = 0;
         for(auto prog : exec.progs)
         {
+            spdlog::info("program section {:x}", prog.type);
+
             // LOAD
             if(prog.type == 1)
             {

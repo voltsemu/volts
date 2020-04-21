@@ -1,10 +1,10 @@
 #include "function.h"
 
-#include <fmt/fmt.h>
+#include <spdlog/fmt/fmt.h>
 
 namespace volts::ppu
 {
-    const char* get_function_name(svl::u32 fnid, const char* name)
+    const char* func_name(svl::u32 fnid, const char* name)
     {
         if(!name)
         {
