@@ -1,10 +1,10 @@
-#include "backend.h"
+#pragma once
 
 namespace volts
 {
-    struct vk : backend<vk>
+    struct vk
     {
-        void begin() {}
-        void end() {}
+        void begin();
+        void end();
     };
 }

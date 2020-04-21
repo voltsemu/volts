@@ -9,7 +9,6 @@ project('volts', ['cpp', 'c'],
         'b_vscrt=mt',
         'default_library=static',
         'b_lto=true',
-        'b_lto=true',
         'werror=true',
 
         # TODO: we will need to replace glfw and zlib at some point
@@ -26,7 +25,6 @@ endif
 
 # TODO: using cpp_eh=none makes meson do funky stuff on windows, feels like a bug, should report
 if meson.get_compiler('cpp').get_id() == 'msvc'
-    # TODO: remove _CRT_SECURE_NO_WARNINGS at the point we get rid of glfw and zlib
     add_global_arguments(['/D_HAS_EXCEPTIONS=0'], 
         language : ['cpp', 'c']
     )
