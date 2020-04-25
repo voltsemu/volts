@@ -34,11 +34,6 @@ endif
 
 zlib = dependency('zlib', fallback : [ 'zlib', 'zlib_dep' ])
 
-#TODO: get rid of glfw all together
-glfw = subproject('glfw').get_variable('glfw_dep')
-
-lmw = subproject('lmw').get_variable('lmw_dep')
-
 spdlog_opts = [
     'enable_tests=false',
     'enable_examples=false',
@@ -65,23 +60,21 @@ svl = subproject('svl').get_variable('svl_dep')
 
 elf = subproject('elf').get_variable('elf_dep')
 
+#TODO: this should go
 vfs = subproject('vfs').get_variable('vfs_dep')
 
 alert = subproject('alert').get_variable('alert_dep')
-
-imgui = subproject('imgui').get_variable('imgui_dep')
 
 cxxopts = subproject('cxxopts').get_variable('cxxopts_dep')
 
 glm = subproject('glm').get_variable('glm_dep')
 
-glsl = subproject('glslang').get_variable('glsl_dep')
+toml = subproject('toml').get_variable('tomlplusplus_dep')
 
-#TODO: when we need config files https://github.com/marzer/tomlplusplus looks like the way to go
 
 links = []
 sources = []
-dependencies = [ aes, xxhash, rapidjson, svl, elf, vfs, imgui, cxxopts, spdlog, zlib, glsl, lmw, glfw, glm ]
+dependencies = [ aes, xxhash, rapidjson, svl, elf, vfs, cxxopts, spdlog, zlib, glm, toml ]
 cpp_args = [ '-DFMT_EXCEPTIONS=0' ]
 include_directories = []
 

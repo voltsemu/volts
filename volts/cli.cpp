@@ -1,3 +1,5 @@
+#include <volts.h>
+
 // logging
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/basic_file_sink.h>
@@ -26,6 +28,9 @@
 
 #include <cxxopts.hpp>
 
+#include <toml++/toml.h>
+#include <fstream>
+
 #include <rapidjson/writer.h>
 #include <rapidjson/stringbuffer.h>
 
@@ -40,6 +45,8 @@ namespace volts::cmd
     using namespace crypt;
 
     namespace cvt = svl::convert;
+
+    using namespace std::string_view_literals;
 
     void parse(int argc, char** argv)
     {
@@ -57,6 +64,7 @@ namespace volts::cmd
             ("exec", "load a ps3 (s)elf executable", opts::value<std::string>())
             ("prx", "load a ps3 prx", opts::value<std::string>())
             ("boot", "boot a ps3 game from a directory", opts::value<std::string>())
+            ("cfg", "path to toml config file to configure the emulator with", opts::value<std::string>())
             ;
 
         auto res = opts.parse(argc, argv);
@@ -100,6 +108,24 @@ namespace volts::cmd
             default:
                 spdlog::warn("invalid log level {}. must be one of [off | debug | info | warn | err | critical]", str);
                 break;
+            }
+        }
+
+        if(res.count("cfg"))
+        {
+            if(auto path = res["cfg"].as<std::string>(); fs::exists(path))
+            {
+                auto cfg = toml::parse_file(path);
+
+                config conf = {};
+
+                conf.aes = cfg["global"]["aes-ni"].as_boolean()->value_or(false);
+                conf.vfs = fs::path(cfg["global"]["vfs"].as_string()->value_or("vfs"));
+                conf.render = cfg["global"]["render"].value_or("vulkan"sv);
+            }
+            else
+            {
+                spdlog::error("cannot find config file {}", path.c_str());
             }
         }
 
