@@ -31,14 +31,10 @@
 #include <toml++/toml.h>
 #include <fstream>
 
-#include <rapidjson/writer.h>
-#include <rapidjson/stringbuffer.h>
-
 #include "rsx/render.h"
 
 namespace volts::cmd
 {
-    namespace json = rapidjson;
     namespace opts = cxxopts;
 
     using namespace loader;
@@ -57,6 +53,7 @@ namespace volts::cmd
             ("log-lvl", "set logging level", opts::value<std::string>())
             ("log-out", "set logging output", opts::value<std::string>())
             ("sfo", "parse an sfo file", opts::value<std::string>())
+            ("sfo-write", "create an sfo file from a toml config", opts::value<std::string>())
             ("pup", "parse a pup file", opts::value<std::string>())
             ("self", "parse a self file", opts::value<std::string>())
             ("render", "enable rendering window", opts::value<std::string>())
@@ -136,6 +133,68 @@ namespace volts::cmd
             spdlog::info("changed logging output file");
         }
 
+        if(res.count("sfo-write"))
+        {
+            if(auto path = res["sfo-write"].as<std::string>(); fs::exists(path))
+            {
+                auto input = toml::parse_file(path);
+
+                sfo::object obj;
+                for(auto&& [key, val] : input)
+                {
+                    if(val.is_string())
+                    {
+                        auto str = val.as_string()->get();
+                        spdlog::info("data {}\n", str);
+                        std::vector<svl::byte> data(str.begin(), str.end());
+                        data.push_back('\0');
+
+                        obj[key] = { sfo::format::string, data };
+                    }
+                    else if(val.is_integer())
+                    {
+                        union {
+                            int64_t v;
+                            svl::byte b[8];
+                        } data = { val.as_integer()->get() };
+
+                        std::vector<svl::byte> vec;
+                        vec.push_back(data.b[0]);
+                        vec.push_back(data.b[1]);
+                        vec.push_back(data.b[2]);
+                        vec.push_back(data.b[3]);
+
+                        obj[key] = { sfo::format::integer, vec };
+                    }
+                    else if(val.is_array())
+                    {
+                        std::vector<svl::byte> data;
+                        for(auto&& v : *val.as_array())
+                        {
+                            if(!v.is_integer())
+                            {
+                                spdlog::warn("invalid data in array at key {}", key);
+                            }
+
+                            data.push_back(v.as_integer()->get());
+                        }
+                    }
+                    else
+                    {
+                        spdlog::warn("invalid type for key {}", key);
+                    }
+                }
+
+                auto output = svl::open("PARAM.SFO", svl::mode::write);
+                sfo::write(output, obj);
+            }
+            else
+            {
+                spdlog::error("cannot find input file {}", path.c_str());
+            }
+            
+        }
+
         if(res.count("vfs"))
         {
             fs::path path = res["vfs"].as<std::string>();
@@ -169,45 +228,40 @@ namespace volts::cmd
         {
             if(fs::path path = res["sfo"].as<std::string>(); fs::exists(path))
             {
-                auto file = svl::open(path, svl::mode::read);
-                auto obj = sfo::load(file).expect("failed to parse sfo file");
+                auto obj = sfo::load(svl::open(path, svl::mode::read))
+                    .expect("failed to parse sfo file");
 
-                json::StringBuffer s;
-                json::Writer w(s);
+                auto out = svl::open("param.toml", svl::mode::write);
 
-                w.StartObject();
-
-                for(auto& [key, val] : obj)
+                for(auto&& [key, val] : obj)
                 {
-                    w.Key(key.c_str());
+                    out.write(key + " = ");
 
                     switch(val.type)
                     {
-                    case sfo::format::array:
-                        w.StartArray();
-
-                        for(auto b : val.data)
-                            w.Int(b);
-
-                        w.EndArray();
-                        break;
-
-                    case sfo::format::string:
-                        w.String((char*)val.data.data());
-                        break;
                     case sfo::format::integer:
-                        w.Int(*(int*)val.data.data());
+                        out.write(std::to_string(*(int*)val.data.data()));
                         break;
-                    default:
-                        w.Null();
+                    case sfo::format::string:
+                        out.write(fmt::format("\"{}\"", std::string((char*)val.data.data())));
+                        break;
+                    case sfo::format::array:
+                        out.write("[ ");
+                        for(int i = 0; i < val.data.size(); i++)
+                        {
+                            if(i != 0)
+                                out.write(", ");
+                            
+                            out.write(std::to_string(val.data[i]));
+                        }
+                        out.write("]");
                         break;
                     }
+
+                    out.write(std::string("\n"));
                 }
 
-                w.EndObject();
-
-                spdlog::info(s.GetString());
-        
+                spdlog::info("write parsed file to param.toml");
             }
             else
             {

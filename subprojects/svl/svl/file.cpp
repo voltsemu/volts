@@ -243,4 +243,9 @@ namespace svl
     {
         return file(new ram_file(vec));
     }
+
+    file buffer()
+    {
+        return from({});
+    }
 }

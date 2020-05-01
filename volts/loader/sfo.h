@@ -48,4 +48,6 @@ namespace volts::loader::sfo
      * @return svl::expected<object> the parsed object if the file was valid
      */
     svl::expected<object> load(svl::file stream);
+
+    void write(svl::file& stream, const object& obj);
 }

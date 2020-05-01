@@ -104,4 +104,58 @@ namespace volts::loader::sfo
 
         return val;
     }
+
+    void write(svl::file& stream, const object& obj)
+    {        
+        struct triple { u16 key; u32 data; u32 size; format fmt; };
+        
+        // offsets
+        std::vector<triple> offsets = {};
+        // data
+        svl::file keys = svl::buffer();
+        svl::file data = svl::buffer();
+
+        // write data to buffers
+        for(auto& [key, it] : obj)
+        {
+            offsets.push_back({
+                static_cast<u16>(keys.tell()),
+                static_cast<u32>(data.tell()),
+                static_cast<u32>(it.data.size()),
+                it.type
+            });
+
+            keys.write(key, true);
+            data.write(it.data);
+        }
+
+        auto size = obj.size();
+
+        // create header
+        header head = {
+            cvt::to_u32("\0PSF"), // magic
+            0x101, // version
+            static_cast<u32>(size * sizeof(index_table_entry) + sizeof(header)), // key table offset
+            static_cast<u32>(keys.size() + size * sizeof(index_table_entry) + sizeof(header)), // data offset
+            static_cast<u32>(size) // total entries
+        };
+
+        stream.seek(0);
+        stream.write(head);
+        for(auto idx : offsets)
+        {
+            index_table_entry entry = {
+                idx.key,
+                idx.fmt,
+                idx.size,
+                idx.size,
+                idx.data
+            };
+
+            stream.write(entry);
+        }
+
+        stream.insert(keys);
+        stream.insert(data);
+    }
 }

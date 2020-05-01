@@ -153,6 +153,16 @@ namespace svl
             handle->write(&val, sizeof(T));
         }
 
+        void insert(file other)
+        {
+            auto dist = other.tell();
+            other.seek(0);
+            auto data = other.read<byte>(other.size());
+            
+            write(data);
+            other.seek(dist);
+        }
+
         /**
          * @brief write an array of POD types into the stream
          * 
@@ -182,10 +192,11 @@ namespace svl
          * @brief write a string to the file
          * 
          * @param str the string to write
+         * @param eof should the null terminator be written as well
          */
-        void write(const std::string& str)
+        void write(const std::string& str, bool eof = false)
         {
-            handle->write(str.c_str(), str.size());
+            handle->write(str.c_str(), str.size() + (eof ? 1 : 0));
         }
 
         /**
@@ -235,4 +246,11 @@ namespace svl
      * @return file the file stream
      */
     file from(const std::vector<svl::byte>& vec);
+
+    /**
+     * @brief create an in memory file
+     * 
+     * @return file the in memory file stream
+     */
+    file buffer();
 }

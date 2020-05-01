@@ -50,8 +50,6 @@ spdlog = subproject('spdlog', default_options : spdlog_opts).get_variable('spdlo
 
 xxhash = subproject('xxhash').get_variable('xxhash_dep')
 
-rapidjson = subproject('rapidjson').get_variable('rapidjson_dep')
-
 fuzzy = subproject('fts').get_variable('fuzzy_dep')
 
 aes = subproject('aes').get_variable('aes_dep')
@@ -74,7 +72,7 @@ toml = subproject('toml').get_variable('tomlplusplus_dep')
 
 links = []
 sources = []
-dependencies = [ aes, xxhash, rapidjson, svl, elf, vfs, cxxopts, spdlog, zlib, glm, toml ]
+dependencies = [ aes, xxhash, svl, elf, vfs, cxxopts, spdlog, zlib, glm, toml ]
 cpp_args = [ '-DFMT_EXCEPTIONS=0' ]
 include_directories = []
 
