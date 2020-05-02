@@ -8,8 +8,8 @@ namespace volts
 {
     struct config
     {
-        bool aes;
-        fs::path vfs;
-        std::string_view render;
+        bool aes = false;
+        fs::path vfs = fs::current_path();
+        std::string_view render = "vulkan";
     };
 }

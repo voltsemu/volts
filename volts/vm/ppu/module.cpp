@@ -5,8 +5,6 @@
 
 #include <xxhash.h>
 
-#include "vfs.h"
-
 #include <spdlog/spdlog.h>
 
 #include <map>

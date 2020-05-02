@@ -50,18 +50,11 @@ spdlog = subproject('spdlog', default_options : spdlog_opts).get_variable('spdlo
 
 xxhash = subproject('xxhash').get_variable('xxhash_dep')
 
-fuzzy = subproject('fts').get_variable('fuzzy_dep')
-
 aes = subproject('aes').get_variable('aes_dep')
 
 svl = subproject('svl').get_variable('svl_dep')
 
 elf = subproject('elf').get_variable('elf_dep')
-
-#TODO: this should go
-vfs = subproject('vfs').get_variable('vfs_dep')
-
-alert = subproject('alert').get_variable('alert_dep')
 
 cxxopts = subproject('cxxopts').get_variable('cxxopts_dep')
 
@@ -72,7 +65,7 @@ toml = subproject('toml').get_variable('tomlplusplus_dep')
 
 links = []
 sources = []
-dependencies = [ aes, xxhash, svl, elf, vfs, cxxopts, spdlog, zlib, glm, toml ]
+dependencies = [ aes, xxhash, svl, elf, cxxopts, spdlog, zlib, glm, toml ]
 cpp_args = [ '-DFMT_EXCEPTIONS=0' ]
 include_directories = []
 

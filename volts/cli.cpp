@@ -7,7 +7,6 @@
 // filesystem
 #include <svl/wrapfs.h>
 #include <svl/file.h>
-#include <vfs.h>
 
 #include <future>
 
@@ -46,10 +45,11 @@ namespace volts::cmd
 
     void parse(int argc, char** argv)
     {
+        config conf = {};
+
         opts::Options opts = { "volts", "ps3 command line tools" };
         opts.add_options()
             ("help", "print help and exit")
-            ("vfs", "set vfs root directory", opts::value<std::string>())
             ("log-lvl", "set logging level", opts::value<std::string>())
             ("log-out", "set logging output", opts::value<std::string>())
             ("sfo", "parse an sfo file", opts::value<std::string>())
@@ -113,8 +113,6 @@ namespace volts::cmd
             if(auto path = res["cfg"].as<std::string>(); fs::exists(path))
             {
                 auto cfg = toml::parse_file(path);
-
-                config conf = {};
 
                 conf.aes = cfg["global"]["aes-ni"].as_boolean()->value_or(false);
                 conf.vfs = fs::path(cfg["global"]["vfs"].as_string()->value_or("vfs"));
@@ -193,19 +191,6 @@ namespace volts::cmd
                 spdlog::error("cannot find input file {}", path.c_str());
             }
             
-        }
-
-        if(res.count("vfs"))
-        {
-            fs::path path = res["vfs"].as<std::string>();
-            if(!fs::exists(path))
-            {
-                spdlog::info("path {} did not exist, creating required directories", path.string());
-                fs::create_directories(path);
-            }
-
-            vfs::root(path);
-            spdlog::info("updated vfs root to {}", fs::absolute(path).string());
         }
 
         if(res.count("boot"))
@@ -292,7 +277,7 @@ namespace volts::cmd
                     if(key.rfind("dev_flash_", 0) != 0)
                         continue;
 
-                    tasks.push_back(std::async(std::launch::async, [name = key, file = tar.get_file(key.c_str())]{
+                    tasks.push_back(std::async(std::launch::async, [vfs = conf.vfs, name = key, file = tar.get_file(key.c_str())]{
                         spdlog::info("decrypting pup entry {}", name);
                         auto update = sce::load(file);
 
@@ -302,7 +287,7 @@ namespace volts::cmd
                         
                         spdlog::info("extracing entry into vfs");
 
-                        dec.extract(vfs::root());
+                        dec.extract(vfs);
                     }));
                 }
             
