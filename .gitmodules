@@ -4,9 +4,6 @@
 [submodule "subprojects/cxxopts/cxxopts"]
 	path = subprojects/cxxopts/cxxopts
 	url = https://github.com/jarro2783/cxxopts
-[submodule "subprojects/zlib-ng/zlib-ng"]
-	path = subprojects/zlib-ng/zlib-ng
-	url = https://github.com/zlib-ng/zlib-ng
 [submodule "subprojects/glm/glm"]
 	path = subprojects/glm/glm
 	url = https://github.com/g-truc/glm

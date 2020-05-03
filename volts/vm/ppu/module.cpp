@@ -123,7 +123,7 @@ namespace volts::ppu
                     }
                     else
                     {
-                        
+                        spdlog::info("special {:x} -> {}", addr, ppu::var_name(nid, nullptr));
                     }
 
                     symbols[nid] = addr;
@@ -213,7 +213,7 @@ namespace volts::ppu
             if(sect.type != 1)
                 continue;
 
-            for(int i = 0; i < segments.size(); i++)
+            for(size_t i = 0; i < segments.size(); i++)
             {
                 u32 sect_addr = mod.progs[i].vaddress;
                 if(sect.address >= sect_addr && sect.address < sect_addr + mod.progs[i].mem_size)

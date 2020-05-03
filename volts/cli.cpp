@@ -205,7 +205,8 @@ namespace volts::cmd
             path /= "PS3_GAME";
 
             spdlog::info((path/"PARAM.SFO").c_str());
-            auto sfo = sfo::load(svl::open(path/"PARAM.SFO", svl::mode::read)).expect("failed to read PARAM.SFO file");
+            auto sfo = sfo::load(svl::open(path/"PARAM.SFO", svl::mode::read))
+                .expect("failed to read PARAM.SFO file");
             rsx::run("vulkan", (char*)sfo["TITLE"].data.data(), (char*)sfo["VERSION"].data.data());
         }
 
@@ -232,7 +233,7 @@ namespace volts::cmd
                         break;
                     case sfo::format::array:
                         out.write("[ ");
-                        for(int i = 0; i < val.data.size(); i++)
+                        for(size_t i = 0; i < val.data.size(); i++)
                         {
                             if(i != 0)
                                 out.write(", ");
@@ -272,8 +273,10 @@ namespace volts::cmd
                 // will be called and everything will be decrypted at the same time
                 std::vector<std::future<void>> tasks = {};
 
-                for(auto& [key, _] : tar.offsets)
+                for(auto&& field : tar.offsets)
                 {
+                    const auto key = field.first;
+
                     if(key.rfind("dev_flash_", 0) != 0)
                         continue;
 

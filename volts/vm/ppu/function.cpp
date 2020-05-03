@@ -19,7 +19,7 @@ namespace volts::ppu
             }
         }
 
-        spdlog::warn("invalid fnid {:x}", fnid);
+        spdlog::warn("invalid fnid {}:{:x}", name, fnid);
         return "unkf";
     }
 

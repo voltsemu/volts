@@ -241,9 +241,9 @@ namespace volts::ppu
         {   
             for(const auto& e : instr)
             {
-                for(int i = 0; i < (e.magn + (11 - sh - num)); i++)
+                for(u32 i = 0; i < (e.magn + (11 - sh - num)); i++)
                 {
-                    for(int j = 0; j < 1u << sh; j++)
+                    for(u32 j = 0; j < 1u << sh; j++)
                     {
                         ops[((((((i << (num - e.magn)) | e.val) << sh) | j) << 6) | op)] = e.func;
                     }
@@ -254,7 +254,7 @@ namespace volts::ppu
         {
             for(const auto& e : instr)
             {
-                for(int i = 0; i < 1u << 11; i++)
+                for(u32 i = 0; i < 1u << 11; i++)
                 {
                     ops[i << 6 | e.val] = e.func;
                 }

@@ -76,7 +76,7 @@ namespace volts::crypt::sce
 
             auto meta_head = *(metadata::header*)meta_head_vec.data();
 
-            for(int i = 0; i < meta_head.sect_count; i++)
+            for(u32 i = 0; i < meta_head.sect_count; i++)
             {
                 meta_sections.push_back(*(metadata::section*)(meta_head_vec.data() + sizeof(metadata::header) + sizeof(metadata::section) * i));
             }
@@ -92,7 +92,7 @@ namespace volts::crypt::sce
         {
             aes_context aes;
 
-            buf_len = std::reduce(meta_sections.begin(), meta_sections.end(), 0ull, [](auto l, auto r) {
+            buf_len = std::accumulate(meta_sections.begin(), meta_sections.end(), 0ull, [](auto l, auto r) {
                 return l + r.size;
             });
 
@@ -158,8 +158,7 @@ namespace volts::crypt::sce
                     
                     int ret = inflateInit(&zstream);
 
-                    file = svl::from({ });
-                    file.seek(0);
+                    file = svl::buffer();
 
                     while(zstream.avail_in)
                     {

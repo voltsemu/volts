@@ -43,7 +43,7 @@ namespace volts::crypt::self
 
             stream.seek(self_header.control_offset.get());
 
-            int c = 0;
+            u64 c = 0;
             while(c < self_header.control_length)
             {
                 auto ctrl = read_control_info();
@@ -117,7 +117,7 @@ namespace volts::crypt::self
 
             data_keys_len = meta_header.key_count * 16;
 
-            for(int i = 0; i < meta_header.sect_count; i++)
+            for(u32 i = 0; i < meta_header.sect_count; i++)
             {
                 auto sect = *(metadata::section*)(headers + sizeof(metadata::header) + sizeof(metadata::section) * i);
 
@@ -188,6 +188,8 @@ namespace volts::crypt::self
 
             int buffer_offset = 0;
 
+            byte* zbuf = new byte[data_len];
+
             for(auto& sect : meta_sections)
             {
                 if(sect.type != 2)
@@ -202,7 +204,6 @@ namespace volts::crypt::self
                     auto size = prog_headers[sect.index].file_size;
 
                     byte* dbuf = new byte[size]();
-                    byte* zbuf = new byte[data_len];
                     memcpy(zbuf, data_buffer, data_len);
 
                     uLongf dbuf_len = static_cast<uLongf>(size);
@@ -215,6 +216,7 @@ namespace volts::crypt::self
                     }
 
                     out.write(dbuf, size);
+                    delete[] dbuf;
                 }
                 else
                 {
@@ -229,6 +231,8 @@ namespace volts::crypt::self
                 out.seek(self_header.sect_info_offset.get());
                 out.write(sect_headers);
             }
+
+            delete[] zbuf;
 
             return out;
         }

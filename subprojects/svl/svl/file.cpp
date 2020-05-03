@@ -4,6 +4,8 @@
 #   include "windows.h"
 #elif SYS_OSX
 #   include <copyfile.h>
+#else
+#   include <sys/sendfile.h>
 #endif
 
 #if !SYS_WINDOWS
@@ -122,11 +124,7 @@ namespace svl
 #if SYS_OSX
             fcopyfile(fileno(handle), out, 0, COPYFILE_ALL);
 #else
-            off_t copied = 0;
-            struct stat info = {};
-            int in = fileno(handle);
-            fstat(in, &info);
-            sendfile(out, in, &copied, info.st_size);
+            sendfile(out, fileno(handle), 0, size());
 #endif
             close(out);
         }
@@ -246,6 +244,8 @@ namespace svl
 
     file buffer()
     {
-        return from({});
+        auto out = from({});
+        out.seek(0);
+        return out;
     }
 }
