@@ -54,7 +54,7 @@ namespace volts::ppu
     void tdi(thread& ppu, form op)
     {
         u64 a = ppu.gpr[op.ra];
-        i64 s = (i64)op.simm16;
+        u64 s = (u64)op.simm16;
         
         if(
             ((a < s) && (op.bo & 0x10)) ||

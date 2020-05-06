@@ -174,7 +174,7 @@ namespace volts::cmd
                                 spdlog::warn("invalid data in array at key {}", key);
                             }
 
-                            data.push_back(v.as_integer()->get());
+                            data.push_back((svl::byte)v.as_integer()->get());
                         }
                     }
                     else

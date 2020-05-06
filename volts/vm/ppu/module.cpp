@@ -144,8 +144,7 @@ namespace volts::ppu
                     auto nid = fnids[i];
                     auto addr = faddrs[i];
 
-                    // TODO: linkage stuff
-                    //auto& func = 
+                    spdlog::info("nid {} addr {}", nid, addr);
                 }
 
                 auto vnids = lib.nids + lib.funcs;
@@ -156,7 +155,7 @@ namespace volts::ppu
                     auto nid = vnids[i];
                     auto addr = vaddrs[i];
 
-                    // TODO: linkage stuff
+                    spdlog::info("nid {} addr {}", nid, addr);
                 }
             }
             
@@ -432,6 +431,9 @@ namespace volts::ppu
             stacksize = std::clamp<u32>(stacksize, 0x10000, 0x100000);
             break;
         }
+
+        spdlog::info("tls(addr={}, fsize={}, msize={})", tls_addr, tls_fsize, tls_msize);
+        spdlog::info("pagesize={}, stacksize={}, segment={}", pagesize, stacksize, segment);
 
         ppu::thread(exec.head.entry);
     }

@@ -8,7 +8,6 @@ project('volts', ['cpp', 'c'],
         # and shoving it into system32
         'b_vscrt=mt',
         'default_library=static',
-        'b_lto=true',
         'werror=true',
 
         # TODO: we will need to replace glfw and zlib at some point
@@ -75,6 +74,10 @@ endif
 
 if host_machine.system() != 'windows'
     cpp_args += [ '-std=c++17' ]
+endif
+
+if meson.get_compiler('cpp').get_id() == 'g++'
+    cpp_args += [ '-lstdc++fs' ]
 endif
 
 subdir('volts')

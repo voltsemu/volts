@@ -1,7 +1,6 @@
 #pragma once
 
 #include <elf.h>
-#include <map>
 
 namespace volts::ppu
 {

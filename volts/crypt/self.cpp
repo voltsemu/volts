@@ -61,7 +61,7 @@ namespace volts::crypt::self
 
             auto meta_info = stream.read<metadata::info>();
 
-            const int header_size = sce_header.metadata_end
+            const auto header_size = sce_header.metadata_end
                 - sizeof(sce::header)
                 - sce_header.metadata_start
                 - sizeof(metadata::info);

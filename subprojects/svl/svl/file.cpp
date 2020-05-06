@@ -55,7 +55,7 @@ namespace svl
 
         virtual void read(void* out, u64 num) override 
         {
-            ReadFile(handle, out, num, nullptr, nullptr);
+            ReadFile(handle, out, (u32)num, nullptr, nullptr);
         }
 
         virtual void write(const void* in, u64 num) override 
