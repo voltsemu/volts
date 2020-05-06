@@ -76,10 +76,6 @@ if host_machine.system() != 'windows'
     cpp_args += [ '-std=c++17' ]
 endif
 
-if meson.get_compiler('cpp').get_id() == 'g++'
-    cpp_args += [ '-lstdc++fs' ]
-endif
-
 subdir('volts')
 
 libvolts = library('volts', sources,
