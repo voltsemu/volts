@@ -68,12 +68,13 @@ namespace volts::crypt::self
 
             stream.seek(sce_header.metadata_start + sizeof(sce::header) + sizeof(metadata::info));
 
-            headers = new u8[header_size];
-            stream.read((char*)headers, header_size);
+            headers = new byte[header_size];
+            stream.read(headers, header_size);
 
             aes_context aes;
 
-            auto k = keys::get_self_key((key_type)info.type.get(), sce_header.type, info.version).expect("failed to find key");
+            auto k = keys::get_self_key(info.type.as<key_type>(), sce_header.type, info.version)
+                .expect("failed to find key");
 
             if((sce_header.type & 0x8000) != 0x8000)
             {
@@ -82,11 +83,11 @@ namespace volts::crypt::self
 
                 aes_setkey_dec(&aes, k.erk, 256);
                 aes_crypt_cbc(
-                    &aes, 
-                    AES_DECRYPT, 
-                    sizeof(metadata::info), 
-                    k.riv, 
-                    (byte*)&meta_info, 
+                    &aes,
+                    AES_DECRYPT,
+                    sizeof(metadata::info),
+                    k.riv,
+                    (byte*)&meta_info,
                     (byte*)&meta_info
                 );
             }
@@ -140,15 +141,15 @@ namespace volts::crypt::self
 
             data_buffer = new byte[data_len];
 
+            byte key[16];
+            byte iv[16];
+
             for(auto sect : meta_sections)
             {
                 if(sect.encrypted != 3)
                     continue;
 
                 size_t offset = 0;
-
-                byte key[16];
-                byte iv[16];
 
                 memcpy(key, data_keys + (sect.key_index * 16), 16);
                 memcpy(iv, data_keys + (sect.iv_index * 16), 16);
@@ -178,7 +179,7 @@ namespace volts::crypt::self
 
         svl::file elf()
         {
-            svl::file out = svl::from({});
+            svl::file out = svl::buffer();
 
             out.write(elf_header);
 
@@ -240,6 +241,7 @@ namespace volts::crypt::self
         ~self_decrypter()
         {
             delete[] headers;
+            delete[] data_buffer;
         }
 
     private:
@@ -254,16 +256,16 @@ namespace volts::crypt::self
 
             switch(ctrl->npdrm_info.version)
             {
-            case 1: 
+            case 1:
                 spdlog::error("cant decrypt network license");
                 return false;
-            case 2: 
+            case 2:
                 spdlog::error("cant decrypt local lisence yet");
                 return false;
-            case 3: 
-                std::memcpy(key, meta_key.empty() ? meta_key.data() : keys::free_klic, sizeof(key));
+            case 3:
+                memcpy(key, meta_key.empty() ? meta_key.data() : keys::free_klic, sizeof(key));
                 return true;
-            default: 
+            default:
                 spdlog::error("invalid license type");
                 return false;
             }
@@ -316,10 +318,10 @@ namespace volts::crypt::self
         // metadata
         metadata::header meta_header;
         std::vector<self::control_info> controls;
-        
+
         byte* data_keys;
         u32 data_keys_len;
-        
+
         std::vector<metadata::section> meta_sections;
 
         // output
@@ -332,7 +334,7 @@ namespace volts::crypt::self
         // extra stuff
         // this is freed when the object is deleted
         // make sure there are no memory leaks
-        u8* headers = nullptr;
+        byte* headers = nullptr;
     };
 
     svl::expected<svl::file> load(svl::file file, std::vector<byte> key)

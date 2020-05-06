@@ -191,7 +191,7 @@ namespace volts::ppu
 
             spdlog::info("loaded program data at {}", addr);
             
-            std::memcpy(vm::base(addr), dat.data(), prog.file_size);
+            memcpy(vm::base(addr), dat.data(), prog.file_size);
         
             segments.push_back(segment{
                 addr,
@@ -335,7 +335,7 @@ namespace volts::ppu
                 exec.data.seek(prog.offset);
                 auto data = exec.data.read<byte>(prog.file_size);
 
-                std::memcpy(vm::base(addr), data.data(), data.size());
+                memcpy(vm::base(addr), data.data(), data.size());
             }
             // TLS
             else if(prog.type == 7)

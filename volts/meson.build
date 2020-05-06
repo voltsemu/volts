@@ -6,4 +6,5 @@ endforeach
 
 if get_option('render').enabled()
     subdir('rsx')
+    cpp_args += [ '-DRENDER=1' ]
 endif

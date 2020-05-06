@@ -193,6 +193,7 @@ namespace volts::cmd
             
         }
 
+#if RENDER
         if(res.count("boot"))
         {
             fs::path path = res["boot"].as<std::string>(); 
@@ -209,6 +210,7 @@ namespace volts::cmd
                 .expect("failed to read PARAM.SFO file");
             rsx::run("vulkan", (char*)sfo["TITLE"].data.data(), (char*)sfo["VERSION"].data.data());
         }
+#endif
 
         if(res.count("sfo"))
         {
@@ -280,7 +282,7 @@ namespace volts::cmd
                     if(key.rfind("dev_flash_", 0) != 0)
                         continue;
 
-                    tasks.push_back(std::async(std::launch::async, [vfs = conf.vfs, name = key, file = tar.get_file(key.c_str())]{
+                    tasks.push_back(std::async(std::launch::async, [vfs = conf.vfs, name = key, file = tar.get_file(key.c_str())] {
                         spdlog::info("decrypting pup entry {}", name);
                         auto update = sce::load(file);
 
@@ -344,8 +346,10 @@ namespace volts::cmd
             ppu::load_exec(exec);
         }
 
+#if RENDER
         if(res.count("render"))
             volts::rsx::run(res["render"].as<std::string>().c_str(), res.count("name") ? res["name"].as<std::string>().c_str() : "volts", "1.00");
+#endif
     }
 }
 

@@ -52,7 +52,7 @@ namespace volts::loader::tar
     {
         if(offsets.find(name) == offsets.end())
         {
-            return svl::from({});
+            return svl::buffer();
         }
         
         auto offset = offsets[name];
@@ -63,7 +63,7 @@ namespace volts::loader::tar
             return svl::from(file.read<u8>(octal_to_decimal(atoi(head.size))));
         }
 
-        return svl::from({});
+        return svl::buffer();
     }
 
     void object::extract(const fs::path& to)

@@ -76,6 +76,10 @@ if host_machine.system() != 'windows'
     cpp_args += [ '-std=c++17' ]
 endif
 
+if host_machine.system() == 'linux'
+    links += [ '-lstdc++fs' ]
+endif
+
 subdir('volts')
 
 libvolts = library('volts', sources,

@@ -116,6 +116,13 @@ namespace svl::endian
             return (order == endian_order::native) ? val : byte_swap(val);
         }
 
+        template<typename V>
+        constexpr V as() const 
+        {
+            static_assert(sizeof(V) == sizeof(T));
+            return (V)get();
+        }
+
         /// the native value
         T val;
     };
