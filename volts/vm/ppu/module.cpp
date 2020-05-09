@@ -320,6 +320,7 @@ namespace volts::ppu
         u32 tls_addr = 0;
         u32 tls_fsize = 0;
         u32 tls_msize = 0;
+
         for(auto prog : exec.progs)
         {
             spdlog::info("program section {:x}", prog.type);
@@ -434,7 +435,5 @@ namespace volts::ppu
 
         spdlog::info("tls(addr={}, fsize={}, msize={})", tls_addr, tls_fsize, tls_msize);
         spdlog::info("pagesize={}, stacksize={}, segment={}", pagesize, stacksize, segment);
-
-        ppu::thread(exec.head.entry);
     }
 }

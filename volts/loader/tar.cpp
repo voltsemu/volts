@@ -111,7 +111,5 @@ namespace volts::loader::tar
 
             stream.seek(aligned);
         }
-
-        return ret;
     }
 }

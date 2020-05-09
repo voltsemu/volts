@@ -1,5 +1,7 @@
 #include "file.h"
 
+#include <spdlog/spdlog.h>
+
 #if SYS_WINDOWS
 #   include "windows.h"
 #elif SYS_OSX
@@ -224,7 +226,7 @@ namespace svl
 
         return { new win32_file(std::move(f)) };
 #else
-        std::string access;
+        std::string access = "b";
 
         if(mo & mode::write)
             access += "w";
@@ -233,6 +235,11 @@ namespace svl
             access += "r";
 
         std::FILE* f = std::fopen(path.c_str(), access.c_str());
+        if(!f)
+        {
+            spdlog::critical("failed to open file {} with errno {}", path.c_str(), errno);
+        }
+
         return { new posix_file(f) };
 #endif
     }

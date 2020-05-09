@@ -295,7 +295,7 @@ namespace volts::cmd
                         dec.extract(vfs);
                     }));
                 }
-            
+                spdlog::info("extracting {} entries", tasks.size());
             }
             else
             {
