@@ -116,7 +116,8 @@ namespace svl
 
         virtual void write(const void* in, u64 num) override 
         {
-            std::fwrite(in, 1, num, handle);
+            auto out = std::fwrite(in, 1, num, handle);
+            (void)out;
         }
 
         virtual void save(const fs::path& path) const override
