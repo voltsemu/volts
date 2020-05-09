@@ -111,7 +111,8 @@ namespace svl
 
         virtual void read(void* out, u64 num) override
         {
-            std::fread(out, 1, num, handle);
+            auto out = std::fread(out, 1, num, handle);
+            (void)out;
         }
 
         virtual void write(const void* in, u64 num) override 
