@@ -228,7 +228,7 @@ namespace svl
 
         return { new win32_file(std::move(f)) };
 #else
-        std::string access = "b";
+        std::string access;
 
         if(mo & mode::write)
             access += "w";
