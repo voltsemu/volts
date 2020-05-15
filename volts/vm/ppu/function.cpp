@@ -18,6 +18,15 @@ namespace volts::ppu
             default: break;
             }
         }
+        else if(strcmp(name, "sysPrxForUser") == 0)
+        {
+            switch(fnid)
+            {
+            case 0xBDB18F83: return "_sys_malloc";
+            case 0xF7F7FB20: return "_sys_free";
+            default: break;
+            }
+        }
 
         spdlog::warn("invalid fnid {}:{:x}", name, fnid);
         return "unkf";

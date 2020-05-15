@@ -41,7 +41,7 @@ namespace volts::ppu
         u64 file_size;
     };
 
-    VPACKED(module_info,
+    struct module_info
     {
         u8 len;
         padding<1> unk1;
@@ -63,7 +63,7 @@ namespace volts::ppu
         vm::b32ptr<big<u32>> vstubs;
         
         padding<8> unk3;
-    });
+    };
 
     static_assert(sizeof(module_info) == 44);
 
@@ -83,12 +83,14 @@ namespace volts::ppu
             auto fnids = lib.vnids;
             auto addrs = lib.addrs;
 
+            spdlog::info("fnids {} addrs {}", fnids.addr(), addrs.addr());
+
             for(int i = 0; i < lib.funcs; i++)
             {
                 auto fnid = fnids[i];
                 auto addr = addrs[i];
 
-                spdlog::info("func {}:{:x}:{:x}", func_name(fnid, lib.name.ptr()), fnid, addr);
+                spdlog::info("import {}:{:x}:{:x}", func_name(fnid, lib.name.ptr()), fnid, addr);
             }
 
             addr += lib.len ? lib.len : sizeof(module_info);
@@ -161,8 +163,6 @@ namespace volts::ppu
             
             addr += lib.len ? lib.len : sizeof(module_info);
         }
-
-        spdlog::info("here 2");
 
         return symbols;
     }

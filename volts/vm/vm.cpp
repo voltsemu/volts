@@ -108,9 +108,8 @@ namespace volts::vm
     {
         spdlog::info("initializing vm memory");
         
-        // create base memory pointer then zero it out
+        // create base memory pointer
         base_addr = new byte[0x100000000ULL];
-        std::memset(base_addr, 0, 0x100000000ULL);
 
         {
             main = new block(0x10000, 0x1FFF0000);
