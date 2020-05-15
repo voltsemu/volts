@@ -36,6 +36,19 @@ namespace volts::loader::sfo
 
         /// the raw bytes of the entry, can be cast as needed
         std::vector<svl::byte> data;
+
+        template<typename T>
+        T as() const 
+        { 
+            if constexpr(std::is_same_v<T, std::string>)
+            {
+                return (char*)data.data();
+            }
+            else if constexpr(std::is_integral_v<T> && sizeof(T) == 4)
+            {
+                return *(T*)data.data();
+            }
+        }
     };
 
     /// typealias for sfo object as its structure is simple

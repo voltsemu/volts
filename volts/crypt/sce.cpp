@@ -62,6 +62,7 @@ namespace volts::crypt::sce
 
             for(int i = 0; i < 16; i++)
             {
+                // all padding has to be 0 if properly decrypted
                 if(meta.key_pad[i] | meta.iv_pad[i])
                 {
                     spdlog::error("failed to decrypt metadata info");

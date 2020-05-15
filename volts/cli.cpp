@@ -43,6 +43,48 @@ namespace volts::cmd
 
     using namespace std::string_view_literals;
 
+    
+    fs::path extract_firmware(const fs::path& path, const config& conf)
+    {
+        spdlog::info("starting pup decryption");
+                    
+        auto file = svl::open(path, svl::mode::read);
+        auto pup = pup::load(file).expect("failed to load pup file");
+
+        spdlog::info("starting pup extraction");
+
+        auto tar = tar::load(pup.get_file(0x300).expect("failed to find file 0x300"));
+
+        // create a vector of all decryption tasks
+        // when this exits scope all the futures destructors
+        // will be called and everything will be decrypted at the same time
+        std::vector<std::future<void>> tasks = {};
+
+        for(auto&& field : tar.offsets)
+        {
+            const auto key = field.first;
+
+            if(key.rfind("dev_flash_", 0) != 0)
+                continue;
+
+            tasks.push_back(std::async(std::launch::async, [vfs = conf.vfs, name = key, file = tar.get_file(key.c_str())] {
+                spdlog::info("decrypting pup entry {}", name);
+                auto update = sce::load(file);
+
+                update[2].seek(0);
+
+                auto dec = tar::load(update[2]);
+                
+                spdlog::info("extracing entry into vfs");
+
+                dec.extract(vfs);
+            }));
+        }
+        spdlog::info("extracting {} entries", tasks.size());
+
+        return conf.vfs/"dev_flash";
+    }
+
     void parse(int argc, char** argv)
     {
         config conf = {};
@@ -117,11 +159,19 @@ namespace volts::cmd
                 conf.aes = cfg["global"]["aes-ni"].as_boolean()->value_or(false);
                 conf.vfs = fs::path(cfg["global"]["vfs"].as_string()->value_or("vfs"));
                 conf.render = cfg["global"]["render"].value_or("vulkan"sv);
+
+                fs::create_directories(conf.vfs);
             }
             else
             {
                 spdlog::error("cannot find config file {}", path.c_str());
             }
+        }
+        else
+        {
+            conf.aes = false;
+            conf.vfs = "vfs";
+            conf.render = "vulkan";
         }
 
         if(res.count("log-out"))
@@ -188,29 +238,39 @@ namespace volts::cmd
             }
             else
             {
-                spdlog::error("cannot find input file {}", path.c_str());
+                spdlog::error("cannot find input file {}", path);
             }
             
         }
 
-#if RENDER
         if(res.count("boot"))
         {
-            fs::path path = res["boot"].as<std::string>(); 
-
-            if(!fs::exists(path))
+            if(fs::path dir = res["boot"].as<std::string>(); fs::exists(dir))
             {
-                spdlog::critical("cannot boot nonexistant directory");
-                std::abort();
-            }
-            path /= "PS3_GAME";
+                auto firmware = dir/"PS3_UPDATE"/"PS3UPDAT.PUP";
+                auto game = dir/"PS3_GAME"/"USRDIR"/"EBOOT.BIN";
+                auto desc = dir/"PS3_GAME"/"PARAM.SFO";
 
-            spdlog::info((path/"PARAM.SFO").c_str());
-            auto sfo = sfo::load(svl::open(path/"PARAM.SFO", svl::mode::read))
-                .expect("failed to read PARAM.SFO file");
-            rsx::run("vulkan", (char*)sfo["TITLE"].data.data(), (char*)sfo["VERSION"].data.data());
+                // TODO: ask spdlog to add a formatter for std::filesystem::path (and to undelete the meson build)
+                spdlog::info("loading firmware {}", firmware.string());
+                spdlog::info("loading game {}", game.string());
+                spdlog::info("loading description {}", desc.string());
+
+                auto param = sfo::load(svl::open(desc, svl::mode::read))
+                    .expect("failed to read param data");
+                
+                auto dev_flash = extract_firmware(firmware, conf);
+
+                spdlog::info("loading liblv2");
+                auto liblv2 = sce::load(svl::open(dev_flash/"sys"/"external"/"liblv2.sprx", svl::mode::read));
+                
+                spdlog::info("booting game {} - {}", param["TITLE"].as<std::string>(), param["VERSION"].as<std::string>());
+            }
+            else
+            {
+                spdlog::critical("failed to find {}", dir.string());
+            }
         }
-#endif
 
         if(res.count("sfo"))
         {
@@ -261,41 +321,7 @@ namespace volts::cmd
         {
             if(fs::path path = res["pup"].as<std::string>(); fs::exists(path))
             {
-                spdlog::info("starting pup decryption");
-                
-                auto file = svl::open(path, svl::mode::read);
-                auto pup = pup::load(file).expect("failed to load pup file");
-
-                spdlog::info("starting pup extraction");
-
-                auto tar = tar::load(pup.get_file(0x300).expect("failed to find file 0x300"));
-
-                // create a vector of all decryption tasks
-                // when this exits scope all the futures destructors
-                // will be called and everything will be decrypted at the same time
-                std::vector<std::future<void>> tasks = {};
-
-                for(auto&& field : tar.offsets)
-                {
-                    const auto key = field.first;
-
-                    if(key.rfind("dev_flash_", 0) != 0)
-                        continue;
-
-                    tasks.push_back(std::async(std::launch::async, [vfs = conf.vfs, name = key, file = tar.get_file(key.c_str())] {
-                        spdlog::info("decrypting pup entry {}", name);
-                        auto update = sce::load(file);
-
-                        update[2].seek(0);
-
-                        auto dec = tar::load(update[2]);
-                        
-                        spdlog::info("extracing entry into vfs");
-
-                        dec.extract(vfs);
-                    }));
-                }
-                spdlog::info("extracting {} entries", tasks.size());
+                extract_firmware(path, conf);
             }
             else
             {
