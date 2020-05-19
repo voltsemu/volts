@@ -129,7 +129,7 @@ As of May 9, 2019 supported linux distros are
 Assuming an entirley fresh install of Ubuntu
 
 ```sh
-sudo apt install git python3 python3-pip ninja-build
+sudo apt install git python3 python3-pip ninja-build zlib1g-dev pkg-config
 pip3 install --user meson
 
 ~/.local/bin/meson build
@@ -142,7 +142,7 @@ Assuming a fresh install of Debian
 ```sh
 su -
 
-apt install git python3-pip llvm ninja-build
+apt install git python3-pip llvm ninja-build zlib1g-dev pkg-config
 
 pip3 install meson
 
