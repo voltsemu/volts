@@ -124,7 +124,9 @@ ninja -C build
 
 As of May 9, 2019 supported linux distros are
 * Ubuntu 18.04.2 LTS
+* Ubuntu 20.02
 * Debian 9.9.0
+* WSL Ubuntu 18.04
 
 Assuming an entirley fresh install of Ubuntu
 
