@@ -18,3 +18,4 @@ volts/generated/version.gen.h
 !.gitignore
 !data/*.manifest
 !meson_options.txt
+!*.md
