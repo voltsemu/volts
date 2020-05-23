@@ -28,7 +28,7 @@ namespace volts::rsx
 
     void run(const char* engine, const char* name, const char* version)
     {
-#if SYS_WINDOW
+#if SYS_WINDOWS
         // directx12 is on windows only
         ENGINE("directx12", dx12);
 #elif SYS_APPLE
