@@ -36,7 +36,7 @@ Planned features
 * Controller input
 * Performance improvments
 * Code tidying
-* AES-NI accellerated game decryption
+* AES-NI accellerated game decryption (probably use openssl)
 
 ## Sideprojects
 

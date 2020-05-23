@@ -67,11 +67,8 @@ namespace svl
 
         virtual void save(const fs::path& path) const override
         {
-            FlushFileBuffers(handle);
-
-            WCHAR buf[MAX_PATH];
-            GetFinalPathNameByHandleW(handle, buf, MAX_PATH, VOLUME_NAME_NT);
-            CopyFileW(buf, path.wstring().c_str(), false);
+            // TODO: there is a native win32 way to do this
+            // im just not sure how to get it to work
         }
 
     private:

@@ -3,7 +3,6 @@
 
 #include "directx12/dx12.h"
 #include "metal/mtl.h"
-#include "opengl/gl.h"
 #include "vulkan/vk.h"
 
 
@@ -35,11 +34,6 @@ namespace volts::rsx
 #elif SYS_APPLE
         // apple only supports metal
         ENGINE("metal", mtl);
-#endif
-
-#if !SYS_APPLE
-        // opengl isnt available on mac
-        ENGINE("opengl", gl);
 #endif
 
         // everything supports vulkan (mac has moltenvk)

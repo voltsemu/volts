@@ -141,12 +141,15 @@ namespace volts::ppu
                 auto fnids = lib.nids;
                 auto faddrs = lib.addrs;
 
+                spdlog::info("funcs {}", lib.funcs);
+                spdlog::info("vars {}", lib.vars);
+
                 for(int i = 0; i < lib.funcs; i++)
                 {
                     auto nid = fnids[i];
                     auto addr = faddrs[i];
 
-                    spdlog::info("nid {} addr {}", nid, addr);
+                    spdlog::debug("nid {} addr {}", nid, addr);
                 }
 
                 auto vnids = lib.nids + lib.funcs;
@@ -157,7 +160,7 @@ namespace volts::ppu
                     auto nid = vnids[i];
                     auto addr = vaddrs[i];
 
-                    spdlog::info("nid {} addr {}", nid, addr);
+                    spdlog::debug("nid {} addr {}", nid, addr);
                 }
             }
             
@@ -323,8 +326,6 @@ namespace volts::ppu
 
         for(auto prog : exec.progs)
         {
-            spdlog::info("program section {:x}", prog.type);
-
             // LOAD
             if(prog.type == 1)
             {

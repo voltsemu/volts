@@ -18,7 +18,7 @@ namespace volts::crypt::self
 
             if(sce_header.magic != cvt::to_u32("SCE\0"))
             {
-                spdlog::warn("invalid sce magic");
+                spdlog::warn("invalid sce magic, expecting SCE\\0 got {:x}", sce_header.magic);
                 return false;
             }
 

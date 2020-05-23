@@ -260,10 +260,15 @@ namespace volts::cmd
                     .expect("failed to read param data");
                 
                 auto dev_flash = extract_firmware(firmware, conf);
+                auto sprx = dev_flash/"sys"/"external"/"liblv2.sprx";
 
-                spdlog::info("loading liblv2");
-                auto liblv2 = sce::load(svl::open(dev_flash/"sys"/"external"/"liblv2.sprx", svl::mode::read));
+                spdlog::info("decrypting liblv2 from {}", fs::absolute(sprx).string());
+                auto f = svl::open(sprx, svl::mode::read);
+                auto liblv2 = self::load(f);
                 
+                //auto elf = elf::load<elf::ppu_prx>(liblv2).value();
+                //ppu::load_prx(elf);
+
                 spdlog::info("booting game {} - {}", param["TITLE"].as<std::string>(), param["VERSION"].as<std::string>());
             }
             else
