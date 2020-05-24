@@ -18,7 +18,7 @@ namespace volts::crypt::self
 
             if(sce_header.magic != cvt::to_u32("SCE\0"))
             {
-                spdlog::warn("invalid sce magic, expecting SCE\\0 got {:x}", sce_header.magic);
+                spdlog::warn("invalid sce magic, expecting SCE\\0 got {:x} {}", sce_header.magic, stream.size());
                 return false;
             }
 
@@ -325,7 +325,7 @@ namespace volts::crypt::self
         std::vector<metadata::section> meta_sections;
 
         // output
-        byte* data_buffer;
+        byte* data_buffer = nullptr;
         u32 data_len = 0;
 
         // input

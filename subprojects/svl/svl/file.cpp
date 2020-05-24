@@ -31,7 +31,7 @@ namespace svl
             : handle(h)
         {}
 
-        virtual void seek(u64 pos) override 
+        virtual void seek(u64 pos) override
         {
             LARGE_INTEGER p;
             p.QuadPart = pos;
@@ -39,7 +39,7 @@ namespace svl
             SetFilePointerEx(handle, p, nullptr, FILE_BEGIN);
         }
 
-        virtual u64 tell() const override 
+        virtual u64 tell() const override
         {
             LARGE_INTEGER pos;
             pos.QuadPart = 0;
@@ -47,7 +47,7 @@ namespace svl
 
             return pos.QuadPart;
         }
-        
+
         virtual u64 size() const override
         {
             LARGE_INTEGER len;
@@ -55,12 +55,12 @@ namespace svl
             return len.QuadPart;
         }
 
-        virtual void read(void* out, u64 num) override 
+        virtual void read(void* out, u64 num) override
         {
             ReadFile(handle, out, (u32)num, nullptr, nullptr);
         }
 
-        virtual void write(const void* in, u64 num) override 
+        virtual void write(const void* in, u64 num) override
         {
             WriteFile(handle, in, num, nullptr, nullptr);
         }
@@ -80,58 +80,58 @@ namespace svl
     {
         virtual ~posix_file() override
         {
-            std::fclose(handle);
+            close(handle);
         }
 
-        posix_file(std::FILE* h)
+        posix_file(int h)
             : handle(h)
         {}
 
         virtual void seek(u64 pos) override
         {
-            std::fseek(handle, pos, SEEK_SET);
+            lseek(handle, pos, SEEK_SET);
         }
 
         virtual u64 tell() const override
         {
-            return std::ftell(handle);
+            return lseek(handle, 0, SEEK_CUR);
         }
 
         virtual u64 size() const override
         {
             u64 cur = tell();
-            std::fseek(handle, 0, SEEK_END);
+            lseek(handle, 0, SEEK_END);
             u64 len = tell();
-            std::fseek(handle, cur, SEEK_SET);
+            lseek(handle, cur, SEEK_SET);
             return len;
         }
 
         virtual void read(void* out, u64 num) override
         {
-            auto val = std::fread(out, 1, num, handle);
+            auto val = ::read(handle, out, (size_t)num);
             (void)val;
         }
 
-        virtual void write(const void* in, u64 num) override 
+        virtual void write(const void* in, u64 num) override
         {
-            auto out = std::fwrite(in, 1, num, handle);
+            auto out = ::write(handle, in, (size_t)num);
             (void)out;
         }
 
         virtual void save(const fs::path& path) const override
         {
-            std::fflush(handle);
+            fsync(handle);
             int out = creat(path.c_str(), 0660);
 #if SYS_OSX
-            fcopyfile(fileno(handle), out, 0, COPYFILE_ALL);
+            fcopyfile(handle, out, 0, COPYFILE_ALL);
 #else
-            sendfile(out, fileno(handle), 0, size());
+            sendfile(out, handle, 0, size());
 #endif
             close(out);
         }
 
     private:
-        std::FILE* handle;
+        int handle;
     };
 #endif
 
@@ -145,7 +145,7 @@ namespace svl
                 handle.resize(32);
         }
 
-        virtual void seek(u64 pos) override 
+        virtual void seek(u64 pos) override
         {
             cursor = pos;
             if(handle.max_size() + cursor < pos)
@@ -157,12 +157,12 @@ namespace svl
             return handle.size();
         }
 
-        virtual u64 tell() const override 
-        { 
-            return cursor; 
+        virtual u64 tell() const override
+        {
+            return cursor;
         }
 
-        virtual void read(void* out, u64 num) override 
+        virtual void read(void* out, u64 num) override
         {
             if(cursor + num > handle.size())
                 handle.resize(cursor + num);
@@ -171,7 +171,7 @@ namespace svl
             cursor += num;
         }
 
-        virtual void write(const void* in, u64 num) override 
+        virtual void write(const void* in, u64 num) override
         {
             if(num + cursor > handle.size())
                 handle.resize(cursor + num);
@@ -209,7 +209,7 @@ namespace svl
         }
 
         const HANDLE f = CreateFileW(
-            path.wstring().c_str(), 
+            path.wstring().c_str(),
             access,
             FILE_SHARE_READ,
             nullptr,
@@ -225,21 +225,21 @@ namespace svl
 
         return { new win32_file(std::move(f)) };
 #else
-        std::string access;
+        int flags = 0;
 
         if(mo & mode::write)
-            access += "w";
+            flags |= (O_CREAT | O_WRONLY);
 
         if(mo & mode::read)
-            access += "r";
+            flags |= O_RDONLY;
 
-        std::FILE* f = std::fopen(path.c_str(), access.c_str());
-        if(!f)
+        int fd = ::open(path.c_str(), flags);
+        if(!fd)
         {
-            spdlog::critical("failed to open file {} with errno {}", path.c_str(), errno);
+            spdlog::critical("failed to open file {} with errno {}", path.string(), errno);
         }
 
-        return { new posix_file(f) };
+        return { new posix_file(fd) };
 #endif
     }
 

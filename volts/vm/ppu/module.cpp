@@ -113,6 +113,7 @@ namespace volts::ppu
             
             if(!lib.name)
             {
+                // special exports with no library name
                 const auto end = lib.funcs + lib.vars;
                 for(int i = 0; i < end; i++)
                 {

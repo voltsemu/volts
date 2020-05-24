@@ -15,19 +15,19 @@ namespace svl
     namespace mode
     {
         /// read only file
-        constexpr u8 read = (1 << 0); 
+        constexpr u8 read = (1 << 0);
 
         /// write file, implies read as well
-        constexpr u8 write = (1 << 1); 
+        constexpr u8 write = (1 << 1);
     }
 
     /**
      * @brief an abstract base class for all file handles
      */
-    struct file_handle 
+    struct file_handle
     {
         /**
-         * @brief virtual destructor 
+         * @brief virtual destructor
          */
         virtual ~file_handle() {}
 
@@ -94,7 +94,7 @@ namespace svl
          * @brief get the size of the file
          * @return size in bytes
          */
-        u64 size() const 
+        u64 size() const
         {
             return handle->size();
         }
@@ -108,7 +108,7 @@ namespace svl
         T read()
         {
             static_assert(std::is_standard_layout<T>::value && std::is_trivial<T>::value);
-            
+
             T val;
             handle->read(&val, sizeof(T));
             return val;
@@ -127,10 +127,10 @@ namespace svl
             handle->read(vec.data(), num * sizeof(T));
             return vec;
         }
-        
+
         /**
          * @brief read n bytes into a void*
-         * 
+         *
          * @param out the pointer to write to
          * @param num the amount of bytes to read
          */
@@ -141,7 +141,7 @@ namespace svl
 
         /**
          * @brief write a POD type into the stream
-         * 
+         *
          * @tparam T the type to write
          * @param val the value to write
          */
@@ -158,14 +158,14 @@ namespace svl
             auto dist = other.tell();
             other.seek(0);
             auto data = other.read<byte>(other.size());
-            
+
             write(data);
             other.seek(dist);
         }
 
         /**
          * @brief write an array of POD types into the stream
-         * 
+         *
          * @tparam T the pod type to write
          * @param vec the data to write
          */
@@ -179,7 +179,7 @@ namespace svl
 
         /**
          * @brief write data from a void* into the stream
-         * 
+         *
          * @param ptr the data to read from
          * @param num the amount of bytes to write
          */
@@ -190,7 +190,7 @@ namespace svl
 
         /**
          * @brief write a string to the file
-         * 
+         *
          * @param str the string to write
          * @param eof should the null terminator be written as well
          */
@@ -201,7 +201,7 @@ namespace svl
 
         /**
          * @brief check if the file is valid
-         * 
+         *
          * @return true the file is valid
          * @return false the file is invalid
          */
@@ -232,16 +232,16 @@ namespace svl
 
     /**
      * @brief open a file on disk
-     * 
+     *
      * @param path the file path to open
      * @param mo the open mode to use
      * @return file the opened file
      */
     file open(const fs::path& path, u8 mo);
-    
+
     /**
      * @brief convert a vector to a file stream
-     * 
+     *
      * @param vec the vector to convert to a file
      * @return file the file stream
      */
@@ -249,7 +249,7 @@ namespace svl
 
     /**
      * @brief create an in memory file
-     * 
+     *
      * @return file the in memory file stream
      */
     file buffer();

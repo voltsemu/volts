@@ -37,7 +37,7 @@ namespace volts::loader::tar
     int octal_to_decimal(int num)
     {
         int ret = 0, i = 0, rem;
-        
+
         while(num)
         {
             rem = num % 10;
@@ -54,7 +54,7 @@ namespace volts::loader::tar
         {
             return svl::buffer();
         }
-        
+
         auto offset = offsets[name];
         file.seek(offset - sizeof(header));
         auto head = file.read<header>();
@@ -73,18 +73,19 @@ namespace volts::loader::tar
             file.seek(offset - sizeof(header));
             const auto head = file.read<header>();
 
-            switch(head.file_type)
+            if(head.file_type == '0')
             {
-                case '0':
-                    open(to/name, svl::mode::write)
-                        .write<u8>(file.read<u8>(octal_to_decimal(atoi(head.size))));
-                    break;
-                case '5':
-                    fs::create_directories(to/name);
-                    break;
-                default:
-                    spdlog::error("invalid tar section");
-                    break;
+                auto data = file.read<u8>(octal_to_decimal(atoi(head.size)));
+                auto file = open(to/name, svl::mode::write);
+                file.write<u8>(data);
+            }
+            else if(head.file_type == '5')
+            {
+                fs::create_directories(to/name);
+            }
+            else
+            {
+                spdlog::error("invalid tar section");
             }
         }
     }
@@ -96,12 +97,16 @@ namespace volts::loader::tar
     {
         object ret = stream;
 
+        stream.save("temp.tar");
+
+        spdlog::info("size: {}", stream.size());
+
         for(;;)
         {
             auto head = stream.read<header>();
 
             if(memcmp(head.magic, ustar_magic, sizeof(ustar_magic)))
-                return ret;
+                break;
 
             int size = octal_to_decimal(atoi(head.size));
 
@@ -110,6 +115,16 @@ namespace volts::loader::tar
             ret.offsets[head.name] = stream.tell();
 
             stream.seek(aligned);
+            spdlog::info("aligned {}", aligned);
         }
+
+        spdlog::info("end {}", stream.tell());
+
+        for(auto& [key, val] : ret.offsets)
+        {
+            spdlog::info("{}: {}", key, val);
+        }
+
+        return ret;
     }
 }
