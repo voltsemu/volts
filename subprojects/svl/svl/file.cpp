@@ -80,7 +80,6 @@ namespace svl
     {
         virtual ~posix_file() override
         {
-            spdlog::info("closed handle {}", handle);
             close(handle);
         }
 
@@ -90,7 +89,6 @@ namespace svl
 
         virtual void seek(u64 pos) override
         {
-            spdlog::info("seek {} handle {}", pos, handle);
             lseek(handle, pos, SEEK_SET);
         }
 
@@ -112,7 +110,7 @@ namespace svl
         virtual void read(void* out, u64 num) override
         {
             auto val = ::read(handle, out, (size_t)num);
-            spdlog::info("read {} errno {} handle {} num {}", val, strerror(errno), handle, num);
+            (void)val;
         }
 
         virtual void write(const void* in, u64 num) override
@@ -174,8 +172,6 @@ namespace svl
             {
                 nread = handle.size() - cursor;
                 memset((byte*)out + nread, 0, num - nread);
-                spdlog::info("truncating read from {} to {}", num, nread);
-                spdlog::info("cursor {} size {}", cursor, handle.size());
             }
 
             memcpy(out, handle.data() + cursor, nread);
@@ -245,8 +241,7 @@ namespace svl
             flags |= O_RDONLY;
 
         int fd = ::open(path.c_str(), flags);
-        spdlog::info("opened {} handle {}", path.c_str(), fd);
-        if(!fd)
+        if(fd == -1)
         {
             spdlog::critical("failed to open file {} with errno {}", path.string(), errno);
         }
@@ -262,8 +257,6 @@ namespace svl
 
     file buffer()
     {
-        auto out = from({});
-        out.seek(0);
-        return out;
+        return from({});
     }
 }
