@@ -95,14 +95,7 @@ namespace volts::loader::tar
 
     object load(svl::file stream)
     {
-        object ret = stream;
-
-        spdlog::info("offset: {}", offsetof(header, magic));
-
-        stream.save("temp.tar");
-        stream.seek(0);
-
-        spdlog::info("size: {}", stream.size());
+        offset_map ret;
 
         for(;;)
         {
@@ -111,23 +104,15 @@ namespace volts::loader::tar
             if(memcmp(head.magic, ustar_magic, sizeof(ustar_magic)))
                 break;
 
-            ret.offsets[head.name] = stream.tell();
+            ret[head.name] = stream.tell();
 
             int size = octal_to_decimal(atoi(head.size));
 
             auto aligned = (size + stream.tell() + 512 - 1) & ~(512 - 1);
 
             stream.seek(aligned);
-            spdlog::info("aligned {} {}", stream.tell(), aligned);
         }
 
-        spdlog::info("end {}", stream.tell());
-
-        for(auto& [key, val] : ret.offsets)
-        {
-            spdlog::info("{}: {}", key, val);
-        }
-
-        return ret;
+        return object(ret, stream);
     }
 }
