@@ -8,7 +8,7 @@ namespace volts::vm
 {
     using namespace svl;
 
-    u8* base_addr = nullptr; 
+    u8* base_addr = nullptr;
 
 #define LOCKED(...) { std::lock_guard<std::mutex> guard(this->mut); { __VA_ARGS__ } }
 
@@ -33,7 +33,7 @@ namespace volts::vm
 
     vm::addr block::alloc(u64 size, u64 alignto)
     {
-        u32 s = align(size, page_size) + (offset_pages ? 0x2000 : 0);
+        u32 s = align(size, alignto) + (offset_pages ? 0x2000 : 0);
 
         LOCKED({
             link* cur = begin;
@@ -107,7 +107,7 @@ namespace volts::vm
     void init()
     {
         spdlog::info("initializing vm memory");
-        
+
         // create base memory pointer
         base_addr = new byte[0x100000000ULL];
 
@@ -135,14 +135,14 @@ namespace volts::vm
 
         delete main;
         delete user64k;
-        
+
         delete user1m;
         delete rsx;
 
         delete video;
         delete stack;
         delete spu;
-        
+
         delete any;
     }
 }

@@ -32,7 +32,7 @@ namespace volts::ppu
         return "unkf";
     }
 
-    const char* var_name(svl::u32 vnid, const char* name)
+    const char* var_name(svl::u32, const char*)
     {
         return "unkv";
     }

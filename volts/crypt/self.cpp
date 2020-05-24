@@ -78,7 +78,7 @@ namespace volts::crypt::self
 
             if((sce_header.type & 0x8000) != 0x8000)
             {
-                if(!decrypt_npdrm(cvt::as_bytes(meta_info), key))
+                if(!decrypt_npdrm(key))
                     return false;
 
                 aes_setkey_dec(&aes, k.erk, 256);
@@ -245,7 +245,7 @@ namespace volts::crypt::self
         }
 
     private:
-        bool decrypt_npdrm(std::vector<byte> data, std::vector<byte> meta_key)
+        bool decrypt_npdrm(std::vector<byte> meta_key)
         {
             auto ctrl = std::find_if(std::begin(controls), std::end(controls), [](auto& val) { return val.type == 3; });
 

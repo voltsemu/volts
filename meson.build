@@ -4,15 +4,15 @@ project('volts', ['cpp', 'c'],
         'cpp_rtti=false',
         'cpp_eh=none',
         # as the VC 2019 runtime isnt shipped by default on windows we need to link it statically
-        # this stops those weird dll errors that lead to downloading some random dll 
+        # this stops those weird dll errors that lead to downloading some random dll
         # and shoving it into system32
         'b_vscrt=mt',
         'default_library=static',
         'werror=true',
 
-        # TODO: we will need to replace glfw and zlib at some point
+        # TODO: we will need to replace xxhash and zlib at some point
         # as they trigger all kinds of warnings at higher levels
-        #'warning_level=2'
+        #'warning_level=3'
     ],
     version : '0.2.1',
     license : 'Apache'
@@ -24,7 +24,7 @@ endif
 
 # TODO: using cpp_eh=none makes meson do funky stuff on windows, feels like a bug, should report
 if meson.get_compiler('cpp').get_id() == 'msvc'
-    add_global_arguments(['/D_HAS_EXCEPTIONS=0'], 
+    add_global_arguments(['/D_HAS_EXCEPTIONS=0'],
         language : ['cpp', 'c']
     )
 endif

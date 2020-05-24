@@ -42,10 +42,10 @@ namespace svl
 
     /// 64 bit double presicion floating point number
     using f64 = double;
-    
+
     /**
      * @brief 128 bit vector type
-     * 
+     *
      */
     union v128
     {
@@ -54,14 +54,14 @@ namespace svl
 
         /// 128 bits of packed doubles
         __m128d doubles;
-        struct
-        {
+
+        struct {
             /// the low 64 bits
             u64 lo;
 
             /// the high 64 bits
             u64 hi;
-        };
+        } parts;
     };
 
     static_assert(sizeof(v128) == 16);

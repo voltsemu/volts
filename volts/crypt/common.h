@@ -48,10 +48,50 @@ namespace volts::crypt
             big<u64> version_offset;
             big<u64> control_offset;
             big<u64> control_length;
-            padding<8> pad;  
+            padding<8> pad;
         };
 
         static_assert(sizeof(header) == 80);
+
+        struct control_flags
+        {
+            big<u32> flags;
+            padding<28> pad;
+        };
+
+        static_assert(sizeof(control_flags) == 32);
+
+        struct digest48
+        {
+            u8 constant[20];
+            u8 elf_digest[20];
+            big<u64> required_version;
+        };
+
+        static_assert(sizeof(digest48) == 48);
+
+        struct digest32
+        {
+            u8 const_or_digest[20];
+            padding<12> pad;
+        };
+
+        static_assert(sizeof(digest32) == 32);
+
+        struct npdrm_info
+        {
+            u32 magic;
+            big<u32> version;
+            big<u32> drm_type;
+            big<u32> app_type;
+            byte content_id[48];
+            byte digest[16];
+            byte inv_digest[16];
+            byte xor_digest[16];
+            padding<16> pad;
+        };
+
+        static_assert(sizeof(npdrm_info) == 128);
 
         struct control_info
         {
@@ -61,45 +101,10 @@ namespace volts::crypt
 
             union
             {
-                struct 
-                {
-                    big<u32> flags;
-                    padding<28> pad;
-                } control_flags;
-
-                static_assert(sizeof(control_flags) == 32);
-
-                struct 
-                {
-                    u8 constant[20];
-                    u8 elf_digest[20];
-                    big<u64> required_version;
-                } elf_digest_48;
-
-                static_assert(sizeof(elf_digest_48) == 48);
-
-                struct
-                {
-                    u8 const_or_digest[20];
-                    padding<12> pad;
-                } elf_digest_32;
-
-                static_assert(sizeof(elf_digest_32) == 32);
-
-                struct 
-                {
-                    u32 magic;
-                    big<u32> version;
-                    big<u32> drm_type;
-                    big<u32> app_type;
-                    byte content_id[48];
-                    byte digest[16];
-                    byte inv_digest[16];
-                    byte xor_digest[16];
-                    padding<16> pad;
-                } npdrm_info;
-
-                static_assert(sizeof(npdrm_info) == 128);
+                control_flags control_flags;
+                digest48 elf_digest_48;
+                digest32 elf_digest_32;
+                npdrm_info npdrm_info;
             };
         };
     }

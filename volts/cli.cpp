@@ -82,11 +82,6 @@ namespace volts::cmd
         }
         spdlog::info("extracting {} entries", tasks.size());
 
-        for(auto&& task : tasks)
-        {
-            task.wait();
-        }
-
         return conf.vfs/"dev_flash";
     }
 

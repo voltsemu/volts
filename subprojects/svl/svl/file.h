@@ -35,7 +35,7 @@ namespace svl
          * @brief seek to an absolute offset in the file
          * @param pos the position to seek from relative to 0
          */
-        virtual void seek(u64 pos) {}
+        virtual void seek(u64) {}
 
         /**
          * @brief get the current cursor position in the file
@@ -54,16 +54,16 @@ namespace svl
          * @param out the pointer to write to
          * @param num the amount of bytes to read
          */
-        virtual void read(void* out, u64 num) {}
+        virtual void read(void*, u64) {}
 
         /**
          * @brief write binary data from a pointer into the file
          * @param in the binary data to read from
          * @param num the amount of bytes to read
          */
-        virtual void write(const void* in, u64 num) {}
+        virtual void write(const void*, u64) {}
 
-        virtual void save(const fs::path& path) const {}
+        virtual void save(const fs::path&) const {}
     };
 
     /**
