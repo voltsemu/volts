@@ -11,6 +11,7 @@
 !*.py
 
 *[b|B]uild/
+builddir/
 docs/
 .vscode/*
 volts/generated/version.gen.h

@@ -9,7 +9,7 @@
 namespace elf
 {
     namespace cvt = svl::convert;
-    
+
     enum class type : svl::u16
     {
         none = 0,
@@ -44,7 +44,7 @@ namespace elf
         svl::u8 cls;
         svl::u8 endian;
         svl::u8 elf_version1;
-        
+
         os abi;
         svl::u8 abi_verson;
 
@@ -84,7 +84,7 @@ namespace elf
 
         svl::endian::big<svl::u32> vaddress;
         svl::endian::big<svl::u32> paddress;
-        
+
         svl::endian::big<svl::u32> size;
         svl::endian::big<svl::u32> align;
     };
@@ -124,75 +124,33 @@ namespace elf
 
     /**
      * @brief an elf object
-     * 
+     *
      * @tparam T elf format, either u32 or u64
      */
     template<typename T>
     struct object
     {
         /// the type of the program headers
-        using program_t = program_header<T>;
+        using program = program_header<T>;
 
         /// the type of the section headers
-        using section_t = section_header<T>;
+        using section = section_header<T>;
 
         /// the type of the elf header
-        using header_t = header<T>;
+        using header = header<T>;
 
         /// elf header data
-        header_t head;
+        header head;
 
         /// elf program headers
-        std::vector<program_t> progs = {};
+        std::vector<program> progs = {};
 
         /// elf section headers
-        std::vector<section_t> sects = {};
+        std::vector<section> sects = {};
 
         /// underlying file handle
         svl::file data;
-
-        /**
-         * @brief Construct a new elf object
-         * 
-         * @param d the file to load from
-         */
-        object(svl::file d)
-            : data(d)
-        {}
-
-        object() {}
     };
-
-    /**
-     * @brief parse an elf from a file stream
-     * 
-     * @tparam T the elf file type
-     * @param stream the stream to parse
-     * @return svl::expected<T> if the file was properly formatted then a loaded elf
-     *         otherwise nullopt
-     */
-    template<typename T>
-    svl::expected<T> load(svl::file stream)
-    {
-        T ret = { stream };
-
-        stream.seek(0);
-
-        ret.head = stream.read<typename T::header_t>();
-
-        if(ret.head.magic != cvt::to_u32("\177ELF"))
-        {
-            return svl::none();
-        }
-
-        stream.seek(ret.head.prog_offset);
-        ret.progs = stream.read<typename T::program_t>(ret.head.prog_count);
-
-        stream.seek(ret.head.sect_offset);
-        ret.sects = stream.read<typename T::section_t>(ret.head.sect_count);
-
-        return ret;
-    }
 
     /// a ppu executable
     using ppu_exec = object<svl::u64>;
@@ -202,4 +160,37 @@ namespace elf
 
     /// a spu executable
     using spu_exec = object<svl::u32>;
+
+    using elf32 = object<svl::u32>;
+    using elf64 = object<svl::u64>;
+
+    /**
+     * @brief parse an elf from a file stream
+     *
+     * @tparam T the elf file type
+     * @param stream the stream to parse
+     * @return svl::expected<T> if the file was properly formatted then a loaded elf
+     *         otherwise nullopt
+     */
+    template<typename T>
+    svl::expected<T> load(svl::file&& stream)
+    {
+        static_assert(std::is_same<T, elf32>::value || std::is_same<T, elf64>::value, "only 32 and 64 bit elfs are supported");
+        stream.seek(0);
+
+        auto head = stream.read<typename T::header>();
+
+        if(head.magic != cvt::to_u32("\177ELF"))
+        {
+            return svl::none();
+        }
+
+        stream.seek(head.prog_offset);
+        auto progs = stream.read<typename T::program>(head.prog_count);
+
+        stream.seek(head.sect_offset);
+        auto sects = stream.read<typename T::section>(head.sect_count);
+
+        return T{head, progs, sects, std::move(stream)};
+    }
 }

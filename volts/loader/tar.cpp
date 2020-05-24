@@ -107,7 +107,6 @@ namespace volts::loader::tar
         for(;;)
         {
             auto head = stream.read<header>();
-            //spdlog::info("header: {} {}", *(u64*)head.checksum, stream.valid());
 
             if(memcmp(head.magic, ustar_magic, sizeof(ustar_magic)))
                 break;

@@ -268,7 +268,7 @@ namespace volts::cmd
                 auto f = svl::open(sprx, svl::mode::read);
                 auto liblv2 = self::load(f).expect("failed to load liblv2");
 
-                auto elf = elf::load<elf::ppu_prx>(liblv2).value();
+                auto elf = elf::load<elf::ppu_prx>(std::move(liblv2)).value();
                 ppu::load_prx(elf);
 
                 spdlog::info("booting game {} - {}", param["TITLE"].as<std::string>(), param["VERSION"].as<std::string>());
@@ -355,10 +355,9 @@ namespace volts::cmd
         {
             svl::file f = svl::open(res["prx"].as<std::string>(), svl::mode::read);
 
-            auto prx = (f.read<svl::u32>() == cvt::to_u32("\177ELF")
-                ? elf::load<elf::ppu_prx>(f)
-                : elf::load<elf::ppu_prx>(self::load(f).expect("failed to decrypt self")))
-                    .expect("failed to load (s)elf file");
+            auto elf = (f.read<svl::u32>() == cvt::to_u32("\177ELF")) ? f : self::load(f).expect("failed to decrypt self");
+            auto prx = elf::load<elf::ppu_prx>(std::move(elf))
+                .expect("failed to load (s)elf file");
 
             vm::init();
 
@@ -369,10 +368,9 @@ namespace volts::cmd
         {
             svl::file f = svl::open(res["exec"].as<std::string>(), svl::mode::read);
 
-            auto exec = (f.read<svl::u32>() == cvt::to_u32("\177ELF")
-                ? elf::load<elf::ppu_exec>(f)
-                : elf::load<elf::ppu_exec>(self::load(f).expect("failed to decrypt self")))
-                    .expect("failed to load (s)elf file");
+            auto elf = (f.read<svl::u32>() == cvt::to_u32("\177ELF")) ? f : self::load(f).expect("failed to decrypt self");
+            auto exec = elf::load<elf::ppu_exec>(std::move(f))
+                .expect("failed to load (s)elf file");
 
             vm::init();
 
