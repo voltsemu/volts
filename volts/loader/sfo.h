@@ -11,7 +11,7 @@ namespace volts::loader::sfo
 {
     /**
      * @brief the format of an sfo entry
-     * 
+     *
      */
     enum class format : svl::u16
     {
@@ -27,7 +27,7 @@ namespace volts::loader::sfo
 
     /**
      * @brief an sfo value
-     * 
+     *
      */
     struct value
     {
@@ -38,13 +38,13 @@ namespace volts::loader::sfo
         std::vector<svl::byte> data;
 
         template<typename T>
-        T as() const 
-        { 
-            if constexpr(std::is_same_v<T, std::string>)
+        T as() const
+        {
+            if constexpr(std::is_same<T, std::string>::value)
             {
                 return (char*)data.data();
             }
-            else if constexpr(std::is_integral_v<T> && sizeof(T) == 4)
+            else if constexpr(std::is_integral<T>::value && sizeof(T) == 4)
             {
                 return *(T*)data.data();
             }
@@ -56,7 +56,7 @@ namespace volts::loader::sfo
 
     /**
      * @brief parse an sfo value into a usable object
-     * 
+     *
      * @param stream the file to parse
      * @return svl::expected<object> the parsed object if the file was valid
      */
