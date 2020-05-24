@@ -30,6 +30,7 @@ namespace volts::loader::pup
             if(f.id == id)
             {
                 file.seek(f.offset);
+                spdlog::info("reading {} from {}", f.offset, f.length);
                 return svl::from(file.read<u8>(f.length));
             }
         }

@@ -97,25 +97,29 @@ namespace volts::loader::tar
     {
         object ret = stream;
 
+        spdlog::info("offset: {}", offsetof(header, magic));
+
         stream.save("temp.tar");
+        stream.seek(0);
 
         spdlog::info("size: {}", stream.size());
 
         for(;;)
         {
             auto head = stream.read<header>();
+            //spdlog::info("header: {} {}", *(u64*)head.checksum, stream.valid());
 
             if(memcmp(head.magic, ustar_magic, sizeof(ustar_magic)))
                 break;
+
+            ret.offsets[head.name] = stream.tell();
 
             int size = octal_to_decimal(atoi(head.size));
 
             auto aligned = (size + stream.tell() + 512 - 1) & ~(512 - 1);
 
-            ret.offsets[head.name] = stream.tell();
-
             stream.seek(aligned);
-            spdlog::info("aligned {}", aligned);
+            spdlog::info("aligned {} {}", stream.tell(), aligned);
         }
 
         spdlog::info("end {}", stream.tell());

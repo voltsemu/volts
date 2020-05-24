@@ -80,6 +80,7 @@ namespace svl
     {
         virtual ~posix_file() override
         {
+            spdlog::info("closed handle {}", handle);
             close(handle);
         }
 
@@ -89,12 +90,14 @@ namespace svl
 
         virtual void seek(u64 pos) override
         {
+            spdlog::info("seek {} handle {}", pos, handle);
             lseek(handle, pos, SEEK_SET);
         }
 
         virtual u64 tell() const override
         {
-            return lseek(handle, 0, SEEK_CUR);
+            auto here = lseek(handle, 0, SEEK_CUR);
+            return here;
         }
 
         virtual u64 size() const override
@@ -109,7 +112,7 @@ namespace svl
         virtual void read(void* out, u64 num) override
         {
             auto val = ::read(handle, out, (size_t)num);
-            (void)val;
+            spdlog::info("read {} errno {} handle {} num {}", val, strerror(errno), handle, num);
         }
 
         virtual void write(const void* in, u64 num) override
@@ -141,8 +144,6 @@ namespace svl
         ram_file(const std::vector<byte>& vec)
             : handle(vec)
         {
-            if(handle.empty())
-                handle.resize(32);
         }
 
         virtual void seek(u64 pos) override
@@ -164,11 +165,21 @@ namespace svl
 
         virtual void read(void* out, u64 num) override
         {
-            if(cursor + num > handle.size())
-                handle.resize(cursor + num);
+            u64 nread = num;
+            // if the amount of bytes to read is greater
+            // than the amount of bytes left then only read
+            // the number of bytes left
+            // and zero the rest of the data
+            if(cursor + nread > handle.size())
+            {
+                nread = handle.size() - cursor;
+                memset((byte*)out + nread, 0, num - nread);
+                spdlog::info("truncating read from {} to {}", num, nread);
+                spdlog::info("cursor {} size {}", cursor, handle.size());
+            }
 
-            std::memcpy(out, handle.data() + cursor, num);
-            cursor += num;
+            memcpy(out, handle.data() + cursor, nread);
+            cursor += nread;
         }
 
         virtual void write(const void* in, u64 num) override
@@ -176,7 +187,7 @@ namespace svl
             if(num + cursor > handle.size())
                 handle.resize(cursor + num);
 
-            std::memcpy(handle.data() + cursor, in, num);
+            memcpy(handle.data() + cursor, in, num);
             cursor += num;
         }
 
@@ -234,6 +245,7 @@ namespace svl
             flags |= O_RDONLY;
 
         int fd = ::open(path.c_str(), flags);
+        spdlog::info("opened {} handle {}", path.c_str(), fd);
         if(!fd)
         {
             spdlog::critical("failed to open file {} with errno {}", path.string(), errno);

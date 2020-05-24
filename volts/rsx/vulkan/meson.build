@@ -1,4 +1,8 @@
-vk = dependency('vulkan')
+vk = dependency('vulkan', required : false)
+
+if not vk.found()
+    error('vulkan SDK not found, consider configuring with -Drender=disabled')
+endif
 
 sources += 'volts/rsx/vulkan/vk.cpp'
 dependencies += vk
