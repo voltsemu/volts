@@ -328,7 +328,8 @@ namespace volts::cmd
         {
             if(fs::path path = res["pup"].as<std::string>(); fs::exists(path))
             {
-                extract_firmware(path, conf);
+                auto out = extract_firmware(path, conf);
+                spdlog::info("finished extracting firmware into {}", out.string());
             }
             else
             {
@@ -356,6 +357,7 @@ namespace volts::cmd
             svl::file f = svl::open(res["prx"].as<std::string>(), svl::mode::read);
 
             auto elf = (f.read<svl::u32>() == cvt::to_u32("\177ELF")) ? f : self::load(f).expect("failed to decrypt self");
+            elf.save("eboot.elf");
             auto prx = elf::load<elf::ppu_prx>(std::move(elf))
                 .expect("failed to load (s)elf file");
 
@@ -369,7 +371,7 @@ namespace volts::cmd
             svl::file f = svl::open(res["exec"].as<std::string>(), svl::mode::read);
 
             auto elf = (f.read<svl::u32>() == cvt::to_u32("\177ELF")) ? f : self::load(f).expect("failed to decrypt self");
-            auto exec = elf::load<elf::ppu_exec>(std::move(f))
+            auto exec = elf::load<elf::ppu_exec>(std::move(elf))
                 .expect("failed to load (s)elf file");
 
             vm::init();

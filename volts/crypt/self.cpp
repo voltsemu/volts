@@ -183,7 +183,7 @@ namespace volts::crypt::self
 
             out.write(elf_header);
 
-            out.seek(elf_header.prog_offset.get());
+            out.seek(elf_header.prog_offset);
 
             out.write(prog_headers);
 
@@ -202,12 +202,11 @@ namespace volts::crypt::self
                 {
                     spdlog::info("compressed section in self");
 
-                    auto size = prog_headers[sect.index].file_size;
-
-                    byte* dbuf = new byte[size]();
                     memcpy(zbuf, data_buffer, data_len);
 
+                    auto size = prog_headers[sect.index].file_size;
                     uLongf dbuf_len = static_cast<uLongf>(size);
+                    byte* dbuf = new byte[size]();
 
                     int res = uncompress(dbuf, &dbuf_len, zbuf + buffer_offset, data_len);
 
@@ -229,7 +228,7 @@ namespace volts::crypt::self
 
             if(self_header.sect_info_offset)
             {
-                out.seek(self_header.sect_info_offset.get());
+                out.seek(self_header.sect_info_offset);
                 out.write(sect_headers);
             }
 

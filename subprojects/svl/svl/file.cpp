@@ -24,7 +24,7 @@ namespace svl
     {
         virtual ~win32_file() override
         {
-            FindClose(handle);
+            CloseHandle(handle);
         }
 
         win32_file(const HANDLE&& h)
@@ -69,6 +69,25 @@ namespace svl
         {
             // TODO: there is a native win32 way to do this
             // im just not sure how to get it to work
+            auto cur = tell();
+            auto len = size();
+
+            // seek to front
+            LARGE_INTEGER p = {};
+            SetFilePointerEx(handle, p, nullptr, FILE_BEGIN);
+
+            // read in data
+            byte* buffer = new byte[len];
+            ReadFile(handle, buffer, (u32)len, nullptr, nullptr);
+
+            auto out = svl::open(path, svl::mode::write);
+            out.write(buffer, len);
+
+            delete[] buffer;
+
+            // seek back to where we were so no state has changed
+            p.QuadPart = cur;
+            SetFilePointerEx(handle, p, nullptr, FILE_BEGIN);
         }
 
     private:
@@ -163,19 +182,15 @@ namespace svl
 
         virtual void read(void* out, u64 num) override
         {
-            u64 nread = num;
             // if the amount of bytes to read is greater
             // than the amount of bytes left then only read
             // the number of bytes left
             // and zero the rest of the data
-            if(cursor + nread > handle.size())
-            {
-                nread = handle.size() - cursor;
-                memset((byte*)out + nread, 0, num - nread);
-            }
+            if(cursor + num > handle.size())
+                handle.resize(cursor + num);
 
-            memcpy(out, handle.data() + cursor, nread);
-            cursor += nread;
+            memcpy(out, handle.data() + cursor, num);
+            cursor += num;
         }
 
         virtual void write(const void* in, u64 num) override

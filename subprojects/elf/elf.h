@@ -161,7 +161,10 @@ namespace elf
     /// a spu executable
     using spu_exec = object<svl::u32>;
 
+    /// a 32 bit generic elf file
     using elf32 = object<svl::u32>;
+
+    /// a 64 bit generic elf file
     using elf64 = object<svl::u64>;
 
     /**
@@ -180,16 +183,23 @@ namespace elf
 
         auto head = stream.read<typename T::header>();
 
+        spdlog::info("here 1 {} {}", head.prog_offset, head.sect_offset);
+
         if(head.magic != cvt::to_u32("\177ELF"))
         {
+            spdlog::warn("invalid elf header");
             return svl::none();
         }
 
         stream.seek(head.prog_offset);
         auto progs = stream.read<typename T::program>(head.prog_count);
 
+        spdlog::info("here 2 {}", stream.size());
+
         stream.seek(head.sect_offset);
         auto sects = stream.read<typename T::section>(head.sect_count);
+
+        spdlog::info("{} {}", head.prog_offset, head.sect_offset);
 
         return T{head, progs, sects, std::move(stream)};
     }
