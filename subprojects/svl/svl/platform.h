@@ -1,18 +1,23 @@
 #pragma once
 
-#define CL_CLANG (defined(__clang__))
-#define CL_GCC (defined(__GNUG__) || defined(__GNUC__) || defined(__GNU__))
-#define CL_MSVC (defined(_MSC_VER))
-
-#if !SYS_CLANG && !CL_GCC && !CL_MSVC
+#if defined(__clang__)
+#   define CL_CLANG 1
+#elif defined(__GNUG__) || defined(__GNUC__) || defined(__GNU__)
+#   define CL_GCC 1
+#elif defined(_MSC_VER)
+#   define CL_MSVC 1
+#else
 #   error "unsupported compiler"
 #endif
 
-#define SYS_WINDOWS (defined(_WIN32) || defined(_WIN64))
-#define SYS_OSX (defined(__APPLE__) && defined(__MACH__))
-#define SYS_LINUX (defined(__linux__) || defined(__unix__))
 
-#if !SYS_WINDOWS && !SYS_OSX && !SYS_LINUX
+#if defined(_WIN32) || defined(_WIN64)
+#   define SYS_WINDOWS 1
+#elif defined(__APPLE__) && defined(__MACH__)
+#   define SYS_OSX 1
+#elif defined(__linux__) || defined(__unix__)
+#   define SYS_LINUX 1
+#else
 #   error "unsupported platform"
 #endif
 

@@ -1,16 +1,17 @@
 #pragma once
 
-#include <string>
+#include <svl/macros.h>
+
+#include <fmt/format.h>
 
 namespace svl
 {
     template<typename... T>
-    [[noreturn]] void panic(const std::string& fmt, T... args)
+    [[noreturn]] void panic(const std::string& msg, T&&... args)
     {
-        (void)fmt;
-        (void)args...;
-        // TODO: we need spdlog or fmt or something
-        printf("uhhh\n");
-        while (true);
+        fmt::print(msg, args...);
+        std::abort();
     }
 }
+
+#define ASSERT(expr) if (!(expr)) { svl::panic("[E0007]" STR(__FILE__) STR(__FILE__) "Assertion failed" STR(expr)); }

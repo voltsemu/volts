@@ -15,7 +15,6 @@ project('volts', ['c', 'cpp'],
 
         # keep everything as flat as possible
         'default_library=static',
-        'layout=flat',
         'strip=true',
 
         # always be strict
@@ -40,9 +39,7 @@ svl = subproject('svl').get_variable('svl_dep')
 
 deps = [ svl ]
 
-sources = [
-
-]
+sources = []
 
 subdir('src/volts/loader')
 
@@ -50,7 +47,11 @@ libvolts = library('volts', sources,
     dependencies : deps
 )
 
+tomlplusplus = subproject('tomlplusplus').get_variable('tomlplusplus_dep')
+
+cxxopts = subproject('cxxopts').get_variable('cxxopts_dep')
+
 cli = executable('cli', 'src/cli.cpp',
     link_with : libvolts,
-    dependencies : deps
+    dependencies : deps + [ cxxopts, tomlplusplus ]
 )

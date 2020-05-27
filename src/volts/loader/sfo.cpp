@@ -50,8 +50,7 @@ namespace volts::sfo
         return std::visit(svl::Visitor {
             [](const std::vector<byte>&) { return Format::array; },
             [](i32) { return Format::integer; },
-            [](const std::string&) { return Format::string; },
-            [](const auto&) { svl::panic("[E0002] Invalid SFO data type"); } // TODO: error out
+            [](const std::string&) { return Format::string; }
         }, val);
     }
 
@@ -60,8 +59,7 @@ namespace volts::sfo
         return std::visit(svl::Visitor {
             [](const std::vector<byte>& arr) { return static_cast<u32>(arr.size()); },
             [](const i32&) { return (u32)sizeof(i32); },
-            [](const std::string& str) { return static_cast<u32>(str.size() + 1); },
-            [](const auto&) { svl::panic("[E0002] Invalid SFO data type"); } // TODO: error out
+            [](const std::string& str) { return static_cast<u32>(str.size() + 1); }
         }, val);
     }
 
@@ -118,6 +116,11 @@ namespace volts::sfo
             });
 
             keys.write(key);
+            // keys are traditionally aligned to 4 byte bounds
+            keys.align(4);
+
+            // TODO: string data has bogus utf-8 stuff done to it by the stl
+            // that'll need to go
             data.write(val);
         }
 

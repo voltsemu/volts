@@ -12,7 +12,7 @@ namespace volts::loader::sfo
 
     /**
      * @brief an entry in the sfo file
-     * 
+     *
      */
     struct index_table_entry
     {
@@ -34,7 +34,7 @@ namespace volts::loader::sfo
 
     /**
      * @brief the sfo header
-     * 
+     *
      */
     struct header
     {
@@ -106,9 +106,9 @@ namespace volts::loader::sfo
     }
 
     void write(svl::file& stream, const object& obj)
-    {        
+    {
         struct triple { u16 key; u32 data; u32 size; format fmt; };
-        
+
         // offsets
         std::vector<triple> offsets = {};
         // data
@@ -155,7 +155,10 @@ namespace volts::loader::sfo
             stream.write(entry);
         }
 
+        stream.seek(ROUND2(stream.tell(), 4));
         stream.insert(keys);
+
+        stream.seek(ROUND2(stream.tell(), 4));
         stream.insert(data);
     }
 }

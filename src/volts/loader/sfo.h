@@ -1,9 +1,6 @@
 #pragma once
 
-#include <string>
 #include <unordered_map>
-#include <variant>
-#include <vector>
 
 #include <svl/file.h>
 #include <svl/types.h>

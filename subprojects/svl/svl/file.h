@@ -1,7 +1,10 @@
 #pragma once
 
+#include <variant>
+
 #include <svl/wrapfs.h>
 #include <svl/types.h>
+#include <svl/macros.h>
 
 namespace svl
 {
@@ -15,6 +18,13 @@ namespace svl
 
         virtual void read(byte*, usize) = 0;
         virtual void write(const byte*, usize) = 0;
+        virtual void save(const fs::path&) const = 0;
+    };
+
+    enum class Mode
+    {
+        read,
+        write
     };
 
     struct File
@@ -32,6 +42,20 @@ namespace svl
         usize size() const
         {
             return handle->size();
+        }
+
+        void read(byte* ptr, usize len)
+        {
+            handle->read(ptr, len);
+        }
+
+        /**
+         *
+         */
+        void align(isize bound)
+        {
+            auto to = ROUND2(tell(), bound);
+            seek(to);
         }
 
         template<typename T>
@@ -54,6 +78,11 @@ namespace svl
             return std::move(out);
         }
 
+        void write(const byte* ptr, usize len)
+        {
+            handle->write(ptr, len);
+        }
+
         template<typename T>
         void write(const T& data)
         {
@@ -72,7 +101,7 @@ namespace svl
 
         void write(const std::string& str, bool term = true)
         {
-            handle->write((const byte*)str.c_str(), str.size() + term ? 1 : 0);
+            handle->write((const byte*)str.c_str(), str.size() + (term ? 1 : 0));
         }
 
         template<typename... T>
@@ -89,7 +118,12 @@ namespace svl
             write(data);
         }
 
-        friend File open(const fs::path& path);
+        void save(const fs::path& path) const
+        {
+            handle->save(path);
+        }
+
+        friend File open(const fs::path& path, Mode mode);
         friend File stream(std::vector<byte>&& data);
         friend File buffer();
 
@@ -98,12 +132,7 @@ namespace svl
         std::unique_ptr<FileHandle> handle;
     };
 
-    using Mode = u8;
-
-    constexpr Mode read = (1 << 0);
-    constexpr Mode write = (1 << 1);
-
-    File open(const fs::path& path, Mode mode = read);
+    File open(const fs::path& path, Mode mode = Mode::read);
 
     File stream(std::vector<byte>&& data);
     File buffer();
