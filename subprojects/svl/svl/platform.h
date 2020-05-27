@@ -1,77 +1,29 @@
 #pragma once
 
-/**
- * @brief platform defines
- * 
- * platform specific defines
- * 
- * @def SYS_WINDOWS
- * 1 when building on windows else 0
- * 
- * @def SYS_OSX
- * 1 when compiling on mac osx else 0
- * 
- * @def SYS_UNIX
- * 1 when compiling on linux else 0
- * 
- * @def CL_CLANG
- * 1 when compiling using clang else 0
- * 
- * @def CL_GNU
- * 1 when compiling using g++ else 0
- * 
- * @def CL_MSVC
- * 1 when compiling using msvc else 0
- */
+#define CL_CLANG (defined(__clang__))
+#define CL_GCC (defined(__GNUG__) || defined(__GNUC__) || defined(__GNU__))
+#define CL_MSVC (defined(_MSC_VER))
 
-#if defined(_WIN32) || defined(_WIN64)
-#   define SYS_WINDOWS 1
-#elif defined(__APPLE__) && defined(__MACH__)
-#   define SYS_OSX 1
-#elif defined(__linux__) || defined(__unix__)
-#   define SYS_UNIX 1
-#else
-#   error Unsupported platform
+#if !SYS_CLANG && !CL_GCC && !CL_MSVC
+#   error "unsupported compiler"
 #endif
 
-#ifndef SYS_WINDOWS
-#   define SYS_WINDOWS 0
-#endif
+#define SYS_WINDOWS (defined(_WIN32) || defined(_WIN64))
+#define SYS_OSX (defined(__APPLE__) && defined(__MACH__))
+#define SYS_LINUX (defined(__linux__) || defined(__unix__))
 
-#ifndef SYS_OSX
-#   define SYS_OSX 0
-#endif
-
-#ifndef SYS_UNIX
-#   define SYS_UNIX 0
-#endif
-
-#if defined(__clang__)
-#   define CL_CLANG 1
-#elif defined(__GNUG__) || defined(__GNUC__) || defined(__GNU__)
-#   define CL_GNU 1
-#elif defined(_MSC_VER)
-#   define CL_MSVC 1
-#else
-#   error Unsupported compiler
-#endif
-
-#ifndef CL_CLANG
-#   define CL_CLANG 0
-#endif
-
-#ifndef CL_GNU
-#   define CL_GNU 0
-#endif
-
-#ifndef CL_MSVC
-#   define CL_MSVC 0
+#if !SYS_WINDOWS && !SYS_OSX && !SYS_LINUX
+#   error "unsupported platform"
 #endif
 
 #if SYS_WINDOWS
 #   include <Windows.h>
-    // alloca is deprecated on windows so we alias it for all platforms
-#   define salloc(s) _malloca(s)
+#endif
+
+
+// alias alloca on windows (issue 3)
+#if SYS_WINDOWS
+#   define ALLOCA(N) _malloca(N)
 #else
-#   define salloc(s) alloca(s)
+#   define ALLOCA(N) alloca(N)
 #endif

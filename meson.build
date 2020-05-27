@@ -1,110 +1,56 @@
-project('volts', ['cpp', 'c'],
+project('volts', ['c', 'cpp'],
     default_options : [
+        # keep to the latest common standard
         'cpp_std=c++17',
+
+        # these features only cause headaches
         'cpp_rtti=false',
         'cpp_eh=none',
-        # as the VC 2019 runtime isnt shipped by default on windows we need to link it statically
-        # this stops those weird dll errors that lead to downloading some random dll
-        # and shoving it into system32
-        'b_vscrt=mt',
-        'default_library=static',
-        'werror=true',
 
-        # TODO: we will need to replace xxhash and zlib at some point
-        # as they trigger all kinds of warnings at higher levels
-        #'warning_level=3'
+        'c_std=c11',
+
+        # catch all the warnings we can
+        'werror=true',
+        'warning_level=3',
+
+        # keep everything as flat as possible
+        'default_library=static',
+        'layout=flat',
+        'strip=true',
+
+        # always be strict
+        'b_lundef=true',
+
+        # free performance is nice
+        'b_lto=true',
+
+        # statically link the vsrt (issue 1)
+        'b_vscrt=mt'
     ],
-    version : '0.2.1',
-    license : 'Apache'
+    version : '0.3.0',
+    license : 'Apache 2.0'
 )
 
-if host_machine.system() == 'darwin'
-    add_languages('objcpp')
-endif
-
-# TODO: using cpp_eh=none makes meson do funky stuff on windows, feels like a bug, should report
+# define _HAS_EXCEPTIONS=0 under msvc to prevent compiler errors (issue 2)
 if meson.get_compiler('cpp').get_id() == 'msvc'
-    add_global_arguments(['/D_HAS_EXCEPTIONS=0'],
-        language : ['cpp', 'c']
-    )
+    add_global_arguments(['-D_HAS_EXCEPTIONS=0'], language : ['c', 'cpp'])
 endif
-
-# collect all the dependencies that lots of things share
-
-zlib = dependency('zlib', fallback : [ 'zlib', 'zlib_dep' ])
-
-spdlog_opts = [
-    'enable_tests=false',
-    'enable_examples=false',
-    'no_exceptions=true',
-    'no_thread_id=true',
-    'no_tls=true'
-]
-
-if host_machine.system() == 'windows'
-    spdlog_opts += 'wchar_support=true'
-endif
-
-spdlog = subproject('spdlog', default_options : spdlog_opts).get_variable('spdlog_dep')
-
-xxhash = subproject('xxhash').get_variable('xxhash_dep')
-
-aes = subproject('aes').get_variable('aes_dep')
 
 svl = subproject('svl').get_variable('svl_dep')
 
-elf = subproject('elf').get_variable('elf_dep')
+deps = [ svl ]
 
-cxxopts = subproject('cxxopts').get_variable('cxxopts_dep')
+sources = [
 
-glm = subproject('glm').get_variable('glm_dep')
+]
 
-toml = subproject('toml').get_variable('tomlplusplus_dep')
-
-
-links = []
-sources = []
-dependencies = [ aes, xxhash, svl, elf, cxxopts, spdlog, zlib, glm, toml ]
-cpp_args = [ '-DFMT_EXCEPTIONS=0' ]
-include_directories = []
-
-if host_machine.system() == 'darwin'
-    dependencies += dependency('appleframeworks', modules : [ 'Cocoa', 'Foundation' ])
-endif
-
-if host_machine.system() != 'windows'
-    cpp_args += [ '-std=c++17' ]
-endif
-
-if host_machine.system() == 'linux'
-    links += [ '-lstdc++fs' ]
-endif
-
-subdir('volts')
+subdir('src/volts/loader')
 
 libvolts = library('volts', sources,
-    cpp_args : cpp_args,
-    objcpp_args : cpp_args,
-    include_directories : include_directories,
-    dependencies : dependencies,
-    link_args : links
+    dependencies : deps
 )
 
-cli = executable('cli', 'volts/cli.cpp',
-    cpp_args : cpp_args,
-    objcpp_args : cpp_args,
-    include_directories : include_directories,
-    dependencies : dependencies,
+cli = executable('cli', 'src/cli.cpp',
     link_with : libvolts,
-    link_args : links
+    dependencies : deps
 )
-
-if get_option('gui').enabled()
-    # subdir('volts/gui'/host_machine.system())
-endif
-
-doxygen = find_program('doxygen', required : false)
-
-if doxygen.found()
-    run_target('docs', command : [doxygen, meson.source_root()/'Doxyfile'])
-endif
