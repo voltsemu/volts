@@ -22,7 +22,7 @@ namespace svl
                 svl::log::fatal(msg, args...);
             }
 
-            return data.value();
+            return std::move(data.value());
         }
 
     private:

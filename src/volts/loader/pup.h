@@ -5,7 +5,7 @@
 #include <svl/option.h>
 #include <svl/platform.h>
 
-namespace volts::loader::pup
+namespace volts::pup
 {
     namespace endian = svl::endian;
 

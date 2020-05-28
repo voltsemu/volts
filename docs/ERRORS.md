@@ -20,3 +20,6 @@ A fatal error was encountered while writing to a file.
 
 ## [E0007] File sync error
 A fatal error was encountered when flushing a file.
+
+## [E0008] Invalid tar header
+An invalid TAR header was found while extracting a TAR file.

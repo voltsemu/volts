@@ -11,6 +11,7 @@
 #include <toml++/toml.h>
 
 #include "volts/loader/sfo.h"
+#include "volts/loader/pup.h"
 
 
 namespace volts::cli
@@ -160,6 +161,12 @@ int main(int argc, char** argv)
 
         volts::sfo::unload(obj)
             .save("PARAM.SFO");
+    });
+
+    opts.add<std::string>("pup-extract", "extract pup file", [](const opts::OptionValue& res) {
+        const fs::path path = res.as<std::string>();
+        auto pup = volts::pup::load(svl::open(path))
+            .expect("failed to load pup file");
     });
 
     opts.parse(argc, argv);

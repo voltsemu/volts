@@ -2,7 +2,7 @@
 
 #include <svl/convert.h>
 
-namespace volts::loader::pup
+namespace volts::pup
 {
     using namespace svl;
 
