@@ -2,7 +2,7 @@
 
 #include <svl/traits.h>
 #include <svl/convert.h>
-#include <svl/panic.h>
+#include <svl/log.h>
 
 namespace volts::sfo
 {
@@ -41,7 +41,7 @@ namespace volts::sfo
         case Format::array: return std::move(data);
         case Format::string: return std::string(data.begin(), data.end());
         case Format::integer: return *(i32*)data.data();
-        default: svl::panic("[E0001]: Invalid SFO data format {}", format);
+        default: svl::log::fatal("[E0001]: Invalid SFO data format {}", format);
         }
     }
 
@@ -87,7 +87,7 @@ namespace volts::sfo
             out.insert({ key, make_value(std::move(data), redirect.data_format) });
         }
 
-        return std::move(out);
+        return out;
     }
 
     struct Entry
@@ -148,6 +148,6 @@ namespace volts::sfo
         out.insert(std::move(keys));
         out.insert(std::move(data));
 
-        return std::move(out);
+        return out;
     }
 }

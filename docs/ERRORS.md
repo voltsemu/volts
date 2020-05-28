@@ -17,3 +17,6 @@ A fatal error was encountered while reading from a file.
 
 ## [E0006] Error writing to file
 A fatal error was encountered while writing to a file.
+
+## [E0007] File sync error
+A fatal error was encountered when flushing a file.

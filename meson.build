@@ -20,9 +20,6 @@ project('volts', ['c', 'cpp'],
         # always be strict
         'b_lundef=true',
 
-        # free performance is nice
-        'b_lto=true',
-
         # statically link the vsrt (issue 1)
         'b_vscrt=mt'
     ],

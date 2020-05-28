@@ -2,10 +2,13 @@
 
 #if defined(__clang__)
 #   define CL_CLANG 1
+#   define VISIBLE [[gnu::used]]
 #elif defined(__GNUG__) || defined(__GNUC__) || defined(__GNU__)
 #   define CL_GCC 1
+#   define VISIBLE [[gnu::used]]
 #elif defined(_MSC_VER)
 #   define CL_MSVC 1
+#   define VISIBLE __declspec(dllexport)
 #else
 #   error "unsupported compiler"
 #endif

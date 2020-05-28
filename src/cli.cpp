@@ -2,6 +2,7 @@
 
 #include <svl/traits.h>
 #include <svl/convert.h>
+#include <svl/log.h>
 
 #define CXXOPTS_NO_EXCEPTIONS
 #define CXXOPTS_NO_RTTI
@@ -71,7 +72,7 @@ volts::sfo::Value make_value(toml::node&& node)
 {
     if (node.is_string())
     {
-        return std::move(node.as_string()->get());
+        return node.as_string()->get();
     }
     else if (node.is_integer())
     {
@@ -83,17 +84,19 @@ volts::sfo::Value make_value(toml::node&& node)
 
         for (const auto& item : *node.as_array())
         {
-            ASSERT(item.is_integer());
+            EXPECT(item.is_integer());
             bytes.push_back((svl::byte)item.as_integer()->get());
         }
 
-        return std::move(bytes);
+        return bytes;
     }
     else
     {
-        svl::panic("[E0002] Invalid SFO data type");
+        svl::log::fatal("[E0002] Invalid SFO data type");
     }
 }
+
+namespace opts = volts::cli::opts;
 
 int main(int argc, char** argv)
 {
@@ -110,17 +113,26 @@ int main(int argc, char** argv)
         std::exit(0);
     });
 
-    opts.add<std::string>("log", "set log level", [](const auto& res) {
-        (void)res;
+    opts.add<std::string>("log", "set log level", [](const opts::OptionValue& res) {
+        const auto lvl = res.as<std::string>();
+        const std::unordered_map<std::string, svl::log::Level> levels = {
+            { "debug", svl::log::Level::debug }
+        };
+
+        if (auto level = levels.find(lvl); level != levels.end())
+        {
+            svl::log::set_level(level->second);
+            svl::log::info("set log level to {}", lvl);
+        }
+        else
+        {
+            svl::log::warn("invalid log level {}", lvl);
+        }
     });
 
-    opts.add<std::string>("err", "lookup error by id", [](const auto& res) {
-        (void)res;
-    });
-
-    opts.add<std::string>("sfo-read", "parse sfo to toml", [](const auto& res) {
+    opts.add<std::string>("sfo-read", "parse sfo to toml", [](const opts::OptionValue& res) {
         const fs::path path = res.as<std::string>();
-        auto sfo = volts::sfo::load(std::move(svl::open(path)))
+        auto sfo = volts::sfo::load(svl::open(path))
             .expect("failed to load sfo from {}", path);
 
         for (const auto& [key, val] : sfo)
@@ -135,7 +147,7 @@ int main(int argc, char** argv)
         }
     });
 
-    opts.add<std::string>("sfo-write", "parse toml to sfo", [](const auto& res) {
+    opts.add<std::string>("sfo-write", "parse toml to sfo", [](const opts::OptionValue& res) {
         const fs::path path = res.as<std::string>();
         auto data = toml::parse_file(path.string());
 

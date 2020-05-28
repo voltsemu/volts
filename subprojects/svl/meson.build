@@ -6,7 +6,12 @@ project('svl', 'cpp',
 
 fmt = subproject('fmt').get_variable('fmt_dep')
 
-libsvl = library('svl', [ 'svl/file.cpp' ],
+sources = [
+    'svl/file.cpp',
+    'svl/log.cpp'
+]
+
+libsvl = library('svl', sources,
     dependencies : [ fmt ]
 )
 

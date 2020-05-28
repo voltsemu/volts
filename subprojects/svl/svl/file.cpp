@@ -1,6 +1,6 @@
 #include <svl/file.h>
 #include <svl/platform.h>
-#include <svl/panic.h>
+#include <svl/log.h>
 
 #if !SYS_WINDOWS
 #   include <unistd.h>
@@ -168,7 +168,7 @@ namespace svl
                 disp |= CREATE_ALWAYS;
                 break;
             default:
-                svl::panic("[E0003] Invalid file mode");
+                svl::log::fatal("[E0003] Invalid file mode");
             }
 
             handle = CreateFileW(
@@ -183,7 +183,7 @@ namespace svl
 
             if (handle == INVALID_HANDLE_VALUE)
             {
-                svl::panic("[E0004] Invalid file handle");
+                svl::log::fatal("[E0004] Invalid file handle");
             }
         }
 
@@ -225,7 +225,7 @@ namespace svl
 
             if (err == 0 && errno != 0)
             {
-                svl::panic("[E0005] Error reading from file {}", strerror(errno));
+                svl::log::fatal("[E0005] Error reading from file {}", strerror(errno));
             }
         }
 
@@ -235,19 +235,24 @@ namespace svl
 
             if (err == 0 && errno != 0)
             {
-                svl::panic("[E0006] Error writing to file {}", strerror(errno));
+                svl::log::fatal("[E0006] Error writing to file {}", strerror(errno));
             }
         }
 
         virtual void save(const fs::path& path) const override
         {
-            // TODO: check err
             const int err = ::fsync(fd);
+
+            if (err == -1)
+            {
+                svl::log::fatal("[E0007] File sync error {}", strerror(err));
+            }
+
             const int out = ::creat(path.c_str(), 0660);
 
             if (out == -1)
             {
-                svl::panic("[E0004] Invalid file handle");
+                svl::log::fatal("[E0004] Invalid file handle {}", strerror(out));
             }
 
 #if SYS_OSX
@@ -271,14 +276,14 @@ namespace svl
                 flags |= (O_CREAT | O_WRONLY);
                 break;
             default:
-                svl::panic("[E0003] Invalid file mode");
+                svl::log::fatal("[E0003] Invalid file mode");
             }
 
             fd = ::open(path.c_str(), flags);
 
             if (fd == -1)
             {
-                svl::panic("[E0004] Invalid file handle");
+                svl::log::fatal("[E0004] Invalid file handle");
             }
         }
 

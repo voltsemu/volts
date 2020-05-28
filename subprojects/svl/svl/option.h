@@ -1,6 +1,6 @@
 #pragma once
 
-#include <svl/panic.h>
+#include <svl/log.h>
 
 #include <optional>
 
@@ -19,7 +19,7 @@ namespace svl
         {
             if (!data)
             {
-                svl::panic(msg, args...);
+                svl::log::fatal(msg, args...);
             }
 
             return data.value();
