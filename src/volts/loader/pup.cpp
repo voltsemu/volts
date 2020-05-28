@@ -18,6 +18,20 @@ namespace volts::loader::pup
         endian::Big<u64> data_length;
     };
 
+    svl::Option<svl::File> Object::get(u64 id)
+    {
+        for (const auto& file : files)
+        {
+            if (file.id == id)
+            {
+                source.seek(file.offset);
+                return svl::stream(source.read(file.length));
+            }
+        }
+
+        return svl::none();
+    }
+
     svl::Option<Object> load(svl::File&& source)
     {
         const auto header = source.read<Header>();

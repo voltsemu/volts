@@ -26,7 +26,9 @@ namespace volts::loader::pup
 
     struct Object
     {
-        std::vector<Entry> fields;
+        svl::Option<svl::File> get(svl::u64 id);
+
+        std::vector<Entry> files;
         std::vector<Hash> hashes;
         svl::File source;
     };

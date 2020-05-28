@@ -1,2 +1,0 @@
-option('render', type : 'feature', value : 'enabled')
-option('gui', type : 'feature', value : 'enabled')
