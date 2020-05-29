@@ -9,13 +9,9 @@ fmt = dependency('fmt',
     fallback : [ 'fmt', 'fmt_dep' ]
 )
 
-libcmd = library('cmd', sources,
-    include_directories : incs,
-    dependencies : [ fmt ]
-)
+svl = subproject('svl').get_variable('svl_dep')
 
 cmd_dep = declare_dependency(
-    link_with : libcmd,
     include_directories : incs,
-    dependencies : [ fmt ]
+    dependencies : [ fmt, svl ]
 )

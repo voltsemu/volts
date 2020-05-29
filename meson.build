@@ -1,6 +1,10 @@
 project('volts', 'cpp',
     default_options : [
-        'cpp_std=c++17'
+        'cpp_std=c++17',
+        'cpp_eh=none',
+        'cpp_rtti=false',
+
+        'default_library=static'
     ]
 )
 
