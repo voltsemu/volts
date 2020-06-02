@@ -8,12 +8,21 @@ project('volts', 'cpp',
     ]
 )
 
+svl = subproject('svl').get_variable('svl_dep')
+
+fmt = dependency('fmt', version : '>=6.1.0',
+    fallback : [ 'fmt', 'fmt_dep' ]
+)
+
 if not meson.is_subproject()
 
-    cmd = subproject('cmd').get_variable('cmd_dep')
+    cli = executable('vlt', 'src/cli.cpp',
+        dependencies : [ svl, fmt ]
+    )
 
-    cli = executable('volts', 'src/cli.cpp',
-        dependencies : [ cmd ]
+    gui = executable('volts', 'src/gui.cpp',
+        dependencies : [ svl, fmt ],
+        gui_app : true
     )
 
 endif
