@@ -1,10 +1,21 @@
 #pragma once
 
+#if __has_include(<filesystem>)
+#   include <filesystem>
+namespace fs = std::filesystem;
+#elif __has_include(<experimental/filesystem>)
+#   include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+#else
+#   error "<filesystem> header missing"
+#endif
+
 namespace svl
 {
     struct file
     {
-        static file open();
+        static file open(const fs::path& path);
+        static file buffer();
         static file stream();
     };
 }
