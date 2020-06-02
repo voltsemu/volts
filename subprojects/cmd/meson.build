@@ -5,7 +5,7 @@ sources = [ ]
 incs = [ include_directories('.') ]
 
 fmt = dependency('fmt',
-    version : '>=6.2.0',
+    version : '>=6.1.0',
     fallback : [ 'fmt', 'fmt_dep' ]
 )
 
