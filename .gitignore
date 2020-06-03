@@ -9,3 +9,5 @@ subprojects/fmt/fmt/
 !*.h
 !*.cpp
 !*.md
+
+!.clang-tidy
