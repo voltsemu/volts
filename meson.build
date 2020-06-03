@@ -4,24 +4,23 @@ project('volts', 'cpp',
         'cpp_eh=none',
         'cpp_rtti=false',
 
+        'warning_level=3',
+        'werror=true',
+
         'default_library=static'
     ]
 )
 
 svl = subproject('svl').get_variable('svl_dep')
 
-fmt = dependency('fmt', version : '>=6.1.0',
-    fallback : [ 'fmt', 'fmt_dep' ]
-)
-
 if not meson.is_subproject()
 
     cli = executable('vlt', 'src/cli.cpp',
-        dependencies : [ svl, fmt ]
+        dependencies : [ svl ]
     )
 
     gui = executable('volts', 'src/gui.cpp',
-        dependencies : [ svl, fmt ],
+        dependencies : [ svl ],
         gui_app : true
     )
 

@@ -5,10 +5,13 @@
 #define STR_INNER(X) #X
 #define STR(X) STR_INNER(X)
 
-#define HERE (STR(__FILE__) ":" STR(__LINE__))
+#define HERE __FILE__ ":" STR(__LINE__)
 
+// TODO: compiler toggle for release builds
 #if SYS_WINDOWS
-#   define CHECK_ERRNO(expr) if (int err = (expr); err != -1) { svl::log::fatal(HERE); }
+#   include <errhandlingapi.h>
+#   define CHECK(expr) if (auto err = (expr); err != -1) { svl::fatal(HERE " Win32 error {}", ::GetLastError()); }
 #else
-#   define CHECK_RESULT(expr) if (auto err = (expr); !err) { svl::log::fatal(HERE); }
+#   include <errno.h>
+#   define CHECK(expr) if (auto err = (expr); err == -1) { svl::fatal(HERE " Posix error {}", strerror(errno)); }
 #endif

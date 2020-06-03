@@ -1,6 +1,7 @@
 #include "svl/file.h"
 #include "svl/platform.h"
-
+#include "svl/macros.h"
+#include "svl/logger.h"
 
 #if SYS_WINDOWS
 #   include <fileapi.h>
@@ -22,27 +23,31 @@ namespace svl
 
         virtual ~Win32File() override
         {
-            CloseHandle(handle);
+            CHECK(CloseHandle(handle));
         }
 
         virtual void read(void* out, usize len) override
         {
-
+            CHECK(ReadFile(handle, out, (DWORD)len, nullptr, nullptr));
         }
 
         virtual void write(const void* in, usize len) override
         {
-
+            CHECK(WriteFile(handle, in, (DWORD)len, nullptr, nullptr));
         }
 
         virtual usize tell() const override
         {
-
+            LARGE_INTEGER pos = {};
+            CHECK(SetFilePointerEx(handle, pos, &pos, FILE_CURRENT));
+            return pos.QuadPart;
         }
 
         virtual usize size() const override
         {
-
+            LARGE_INTEGER len = {};
+            CHECK(GetFileSizeEx(handle, &len));
+            return len.QuadPart;
         }
 
         virtual void seek(usize pos) override
@@ -58,12 +63,13 @@ namespace svl
     {
         PosixFile(const fs::path& pth)
         {
-
+            fd = ::open(pth.c_str(), 0);
+            CHECK(fd);
         }
 
         virtual ~PosixFile() override
         {
-            close(fd);
+            CHECK(close(fd));
         }
 
         virtual void read(void* out, usize len) override
