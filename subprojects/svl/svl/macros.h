@@ -9,8 +9,7 @@
 
 // TODO: compiler toggle for release builds
 #if SYS_WINDOWS
-#   include <errhandlingapi.h>
-#   define CHECK(expr) if (auto err = (expr); err != -1) { svl::fatal(HERE " Win32 error {}", ::GetLastError()); }
+#   define CHECK(expr) if (auto err = (expr); err != (decltype(err))-1) { svl::fatal(HERE " Win32 error {}", ::GetLastError()); }
 #else
 #   include <errno.h>
 #   define CHECK(expr) if (auto err = (expr); err == -1) { svl::fatal(HERE " Posix error {}", strerror(errno)); }

@@ -27,40 +27,45 @@ namespace svl
     struct StdioLogger : Logger
     {
         virtual ~StdioLogger() override { }
-        virtual void debug(const char* str) override
+        virtual void debug(const char *str) override
         {
             printf(FBLU("[debug]") " %s\n", str);
         }
 
-        virtual void info(const char* str) override
+        virtual void info(const char *str) override
         {
             printf(FGRN("[info]") " %s\n", str);
         }
 
-        virtual void warn(const char* str) override
+        virtual void warn(const char *str) override
         {
             printf(FYEL("[warn]") " %s\n", str);
         }
 
-        virtual void error(const char* str) override
+        virtual void error(const char *str) override
         {
             printf(FRED("[error]") " %s\n", str);
         }
 
-        virtual void fatal(const char* str) override
+        virtual void fatal(const char *str) override
         {
             printf(FCYN("[fatal]") " %s\n", str);
         }
     };
 
-    Logger* logger = nullptr;
+    Logger *logger = nullptr;
 
-    void Logger::set(Logger* in)
+    void init()
+    {
+        logger = new StdioLogger();
+    }
+
+    void Logger::set(Logger *in)
     {
         logger = in;
     }
 
-    Logger* Logger::get()
+    Logger *Logger::get()
     {
         return logger;
     }

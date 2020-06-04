@@ -11,6 +11,7 @@ namespace fs = std::experimental::filesystem;
 #endif
 
 #include <memory>
+#include <vector>
 
 #include "svl/types.h"
 
@@ -20,8 +21,8 @@ namespace svl
     {
         virtual ~FileHandle() { }
 
-        virtual void read(void* out, usize len) = 0;
-        virtual void write(const void* in, usize len) = 0;
+        virtual void read(void *out, usize len) = 0;
+        virtual void write(const void *in, usize len) = 0;
 
         virtual usize tell() const = 0;
         virtual usize size() const = 0;
@@ -30,15 +31,40 @@ namespace svl
 
     struct File
     {
+        template<typename T = svl::byte>
+        std::vector<T> read(usize len)
+        {
+            std::vector<T> out(len);
+            handle->read(out.data(), len);
+            return out;
+        }
+
+        template<typename T>
+        T read()
+        {
+            T out;
+            handle->read(&out, sizeof(T));
+            return out;
+        }
+
         usize tell() const { return handle->tell(); }
         usize size() const { return handle->size(); }
 
-        File(FileHandle* ptr)
+        void seek(usize pos) { handle->seek(pos); }
+
+        File(FileHandle *ptr)
             : handle(ptr)
         { }
     private:
         std::unique_ptr<FileHandle> handle;
     };
 
-    File open(const fs::path& path);
+    enum class Mode
+    {
+        read,
+        write
+    };
+
+    File open(const fs::path &path, Mode mode = Mode::read);
+    File stream(std::vector<svl::byte> &&bytes = {});
 }
