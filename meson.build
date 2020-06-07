@@ -20,19 +20,21 @@ endif
 
 svl = subproject('svl').get_variable('svl_dep')
 
+elf = subproject('elf').get_variable('elf_dep')
+
 sources = [
     'volts/loader/self.cpp'
 ]
 
 libvolts = library('volts', sources,
     include_directories : include_directories('.'),
-    dependencies : [ svl ]
+    dependencies : [ svl, elf ]
 )
 
 volts_dep = declare_dependency(
     link_with : libvolts,
     include_directories : include_directories('.'),
-    dependencies : [ svl ]
+    dependencies : [ svl, elf ]
 )
 
 if not meson.is_subproject()

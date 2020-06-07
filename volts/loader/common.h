@@ -42,7 +42,7 @@ namespace volts
     struct AppInfo
     {
         Big<uint64_t> auth;
-        Big<uint64_t> vendor;
+        Big<uint32_t> vendor;
         Big<uint32_t> type;
         Big<uint64_t> version;
         char pad[8];
