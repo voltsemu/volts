@@ -38,6 +38,9 @@ namespace volts::self
         source.seek(source.size() - (ehdr.shdr_count * sizeof(SectHeader)));
         auto shdrs = source.read<SectHeader>(ehdr.shdr_count);
 
+        source.seek(self_header.sect_info_offset);
+        auto sects = source.read<metadata::Section>(ehdr.phdr_count);
+
         svl::info("{} {} {} {}", ehdr.phdr_offset, ehdr.shdr_offset, ehdr.phdr_count, ehdr.shdr_count);
         svl::info("uhhh {} {}", source.size() - (ehdr.shdr_count * sizeof(SectHeader)), ehdr.shdr_offset);
 
@@ -51,6 +54,11 @@ namespace volts::self
         for (auto sect : shdrs)
         {
             svl::info("sect {:x} {} {}", sect.type, sect.offset, sect.size);
+        }
+
+        for (auto sect : sects)
+        {
+            svl::info("msect {:x}", sect.type);
         }
 
         return svl::stream();

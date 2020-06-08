@@ -39,6 +39,25 @@ namespace volts
         };
     }
 
+    namespace metadata
+    {
+        struct Section
+        {
+            Big<uint64_t> offset;
+            Big<uint64_t> size;
+            Big<uint32_t> type;
+            Big<uint32_t> index;
+            Big<uint32_t> hash_algo;
+            Big<uint32_t> hash_index;
+            Big<uint32_t> encrypted;
+
+            Big<uint32_t> key_index;
+            Big<uint32_t> iv_index;
+
+            Big<uint32_t> compressed;
+        };
+    }
+
     struct AppInfo
     {
         Big<uint64_t> auth;
@@ -50,5 +69,6 @@ namespace volts
 
     static_assert(sizeof(sce::Header) == 32);
     static_assert(sizeof(self::Header) == 80);
+    static_assert(sizeof(metadata::Section) == 48);
     static_assert(sizeof(AppInfo) == 32);
 }
