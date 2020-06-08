@@ -49,15 +49,18 @@ namespace svl
 
         virtual void fatal(const char *str) override
         {
-            printf(FCYN("[fatal]") " %s\n", str);
+            printf(FMAG("[fatal]") " %s\n", str);
         }
     };
 
     Logger *logger = nullptr;
 
-    void init()
+    namespace log
     {
-        logger = new StdioLogger();
+        void init()
+        {
+            logger = new StdioLogger();
+        }
     }
 
     void Logger::set(Logger *in)

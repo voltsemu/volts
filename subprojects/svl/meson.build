@@ -17,6 +17,7 @@ svl = library('svl', sources,
 )
 
 svl_dep = declare_dependency(
+    link_with : svl,
     include_directories : incs,
     dependencies : [ fmt ]
 )

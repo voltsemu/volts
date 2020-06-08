@@ -17,6 +17,37 @@ namespace svl
 #endif
     };
 
+    template<typename T>
+    T bswap(T val)
+    {
+        if constexpr (sizeof(T) == 2)
+        {
+#if CL_MSVC
+            return _byteswap_ushort(val);
+#else
+            return __builtin_bswap16(val);
+#endif
+        }
+        else if constexpr (sizeof(T) == 4)
+        {
+#if CL_MSVC
+            return _byteswap_ulong(val);
+#else
+            return __builtin_bswap32(val);
+#endif
+        }
+        else if constexpr (sizeof(T) == 8)
+        {
+#if CL_MSVC
+            return _byteswap_uint64(val);
+#else
+            return __builtin_bswap64(val);
+#endif
+        }
+
+        static_assert(sizeof(T) == 2 || sizeof(T) == 4 || sizeof(T) == 8);
+    }
+
     template<typename T, ByteOrder Order>
     struct EndianValue
     {

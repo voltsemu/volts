@@ -10,7 +10,6 @@
 
 namespace svl
 {
-
 #if SYS_WINDOWS
     struct Win32File : FileHandle
     {
@@ -22,7 +21,8 @@ namespace svl
 
             handle = CreateFileW(path, access, FILE_SHARE_READ, nullptr, disp, FILE_ATTRIBUTE_NORMAL, nullptr);
 
-            CHECK(handle);
+            if (handle == INVALID_HANDLE_VALUE)
+                svl::fatal("failed to open {} with error {}", pth, ::GetLastError());
         }
 
         virtual ~Win32File() override

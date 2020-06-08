@@ -24,3 +24,26 @@
 #ifndef SYS_LINUX
 #   define SYS_LINUX 0
 #endif
+
+
+#if defined(__clang__)
+#   define CL_CLANG 1
+#elif defined(__GNUG__) || defined(__GNUC__) || defined(__GNU__)
+#   define CL_GCC 1
+#elif defined(_MSC_VER)
+#   define CL_MSVC 1
+#else
+#   error "unsupported compiler"
+#endif
+
+#ifndef CL_CLANG
+#   define CL_CLANG 0
+#endif
+
+#ifndef CL_GCC
+#   define CL_GCC 0
+#endif
+
+#ifndef CL_MSVC
+#   define CL_MSVC 0
+#endif

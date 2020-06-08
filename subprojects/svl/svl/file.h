@@ -15,6 +15,20 @@ namespace fs = std::experimental::filesystem;
 
 #include "svl/types.h"
 
+#include <fmt/core.h>
+
+template<>
+struct fmt::formatter<fs::path>
+{
+    constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
+    template<typename T>
+    auto format(const fs::path& path, T& ctx)
+    {
+        return format_to(ctx.out(), "{}", path.string());
+    }
+};
+
 namespace svl
 {
     struct FileHandle
@@ -32,10 +46,10 @@ namespace svl
     struct File
     {
         template<typename T = svl::byte>
-        std::vector<T> read(usize len)
+        std::vector<T> read(usize num)
         {
-            std::vector<T> out(len);
-            handle->read(out.data(), len);
+            std::vector<T> out(num);
+            handle->read(out.data(), num * sizeof(T));
             return out;
         }
 
