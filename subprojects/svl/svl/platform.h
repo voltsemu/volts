@@ -5,10 +5,14 @@
 #   define _UNICODE 1
 #   define WIN32_LEAN_AND_MEAN 1
 #   include <Windows.h>
+#   include <malloc.h>
+#   define ALLOCA(N) _alloca(N)
 #elif defined(__APPLE__)
 #   define SYS_OSX 1
+#   define ALLOCA(N) alloca(N)
 #elif defined(__linux__)
 #   define SYS_LINUX 1
+#   define ALLOCA(N) alloca(N)
 #else
 #   error "unsupported operating system"
 #endif
@@ -46,4 +50,12 @@
 
 #ifndef CL_MSVC
 #   define CL_MSVC 0
+#endif
+
+#if CL_MSVC
+#   include <intrin.h>
+#   define CPUID(leaf, regs) __cpuid((int*)regs, leaf)
+#else
+#   include <cpuid.h>
+#   define CPUID(leaf, regs) __cpuid(leaf, regs[0], regs[1], regs[2], regs[3])
 #endif

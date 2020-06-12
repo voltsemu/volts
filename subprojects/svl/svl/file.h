@@ -45,6 +45,11 @@ namespace svl
 
     struct File
     {
+        void read(void* out, usize num)
+        {
+            handle->read(out, num);
+        }
+
         template<typename T = svl::byte>
         std::vector<T> read(usize num)
         {

@@ -53,23 +53,30 @@ namespace svl
         }
     };
 
-    Logger *logger = nullptr;
-
     namespace log
     {
-        void init()
+        Level level;
+        Logger *logger;
+
+        void init(Level lvl)
         {
+            level = lvl;
             logger = new StdioLogger();
+        }
+
+        void deinit()
+        {
+            delete logger;
         }
     }
 
     void Logger::set(Logger *in)
     {
-        logger = in;
+        log::logger = in;
     }
 
     Logger *Logger::get()
     {
-        return logger;
+        return log::logger;
     }
 }

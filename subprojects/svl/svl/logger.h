@@ -22,31 +22,47 @@ namespace svl
 
     namespace log
     {
-        void init();
+        enum class Level
+        {
+            debug = 0,
+            info = 1,
+            warn = 2,
+            error = 3,
+            fatal = 4
+        };
+
+        extern Level level;
+
+        void init(Level lvl = Level::info);
+        void deinit();
     }
 
     template<typename... T>
     void debug(const char *fmt, T&&... args)
     {
-        Logger::get()->debug(fmt::format(fmt, args...).c_str());
+        if (log::Level::debug >= log::level)
+            Logger::get()->debug(fmt::format(fmt, args...).c_str());
     }
 
     template<typename... T>
     void info(const char *fmt, T&&... args)
     {
-        Logger::get()->info(fmt::format(fmt, args...).c_str());
+        if (log::Level::info >= log::level)
+            Logger::get()->info(fmt::format(fmt, args...).c_str());
     }
 
     template<typename... T>
     void warn(const char *fmt, T&&... args)
     {
-        Logger::get()->warn(fmt::format(fmt, args...).c_str());
+        if (log::Level::warn >= log::level)
+            Logger::get()->warn(fmt::format(fmt, args...).c_str());
     }
 
     template<typename... T>
     void error(const char *fmt, T&&... args)
     {
-        Logger::get()->error(fmt::format(fmt, args...).c_str());
+        if (log::Level::error >= log::level)
+            Logger::get()->error(fmt::format(fmt, args...).c_str());
     }
 
     template<typename... T>

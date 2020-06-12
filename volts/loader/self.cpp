@@ -1,5 +1,6 @@
 #include "volts/loader/self.h"
 #include "volts/loader/common.h"
+#include "volts/loader/keys/keys.h"
 
 #include <svl/convert.h>
 #include <svl/logger.h>
@@ -14,32 +15,154 @@ namespace volts::self
     // killing the entire app because we failed to parse a file
     // seems a bit extreme
 
+    // read a single control info entry from a file
+    // a control info has variable size so it makes sense to
+    // do it in an extra function to keep everything tidy
+    self::ControlInfo read_control(svl::File *source)
+    {
+        self::ControlInfo info;
+        info.type = svl::bswap(source->read<uint32_t>());
+        info.size = svl::bswap(source->read<uint32_t>());
+        info.next = svl::bswap(source->read<uint64_t>());
+
+        if (info.type == 1)
+        {
+            info.flags = source->read<self::ControlFlags>();
+        }
+        else if (info.type == 2)
+        {
+            if (info.size == 48)
+            {
+                info.digest48 = source->read<self::Digest48>();
+            }
+            else if (info.size == 32)
+            {
+                info.digest32 = source->read<self::Digest32>();
+            }
+        }
+        else if (info.type == 3)
+        {
+            info.npdrm_info = source->read<self::NPDRMInfo>();
+        }
+        else
+        {
+            svl::fatal("invalid ControlInfo type {}", info.type);
+        }
+
+        return info;
+    }
+
+    void decrypt_npdrm(
+        const std::vector<self::ControlInfo>& controls,
+        const std::vector<uint8_t> meta_key
+    )
+    {
+        auto ctrl = std::find_if(controls.begin(), controls.end(), [](auto& val) { return val.type == 3; });
+
+        if (ctrl == controls.end())
+            return;
+
+        switch (ctrl->npdrm_info.version)
+        {
+        case 3:
+            break;
+        default:
+            svl::fatal("unsupported license type");
+        }
+    }
+
     svl::File load(svl::File &&source)
     {
+        // self files contain 64 bit big endian elf data
+        // we alias that here
         using ElfHeader = elf::Header<uint64_t, svl::ByteOrder::big>;
         using ProgHeader = elf::ProgHeader<uint64_t, svl::ByteOrder::big>;
         using SectHeader = elf::SectHeader<uint64_t, svl::ByteOrder::big>;
 
+        // self files start with an sce header
         auto sce_header = source.read<sce::Header>();
 
         if (sce_header.magic != cvt::u32("SCE\0"))
             svl::fatal("invalid SCE magic");
 
+        // then comes some more self specific data
         auto self_header = source.read<self::Header>();
         auto appinfo = source.read<AppInfo>();
+
+        // finally we reach the actual elf header
         auto ehdr = source.read<ElfHeader>();
 
         if (ehdr.magic != cvt::u32("\177ELF"))
             svl::fatal("invalid ELF magic");
 
+        // the program headers are in practice always directly after the elf header
+        // if i can find a self where this isnt the case i will update this
         auto phdrs = source.read<ProgHeader>(ehdr.phdr_count);
 
+        // so section headers *should* be where the elf header says they are
+        // after some fiddling.
+        // problem is that they arent in any of my test data.
+        // they are however always at the end of the file so we just
+        // read based off of that instead
         // TODO: figure out how to properly calculate this offset
         source.seek(source.size() - (ehdr.shdr_count * sizeof(SectHeader)));
         auto shdrs = source.read<SectHeader>(ehdr.shdr_count);
 
+        // read in control info
+        source.seek(self_header.control_offset);
+        uint_fast64_t c = 0;
+        std::vector<self::ControlInfo> controls;
+        while (c < self_header.control_length)
+        {
+            auto ctrl = read_control(&source);
+            c += ctrl.size;
+
+            controls.push_back(ctrl);
+        }
+
+
+        // time to load the rest of the metadata
+        source.seek(sce_header.metadata_start + sizeof(sce::Header));
+
+        // read in the metadata info header and sections
+        auto meta_info = source.read<metadata::Info>();
+
         source.seek(self_header.sect_info_offset);
         auto sects = source.read<metadata::Section>(ehdr.phdr_count);
+
+
+        usize header_size = sce_header.metadata_end
+            - sizeof(sce::Header)
+            - sce_header.metadata_start
+            - sizeof(metadata::Info);
+
+        source.seek(sce_header.metadata_start + sizeof(sce::Header) + sizeof(metadata::Info));
+
+        // find a decryption key for the file
+        auto key = keys::get(
+            appinfo.type.as<keys::key_type>(),
+            sce_header.type,
+            appinfo.version
+        );
+
+        void* headers = ALLOCA(header_size);
+        source.read(headers, header_size);
+
+        if ((sce_header.type & 0x8000) != 0x8000)
+        {
+            svl::info("release self");
+        }
+        else
+        {
+            svl::info("debug self");
+        }
+
+        svl::info("size {}", header_size);
+
+        for (auto ctrl : controls)
+        {
+            svl::info("ctrl {} {} {}", ctrl.type, ctrl.size, ctrl.next);
+        }
 
         svl::info("{} {} {} {}", ehdr.phdr_offset, ehdr.shdr_offset, ehdr.phdr_count, ehdr.shdr_count);
         svl::info("uhhh {} {}", source.size() - (ehdr.shdr_count * sizeof(SectHeader)), ehdr.shdr_offset);
@@ -58,7 +181,7 @@ namespace volts::self
 
         for (auto sect : sects)
         {
-            svl::info("msect {:x}", sect.type);
+            svl::info("msect {:x} {}", sect.type, sect.size);
         }
 
         return svl::stream();

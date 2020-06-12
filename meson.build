@@ -22,19 +22,24 @@ svl = subproject('svl').get_variable('svl_dep')
 
 elf = subproject('elf').get_variable('elf_dep')
 
+crypt = subproject('smallcrypt').get_variable('smallcrypt_dep')
+
 sources = [
-    'volts/loader/self.cpp'
+    'volts/loader/self.cpp',
+    'volts/loader/keys/keys.cpp'
 ]
+
+
 
 libvolts = library('volts', sources,
     include_directories : include_directories('.'),
-    dependencies : [ svl, elf ]
+    dependencies : [ svl, elf, crypt ]
 )
 
 volts_dep = declare_dependency(
     link_with : libvolts,
     include_directories : include_directories('.'),
-    dependencies : [ svl, elf ]
+    dependencies : [ svl, elf, crypt ]
 )
 
 if not meson.is_subproject()
