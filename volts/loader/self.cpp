@@ -152,10 +152,7 @@ namespace volts::self
             appinfo.version
         );
 
-        (void)key;
-        (void)meta_info;
-
-        void* headers = ALLOCA(header_size);
+        auto* headers = (uint8_t*)ALLOCA(header_size);
         source.read(headers, header_size);
 
         if ((sce_header.type & 0x8000) != 0x8000)
@@ -163,13 +160,13 @@ namespace volts::self
             // if we've got a release SELF and not a debug one we need to decrypt the meta info
             decrypt_npdrm(controls, npdrm_key);
 
-            auto ctx = crypt::aes::Context<256>::dec(key.erk);
-            ctx.crypt_cbc<crypt::Mode::dec>(
-                sizeof(metadata::Info),
-                key.riv,
-                (uint8_t*)&meta_info,
-                (uint8_t*)&meta_info
-            );
+            crypt::aes::Context<256>::dec(key.erk)
+                .crypt_cbc<crypt::Mode::dec>(
+                    sizeof(metadata::Info),
+                    key.riv,
+                    (uint8_t*)&meta_info,
+                    (uint8_t*)&meta_info
+                );
         }
 
         // the padding should be 0 if decryption was successful
@@ -179,15 +176,18 @@ namespace volts::self
         // now we need to decrypt the rest of the headers
         size_t offset = 0;
         uint8_t stream[16] = {};
-        auto ctx = crypt::aes::Context<128>::enc(meta_info.key);
-        ctx.crypt_ctr(header_size, &offset, meta_info.iv, stream, headers, headers);
+
+        crypt::aes::Context<128>::enc(meta_info.key)
+            .crypt_ctr(header_size, &offset, meta_info.iv, stream, headers, headers);
 
         auto meta_head = *(metadata::Header*)headers;
 
-        uint32_t data_len = 0;
+        uint64_t data_len = 0;
+
+        std::vector<metadata::Section> meta_sections;
 
         // then take the decrypted sections
-        for (int i = 0; i < meta_head.sect_count; i++)
+        for (uint32_t i = 0; i < meta_head.sect_count; i++)
         {
             auto sect = *(metadata::Section*)(headers + sizeof(metadata::Header) + sizeof(metadata::Section) * i);
 
