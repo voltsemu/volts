@@ -6,6 +6,7 @@ subprojects/fmt/fmt/
 *build*/
 
 !meson.build
+!meson_options.txt
 !*.h
 !*.cpp
 !*.md

@@ -13,23 +13,23 @@ namespace crypt
 
     enum class Mode { enc, dec };
 
+    union Block
+    {
+        uint8_t bytes[16];
+        __m128i vec;
+    };
+
     namespace aes
     {
         template<svl::usize N>
         struct Context
         {
-            static Context enc(const uint8_t* key)
-            {
+            static Context enc(const uint8_t* key);
 
-            }
-
-            static Context dec(const uint8_t* key)
-            {
-
-            }
+            static Context dec(const uint8_t* key);
 
             template<Mode M>
-            void crypt_ecb(uint8_t in[16], uint8_t out[16])
+            void crypt_ecb(const Block in, Block* out)
             {
 
             }
