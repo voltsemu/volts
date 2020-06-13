@@ -22,7 +22,7 @@ svl = subproject('svl').get_variable('svl_dep')
 
 elf = subproject('elf').get_variable('elf_dep')
 
-crypt = subproject('smallcrypt').get_variable('smallcrypt_dep')
+crypt = subproject('crypt').get_variable('crypt_dep')
 
 sources = [
     'volts/loader/self.cpp',

@@ -103,6 +103,16 @@ namespace volts
             Big<uint32_t> compressed;
         };
 
+        struct Header
+        {
+            Big<uint64_t> length;
+            Big<uint32_t> algo;
+            Big<uint32_t> sect_count;
+            Big<uint32_t> key_count;
+            Big<uint32_t> size;
+            char pad[8];
+        };
+
         struct Info
         {
             char key[16];
@@ -131,6 +141,7 @@ namespace volts
     static_assert(sizeof(self::NPDRMInfo) == 128);
 
     static_assert(sizeof(metadata::Section) == 48);
+    static_assert(sizeof(metadata::Header) == 32);
     static_assert(sizeof(metadata::Info) == 64);
 
     static_assert(sizeof(AppInfo) == 32);

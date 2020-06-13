@@ -1,9 +1,9 @@
-#include "smallcrypt/aes.h"
+#include "crypt/aes.h"
 
 #include <svl/platform.h>
 #include <svl/logger.h>
 
-namespace smallcrypt
+namespace crypt
 {
     void init()
     {

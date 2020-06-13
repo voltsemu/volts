@@ -4,6 +4,9 @@
 
 #include <svl/convert.h>
 #include <svl/logger.h>
+#include <svl/macros.h>
+
+#include <crypt/aes.h>
 
 #include <elf/elf.h>
 
@@ -57,6 +60,7 @@ namespace volts::self
         const std::vector<uint8_t> meta_key
     )
     {
+        (void)meta_key;
         auto ctrl = std::find_if(controls.begin(), controls.end(), [](auto& val) { return val.type == 3; });
 
         if (ctrl == controls.end())
@@ -71,7 +75,7 @@ namespace volts::self
         }
     }
 
-    svl::File load(svl::File &&source)
+    svl::File load(svl::File &&source, const std::vector<uint8_t>& npdrm_key)
     {
         // self files contain 64 bit big endian elf data
         // we alias that here
@@ -131,6 +135,9 @@ namespace volts::self
         auto sects = source.read<metadata::Section>(ehdr.phdr_count);
 
 
+
+
+        // decrypt the metadata sections
         usize header_size = sce_header.metadata_end
             - sizeof(sce::Header)
             - sce_header.metadata_start
@@ -145,17 +152,55 @@ namespace volts::self
             appinfo.version
         );
 
+        (void)key;
+        (void)meta_info;
+
         void* headers = ALLOCA(header_size);
         source.read(headers, header_size);
 
         if ((sce_header.type & 0x8000) != 0x8000)
         {
-            svl::info("release self");
+            // if we've got a release SELF and not a debug one we need to decrypt the meta info
+            decrypt_npdrm(controls, npdrm_key);
+
+            auto ctx = crypt::aes::Context<256>::dec(key.erk);
+            ctx.crypt_cbc<crypt::Mode::dec>(
+                sizeof(metadata::Info),
+                key.riv,
+                (uint8_t*)&meta_info,
+                (uint8_t*)&meta_info
+            );
         }
-        else
+
+        // the padding should be 0 if decryption was successful
+        for (int i = 0; i < 16; i++)
+            ENSURE(meta_info.key_pad[i] | meta_info.iv_pad[i]);
+
+        // now we need to decrypt the rest of the headers
+        size_t offset = 0;
+        uint8_t stream[16] = {};
+        auto ctx = crypt::aes::Context<128>::enc(meta_info.key);
+        ctx.crypt_ctr(header_size, &offset, meta_info.iv, stream, headers, headers);
+
+        auto meta_head = *(metadata::Header*)headers;
+
+        uint32_t data_len = 0;
+
+        // then take the decrypted sections
+        for (int i = 0; i < meta_head.sect_count; i++)
         {
-            svl::info("debug self");
+            auto sect = *(metadata::Section*)(headers + sizeof(metadata::Header) + sizeof(metadata::Section) * i);
+
+            if (sect.encrypted == 3)
+                data_len += sect.size;
+
+            meta_sections.push_back(sect);
         }
+
+        auto data_keys = headers + sizeof(metadata::Header) + meta_head.sect_count * sizeof(metadata::Section);
+
+
+
 
         svl::info("size {}", header_size);
 

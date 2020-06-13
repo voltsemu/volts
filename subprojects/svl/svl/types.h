@@ -2,6 +2,7 @@
 
 #include <type_traits>
 #include <cstddef>
+#include <stdint.h>
 
 namespace svl
 {
