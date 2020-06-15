@@ -29,8 +29,6 @@ sources = [
     'volts/loader/keys/keys.cpp'
 ]
 
-
-
 libvolts = library('volts', sources,
     include_directories : include_directories('.'),
     dependencies : [ svl, elf, crypt ]
@@ -48,9 +46,10 @@ if not meson.is_subproject()
         dependencies : [ volts_dep ]
     )
 
-    gui = executable('volt', 'volts/gui.cpp',
+    gui = executable('volts', 'volts/gui.cpp',
         dependencies : [ volts_dep ],
-        gui_app : true
+        gui_app : true,
+        build_by_default : false
     )
 
 endif

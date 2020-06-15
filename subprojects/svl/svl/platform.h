@@ -57,5 +57,23 @@
 #   define CPUID(leaf, regs) __cpuid((int*)regs, leaf)
 #else
 #   include <cpuid.h>
-#   define CPUID(leaf, regs) __cpuid(leaf, regs[0], regs[1], regs[2], regs[3])
+#   define CPUID(leaf, regs) __cpuid(leaf, regs.eax, regs.ebx, regs.ecx, regs.edx)
 #endif
+
+namespace svl
+{
+    struct Regs
+    {
+        uint32_t eax;
+        uint32_t ebx;
+        uint32_t ecx;
+        uint32_t edx;
+    };
+
+    Regs cpuid(uint32_t leaf)
+    {
+        Regs ret;
+        CPUID(leaf, &ret);
+        return ret;
+    }
+}

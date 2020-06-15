@@ -1,1 +1,0 @@
-option('static_rom', type : 'option', value : 'enabled', description : 'build with static rom tables')
