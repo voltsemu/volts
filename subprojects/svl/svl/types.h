@@ -28,9 +28,8 @@ namespace svl {
 
     template<typename T, order O>
     struct val {
-        val(T v)
-            : data(v)
-        { }
+        val() : data(0) { }
+        val(T v) : data(v) { }
 
         T get() const { return (O == order::native) ? data : bswap(data); }
 

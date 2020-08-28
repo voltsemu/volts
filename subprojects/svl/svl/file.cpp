@@ -37,14 +37,14 @@ namespace svl {
         }
 #else
         using native_handle = int;
-        static NativeFile* open(const fs::path& path, Mode mode) {
-            return new NativeFile(::open(
+        static native_file* open(const fs::path& path, Mode mode) {
+            return new native_file(::open(
                 path.c_str(),
                 mode == Mode::read ? O_RDONLY : (O_CREAT | O_WRONLY)
             ));
         }
 
-        virtual ~NativeFile() override {
+        virtual ~native_file() override {
             ::close(handle);
         }
 

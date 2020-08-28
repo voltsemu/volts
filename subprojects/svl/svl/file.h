@@ -2,12 +2,25 @@
 
 #include "types.h"
 
-#include <filesystem>
+#if __has_include(<filesystem>)
+#   include <filesystem>
+namespace svl { namespace fs = std::filesystem; }
+#elif __has_include(<experimental/filesystem>)
+#   include <experimental/filesystem>
+namespace svl { namespace fs = std::experimental::filesystem; }
+#else
+#   error no <filesystem> header found
+#endif
 
 namespace svl {
-    namespace fs = std::filesystem;
-
     struct file {
+        template<typename T>
+        T read() {
+            T data;
+            read(&data, sizeof(T));
+            return data;
+        }
+        
         void read(void* ptr, u64 limit) {
             handle->read(ptr, limit);
         }

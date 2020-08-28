@@ -19,17 +19,18 @@ project('volts', 'cpp',
 )
 
 # TODO: using cpp_eh=none makes meson do funky stuff on windows, feels like a bug, should report
+
 if meson.get_compiler('cpp').get_id() == 'msvc'
-    add_global_arguments(['/D_HAS_EXCEPTIONS=0'],
-        language : ['cpp', 'c']
-    )
+    add_global_arguments(['/D_HAS_EXCEPTIONS=0'], language : ['cpp', 'c'])
 endif
 
 svl = subproject('svl').get_variable('svl_dep')
 
-deps = [ svl ]
-src = []
-inc = include_directories()
+deps = [svl]
+
+src = ['volts/loader/sfo.cpp']
+
+inc = include_directories(['volts/loader'])
 
 cli = executable('vlt', src + [ 'volts/cli.cpp' ],
     include_directories : inc,
