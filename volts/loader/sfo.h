@@ -13,13 +13,13 @@ namespace vt::sfo {
     using namespace svl;
 
     using entry = std::variant<
-        u32, 
-        std::string, 
+        u32,
+        std::string,
         std::vector<u8>
     >;
 
     using data = std::map<std::string, entry>;
 
     std::optional<data> load(svl::file&& file);
-    svl::file save(const data& items);
+    void save(svl::file* out, const data& items);
 }

@@ -35,6 +35,26 @@ namespace svl {
         virtual void write(const void* ptr, u64 limit) override {
             WriteFile(handle, ptr, (DWORD)limit, nullptr, nullptr);
         }
+
+        virtual void seek(u64 pos) override {
+            LARGE_INTEGER loc;
+            loc.QuadPart = pos;
+
+            SetFilePointerEx(handle, loc, &loc, FILE_BEGIN);
+        }
+
+        virtual u64 tell() const override {
+            LARGE_INTEGER pos;
+            SetFilePointerEx(handle, pos, &pos, FILE_CURRENT);
+
+            return pos.QuadPart;
+        }
+
+        virtual u64 size() const override {
+            LARGE_INTEGER len;
+            GetFileSizeEx(handle, &len);
+            return len.QuadPart;
+        }
 #else
         using native_handle = int;
         static native_file* open(const fs::path& path, Mode mode) {
@@ -55,6 +75,18 @@ namespace svl {
         virtual void write(const void* ptr, u64 limit) override {
             ::write(handle, ptr, limit);
         }
+
+        virtual void seek(u64 pos) override {
+            lseek(handle, pos, SEEK_SET);
+        }
+
+        virtual u64 tell() const override {
+            return lseek(handle, 0, SEEK_CUR);
+        }
+
+        virtual u64 size() const override {
+
+        }
 #endif
         native_file(native_handle h)
             : handle(h)
@@ -68,13 +100,13 @@ namespace svl {
      */
     struct memory_file : file::file_handle {
         memory_file()
-            : memory_file((char*)std::malloc(512), 512)
+            : memory_file(std::malloc(512), 512)
         { }
 
-        memory_file(char* ptr, u64 len)
+        memory_file(void* ptr, u64 len)
             : data(ptr)
             , cursor(0)
-            , size(len)
+            , len(len)
         { }
 
         virtual ~memory_file() override {
@@ -82,29 +114,45 @@ namespace svl {
         }
 
         virtual void read(void* ptr, u64 limit) override {
-            auto num = std::min(limit, size - cursor);
-            std::memcpy(ptr, data + cursor, num);
+            auto num = std::min(limit, len - cursor);
+            std::memcpy(ptr, (char*)data + cursor, num);
             cursor += num;
         }
 
         virtual void write(const void* ptr, u64 limit) override {
-            if (limit + cursor >= size) {
-                size = (size * 2) + limit;
-                data = (char*)std::realloc(data, size);
+            if (limit + cursor >= len) {
+                len = (len * 2) + limit;
+                data = std::realloc(data, len);
             }
 
-            std::memcpy(data + cursor, ptr, limit);
+            std::memcpy((char*)data + cursor, ptr, limit);
             cursor += limit;
         }
 
+        virtual void seek(u64 pos) override {
+            cursor = pos;
+            if (cursor > len) {
+                len = cursor + 1;
+                data = std::realloc(data, len);
+            }
+        }
+
+        virtual u64 tell() const override {
+            return cursor;
+        }
+
+        virtual u64 size() const override {
+            return len;
+        }
+
         /// data
-        char* data;
+        void* data;
 
         /// current offset in the file
         u64 cursor;
 
         /// total size of the data
-        u64 size;
+        u64 len;
     };
 
     file buffer() {
