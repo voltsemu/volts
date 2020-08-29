@@ -8,6 +8,8 @@
 #include "file.h"
 #include "types.h"
 
+#include <fmt/core.h>
+
 namespace svl::cmd {
     struct entry {
         enum arg_type {
@@ -90,7 +92,8 @@ namespace svl::cmd {
         }
 
         std::string help() const {
-            return "";
+            auto header = fmt::format("{}: {}", argv[0], desc);
+            return header;
         }
 
         std::vector<entry> args = {};

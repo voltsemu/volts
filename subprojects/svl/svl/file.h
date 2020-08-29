@@ -2,6 +2,8 @@
 
 #include "types.h"
 
+#include <vector>
+
 #if __has_include(<filesystem>)
 #   include <filesystem>
 namespace svl { namespace fs = std::filesystem; }
@@ -15,17 +17,17 @@ namespace svl { namespace fs = std::experimental::filesystem; }
 namespace svl {
     struct file {
         template<typename T>
-        T read() {
-            T data;
-            read(&data, sizeof(T));
-            return data;
-        }
-
-        template<typename T>
         std::vector<T> read(u64 count) {
             std::vector<T> vec(count);
             read(vec.data(), sizeof(T) * count);
             return vec;
+        }
+
+        template<typename T>
+        T read() {
+            T data;
+            read(&data, sizeof(T));
+            return data;
         }
 
         void read(void* ptr, u64 limit) {
@@ -33,13 +35,13 @@ namespace svl {
         }
 
         template<typename T>
-        void write(T val) {
-            handle->write(&val, sizeof(T));
+        void write(const std::vector<T>& vec) {
+            handle->write(vec.data(), sizeof(T) * vec.size());
         }
 
         template<typename T>
-        void write(const std::vector<T>& vec) {
-            handle->write(vec.data(), sizeof(T) * vec.size());
+        void write(T val) {
+            handle->write(&val, sizeof(T));
         }
 
         void write(const void* ptr, u64 limit) {

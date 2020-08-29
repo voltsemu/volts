@@ -77,15 +77,19 @@ namespace svl {
         }
 
         virtual void seek(u64 pos) override {
-            lseek(handle, pos, SEEK_SET);
+            ::lseek(handle, pos, SEEK_SET);
         }
 
         virtual u64 tell() const override {
-            return lseek(handle, 0, SEEK_CUR);
+            return ::lseek(handle, 0, SEEK_CUR);
         }
 
         virtual u64 size() const override {
-
+            auto cur = tell();
+            ::lseek(handle, 0, SEEK_END);
+            auto len = tell();
+            ::lseek(handle, cur, SEEK_SET);
+            return len;
         }
 #endif
         native_file(native_handle h)
