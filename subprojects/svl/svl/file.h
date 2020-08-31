@@ -65,6 +65,10 @@ namespace svl {
             write(other.read<u8>(other.size()));
         }
 
+        void close() {
+            handle->close();
+        }
+
         struct file_handle {
             virtual ~file_handle() { }
             virtual void read(void* ptr, u64 limit) = 0;
@@ -72,6 +76,7 @@ namespace svl {
             virtual void seek(u64 pos) = 0;
             virtual u64 tell() const = 0;
             virtual u64 size() const = 0;
+            virtual void close() = 0;
         };
 
         file(file_handle* file) : handle(file) { }

@@ -24,10 +24,6 @@ namespace svl {
             ));
         }
 
-        virtual ~native_file() override {
-            CloseHandle(handle);
-        }
-
         virtual void read(void* ptr, u64 limit) override {
             ReadFile(handle, ptr, (DWORD)limit, nullptr, nullptr);
         }
@@ -55,6 +51,10 @@ namespace svl {
             GetFileSizeEx(handle, &len);
             return len.QuadPart;
         }
+
+        virtual void close() override {
+            CloseHandle(handle);
+        }
 #else
         using native_handle = int;
         static native_file* open(const fs::path& path, Mode mode) {
@@ -62,10 +62,6 @@ namespace svl {
                 path.c_str(),
                 mode == Mode::read ? O_RDONLY : (O_CREAT | O_WRONLY)
             ));
-        }
-
-        virtual ~native_file() override {
-            ::close(handle);
         }
 
         virtual void read(void* ptr, u64 limit) override {
@@ -91,6 +87,10 @@ namespace svl {
             ::lseek(handle, cur, SEEK_SET);
             return len;
         }
+
+        virtual void close() override {
+            ::close(handle);
+        }
 #endif
         native_file(native_handle h)
             : handle(h)
@@ -104,7 +104,7 @@ namespace svl {
      */
     struct memory_file : file::file_handle {
         memory_file()
-            : memory_file(std::malloc(512), 512)
+            : memory_file(malloc(512), 512)
         { }
 
         memory_file(void* ptr, u64 len)
@@ -114,22 +114,22 @@ namespace svl {
         { }
 
         virtual ~memory_file() override {
-            std::free(data);
+            free(data);
         }
 
         virtual void read(void* ptr, u64 limit) override {
             auto num = std::min(limit, len - cursor);
-            std::memcpy(ptr, (char*)data + cursor, num);
+            memcpy(ptr, (char*)data + cursor, num);
             cursor += num;
         }
 
         virtual void write(const void* ptr, u64 limit) override {
             if (limit + cursor >= len) {
                 len = (len * 2) + limit;
-                data = std::realloc(data, len);
+                data = realloc(data, len);
             }
 
-            std::memcpy((char*)data + cursor, ptr, limit);
+            memcpy((char*)data + cursor, ptr, limit);
             cursor += limit;
         }
 
@@ -137,7 +137,7 @@ namespace svl {
             cursor = pos;
             if (cursor > len) {
                 len = cursor + 1;
-                data = std::realloc(data, len);
+                data = realloc(data, len);
             }
         }
 
@@ -147,6 +147,11 @@ namespace svl {
 
         virtual u64 size() const override {
             return len;
+        }
+
+        virtual void close() override {
+            free(data);
+            data = nullptr;
         }
 
         /// data

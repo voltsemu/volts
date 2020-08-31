@@ -3,6 +3,7 @@
 #include <fmt/core.h>
 #include <string_view>
 #include "types.h"
+#include "file.h"
 
 namespace svl::log {
     enum class level {
@@ -14,6 +15,7 @@ namespace svl::log {
     };
 
     struct logger {
+        virtual ~logger() { }
         virtual void debug(std::string&& str) = 0;
         virtual void info(std::string&& str) = 0;
         virtual void warn(std::string&& str) = 0;
@@ -33,6 +35,19 @@ namespace svl::log {
         FILE* stream;
     };
 
+    struct flog : logger {
+        flog(file&& h) : handle(std::move(h)) { }
+        virtual ~flog() override { handle.close(); }
+        virtual void debug(std::string&& str) override;
+        virtual void info(std::string&& str) override;
+        virtual void warn(std::string&& str) override;
+        virtual void err(std::string&& str) override;
+        virtual void fatal(std::string&& str) override;
+
+    private:
+        file handle;
+    };
+
     extern unique<logger> stream;
     extern level lvl;
 
@@ -40,7 +55,7 @@ namespace svl::log {
     template<typename... T> \
     void name(std::string_view fmt, T&&... args) { \
         if (lvl <= level::name) \
-            stream->name(fmt::format(fmt, args)); \
+            stream->name(fmt::format(fmt, args...)); \
     }
 
     LOG_FUNC(debug)
