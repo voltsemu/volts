@@ -1,119 +1,116 @@
 #pragma once
 
-#include <string>
 #include <vector>
-#include <variant>
-#include <optional>
-
-#include "file.h"
-#include "types.h"
-
+#include <string>
+#include <string_view>
+#include <algorithm>
 #include <fmt/core.h>
 
 namespace svl::cmd {
     struct entry {
-        enum arg_type {
-            // string
+        std::string full;
+        std::string brief;
+        std::string_view desc;
+
+        enum {
+            pos,
             str,
+            num
+        } type = pos;
 
-            // filesystem path
-            path,
-
-            // integer
-            num,
-
-            // positional argument or bool
-            pos
-        };
-
-        const char* full;
-        const char* brief;
-        const char* desc;
-
-        // type erased function pointer callback
         void* callback;
 
-        // default value
-        std::variant<std::string, int, bool, fs::path, std::monostate> fallback;
+        int apply(int argc, const char** argv, int i) {
+            auto next = [=] {
+                if (argc > i)
+                    return argv[i + 1];
+                else
+                    return "";
+            };
 
-        arg_type type;
-
-        template<typename F>
-        constexpr entry& operator=(F&& func) {
-            callback = (void*)func;
-            return *this;
+            switch (type) {
+            case pos:
+                ((void(*)())callback)();
+                return 0;
+            case str:
+                ((void(*)(std::string))callback)(next());
+                return 1;
+            case num:
+                ((void(*)(int))callback)(std::stoi(next()));
+                return 1;
+            default:
+                return 0;
+            }
         }
     };
 
-    template<typename T>
-    constexpr entry arg(
-        const char* name,
-        const char* brief,
-        const char* desc,
-        std::optional<T> fallback = std::nullopt
-    ) {
-        entry out = { name, brief, desc, nullptr };
+    template<typename F>
+    entry argument(decltype(entry::type) type, std::string full, std::string brief, std::string_view desc, F&& func) {
+        using namespace std::literals;
 
-        if (fallback)
-            out.fallback = fallback.value();
-        else
-            out.fallback = std::monostate();
-
-        if constexpr (std::is_same_v<T, bool>) {
-            out.type = entry::pos;
-        } else if constexpr (std::is_same_v<T, std::string>) {
-            out.type = entry::str;
-        } else if constexpr (std::is_same_v<T, int>) {
-            out.type = entry::num;
-        } else if constexpr (std::is_same_v<T, fs::path>) {
-            out.type = entry::path;
-        } else {
-            static_assert(false);
-        }
+        entry out = {
+            "--"s + full,
+            "-"s + brief,
+            desc,
+            type,
+            (void*)func
+        };
 
         return out;
     }
 
-    template<typename T>
-    constexpr entry arg(
-        const char* name,
-        const char* desc,
-        std::optional<T> fallback = std::nullopt
-    ) { return arg(name, name, desc, fallback); }
+    entry str(std::string full, std::string brief, std::string_view desc, void(*func)(std::string)) {
+        return argument(entry::str, full, brief, desc, func);
+    }
+
+    entry pos(std::string full, std::string brief, std::string_view desc, void(*func)()) {
+        return argument(entry::pos, full, brief, desc, func);
+    }
 
     struct cli {
-        cli(const char* d)
-            : desc(d)
+        cli(std::string_view n, std::vector<svl::cmd::entry> e)
+            : desc(n)
+            , entries(e)
         { }
 
-        cli& operator()(std::vector<entry>&& a) {
-            args = a;
-            return *this;
+        std::string_view desc;
+        std::vector<svl::cmd::entry> entries;
+
+        std::vector<std::string> parse(int argc, const char** argv) {
+            std::vector<std::string> out;
+
+            for (int i = 1; i < argc; i++) {
+                bool found = false;
+                for (auto entry : entries) {
+                    if (entry.full == argv[i] || entry.brief == argv[i]) {
+                        i += entry.apply(argc, argv, i);
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found) {
+                    out.push_back(argv[i]);
+                }
+            }
+
+            return out;
         }
 
-        std::string help() const {
-            auto header = fmt::format("{}: {}", argv[0], desc);
-            return header;
+        std::string help(const char* exe = "") {
+            std::string out = fmt::format("{}: {}", exe, desc);
+
+            int len = 0;
+
+            for (auto entry : entries)
+                len = std::max<int>(len, entry.full.length() + entry.brief.length() + 1);
+
+            for (auto entry : entries) {
+                auto name = (entry.full + " " + entry.brief);
+                out += fmt::format("\n {}:{} {}", name, std::string(len - name.length(), ' '), entry.desc);
+            }
+
+            return out;
         }
-
-        std::vector<entry> args = {};
-
-        const char* desc;
-
-        struct iter {
-            int idx;
-            int argc;
-            const char** argv;
-        };
-
-        iter parse(int n, const char** s) {
-            argc = n;
-            argv = s;
-
-            return { 1, argc, argv };
-        }
-
-        int argc;
-        const char** argv;
     };
 }

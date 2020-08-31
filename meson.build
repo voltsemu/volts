@@ -24,9 +24,10 @@ if meson.get_compiler('cpp').get_id() == 'msvc'
     add_global_arguments(['/D_HAS_EXCEPTIONS=0'], language : ['cpp', 'c'])
 endif
 
+fmt = dependency('fmt', fallback : ['fmt', 'fmt_dep'])
 svl = subproject('svl').get_variable('svl_dep')
 
-deps = [svl]
+deps = [svl, fmt]
 
 src = ['volts/loader/sfo.cpp']
 

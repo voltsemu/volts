@@ -40,29 +40,35 @@ namespace svl {
 #endif
 
     template<typename T>
-    T bswap(T val) {
+    constexpr bool is_bswap_v =
+        (sizeof(T) == 2 || sizeof(T) == 4 || sizeof(T) == 8)
+        && (std::is_standard_layout_v<T> && std::is_trivial_v<T>);
+
+    template<typename T>
+    auto bswap(T val) {
+        static_assert(is_bswap_v<T>);
+        using utype = typename std::make_unsigned<T>::type;
+
         if constexpr (sizeof(T) == 2) {
-            return BSWAP16(val);
+            return (T)BSWAP16((utype)val);
         } else if constexpr (sizeof(T) == 4) {
-            return BSWAP32(val);
+            return (T)BSWAP32((utype)val);
         } else if constexpr (sizeof(T) == 8) {
-            return BSWAP64(val);
-        } else {
-            static_assert(false);
+            return (T)BSWAP64((utype)val);
         }
     }
 
     template<typename T, order O>
     struct val {
-        using unsigned_type = typename std::make_unsigned<T>::type;
+        static_assert(is_bswap_v<T>);
 
         val() : data((T)0) { }
-        val(T v) : data(v) { }
+        val(T v, order o = order::native) : data(o == O ? v : bswap(v)) { }
 
         T get() const {
             return (O == order::native)
                 ? data
-                : (T)bswap((unsigned_type)data);
+                : bswap(data);
         }
 
         operator T() const { return get(); }
