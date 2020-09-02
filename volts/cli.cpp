@@ -50,12 +50,11 @@ cmd::cli cli = cmd::cli("ps3 emulator tools", {
         ENSURE(fs::exists(path), "failed to find source")
         auto input = toml::parse_file(path);
         ENSURE(!!input, "failed to parse toml file")
-        auto table = std::move(input).get();
+        auto table = std::move(input).table();
 
         vt::sfo::data data;
 
         for (auto [key, val] : table) {
-            fmt::print("{}\n", key);
             val.visit([&](auto&& e) {
                 if constexpr (toml::is_number<decltype(e)>) {
                     data[key] = val.as_integer()->get();

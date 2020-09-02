@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <memory>
 #include <type_traits>
+#include <optional>
 
 #include "macros.h"
 

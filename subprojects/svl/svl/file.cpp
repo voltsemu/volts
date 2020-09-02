@@ -103,8 +103,8 @@ namespace svl {
      * an in memory file
      */
     struct memory_file : file::file_handle {
-        memory_file()
-            : memory_file(malloc(512), 512)
+        memory_file(usize init)
+            : memory_file(malloc(init), init)
         { }
 
         memory_file(void* ptr, u64 len)
@@ -164,8 +164,8 @@ namespace svl {
         u64 len;
     };
 
-    file buffer() {
-        return file(new memory_file());
+    file buffer(usize init) {
+        return file(new memory_file(init));
     }
 
     file open(const fs::path& path, Mode mode) {

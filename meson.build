@@ -30,7 +30,10 @@ toml = subproject('toml').get_variable('tomlplusplus_dep')
 
 deps = [svl, fmt, toml]
 
-src = ['volts/loader/sfo.cpp']
+src = [
+    'volts/loader/sfo.cpp',
+    'volts/loader/pup.cpp'
+]
 args = ['-DTOML_EXCEPTIONS=0']
 
 inc = include_directories(['volts/loader'])

@@ -95,6 +95,14 @@ namespace svl {
         write
     };
 
-    file buffer();
+    file buffer(usize init = 512);
     file open(const fs::path& path, Mode mode = Mode::read);
+
+    template<typename T>
+    file from(const std::vector<T>& vec) {
+        auto out = buffer(vec.size());
+        out.write(vec);
+        out.seek(0);
+        return out;
+    }
 }
