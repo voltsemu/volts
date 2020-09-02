@@ -32,15 +32,19 @@ namespace svl::log {
     }
 
     void stdlog::warn(std::string&& str) {
-        fprintf(stream, FYEL("[info]:") " %s\n", str.c_str());
+        fprintf(stream, FYEL("[warn]:") " %s\n", str.c_str());
     }
 
     void stdlog::err(std::string&& str) {
-        fprintf(stream, FRED("[info]:") " %s\n", str.c_str());
+        fprintf(stream, FRED("[error]:") " %s\n", str.c_str());
     }
 
     void stdlog::fatal(std::string&& str) {
-        fprintf(stream, FMAG("[info]:") " %s\n", str.c_str());
+        fprintf(stream, FMAG("[fatal]:") " %s\n", str.c_str());
+    }
+
+    void stdlog::write(std::string_view str) {
+        fwrite(str.data(), 1, str.size(), stream);
     }
 
     void flog::debug(std::string&& str) {
@@ -66,6 +70,14 @@ namespace svl::log {
     void flog::fatal(std::string&& str) {
         handle.write(str.data(), str.size());
         handle.write('\n');
+    }
+
+    void flog::write(std::string_view str) {
+        handle.write(str.data(), str.size());
+    }
+
+    void write(std::string_view str) {
+        stream->write(str);
     }
 
     unique<logger> stream = std::make_unique<stdlog>(stdout);

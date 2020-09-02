@@ -60,7 +60,7 @@ namespace svl {
         static native_file* open(const fs::path& path, Mode mode) {
             return new native_file(::open(
                 path.c_str(),
-                mode == Mode::read ? O_RDONLY : (O_CREAT | O_WRONLY)
+                mode == Mode::read ? O_RDONLY : (O_CREAT | O_WRONLY | O_TRUNC)
             ));
         }
 

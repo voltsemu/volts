@@ -71,7 +71,7 @@ namespace vt::sfo {
         return std::visit(visitor {
             [](u32) { return 4u; },
             [](const std::vector<u8>& vec) { return (u32)vec.size(); },
-            [](const std::string& str) { return (u32)str.size(); }
+            [](const std::string& str) { return (u32)str.size() + 1; }
         }, item);
     }
 
@@ -83,7 +83,7 @@ namespace vt::sfo {
         }, item);
     }
 
-    void save(svl::file* out, const data& items) {
+    svl::file save(const data& items) {
         std::vector<table_entry> offsets;
 
         auto keys = svl::buffer();
@@ -99,10 +99,15 @@ namespace vt::sfo {
             });
 
             keys.write(key.data(), key.size());
+            keys.write('\0');
+
             std::visit(visitor {
                 [&](u32 num) { data.write(num); },
                 [&](const std::vector<u8>& vec) { data.write(vec); },
-                [&](const std::string& str) { data.write(str.data(), str.size()); }
+                [&](const std::string& str) {
+                    data.write(str.data(), str.size());
+                    data.write('\0');
+                }
             }, it);
         }
 
@@ -116,9 +121,13 @@ namespace vt::sfo {
             u32(size)
         };
 
-        out->write(head);
-        out->write(offsets);
-        out->insert(std::move(keys));
-        out->insert(std::move(data));
+        auto out = svl::buffer();
+
+        out.write(head);
+        out.write(offsets);
+        out.insert(std::move(keys));
+        out.insert(std::move(data));
+
+        return out;
     }
 }

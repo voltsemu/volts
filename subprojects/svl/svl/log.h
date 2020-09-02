@@ -21,6 +21,7 @@ namespace svl::log {
         virtual void warn(std::string&& str) = 0;
         virtual void err(std::string&& str) = 0;
         virtual void fatal(std::string&& str) = 0;
+        virtual void write(std::string_view str) = 0;
     };
 
     struct stdlog : logger {
@@ -30,19 +31,24 @@ namespace svl::log {
         virtual void warn(std::string&& str) override;
         virtual void err(std::string&& str) override;
         virtual void fatal(std::string&& str) override;
+        virtual void write(std::string_view str) override;
 
     private:
         FILE* stream;
     };
 
+    const u8 BOM[] = { 239, 187, 191 };
     struct flog : logger {
-        flog(file&& h) : handle(std::move(h)) { }
+        flog(file&& h) : handle(std::move(h)) {
+            handle.write(BOM, sizeof(BOM));
+        }
         virtual ~flog() override { handle.close(); }
         virtual void debug(std::string&& str) override;
         virtual void info(std::string&& str) override;
         virtual void warn(std::string&& str) override;
         virtual void err(std::string&& str) override;
         virtual void fatal(std::string&& str) override;
+        virtual void write(std::string_view str) override;
 
     private:
         file handle;
@@ -63,4 +69,6 @@ namespace svl::log {
     LOG_FUNC(warn)
     LOG_FUNC(err)
     LOG_FUNC(fatal)
+
+    void write(std::string_view str);
 }

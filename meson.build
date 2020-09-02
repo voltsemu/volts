@@ -26,14 +26,17 @@ endif
 
 fmt = dependency('fmt', fallback : ['fmt', 'fmt_dep'])
 svl = subproject('svl').get_variable('svl_dep')
+toml = subproject('toml').get_variable('tomlplusplus_dep')
 
-deps = [svl, fmt]
+deps = [svl, fmt, toml]
 
 src = ['volts/loader/sfo.cpp']
+args = ['-DTOML_EXCEPTIONS=0']
 
 inc = include_directories(['volts/loader'])
 
 cli = executable('vlt', src + [ 'volts/cli.cpp' ],
     include_directories : inc,
-    dependencies : deps
+    dependencies : deps,
+    cpp_args : args
 )

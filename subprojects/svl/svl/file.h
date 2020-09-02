@@ -79,7 +79,13 @@ namespace svl {
             virtual void close() = 0;
         };
 
+        file() = delete;
+        file(const file&) = delete;
+
         file(file_handle* file) : handle(file) { }
+        file(file&& other) {
+            handle = std::move(other.handle);
+        }
     private:
         unique<file_handle> handle;
     };

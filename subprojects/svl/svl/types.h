@@ -62,7 +62,7 @@ namespace svl {
     struct val {
         static_assert(is_bswap_v<T>);
 
-        val() : data((T)0) { }
+        val() : val((T)0) { }
         val(T v, order o = order::native) : data(o == O ? v : bswap(v)) { }
 
         T get() const {

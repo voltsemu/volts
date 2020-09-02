@@ -21,5 +21,5 @@ namespace vt::sfo {
     using data = std::map<std::string, entry>;
 
     std::optional<data> load(svl::file&& file);
-    void save(svl::file* out, const data& items);
+    svl::file save(const data& items);
 }
