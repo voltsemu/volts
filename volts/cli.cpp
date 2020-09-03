@@ -2,6 +2,7 @@
 #include <svl/log.h>
 
 #include "loader/sfo.h"
+#include "loader/pup.h"
 
 #include <toml++/toml.h>
 #include <fstream>
@@ -73,6 +74,14 @@ cmd::cli cli = cmd::cli("ps3 emulator tools", {
 
         open("PARAM.SFO", Mode::write)
             .insert(vt::sfo::save(data));
+    }),
+    cmd::str("pup", "P", "extract a .PUP file", [](std::string path) {
+        ENSURE(fs::exists(path), "pup file does not exist")
+        auto pup = vt::pup::load(open(path));
+        ENSURE(pup.has_value(), "failed to parse pup file")
+        for (auto entry : pup->files) {
+
+        }
     })
 });
 
