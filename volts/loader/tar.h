@@ -9,11 +9,16 @@ namespace vt::tar {
 
     struct object {
 
-        svl::file get(const std::string_view& path);
+        svl::file get(const std::string& path);
 
         void extract(const fs::path& dir);
-    private:
-        std::map<std::string, u64> offsets;
+
+        struct entry {
+            u64 offset = 0;
+            u64 size = 0;
+        };
+
+        std::map<std::string, entry> offsets;
         svl::file source;
     };
 

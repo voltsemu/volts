@@ -79,8 +79,9 @@ cmd::cli cli = cmd::cli("ps3 emulator tools", {
         ENSURE(fs::exists(path), "pup file does not exist")
         auto pup = vt::pup::load(open(path));
         ENSURE(pup.has_value(), "failed to parse pup file")
-        for (auto entry : pup->files) {
 
+        for (auto entry : pup->files) {
+            (void)entry;
         }
     })
 });

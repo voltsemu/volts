@@ -22,6 +22,7 @@ namespace vt::pup {
         object(svl::file&& file)
             : source(std::move(file))
         { }
+
         std::vector<entry> files;
         std::vector<hash> hashes;
 

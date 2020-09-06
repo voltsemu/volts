@@ -1,5 +1,8 @@
 #include "tar.h"
 
+#include <string.h>
+#include <math.h>
+
 namespace vt::tar {
     struct header {
         char name[100];
@@ -21,16 +24,55 @@ namespace vt::tar {
         char pad[12];
     };
 
-    svl::file object::get(const std::string_view& path) {
-        for (auto& [name, offset] : offsets) {
-            if (name == path) {
-                source.seek(offset);
-                auto head = file.read<header>();
-            }
+    int oct2dec(int n) {
+        int ret = 0;
+        int i = 0;
+
+        while (n) {
+            int rem = n % 10;
+            n /= 10;
+            ret += rem * pow(8, i++);
         }
+
+        return ret;
+    }
+
+    svl::file object::get(const std::string& path) {
+        auto e = offsets[path];
+
+        if (e.offset == 0) {
+            return svl::buffer();
+        }
+
+        source.seek(e.offset);
+        return svl::from(source.read<u8>(e.size));
     }
 
     void object::extract(const fs::path& dir) {
         fs::create_directories(dir);
+    }
+
+    u8 magic[] = { 0x75, 0x73, 0x74, 0x61, 0x72, 0x20 };
+
+    object load(svl::file&& source) {
+        std::map<std::string, object::entry> offsets;
+
+        auto head = source.read<header>();
+
+        while (!memcmp(head.magic, magic, sizeof(magic))) {
+
+            auto size = oct2dec(atoi(head.size));
+            auto here = source.tell();
+
+            offsets[head.name] = { here, (u64)size };
+
+            auto aligned = (size + here + 512 - 1) & ~(512 - 1);
+
+            source.seek(aligned);
+
+            head = source.read<header>();
+        }
+
+        return { offsets, std::move(source) };
     }
 }

@@ -32,7 +32,8 @@ deps = [svl, fmt, toml]
 
 src = [
     'volts/loader/sfo.cpp',
-    'volts/loader/pup.cpp'
+    'volts/loader/pup.cpp',
+    'volts/loader/tar.cpp'
 ]
 
 args = ['-DTOML_EXCEPTIONS=0']
