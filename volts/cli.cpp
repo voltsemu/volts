@@ -3,6 +3,7 @@
 
 #include "loader/sfo.h"
 #include "loader/pup.h"
+#include "loader/tar.h"
 
 #include <toml++/toml.h>
 #include <fstream>
@@ -80,9 +81,8 @@ cmd::cli cli = cmd::cli("ps3 emulator tools", {
         auto pup = vt::pup::load(open(path));
         ENSURE(pup.has_value(), "failed to parse pup file")
 
-        for (auto entry : pup->files) {
-            (void)entry;
-        }
+        auto entry = pup.get(0x300);
+        auto packed = vt::tar::load(entry);
     })
 });
 
