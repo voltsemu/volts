@@ -19,5 +19,10 @@ namespace vt::sce {
             + head.start + sizeof(metadata::info);
 
         source.seek(head.start + sizeof(sce::header));
+        auto meta_info = source.read<u8>(sizeof(metadata::info));
+        auto meta_head = source.read<u8>(metadata_size);
+
+        u8 key[32];
+        u8 iv[16];
     }
 }
