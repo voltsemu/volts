@@ -17,7 +17,7 @@ namespace svl { namespace fs = std::experimental::filesystem; }
 namespace svl {
     struct file {
         template<typename T>
-        std::vector<T> read(u64 count) {
+        std::vector<T> read(usize count) {
             std::vector<T> vec(count);
             read(vec.data(), sizeof(T) * count);
             return vec;
@@ -30,7 +30,7 @@ namespace svl {
             return data;
         }
 
-        void read(void* ptr, u64 limit) {
+        void read(void* ptr, usize limit) {
             handle->read(ptr, limit);
         }
 
@@ -44,19 +44,19 @@ namespace svl {
             handle->write(&val, sizeof(T));
         }
 
-        void write(const void* ptr, u64 limit) {
+        void write(const void* ptr, usize limit) {
             handle->write(ptr, limit);
         }
 
-        void seek(u64 pos) {
+        void seek(usize pos) {
             handle->seek(pos);
         }
 
-        u64 tell() const {
+        usize tell() const {
             return handle->tell();
         }
 
-        u64 size() const {
+        usize size() const {
             return handle->size();
         }
 
@@ -71,11 +71,11 @@ namespace svl {
 
         struct file_handle {
             virtual ~file_handle() { }
-            virtual void read(void* ptr, u64 limit) = 0;
-            virtual void write(const void* ptr, u64 limit) = 0;
-            virtual void seek(u64 pos) = 0;
-            virtual u64 tell() const = 0;
-            virtual u64 size() const = 0;
+            virtual void read(void* ptr, usize limit) = 0;
+            virtual void write(const void* ptr, usize limit) = 0;
+            virtual void seek(usize pos) = 0;
+            virtual usize tell() const = 0;
+            virtual usize size() const = 0;
             virtual void close() = 0;
         };
 

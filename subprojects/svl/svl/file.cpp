@@ -24,29 +24,29 @@ namespace svl {
             ));
         }
 
-        virtual void read(void* ptr, u64 limit) override {
+        virtual void read(void* ptr, usize limit) override {
             ReadFile(handle, ptr, (DWORD)limit, nullptr, nullptr);
         }
 
-        virtual void write(const void* ptr, u64 limit) override {
+        virtual void write(const void* ptr, usize limit) override {
             WriteFile(handle, ptr, (DWORD)limit, nullptr, nullptr);
         }
 
-        virtual void seek(u64 pos) override {
+        virtual void seek(usize pos) override {
             LARGE_INTEGER loc;
             loc.QuadPart = pos;
 
             SetFilePointerEx(handle, loc, &loc, FILE_BEGIN);
         }
 
-        virtual u64 tell() const override {
+        virtual usize tell() const override {
             LARGE_INTEGER pos;
             SetFilePointerEx(handle, pos, &pos, FILE_CURRENT);
 
             return pos.QuadPart;
         }
 
-        virtual u64 size() const override {
+        virtual usize size() const override {
             LARGE_INTEGER len;
             GetFileSizeEx(handle, &len);
             return len.QuadPart;
@@ -64,23 +64,23 @@ namespace svl {
             ));
         }
 
-        virtual void read(void* ptr, u64 limit) override {
+        virtual void read(void* ptr, usize limit) override {
             ::read(handle, ptr, limit);
         }
 
-        virtual void write(const void* ptr, u64 limit) override {
+        virtual void write(const void* ptr, usize limit) override {
             ::write(handle, ptr, limit);
         }
 
-        virtual void seek(u64 pos) override {
+        virtual void seek(usize pos) override {
             ::lseek(handle, pos, SEEK_SET);
         }
 
-        virtual u64 tell() const override {
+        virtual usize tell() const override {
             return ::lseek(handle, 0, SEEK_CUR);
         }
 
-        virtual u64 size() const override {
+        virtual usize size() const override {
             auto cur = tell();
             ::lseek(handle, 0, SEEK_END);
             auto len = tell();
@@ -107,7 +107,7 @@ namespace svl {
             : memory_file(malloc(init), init)
         { }
 
-        memory_file(void* ptr, u64 len)
+        memory_file(void* ptr, usize len)
             : data(ptr)
             , cursor(0)
             , len(len)
@@ -117,13 +117,13 @@ namespace svl {
             free(data);
         }
 
-        virtual void read(void* ptr, u64 limit) override {
+        virtual void read(void* ptr, usize limit) override {
             auto num = std::min(limit, len - cursor);
             memcpy(ptr, (char*)data + cursor, num);
             cursor += num;
         }
 
-        virtual void write(const void* ptr, u64 limit) override {
+        virtual void write(const void* ptr, usize limit) override {
             if (limit + cursor >= len) {
                 len = (len * 2) + limit;
                 data = realloc(data, len);
@@ -133,7 +133,7 @@ namespace svl {
             cursor += limit;
         }
 
-        virtual void seek(u64 pos) override {
+        virtual void seek(usize pos) override {
             cursor = pos;
             if (cursor > len) {
                 len = cursor + 1;
@@ -141,11 +141,11 @@ namespace svl {
             }
         }
 
-        virtual u64 tell() const override {
+        virtual usize tell() const override {
             return cursor;
         }
 
-        virtual u64 size() const override {
+        virtual usize size() const override {
             return len;
         }
 

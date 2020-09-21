@@ -1,6 +1,7 @@
 #include "sfo.h"
 
 #include <svl/cvt.h>
+#include <svl/file.h>
 
 namespace vt::sfo {
     struct header {

@@ -6,7 +6,7 @@
     {(A) = ((u32)(B)[(C)]) \
         | ((u32)(B)[(C) + 1] << 8) \
         | ((u32)(B)[(C) + 2] << 16) \
-        | ((u32)(B)[(C) + 3] << 24)}   
+        | ((u32)(B)[(C) + 3] << 24);}   
 
 #define SET_U32LE(A, B, C) \
     {(B)[(C)] = (u8)(A); \
@@ -20,7 +20,7 @@ namespace svl {
         case 128: return 10;
         case 192: return 12;
         case 256: return 14;
-        default: ENSURE(false);
+        default: ENSURE(false)
         }
     }
 
@@ -41,7 +41,7 @@ namespace svl {
         case 14:
             break;
         default: 
-            ENSURE(false);
+            ENSURE(false)
         }
     }
 

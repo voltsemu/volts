@@ -1,7 +1,5 @@
 #pragma once
 
-#include "log.h"
-
 #include <cstdlib>
 
 #if defined(_WIN32) || defined(WIN32)
@@ -27,5 +25,3 @@
 #ifndef SYS_UNIX
 #   define SYS_UNIX 0
 #endif
-
-#define ENSURE(expr) { if (!(expr)) { svl::log::fatal("[" __FILE__ ":" __LINE__ "] assertion " #expr " failed"); std::abort(); }}

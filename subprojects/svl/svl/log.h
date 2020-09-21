@@ -2,8 +2,8 @@
 
 #include <fmt/core.h>
 #include <string_view>
-#include "types.h"
-#include "file.h"
+#include "svl/types.h"
+#include "svl/file.h"
 
 namespace svl::log {
     enum class level {
@@ -37,7 +37,7 @@ namespace svl::log {
         FILE* stream;
     };
 
-    const u8 BOM[] = { 239, 187, 191 };
+    static u8 BOM[] = { 239, 187, 191 };
     struct flog : logger {
         flog(file&& h) : handle(std::move(h)) {
             handle.write(BOM, sizeof(BOM));
@@ -72,3 +72,9 @@ namespace svl::log {
 
     void write(std::string_view str);
 }
+
+
+#define STR_INNER(X) #X
+#define STR(X) STR_INNER(X)
+
+#define ENSURE(expr) { if (!(expr)) { svl::log::fatal("[" __FILE__ ":" STR(__LINE__) "] assertion " #expr " failed"); std::abort(); }}
