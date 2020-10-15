@@ -27,7 +27,8 @@ cmd::cli cli = cmd::cli("ps3 emulator tools", {
         EXPECT(sfo.has_value(), "failed to load SFO file")
         toml::table out;
 
-        for (auto& [key, val] : sfo.value()) {
+        for (const auto& entry : sfo.value()) {
+            auto key = entry.first;
             std::visit(visitor {
                 [&](u32 i) { out.insert_or_assign(key, i); },
                 [&](std::string s) {
@@ -41,7 +42,7 @@ cmd::cli cli = cmd::cli("ps3 emulator tools", {
                         arr.push_back(i);
                     out.insert_or_assign(key, std::move(arr));
                 }
-            }, val);
+            }, entry.second);
         }
 
         std::stringstream ss;

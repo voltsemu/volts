@@ -29,9 +29,9 @@ namespace vt::tar {
         int i = 0;
 
         while (n) {
-            int rem = n % 10;
+            auto rem = n % 10;
             n /= 10;
-            ret += rem * pow(8, i++);
+            ret += rem * (int)pow(8, i++);
         }
 
         return ret;

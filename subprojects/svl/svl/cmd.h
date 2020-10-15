@@ -100,10 +100,10 @@ namespace svl::cmd {
         std::string help(const char* exe = "") {
             std::string out = fmt::format("{}: {}", exe, desc);
 
-            int len = 0;
+            size_t len = 0;
 
             for (auto entry : entries)
-                len = std::max<int>(len, entry.full.length() + entry.brief.length() + 1);
+                len = std::max<size_t>(len, entry.full.length() + entry.brief.length() + 1);
 
             for (auto entry : entries) {
                 auto name = (entry.full + " " + entry.brief);
