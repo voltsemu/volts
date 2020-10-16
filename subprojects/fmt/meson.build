@@ -4,7 +4,7 @@ project('fmt', 'cpp',
 
 sources = [ 'fmt/src/format.cc', 'fmt/src/os.cc' ]
 
-incs = [ include_directories('fmt/include') ]
+incs = include_directories('fmt/include')
 
 libfmt = library('fmt', sources,
     include_directories : incs,

@@ -52,12 +52,14 @@ cmd::cli cli = cmd::cli("ps3 emulator tools", {
     cmd::str("sfo-write", "SW", "create a .SFO file from a toml file", [](std::string path) {
         EXPECT(fs::exists(path), "failed to find source")
         auto input = toml::parse_file(path);
-        EXPECT(!!input, "failed to parse toml file")
+        EXPECT(input, "failed to parse toml file")
         auto table = std::move(input).table();
 
         vt::sfo::data data;
 
-        for (auto [key, val] : table) {
+        for (auto entry : table) {
+            const auto& key = entry.first;
+            const auto& val = entry.second;
             val.visit([&](auto&& e) {
                 if constexpr (toml::is_number<decltype(e)>) {
                     data[key] = val.as_integer()->get();

@@ -24,7 +24,7 @@ if meson.get_compiler('cpp').get_id() == 'msvc'
     add_global_arguments(['/D_HAS_EXCEPTIONS=0'], language : ['cpp', 'c'])
 endif
 
-fmt = dependency('fmt', fallback : ['fmt', 'fmt_dep'])
+fmt = dependency('fmt', fallback : ['fmt', 'fmt_dep'], version : '>=7.0.0')
 svl = subproject('svl').get_variable('svl_dep')
 toml = subproject('toml').get_variable('tomlplusplus_dep')
 

@@ -4,7 +4,7 @@ src = [ 'svl/file.cpp', 'svl/log.cpp' ]
 
 inc = include_directories('.')
 
-fmt = dependency('fmt', fallback : ['fmt', 'fmt_dep'])
+fmt = dependency('fmt', fallback : ['fmt', 'fmt_dep'], version : '>=7.0.0')
 
 svl = library('svl', src,
     include_directories : inc,
