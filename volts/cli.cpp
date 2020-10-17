@@ -10,16 +10,17 @@
 #include <sstream>
 
 using namespace svl;
+namespace l = svl::log;
 
-#define EXPECT(expr, msg) if (!(expr)) { log::fatal(msg); std::exit(1); }
+#define EXPECT(expr, msg) if (!(expr)) { l::fatal(msg); std::exit(1); }
 
 cmd::cli cli = cmd::cli("ps3 emulator tools", {
     cmd::str("output", "O", "redirect output to file", [](std::string str) {
-        log::info("redirecting output to: {}", str);
-        log::stream = std::make_unique<log::flog>(open(str, Mode::write));
+        l::info("redirecting output to: {}", str);
+        l::stream = std::make_unique<log::flog>(open(str, Mode::write));
     }),
     cmd::pos("help", "h", "print help message", [] {
-        log::info(cli.help("vlt"));
+        l::info(cli.help("vlt"));
     }),
     cmd::str("sfo-read", "SR", "read a .SFO", [](std::string path) {
         EXPECT(fs::exists(path), fmt::format("couldnt find sfo file {}", path))
@@ -47,7 +48,7 @@ cmd::cli cli = cmd::cli("ps3 emulator tools", {
 
         std::stringstream ss;
         ss << out << std::endl;
-        log::write(ss.str());
+        l::write(ss.str());
     }),
     cmd::str("sfo-write", "SW", "create a .SFO file from a toml file", [](std::string path) {
         EXPECT(fs::exists(path), "failed to find source")
@@ -58,9 +59,27 @@ cmd::cli cli = cmd::cli("ps3 emulator tools", {
         vt::sfo::data data;
 
         for (auto entry : table) {
-            const auto& key = entry.first;
-            const auto& val = entry.second;
-            val.visit([&](auto&& e) {
+            entry.second.visit([key = entry.first, &data](auto& e) {
+                if constexpr (toml::is_number<decltype(e)>) {
+                    int64_t num = e.as_integer()->get();
+                    data[key] = (u32)num;
+                } else if constexpr (toml::is_string<decltype(e)>) {
+                    std::string str = e.as_string()->get();
+                    data[key] = str;
+                } else if constexpr (toml::is_array<decltype(e)>) {
+                    std::vector<u8> arr;
+                    auto in = *e.as_array();
+                    for (auto& elem : in) {}
+                    //    arr.push_back(elem.as_integer()->get());
+                    data[key] = arr;
+                } else {
+                    EXPECT(false, "invalid data type in input")
+                }
+                (void)e;
+            });
+            //const auto& key = entry.first;
+            //const auto& val = entry.second;
+            /*val.visit([&](auto&& e) {
                 if constexpr (toml::is_number<decltype(e)>) {
                     data[key] = val.as_integer()->get();
                 } else if constexpr (toml::is_string<decltype(e)>) {
@@ -73,7 +92,7 @@ cmd::cli cli = cmd::cli("ps3 emulator tools", {
                 } else {
                     EXPECT(false, "invalid data type in input")
                 }
-            });
+            });*/
         }
 
         open("PARAM.SFO", Mode::write)
